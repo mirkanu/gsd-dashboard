@@ -110,6 +110,17 @@
           width 0.2s ease;
       }
 
+      .diagram-wrap .mermaid {
+        display: block;
+        width: 100%;
+      }
+
+      .diagram-wrap .mermaid svg {
+        width: 118%;
+        max-width: 118%;
+        height: auto;
+      }
+
       .sidebar-topbar {
         display: flex;
         align-items: center;
@@ -190,6 +201,11 @@
           padding: 32px 16px;
           margin-left: var(--sidebar-collapsed) !important;
           width: calc(100% - var(--sidebar-collapsed));
+        }
+
+        .diagram-wrap .mermaid svg {
+          width: 108%;
+          max-width: 108%;
         }
 
         body:not(.sidebar-collapsed) .sidebar {
