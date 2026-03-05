@@ -385,10 +385,10 @@ graph LR
 
 ```mermaid
 erDiagram
-    sessions ||--o{ agents : "has"
-    sessions ||--o{ events : "has"
-    agents ||--o{ events : "generates"
-    agents ||--o{ agents : "spawns"
+    sessions ||--o{ agents : has
+    sessions ||--o{ events : has
+    agents ||--o{ events : generates
+    agents ||--o{ agents : spawns
 
     sessions {
         TEXT id PK "UUID"

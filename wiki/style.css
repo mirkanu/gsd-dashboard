@@ -61,9 +61,11 @@ body {
   flex-shrink: 0;
   background: var(--bg-surface);
   border-right: 1px solid var(--border);
-  position: sticky;
+  position: fixed;
+  left: 0;
   top: 0;
-  height: 100vh;
+  bottom: 0;
+  height: 100dvh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -206,6 +208,8 @@ body {
 .main-content {
   flex: 1;
   min-width: 0;
+  margin-left: var(--sidebar-w);
+  width: calc(100% - var(--sidebar-w));
   padding: 48px 64px;
   display: grid;
   justify-content: center;
@@ -920,6 +924,8 @@ tr:hover td {
   }
   .main-content {
     display: block;
+    margin-left: 0;
+    width: auto;
     padding: 32px 24px;
   }
   .main-content > * {

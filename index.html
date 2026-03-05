@@ -57,7 +57,6 @@
         "description": "Real-time monitoring platform for Claude Code agent activity. Tracks sessions, agents, and tool events via native hooks, stores them in SQLite, and streams updates to a React UI over WebSocket.",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Windows, macOS, Linux",
-        "softwareVersion": "1.0.0",
         "license": "https://opensource.org/licenses/MIT",
         "author": {
           "@type": "Person",
@@ -78,22 +77,160 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
     />
     <link rel="stylesheet" href="wiki/style.css" />
+    <style>
+      :root {
+        --sidebar-expanded: 260px;
+        --sidebar-collapsed: 56px;
+      }
+
+      body {
+        --sidebar-current: var(--sidebar-expanded);
+      }
+
+      body.sidebar-collapsed {
+        --sidebar-current: var(--sidebar-collapsed);
+      }
+
+      .sidebar {
+        display: flex !important;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: var(--sidebar-current);
+        overflow-x: hidden;
+        transition: width 0.2s ease;
+      }
+
+      .main-content {
+        margin-left: var(--sidebar-current) !important;
+        width: calc(100% - var(--sidebar-current));
+        transition:
+          margin-left 0.2s ease,
+          width 0.2s ease;
+      }
+
+      .sidebar-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .sidebar-toggle {
+        width: 30px;
+        height: 30px;
+        border: 1px solid var(--border, #252538);
+        border-radius: 7px;
+        background: var(--bg-card, #1a1a2b);
+        color: var(--text, #e2e2f0);
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      body.sidebar-collapsed .sidebar .logo-text,
+      body.sidebar-collapsed .sidebar .search-wrap,
+      body.sidebar-collapsed .sidebar .nav-section,
+      body.sidebar-collapsed .sidebar .sidebar-footer {
+        display: none;
+      }
+
+      body.sidebar-collapsed .sidebar .sidebar-header {
+        padding: 12px 8px;
+      }
+
+      body.sidebar-collapsed .sidebar .sidebar-logo {
+        justify-content: center;
+        margin-bottom: 0;
+      }
+
+      body.sidebar-collapsed .sidebar .sidebar-topbar {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      body.sidebar-collapsed .sidebar .sidebar-nav {
+        padding-top: 8px;
+      }
+
+      body.sidebar-collapsed .sidebar .nav-link {
+        justify-content: center;
+        gap: 0;
+        padding-left: 0;
+        padding-right: 0;
+        font-size: 0;
+      }
+
+      body.sidebar-collapsed .sidebar .nav-link .nav-icon {
+        width: auto;
+        font-size: 13px;
+      }
+
+      .sidebar-scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s ease;
+        z-index: 180;
+      }
+
+      @media (max-width: 900px) {
+        .sidebar {
+          display: flex !important;
+          z-index: 200;
+        }
+
+        .main-content {
+          display: block;
+          padding: 32px 16px;
+          margin-left: var(--sidebar-collapsed) !important;
+          width: calc(100% - var(--sidebar-collapsed));
+        }
+
+        body:not(.sidebar-collapsed) .sidebar {
+          width: min(86vw, 320px);
+          box-shadow: 10px 0 28px rgba(0, 0, 0, 0.4);
+        }
+
+        body:not(.sidebar-collapsed) .sidebar-scrim {
+          opacity: 1;
+          pointer-events: auto;
+        }
+      }
+    </style>
     <!-- Mermaid -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   </head>
   <body>
     <div class="wiki-layout">
+      <div id="sidebar-scrim" class="sidebar-scrim" aria-hidden="true"></div>
       <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ SIDEBAR ━━━ -->
-      <nav class="sidebar" aria-label="Wiki navigation">
+      <nav id="wiki-sidebar" class="sidebar" aria-label="Wiki navigation">
         <div class="sidebar-header">
-          <a href="#hero" class="sidebar-logo">
-            <div class="logo-icon">⬡</div>
-            <div class="logo-text">
-              Agent Dashboard
-              <span class="logo-sub">Project Wiki</span>
-            </div>
-          </a>
-          <span class="sidebar-version">v1.0.0</span>
+          <div class="sidebar-topbar">
+            <a href="#hero" class="sidebar-logo">
+              <div class="logo-icon">⬡</div>
+              <div class="logo-text">
+                Agent Dashboard
+                <span class="logo-sub">Project Wiki</span>
+              </div>
+            </a>
+            <button
+              id="sidebar-toggle"
+              class="sidebar-toggle"
+              type="button"
+              aria-label="Toggle sidebar"
+              aria-controls="wiki-sidebar"
+              aria-expanded="true"
+            >
+              ‹
+            </button>
+          </div>
         </div>
 
         <div class="search-wrap">
@@ -693,8 +830,6 @@ npm run dev
           </div>
         </section>
 
-        <hr />
-
         <!-- ─── Architecture Overview ────────────────────────────────────── -->
         <section id="arch-overview">
           <div class="section-label">◈ Architecture</div>
@@ -1168,8 +1303,6 @@ npm run dev
           </div>
         </section>
 
-        <hr />
-
         <!-- ─── Database Design ───────────────────────────────────────────── -->
         <section id="database">
           <div class="section-label">◈ Data</div>
@@ -1181,7 +1314,7 @@ npm run dev
               erDiagram
                 sessions ||--o{ agents : has
                 sessions ||--o{ events : has
-                sessions ||--o| token_usage : tracks
+                sessions ||--|| token_usage : tracks
                 agents ||--o{ events : generates
                 agents ||--o{ agents : spawns_subagents
 
@@ -1223,7 +1356,7 @@ npm run dev
                 }
 
                 token_usage {
-                  TEXT session_id PK FK
+                  TEXT session_id PK "References sessions.id"
                   INTEGER input_tokens
                   INTEGER output_tokens
                   INTEGER cache_read_tokens
@@ -1503,8 +1636,6 @@ npm run dev
           </div>
         </section>
 
-        <hr />
-
         <!-- ─── Hook Integration ──────────────────────────────────────────── -->
         <section id="hooks">
           <div class="section-label">◈ Integrations</div>
@@ -1523,7 +1654,7 @@ npm run dev
                 START[Claude Code fires hook] --> STDIN[Read stdin to EOF]
                 STDIN --> PARSE{Parse JSON?}
                 PARSE -->|Success| POST["POST to 127.0.0.1:4820\n/api/hooks/event"]
-                PARSE -->|Failure| WRAP["Wrap raw input as\n{\"raw\": \"...\"}"]
+                PARSE -->|Failure| WRAP["Wrap raw input payload"]
                 WRAP --> POST
                 POST --> RESP{Response?}
                 RESP -->|200| EXIT0[exit 0]
@@ -1667,8 +1798,6 @@ npm run dev
             </div>
           </div>
         </section>
-
-        <hr />
 
         <!-- ─── Deployment ─────────────────────────────────────────────────── -->
         <section id="deployment">
@@ -2084,5 +2213,48 @@ npm run install-hooks</code></pre>
     <!-- /.wiki-layout -->
 
     <script src="wiki/script.js"></script>
+    <script>
+      (function () {
+        const btn = document.getElementById("sidebar-toggle");
+        const scrim = document.getElementById("sidebar-scrim");
+        if (!btn) return;
+
+        const key = "wiki-sidebar-collapsed";
+        const mobileQuery = window.matchMedia("(max-width: 900px)");
+
+        function applyCollapsed(collapsed) {
+          document.body.classList.toggle("sidebar-collapsed", collapsed);
+          btn.setAttribute("aria-expanded", String(!collapsed));
+          btn.textContent = collapsed ? "›" : "‹";
+          if (scrim) {
+            scrim.setAttribute("aria-hidden", String(collapsed || !mobileQuery.matches));
+          }
+        }
+
+        const saved = localStorage.getItem(key);
+        if (saved === null) {
+          applyCollapsed(false);
+        } else {
+          applyCollapsed(saved === "1");
+        }
+
+        btn.addEventListener("click", function () {
+          const next = !document.body.classList.contains("sidebar-collapsed");
+          applyCollapsed(next);
+          localStorage.setItem(key, next ? "1" : "0");
+        });
+
+        if (scrim) {
+          scrim.addEventListener("click", function () {
+            applyCollapsed(true);
+            localStorage.setItem(key, "1");
+          });
+        }
+
+        mobileQuery.addEventListener("change", function () {
+          applyCollapsed(document.body.classList.contains("sidebar-collapsed"));
+        });
+      })();
+    </script>
   </body>
 </html>
