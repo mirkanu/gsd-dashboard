@@ -7,11 +7,11 @@
     <title>Claude Code Agent Monitor - Project Wiki</title>
     <meta
       name="description"
-      content="Comprehensive technical wiki for Agent Dashboard — a real-time monitoring platform for Claude Code agent activity."
+      content="Comprehensive technical wiki for Claude Code Agent Monitor — a real-time monitoring platform for Claude Code agent activity."
     />
     <meta
       name="keywords"
-      content="Claude Code, agent dashboard, AI monitoring, real-time dashboard, WebSocket, SQLite, React, TypeScript, developer tools, session tracking"
+      content="Claude Code, Claude Code Agent Monitor, AI monitoring, real-time dashboard, WebSocket, SQLite, React, TypeScript, developer tools, session tracking"
     />
     <meta name="author" content="Son Nguyen Hoang" />
     <meta name="robots" content="index, follow" />
@@ -19,11 +19,11 @@
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Agent Dashboard" />
+    <meta property="og:site_name" content="Claude Code Agent Monitor" />
     <meta property="og:title" content="Claude Code Agent Monitor - Project Wiki" />
     <meta
       property="og:description"
-      content="Comprehensive technical wiki for Agent Dashboard — a real-time monitoring platform for Claude Code agent activity."
+      content="Comprehensive technical wiki for Claude Code Agent Monitor — a real-time monitoring platform for Claude Code agent activity."
     />
     <meta property="og:image" content="og-image.svg" />
     <meta property="og:image:width" content="1200" />
@@ -31,7 +31,7 @@
     <meta property="og:image:type" content="image/svg+xml" />
     <meta
       property="og:image:alt"
-      content="Agent Dashboard — real-time Claude Code monitoring platform"
+      content="Claude Code Agent Monitor — real-time Claude Code monitoring platform"
     />
 
     <!-- Twitter / X Card -->
@@ -44,7 +44,7 @@
     <meta name="twitter:image" content="og-image.svg" />
     <meta
       name="twitter:image:alt"
-      content="Agent Dashboard — real-time Claude Code monitoring platform"
+      content="Claude Code Agent Monitor — real-time Claude Code monitoring platform"
     />
     <meta name="twitter:creator" content="@hoangsonww" />
 
@@ -53,7 +53,7 @@
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        "name": "Agent Dashboard",
+        "name": "Claude Code Agent Monitor",
         "description": "Real-time monitoring platform for Claude Code agent activity. Tracks sessions, agents, and tool events via native hooks, stores them in SQLite, and streams updates to a React UI over WebSocket.",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Windows, macOS, Linux",
@@ -128,6 +128,10 @@
         gap: 10px;
       }
 
+      .sidebar-logo .logo-sub {
+        margin-top: 7px;
+      }
+
       .sidebar-toggle {
         width: 30px;
         height: 30px;
@@ -190,6 +194,75 @@
         z-index: 180;
       }
 
+      .wiki-footer.footer-enhanced {
+        margin-top: 84px;
+        padding: 24px;
+        border: 1px solid var(--border, #252538);
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.06));
+        display: grid;
+        grid-template-columns: 1.6fr 1fr 1fr;
+        gap: 22px;
+        align-items: start;
+      }
+
+      .footer-brand-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text, #e2e2f0);
+        margin-bottom: 6px;
+      }
+
+      .footer-note {
+        font-size: 13px;
+        color: var(--text-muted, #8888aa);
+        margin-bottom: 12px;
+        line-height: 1.55;
+      }
+
+      .footer-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .footer-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        color: var(--text-muted, #8888aa);
+        border: 1px solid var(--border, #252538);
+        background: rgba(18, 18, 30, 0.75);
+      }
+
+      .footer-col-title {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-dim, #55556a);
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+
+      .footer-col-links {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .footer-col-links a {
+        color: var(--text-muted, #8888aa);
+        text-decoration: none;
+        font-size: 13px;
+      }
+
+      .footer-col-links a:hover {
+        color: var(--text, #e2e2f0);
+      }
+
       @media (max-width: 900px) {
         .sidebar {
           display: flex !important;
@@ -216,6 +289,12 @@
         body:not(.sidebar-collapsed) .sidebar-scrim {
           opacity: 1;
           pointer-events: auto;
+        }
+
+        .wiki-footer.footer-enhanced {
+          grid-template-columns: 1fr;
+          gap: 16px;
+          padding: 20px;
         }
       }
     </style>
@@ -363,7 +442,7 @@
             <span class="dot"></span>
             Real-time · Local-first · Zero-config
           </div>
-          <h1>Agent Dashboard</h1>
+          <h1>Claude Code Agent Monitor</h1>
           <p class="hero-desc">
             A professional monitoring platform for Claude Code agent activity. Captures sessions,
             agents, and tool events via native hooks, persists them in SQLite, and streams updates
@@ -386,7 +465,7 @@
           <div class="section-label">◈ Introduction</div>
           <h2>System Overview</h2>
           <p>
-            Agent Dashboard integrates with Claude Code through its native hook system. When Claude
+            Claude Code Agent Monitor integrates with Claude Code through its native hook system. When Claude
             Code performs any action — tool use, session start, subagent orchestration, session end
             — it fires a hook that calls a small Node.js script bundled with this project. That
             script forwards the event over HTTP to the dashboard server, which stores it in SQLite
@@ -2209,19 +2288,33 @@ npm run install-hooks</code></pre>
         </section>
 
         <!-- ─── Footer ─────────────────────────────────────────────────────── -->
-        <footer class="wiki-footer">
-          <p>
-            Agent Dashboard — MIT License &copy; 2026
-            <a href="https://github.com/hoangsonww" target="_blank" rel="noopener">hoangsonww</a> ·
-            <a href="https://sonnguyenhoang.com" target="_blank" rel="noopener"
-              >sonnguyenhoang.com</a
-            >
-          </p>
-          <p>
-            <a href="README.md">README</a> · <a href="ARCHITECTURE.md">Architecture</a> ·
-            <a href="INSTALL.md">Install</a> ·
-            <a href="SETUP.md">Setup</a>
-          </p>
+        <footer class="wiki-footer footer-enhanced">
+          <div>
+            <div class="footer-brand-name">Claude Code Agent Monitor</div>
+            <p class="footer-note">
+              Local-first monitoring for Claude Code sessions, agents, and tool events. Built for
+              real-time visibility with zero external dependencies.
+            </p>
+          </div>
+          <div>
+            <div class="footer-col-title">Documentation</div>
+            <div class="footer-col-links">
+              <a href="README.md">README</a>
+              <a href="ARCHITECTURE.md">Architecture</a>
+              <a href="INSTALL.md">Install</a>
+              <a href="SETUP.md">Setup</a>
+            </div>
+          </div>
+          <div>
+            <div class="footer-col-title">Project Links</div>
+            <div class="footer-col-links">
+              <a href="https://github.com/hoangsonww" target="_blank" rel="noopener">GitHub</a>
+              <a href="https://sonnguyenhoang.com" target="_blank" rel="noopener"
+                >sonnguyenhoang.com</a
+              >
+              <div class="footer-note">&copy; 2026</div>
+            </div>
+          </div>
         </footer>
       </main>
       <!-- /.main-content -->
