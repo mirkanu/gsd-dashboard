@@ -76,8 +76,8 @@ graph LR
 ### 1. Install
 
 ```bash
-git clone <repo-url> agent-dashboard
-cd agent-dashboard
+git clone https://github.com/hoangsonww/Claude-Code-Agent-Monitor.git
+cd Claude-Code-Agent-Monitor
 npm run setup
 ```
 

@@ -15,8 +15,8 @@
 ## Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/hoangsonww/agent-dashboard.git
-cd agent-dashboard
+git clone https://github.com/hoangsonww/Claude-Code-Agent-Monitor.git
+cd Claude-Code-Agent-Monitor
 ```
 
 ---
