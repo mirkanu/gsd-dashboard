@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { RefreshCw, Columns3 } from "lucide-react";
+import { RefreshCw, Columns3, ChevronDown } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
 import { AgentCard } from "../components/AgentCard";
@@ -8,10 +8,12 @@ import { STATUS_CONFIG } from "../lib/types";
 import type { Agent, AgentStatus } from "../lib/types";
 
 const COLUMNS: AgentStatus[] = ["idle", "connected", "working", "completed", "error"];
+const COLUMN_PAGE_SIZE = 10;
 
 export function KanbanBoard() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState<Record<string, number>>({});
 
   const load = useCallback(async () => {
     try {
@@ -102,7 +104,26 @@ export function KanbanBoard() {
 
               <div className="flex-1 space-y-2.5 overflow-y-auto">
                 {items && items.length > 0 ? (
-                  items.map((agent) => <AgentCard key={agent.id} agent={agent} />)
+                  <>
+                    {items.slice(0, expanded[status] || COLUMN_PAGE_SIZE).map((agent) => (
+                      <AgentCard key={agent.id} agent={agent} />
+                    ))}
+                    {items.length > (expanded[status] || COLUMN_PAGE_SIZE) && (
+                      <button
+                        onClick={() =>
+                          setExpanded((prev) => ({
+                            ...prev,
+                            [status]: (prev[status] || COLUMN_PAGE_SIZE) + COLUMN_PAGE_SIZE,
+                          }))
+                        }
+                        className="w-full py-2 text-[11px] text-gray-500 hover:text-gray-300 flex items-center justify-center gap-1 transition-colors"
+                      >
+                        <ChevronDown className="w-3 h-3" />
+                        Show more ({items.length - (expanded[status] || COLUMN_PAGE_SIZE)}{" "}
+                        remaining)
+                      </button>
+                    )}
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-24 text-xs text-gray-600">
                     No agents
