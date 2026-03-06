@@ -1,4 +1,12 @@
-import type { Agent, Analytics, DashboardEvent, Session, Stats } from "./types";
+import type {
+  Agent,
+  Analytics,
+  CostResult,
+  DashboardEvent,
+  ModelPricing,
+  Session,
+  Stats,
+} from "./types";
 
 const BASE = "/api";
 
@@ -59,5 +67,21 @@ export const api = {
 
   analytics: {
     get: () => request<Analytics>("/analytics"),
+  },
+
+  pricing: {
+    list: () => request<{ pricing: ModelPricing[] }>("/pricing"),
+    upsert: (data: Omit<ModelPricing, "updated_at">) =>
+      request<{ pricing: ModelPricing }>("/pricing", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (pattern: string) =>
+      request<{ ok: boolean }>(`/pricing/${encodeURIComponent(pattern)}`, {
+        method: "DELETE",
+      }),
+    totalCost: () => request<CostResult>("/pricing/cost"),
+    sessionCost: (sessionId: string) =>
+      request<CostResult>(`/pricing/cost/${encodeURIComponent(sessionId)}`),
   },
 };

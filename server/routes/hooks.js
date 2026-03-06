@@ -117,8 +117,11 @@ const processEvent = db.transaction((hookType, data) => {
 
       // Extract token usage from Stop event if present
       if (data.usage) {
+        const session = stmts.getSession.get(sessionId);
+        const tokenModel = data.model || session?.model || "unknown";
         stmts.upsertTokenUsage.run(
           sessionId,
+          tokenModel,
           data.usage.input_tokens || 0,
           data.usage.output_tokens || 0,
           data.usage.cache_read_input_tokens || 0,

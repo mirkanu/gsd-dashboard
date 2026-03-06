@@ -52,6 +52,10 @@ graph LR
   <img src="images/analytics.png" alt="Analytics Overview" width="100%">
 </p>
 
+<p align="center">
+  <img src="images/settings.png" alt="Settings Overview" width="100%">
+</p>
+
 ---
 
 ## Features

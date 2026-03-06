@@ -23,6 +23,7 @@ export function Sessions() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [sessionCosts, setSessionCosts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
 
@@ -30,8 +31,23 @@ export function Sessions() {
     try {
       const params: { status?: string; limit?: number } = { limit: 500 };
       if (filter) params.status = filter;
-      const { sessions: data } = await api.sessions.list(params);
-      setSessions(data);
+      const sessionsRes = await api.sessions.list(params);
+      setSessions(sessionsRes.sessions);
+      // Fetch individual session costs in background
+      const costs: Record<string, number> = {};
+      const batchSize = 10;
+      for (let i = 0; i < sessionsRes.sessions.length; i += batchSize) {
+        const batch = sessionsRes.sessions.slice(i, i + batchSize);
+        const results = await Promise.all(
+          batch.map((s) =>
+            api.pricing.sessionCost(s.id).catch(() => ({ total_cost: 0, breakdown: [] }))
+          )
+        );
+        batch.forEach((s, j) => {
+          if (results[j]) costs[s.id] = results[j].total_cost;
+        });
+      }
+      setSessionCosts(costs);
     } finally {
       setLoading(false);
     }
@@ -81,7 +97,7 @@ export function Sessions() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
@@ -121,8 +137,8 @@ export function Sessions() {
         />
       ) : (
         <>
-          <div className="card overflow-hidden">
-            <table className="w-full">
+          <div className="card overflow-x-auto">
+            <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="border-b border-border text-left">
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
@@ -139,6 +155,9 @@ export function Sessions() {
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                     Agents
+                  </th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Cost
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                     Directory
@@ -176,6 +195,12 @@ export function Sessions() {
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-400">
                       {session.agent_count ?? "-"}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-400 font-mono">
+                      {(() => {
+                        const c = sessionCosts[session.id];
+                        return c != null && c > 0 ? `$${c.toFixed(2)}` : "-";
+                      })()}
                     </td>
                     <td className="px-5 py-4 text-[11px] text-gray-500 font-mono">
                       {session.cwd ? truncate(session.cwd, 30) : "-"}
