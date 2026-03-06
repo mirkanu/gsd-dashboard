@@ -19,15 +19,15 @@ export function Dashboard() {
 
   const load = useCallback(async () => {
     try {
-      const [statsRes, agentsRes, eventsRes] = await Promise.all([
+      const [statsRes, workingRes, connectedRes, idleRes, eventsRes] = await Promise.all([
         api.stats.get(),
-        api.agents.list({ limit: 20 }),
+        api.agents.list({ status: "working", limit: 20 }),
+        api.agents.list({ status: "connected", limit: 20 }),
+        api.agents.list({ status: "idle", limit: 20 }),
         api.events.list({ limit: 15 }),
       ]);
       setStats(statsRes);
-      setActiveAgents(
-        agentsRes.agents.filter((a) => a.status === "working" || a.status === "connected")
-      );
+      setActiveAgents([...workingRes.agents, ...connectedRes.agents, ...idleRes.agents]);
       setRecentEvents(eventsRes.events);
       setError(null);
     } catch (err) {

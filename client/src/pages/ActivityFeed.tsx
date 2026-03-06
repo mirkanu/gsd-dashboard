@@ -8,11 +8,14 @@ import { EmptyState } from "../components/EmptyState";
 import { formatTime, timeAgo } from "../lib/format";
 import type { DashboardEvent, AgentStatus } from "../lib/types";
 
+const PAGE_SIZE = 10;
+
 export function ActivityFeed() {
   const navigate = useNavigate();
   const [events, setEvents] = useState<DashboardEvent[]>([]);
   const [paused, setPaused] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
   const bufferRef = useRef<DashboardEvent[]>([]);
   const pausedRef = useRef(paused);
 
@@ -103,39 +106,70 @@ export function ActivityFeed() {
           description="Events will stream here in real-time as Claude Code agents work."
         />
       ) : (
-        <div className="card overflow-hidden">
-          <div className="divide-y divide-border max-h-[calc(100vh-200px)] overflow-y-auto">
-            {events.map((event, i) => (
-              <div
-                key={event.id ?? i}
-                onClick={() => navigate(`/sessions/${event.session_id}`)}
-                className="px-5 py-3.5 flex items-center gap-4 hover:bg-surface-4 transition-colors cursor-pointer animate-slide-up"
-              >
-                <div className="w-14 text-[11px] text-gray-500 font-mono flex-shrink-0 text-right">
-                  {formatTime(event.created_at)}
-                </div>
+        <>
+          <div className="card overflow-hidden">
+            <div className="divide-y divide-border max-h-[calc(100vh-260px)] overflow-y-auto">
+              {events.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((event, i) => (
+                <div
+                  key={event.id ?? i}
+                  onClick={() => navigate(`/sessions/${event.session_id}`)}
+                  className="px-5 py-3.5 flex items-center gap-4 hover:bg-surface-4 transition-colors cursor-pointer animate-slide-up"
+                >
+                  <div className="w-14 text-[11px] text-gray-500 font-mono flex-shrink-0 text-right">
+                    {formatTime(event.created_at)}
+                  </div>
 
-                <AgentStatusBadge status={statusFromEventType(event.event_type)} />
+                  <AgentStatusBadge status={statusFromEventType(event.event_type)} />
 
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-300 truncate">
-                    {event.summary || event.event_type}
-                  </p>
-                </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-300 truncate">
+                      {event.summary || event.event_type}
+                    </p>
+                  </div>
 
-                {event.tool_name && (
-                  <span className="text-[11px] px-2 py-0.5 bg-surface-2 rounded text-gray-500 font-mono flex-shrink-0">
-                    {event.tool_name}
+                  {event.tool_name && (
+                    <span className="text-[11px] px-2 py-0.5 bg-surface-2 rounded text-gray-500 font-mono flex-shrink-0">
+                      {event.tool_name}
+                    </span>
+                  )}
+
+                  <span className="text-[11px] text-gray-600 flex-shrink-0 w-16 text-right">
+                    {timeAgo(event.created_at)}
                   </span>
-                )}
-
-                <span className="text-[11px] text-gray-600 flex-shrink-0 w-16 text-right">
-                  {timeAgo(event.created_at)}
-                </span>
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+          {events.length > PAGE_SIZE && (
+            <div className="flex items-center justify-between mt-4 px-1">
+              <span className="text-xs text-gray-500">
+                Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, events.length)} of{" "}
+                {events.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1.5 text-xs font-medium rounded-md bg-surface-2 text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1.5 text-xs text-gray-500">
+                  {page + 1} / {Math.ceil(events.length / PAGE_SIZE)}
+                </span>
+                <button
+                  onClick={() =>
+                    setPage((p) => Math.min(Math.ceil(events.length / PAGE_SIZE) - 1, p + 1))
+                  }
+                  disabled={page >= Math.ceil(events.length / PAGE_SIZE) - 1}
+                  className="px-3 py-1.5 text-xs font-medium rounded-md bg-surface-2 text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
