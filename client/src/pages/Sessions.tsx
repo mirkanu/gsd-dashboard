@@ -16,12 +16,15 @@ const FILTER_OPTIONS: Array<{ label: string; value: string }> = [
   { label: "Abandoned", value: "abandoned" },
 ];
 
+const PAGE_SIZE = 10;
+
 export function Sessions() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -54,6 +57,14 @@ export function Sessions() {
           s.cwd?.toLowerCase().includes(search.toLowerCase())
       )
     : sessions;
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  // Reset page when filter/search changes
+  useEffect(() => {
+    setPage(0);
+  }, [filter, search]);
 
   return (
     <div className="animate-fade-in">
@@ -109,71 +120,102 @@ export function Sessions() {
           }
         />
       ) : (
-        <div className="card overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  Session
-                </th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  Started
-                </th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  Duration
-                </th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  Agents
-                </th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  Directory
-                </th>
-                <th className="w-10"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filtered.map((session) => (
-                <tr
-                  key={session.id}
-                  onClick={() => navigate(`/sessions/${session.id}`)}
-                  className="hover:bg-surface-4 transition-colors cursor-pointer group"
-                >
-                  <td className="px-5 py-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-200">
-                        {session.name || `Session ${session.id.slice(0, 8)}`}
-                      </p>
-                      <p className="text-[11px] text-gray-600 font-mono">
-                        {session.id.slice(0, 12)}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4">
-                    <SessionStatusBadge status={session.status as SessionStatus} />
-                  </td>
-                  <td className="px-5 py-4 text-sm text-gray-400">
-                    {formatDateTime(session.started_at)}
-                  </td>
-                  <td className="px-5 py-4 text-sm text-gray-400 font-mono">
-                    {session.ended_at
-                      ? formatDuration(session.started_at, session.ended_at)
-                      : "running"}
-                  </td>
-                  <td className="px-5 py-4 text-sm text-gray-400">{session.agent_count ?? "-"}</td>
-                  <td className="px-5 py-4 text-[11px] text-gray-500 font-mono">
-                    {session.cwd ? truncate(session.cwd, 30) : "-"}
-                  </td>
-                  <td className="px-3 py-4">
-                    <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
-                  </td>
+        <>
+          <div className="card overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Session
+                  </th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Started
+                  </th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Duration
+                  </th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Agents
+                  </th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Directory
+                  </th>
+                  <th className="w-10"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {paged.map((session) => (
+                  <tr
+                    key={session.id}
+                    onClick={() => navigate(`/sessions/${session.id}`)}
+                    className="hover:bg-surface-4 transition-colors cursor-pointer group"
+                  >
+                    <td className="px-5 py-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-200">
+                          {session.name || `Session ${session.id.slice(0, 8)}`}
+                        </p>
+                        <p className="text-[11px] text-gray-600 font-mono">
+                          {session.id.slice(0, 12)}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <SessionStatusBadge status={session.status as SessionStatus} />
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-400">
+                      {formatDateTime(session.started_at)}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-400 font-mono">
+                      {session.ended_at
+                        ? formatDuration(session.started_at, session.ended_at)
+                        : "running"}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-400">
+                      {session.agent_count ?? "-"}
+                    </td>
+                    <td className="px-5 py-4 text-[11px] text-gray-500 font-mono">
+                      {session.cwd ? truncate(session.cwd, 30) : "-"}
+                    </td>
+                    <td className="px-3 py-4">
+                      <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 px-1">
+              <span className="text-xs text-gray-500">
+                Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)}{" "}
+                of {filtered.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1.5 text-xs font-medium rounded-md bg-surface-2 text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1.5 text-xs text-gray-500">
+                  {page + 1} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="px-3 py-1.5 text-xs font-medium rounded-md bg-surface-2 text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

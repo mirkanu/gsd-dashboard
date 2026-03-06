@@ -41,6 +41,10 @@ graph LR
 </p>
 
 <p align="center">
+  <img src="images/session.png" alt="Session Detail Overview" width="100%">
+</p>
+
+<p align="center">
   <img src="images/feed.png" alt="Activity Feed Overview" width="100%">
 </p>
 
@@ -52,17 +56,20 @@ graph LR
 
 ## Features
 
-| Feature            | Description                                                                  |
-| ------------------ | ---------------------------------------------------------------------------- |
-| **Dashboard**      | Overview stats, active agent cards, recent activity feed                     |
-| **Kanban Board**   | 5-column agent status board (Idle / Connected / Working / Completed / Error) |
-| **Sessions**       | Searchable, filterable table of all Claude Code sessions                     |
-| **Session Detail** | Per-session agent cards and full event timeline                              |
-| **Activity Feed**  | Real-time streaming event log with pause/resume                              |
-| **Live Updates**   | WebSocket push -- no polling, instant UI updates                             |
-| **Auto-Discovery** | Sessions and agents are created automatically from hook events               |
-| **Seed Data**      | Built-in seed script for demos and development                               |
-| **Statusline**     | Color-coded CLI statusline showing model, context usage, git branch, tokens  |
+| Feature               | Description                                                                  |
+| --------------------- | ---------------------------------------------------------------------------- |
+| **Dashboard**         | Overview stats, active agent cards, recent activity feed                     |
+| **Kanban Board**      | 5-column agent status board with paginated columns (10 per page)             |
+| **Sessions**          | Searchable, filterable, paginated table of all Claude Code sessions          |
+| **Session Detail**    | Per-session agent cards and full event timeline                              |
+| **Activity Feed**     | Real-time streaming event log with pause/resume and pagination               |
+| **Analytics**         | Token usage, tool frequency, activity heatmap, session trends                |
+| **Live Updates**      | WebSocket push -- no polling, instant UI updates                             |
+| **Auto-Discovery**    | Sessions and agents are created automatically from hook events               |
+| **History Import**    | Automatically imports legacy sessions from `~/.claude/` on server startup    |
+| **Background Agents** | Correctly tracks backgrounded subagents without premature completion         |
+| **Seed Data**         | Built-in seed script for demos and development                               |
+| **Statusline**        | Color-coded CLI statusline showing model, context usage, git branch, tokens  |
 
 ---
 
@@ -146,8 +153,10 @@ sequenceDiagram
 3. **Server** processes the event inside a SQLite transaction:
    - Auto-creates sessions and main agents on first contact
    - Detects `Agent` tool calls to track subagent creation
-   - Updates agent status/current_tool on each tool use
-   - Marks everything completed on session stop
+   - Sets agent to "working" on `PreToolUse`, keeps it working through `PostToolUse`
+   - Preserves running background subagents on `Stop` (main agent goes "idle")
+   - Marks subagents completed individually via `SubagentStop`
+   - Auto-completes session when the last subagent finishes
 4. **WebSocket** broadcasts the change to all connected clients
 5. **UI** receives the update and re-renders the affected components
 
@@ -155,15 +164,14 @@ sequenceDiagram
 
 ```mermaid
 stateDiagram-v2
-    [*] --> idle: Agent created
-    idle --> connected: Session established
-    connected --> working: Tool use started
-    working --> connected: Tool use completed
-    working --> working: Different tool started
-    connected --> completed: Session ended
-    working --> completed: Session ended
+    [*] --> connected: Agent created
+    connected --> working: PreToolUse
+    working --> working: PreToolUse (different tool)
+    working --> idle: Stop (subagents still running)
+    working --> completed: Stop (no subagents)
+    idle --> idle: Tool events from subagents
+    idle --> completed: Last SubagentStop
     working --> error: Error occurred
-    idle --> completed: Session ended
     completed --> [*]
     error --> [*]
 ```
@@ -173,7 +181,8 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> active: First hook event received
-    active --> completed: Stop hook (normal)
+    active --> active: Stop (subagents still running)
+    active --> completed: Stop (no subagents) / last SubagentStop
     active --> error: Stop hook (error)
     active --> abandoned: No activity timeout
     completed --> [*]
@@ -205,6 +214,7 @@ stateDiagram-v2
 | `npm start`             | Start production server (serves built client)              |
 | `npm run install-hooks` | Configure Claude Code hooks in `~/.claude/settings.json`   |
 | `npm run seed`          | Populate database with sample data                         |
+| `npm run import-history`| Import legacy sessions from `~/.claude/` (also runs on startup) |
 
 ---
 
@@ -289,10 +299,10 @@ The dashboard processes these Claude Code hook types:
 
 | Hook Type      | Trigger                   | Dashboard Action                                                                             |
 | -------------- | ------------------------- | -------------------------------------------------------------------------------------------- |
-| `PreToolUse`   | Agent starts using a tool | Updates agent to `working`, sets `current_tool`. If tool is `Agent`, creates subagent record |
-| `PostToolUse`  | Tool execution completed  | Updates agent to `connected`, clears `current_tool`                                          |
-| `Stop`         | Session ended             | Marks all agents `completed`, ends session                                                   |
-| `SubagentStop` | Subagent finished         | Marks most recent working subagent `completed`                                               |
+| `PreToolUse`   | Agent starts using a tool | Sets agent to `working`, sets `current_tool`. If tool is `Agent`, creates subagent record    |
+| `PostToolUse`  | Tool execution completed  | Clears `current_tool`. Agent stays `working` (no status change)                              |
+| `Stop`         | Session/turn ended        | Main agent to `idle` if subagents running, else `completed`. Session stays active if subagents remain |
+| `SubagentStop` | Background agent finished | Matches and completes the subagent. Auto-completes session when last subagent finishes       |
 | `Notification` | Agent notification        | Logs event                                                                                   |
 
 ---
@@ -345,7 +355,8 @@ agent-dashboard/
 |       |-- sessions.js          # Session CRUD
 |       |-- agents.js            # Agent CRUD
 |       |-- events.js            # Event listing
-|       +-- stats.js             # Aggregate statistics
+|       |-- stats.js             # Aggregate statistics
+|       +-- analytics.js        # Token, tool, and trend analytics
 |-- client/
 |   |-- package.json             # Client dependencies
 |   |-- index.html               # HTML entry point
@@ -375,10 +386,12 @@ agent-dashboard/
 |           |-- KanbanBoard.tsx  # Agent status columns
 |           |-- Sessions.tsx     # Sessions table
 |           |-- SessionDetail.tsx # Single session deep dive
-|           +-- ActivityFeed.tsx # Real-time event stream
+|           |-- ActivityFeed.tsx # Real-time event stream
+|           +-- Analytics.tsx   # Token usage, heatmap, trends
 |-- scripts/
 |   |-- hook-handler.js          # Lightweight stdin-to-HTTP forwarder
 |   |-- install-hooks.js         # Auto-configures ~/.claude/settings.json
+|   |-- import-history.js        # Imports legacy sessions from ~/.claude/
 |   +-- seed.js                  # Sample data generator
 |-- statusline/
 |   |-- README.md                # Statusline installation & usage guide

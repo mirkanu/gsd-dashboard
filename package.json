@@ -12,6 +12,7 @@
     "setup": "npm install && cd client && npm install",
     "install-hooks": "node scripts/install-hooks.js",
     "seed": "node scripts/seed.js",
+    "import-history": "node scripts/import-history.js",
     "clear-data": "node scripts/clear-data.js",
     "test": "node --test server/__tests__/*.test.js && cd client && npm test",
     "test:server": "node --test server/__tests__/*.test.js",

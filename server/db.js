@@ -120,7 +120,7 @@ const stmts = {
     SELECT
       (SELECT COUNT(*) FROM sessions) as total_sessions,
       (SELECT COUNT(*) FROM sessions WHERE status = 'active') as active_sessions,
-      (SELECT COUNT(*) FROM agents WHERE status IN ('working', 'connected')) as active_agents,
+      (SELECT COUNT(*) FROM agents WHERE status IN ('working', 'connected', 'idle')) as active_agents,
       (SELECT COUNT(*) FROM agents) as total_agents,
       (SELECT COUNT(*) FROM events) as total_events
   `),

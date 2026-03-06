@@ -69,6 +69,18 @@ if (require.main === module) {
   } catch {
     // Non-fatal — user can run npm run install-hooks manually
   }
+
+  // Auto-import legacy sessions from ~/.claude/ on startup
+  const { importAllSessions } = require("../scripts/import-history");
+  const dbModule = require("./db");
+  importAllSessions(dbModule)
+    .then(({ imported, skipped, errors }) => {
+      if (imported > 0) console.log(`Imported ${imported} legacy sessions from ~/.claude/`);
+      if (errors > 0) console.log(`${errors} session files had errors during import`);
+    })
+    .catch(() => {
+      // Non-fatal — legacy import is best-effort
+    });
 }
 
 module.exports = { createApp, startServer };

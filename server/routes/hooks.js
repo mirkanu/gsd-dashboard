@@ -85,8 +85,9 @@ const processEvent = db.transaction((hookType, data) => {
         summary = `Subagent spawned: ${subName}`;
       }
 
-      // Update main agent status
-      if (mainAgent) {
+      // Update main agent status — but only if it's not idle (waiting for subagents).
+      // When main agent is idle, tool calls are from subagents, not the main agent.
+      if (mainAgent && mainAgent.status !== "idle") {
         stmts.updateAgent.run(null, "working", null, toolName, null, null, mainAgentId);
         broadcast("agent_updated", stmts.getAgent.get(mainAgentId));
       }
@@ -96,8 +97,15 @@ const processEvent = db.transaction((hookType, data) => {
     case "PostToolUse": {
       summary = `Tool completed: ${toolName}`;
 
-      if (mainAgent) {
-        stmts.updateAgent.run(null, "connected", null, null, null, null, mainAgentId);
+      // NOTE: PostToolUse for "Agent" tool fires immediately when a subagent is
+      // backgrounded — it does NOT mean the subagent finished its work.
+      // Subagent completion is handled by SubagentStop, not here.
+
+      // Don't change main agent status — keep it "working" for the entire turn.
+      // Only clear current_tool to show the tool finished.
+      // Status transitions happen at Stop (→ completed/idle), not here.
+      if (mainAgent && mainAgent.status !== "idle") {
+        stmts.updateAgent.run(null, null, null, null, null, null, mainAgentId);
         broadcast("agent_updated", stmts.getAgent.get(mainAgentId));
       }
       break;
@@ -118,16 +126,22 @@ const processEvent = db.transaction((hookType, data) => {
         );
       }
 
-      // End all active agents in this session
+      // End agents in this session, but skip working subagents (they're still running in background)
       const agents = stmts.listAgentsBySession.all(sessionId);
+      const hasActiveSubagents = agents.some(
+        (a) => a.type === "subagent" && a.status === "working"
+      );
       for (const agent of agents) {
+        if (agent.type === "subagent" && agent.status === "working") {
+          continue; // Don't mark running subagents as completed
+        }
         if (agent.status === "working" || agent.status === "connected" || agent.status === "idle") {
           stmts.updateAgent.run(
             null,
-            "completed",
+            hasActiveSubagents && agent.type === "main" ? "idle" : "completed",
             null,
             null,
-            new Date().toISOString(),
+            hasActiveSubagents && agent.type === "main" ? null : new Date().toISOString(),
             null,
             agent.id
           );
@@ -135,18 +149,45 @@ const processEvent = db.transaction((hookType, data) => {
         }
       }
 
-      // End session
-      stmts.updateSession.run(null, endStatus, new Date().toISOString(), null, sessionId);
-      broadcast("session_updated", stmts.getSession.get(sessionId));
+      // Don't end session if subagents are still running
+      if (hasActiveSubagents) {
+        broadcast("session_updated", stmts.getSession.get(sessionId));
+      } else {
+        stmts.updateSession.run(null, endStatus, new Date().toISOString(), null, sessionId);
+        broadcast("session_updated", stmts.getSession.get(sessionId));
+      }
       break;
     }
 
     case "SubagentStop": {
       summary = `Subagent completed`;
-      // Find the most recent working subagent for this session
       const subagents = stmts.listAgentsBySession.all(sessionId);
-      const workingSub = subagents.find((a) => a.type === "subagent" && a.status === "working");
-      if (workingSub) {
+      let matchingSub = null;
+
+      // Try to identify which subagent stopped using available data
+      const subDesc = data.description || data.subagent_type || null;
+      if (subDesc) {
+        const namePrefix = subDesc.length > 57 ? subDesc.slice(0, 57) : subDesc;
+        matchingSub = subagents.find(
+          (a) => a.type === "subagent" && a.status === "working" && a.name.startsWith(namePrefix)
+        );
+      }
+
+      if (!matchingSub) {
+        const prompt = data.prompt ? data.prompt.slice(0, 500) : null;
+        if (prompt) {
+          matchingSub = subagents.find(
+            (a) => a.type === "subagent" && a.status === "working" && a.task === prompt
+          );
+        }
+      }
+
+      // Fallback: oldest working subagent
+      if (!matchingSub) {
+        matchingSub = subagents.find((a) => a.type === "subagent" && a.status === "working");
+      }
+
+      if (matchingSub) {
         stmts.updateAgent.run(
           null,
           "completed",
@@ -154,10 +195,26 @@ const processEvent = db.transaction((hookType, data) => {
           null,
           new Date().toISOString(),
           null,
-          workingSub.id
+          matchingSub.id
         );
-        broadcast("agent_updated", stmts.getAgent.get(workingSub.id));
-        agentId = workingSub.id;
+        broadcast("agent_updated", stmts.getAgent.get(matchingSub.id));
+        agentId = matchingSub.id;
+        summary = `Subagent completed: ${matchingSub.name}`;
+
+        // If all subagents done, complete the session
+        const remainingWorking = subagents.filter(
+          (a) => a.type === "subagent" && a.status === "working" && a.id !== matchingSub.id
+        );
+        if (remainingWorking.length === 0) {
+          const session = stmts.getSession.get(sessionId);
+          if (session && session.status === "active") {
+            const currentMain = getMainAgent(sessionId);
+            if (!currentMain || currentMain.status !== "working") {
+              stmts.updateSession.run(null, "completed", new Date().toISOString(), null, sessionId);
+              broadcast("session_updated", stmts.getSession.get(sessionId));
+            }
+          }
+        }
       }
       break;
     }

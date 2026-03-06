@@ -544,15 +544,15 @@
               <h3>Kanban Board</h3>
               <p>
                 5-column agent status board (Idle / Connected / Working / Completed / Error) with
-                horizontal scroll on overflow.
+                paginated columns (10 per page) and horizontal scroll on overflow.
               </p>
             </div>
             <div class="feature-card">
               <div class="feature-icon ic-amber">≡</div>
               <h3>Sessions Table</h3>
               <p>
-                Searchable, filterable table of all sessions with status badges, agent counts, and
-                duration.
+                Searchable, filterable, paginated table of all sessions with status badges, agent
+                counts, and duration.
               </p>
             </div>
             <div class="feature-card">
@@ -567,7 +567,8 @@
               <div class="feature-icon ic-pink">⊲</div>
               <h3>Activity Feed</h3>
               <p>
-                Real-time streaming event log with pause/resume — new events buffer while paused.
+                Real-time streaming event log with pause/resume, pagination, and buffering while
+                paused.
               </p>
             </div>
             <div class="feature-card">
@@ -592,6 +593,22 @@
               <p>
                 Standalone CLI statusline showing model, user, git branch, context window bar, and
                 token counts.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-emerald">⟳</div>
+              <h3>History Import</h3>
+              <p>
+                Automatically imports legacy sessions from <code>~/.claude/</code> on server
+                startup with correct historical timestamps.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-violet">⊜</div>
+              <h3>Background Agents</h3>
+              <p>
+                Correctly tracks backgrounded subagents without premature completion. Sessions stay
+                active until the last subagent finishes.
               </p>
             </div>
           </div>
@@ -622,30 +639,33 @@
                   <td><code>PostToolUse</code></td>
                   <td>Tool execution completes</td>
                   <td>
-                    Agent →
-                    <span class="status-chip chip-connected"
-                      ><span class="chip-dot"></span>Connected</span
-                    >, <code>current_tool</code> cleared.
+                    <code>current_tool</code> cleared. Agent stays
+                    <span class="status-chip chip-working"
+                      ><span class="chip-dot"></span>Working</span
+                    > (no status change).
                   </td>
                 </tr>
                 <tr>
                   <td><code>Stop</code></td>
-                  <td>Session ends (normal)</td>
+                  <td>Session/turn ended</td>
                   <td>
-                    All agents →
+                    Main agent →
+                    <span class="status-chip chip-idle"
+                      ><span class="chip-dot"></span>Idle</span
+                    > if subagents still running, else
                     <span class="status-chip chip-completed"
                       ><span class="chip-dot"></span>Completed</span
-                    >, session closed. Token usage recorded.
+                    >. Running subagents are preserved. Token usage recorded.
                   </td>
                 </tr>
                 <tr>
                   <td><code>SubagentStop</code></td>
-                  <td>Subagent finishes</td>
+                  <td>Background agent finished</td>
                   <td>
-                    Most recent working subagent →
+                    Matched subagent →
                     <span class="status-chip chip-completed"
                       ><span class="chip-dot"></span>Completed</span
-                    >.
+                    >. Auto-completes session when the last subagent finishes.
                   </td>
                 </tr>
                 <tr>
@@ -1009,15 +1029,14 @@ npm run dev
             <!-- prettier-ignore -->
             <div class="mermaid">
               stateDiagram-v2
-                [*] --> idle: Agent created
-                idle --> connected: Session established
-                connected --> working: Tool use started (PreToolUse)
-                working --> connected: Tool use finished (PostToolUse)
-                working --> working: Different tool started
-                connected --> completed: Session ended (Stop)
-                working --> completed: Session ended (Stop)
+                [*] --> connected: Agent created
+                connected --> working: PreToolUse
+                working --> working: PreToolUse (different tool)
+                working --> idle: Stop (subagents still running)
+                working --> completed: Stop (no subagents)
+                idle --> idle: Tool events from subagents
+                idle --> completed: Last SubagentStop
                 working --> error: Error occurred
-                idle --> completed: Session ended
                 completed --> [*]
                 error --> [*]
             </div>
@@ -1030,8 +1049,9 @@ npm run dev
             <div class="mermaid">
               stateDiagram-v2
                 [*] --> active: First hook event received
-                active --> completed: Stop hook (normal exit)
-                active --> error: Stop hook (error exit)
+                active --> active: Stop (subagents still running)
+                active --> completed: Stop (no subagents) / last SubagentStop
+                active --> error: Stop hook (error)
                 active --> abandoned: No activity timeout
                 completed --> [*]
                 error --> [*]
@@ -1065,7 +1085,7 @@ npm run dev
                 TX->>TX: ensureSession(session_id)
                 Note over TX: Creates session + main agent<br/>on first contact
                 TX->>TX: process by hook_type
-                Note over TX: PreToolUse -> agent working<br/>PostToolUse -> agent connected<br/>Stop -> all completed + token usage
+                Note over TX: PreToolUse -> agent working<br/>PostToolUse -> clear current_tool<br/>Stop -> idle if subagents, else completed<br/>SubagentStop -> complete matched subagent
                 TX->>TX: insertEvent(...)
                 TX->>TX: COMMIT
                 API->>WS: broadcast("agent_updated", agent)
