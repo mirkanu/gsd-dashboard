@@ -49,6 +49,25 @@ body {
   font-size: 15px;
 }
 
+/* ─── Scroll Reveal ─────────────────────────────────────────────────────── */
+.reveal-on-scroll {
+  --reveal-delay: 0ms;
+  opacity: 0;
+  transform: translate3d(0, 24px, 0) scale(0.985);
+  filter: blur(10px);
+  transition:
+    opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay),
+    transform 0.72s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay),
+    filter 0.72s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay);
+  will-change: opacity, transform, filter;
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  filter: blur(0);
+}
+
 /* ─── Layout ────────────────────────────────────────────────────────────── */
 .wiki-layout {
   display: flex;
@@ -933,6 +952,20 @@ tr:hover td {
   }
   .hero h1 {
     font-size: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+    will-change: auto;
   }
 }
 
