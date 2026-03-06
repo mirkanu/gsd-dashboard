@@ -2345,7 +2345,7 @@ npm run install-hooks</code></pre>
 
         const saved = localStorage.getItem(key);
         if (saved === null) {
-          applyCollapsed(false);
+          applyCollapsed(mobileQuery.matches);
         } else {
           applyCollapsed(saved === "1");
         }

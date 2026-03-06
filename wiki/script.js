@@ -93,6 +93,64 @@ mermaid.initialize({
   sections.forEach((s) => observer.observe(s));
 })();
 
+/* ─── Scroll reveal for content blocks ──────────────────────────────────── */
+(function () {
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const selectors = [
+    "#hero > *",
+    "main section > *",
+    "main section .feature-grid > *",
+    "main section .quick-start-grid > *",
+    "main section .stats-row > *",
+    "main section .pipeline > *",
+    "main section .route-list > *",
+    "main .wiki-footer > *",
+  ];
+
+  const targets = Array.from(document.querySelectorAll(selectors.join(","))).filter(
+    (element, index, collection) => collection.indexOf(element) === index
+  );
+  const targetSet = new Set(targets);
+
+  if (targets.length === 0) return;
+
+  const revealImmediately = () => {
+    targets.forEach((target) => target.classList.add("is-visible"));
+  };
+
+  targets.forEach((target) => {
+    target.classList.add("reveal-on-scroll");
+
+    const parent = target.parentElement;
+    if (!parent) return;
+
+    const revealSiblings = Array.from(parent.children).filter((child) => targetSet.has(child));
+    const revealIndex = revealSiblings.indexOf(target);
+    target.style.setProperty("--reveal-delay", `${Math.min(revealIndex * 70, 350)}ms`);
+  });
+
+  if (prefersReducedMotion.matches || !("IntersectionObserver" in window)) {
+    revealImmediately();
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    },
+    {
+      rootMargin: "0px 0px -12% 0px",
+      threshold: 0.12,
+    }
+  );
+
+  targets.forEach((target) => observer.observe(target));
+})();
+
 /* ─── Sidebar search filter ──────────────────────────────────────────────── */
 (function () {
   const input = document.getElementById("sidebar-search");
