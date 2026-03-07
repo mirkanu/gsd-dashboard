@@ -197,6 +197,21 @@ stateDiagram-v2
     abandoned --> [*]
 ```
 
+### Cost Calculation Flow
+
+```mermaid
+flowchart LR
+    TU["token_usage rows<br/>(per session × model)"] --> GROUP["Group by model"]
+    PR["model_pricing rules<br/>(pattern-based)"] --> SORT["Sort by specificity<br/>(longest pattern first)"]
+    GROUP --> MATCH{"Match model<br/>to pricing rule"}
+    SORT --> MATCH
+    MATCH --> CALC["cost = Σ (tokens / 1M) × rate<br/>for input, output, cache_read, cache_write"]
+    CALC --> RESULT["{ total_cost, breakdown[] }"]
+    style TU fill:#003B57,stroke:#005f8a,color:#fff
+    style PR fill:#6366f1,stroke:#818cf8,color:#fff
+    style RESULT fill:#10b981,stroke:#34d399,color:#fff
+```
+
 ---
 
 ## Configuration
@@ -320,6 +335,16 @@ Connect to `ws://localhost:4820/ws` to receive real-time push messages:
 
 **Message types:** `session_created`, `session_updated`, `agent_created`, `agent_updated`, `new_event`
 
+```mermaid
+stateDiagram-v2
+    [*] --> Connecting: Component mounts
+    Connecting --> Connected: onopen
+    Connected --> Closed: onclose / onerror
+    Closed --> Connecting: setTimeout(2000ms)
+    Connected --> [*]: Component unmounts
+    Closed --> [*]: Component unmounts
+```
+
 ---
 
 ## Hook Events
@@ -342,6 +367,64 @@ The dashboard processes these Claude Code hook types:
 - **Location:** `data/dashboard.db`
 - **Journal mode:** WAL (concurrent reads during writes)
 - **Reset:** Delete `data/dashboard.db` to clear all data
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    sessions ||--o{ agents : has
+    sessions ||--o{ events : has
+    sessions ||--o{ token_usage : tracks
+    agents ||--o{ events : generates
+    agents ||--o{ agents : spawns
+
+    sessions {
+        TEXT id PK "UUID"
+        TEXT name "Human-readable label"
+        TEXT status "active|completed|error|abandoned"
+        TEXT cwd "Working directory"
+        TEXT model "Claude model ID"
+        TEXT started_at "ISO 8601"
+        TEXT ended_at "ISO 8601 or NULL"
+        TEXT metadata "JSON blob"
+    }
+
+    agents {
+        TEXT id PK "UUID or session_id-main"
+        TEXT session_id FK
+        TEXT name "Display name"
+        TEXT type "main|subagent"
+        TEXT status "idle|connected|working|completed|error"
+        TEXT current_tool "Active tool or NULL"
+    }
+
+    events {
+        INTEGER id PK "Auto-increment"
+        TEXT session_id FK
+        TEXT agent_id FK
+        TEXT event_type "PreToolUse|PostToolUse|Stop|etc"
+        TEXT tool_name "Tool that fired the event"
+        TEXT created_at "ISO 8601"
+    }
+
+    token_usage {
+        TEXT session_id PK "Composite PK with model"
+        TEXT model PK "Model identifier"
+        INTEGER input_tokens
+        INTEGER output_tokens
+        INTEGER cache_read_tokens
+        INTEGER cache_write_tokens
+    }
+
+    model_pricing {
+        TEXT model_pattern PK "SQL LIKE pattern"
+        TEXT display_name "Human-readable name"
+        REAL input_per_mtok "USD per M input tokens"
+        REAL output_per_mtok "USD per M output tokens"
+        REAL cache_read_per_mtok "USD per M cache reads"
+        REAL cache_write_per_mtok "USD per M cache writes"
+    }
+```
 
 ---
 
@@ -367,6 +450,106 @@ See [`statusline/README.md`](statusline/README.md) for installation instructions
 <p align="center">
   <img src="images/statusline.png" alt="Statusline Demo" width="600">
 </p>
+
+---
+
+## Server Architecture
+
+```mermaid
+graph TD
+    INDEX["server/index.js<br/>Express app + HTTP server"]
+    DB["server/db.js<br/>SQLite + prepared statements"]
+    WS["server/websocket.js<br/>WS server + broadcast"]
+    HOOKS["routes/hooks.js<br/>Hook event processing"]
+    SESSIONS["routes/sessions.js"]
+    AGENTS["routes/agents.js"]
+    EVENTS["routes/events.js"]
+    STATS["routes/stats.js"]
+    ANALYTICS["routes/analytics.js"]
+    PRICING["routes/pricing.js<br/>Cost calculation"]
+    SETTINGS["routes/settings.js<br/>System management"]
+
+    INDEX --> DB & WS
+    INDEX --> HOOKS & SESSIONS & AGENTS & EVENTS & STATS & ANALYTICS & PRICING & SETTINGS
+    HOOKS --> DB & WS
+    SESSIONS --> DB & WS
+    AGENTS --> DB & WS
+    EVENTS --> DB
+    STATS --> DB
+    ANALYTICS --> DB
+    PRICING --> DB
+    SETTINGS --> DB
+
+    style INDEX fill:#6366f1,stroke:#818cf8,color:#fff
+    style DB fill:#003B57,stroke:#005f8a,color:#fff
+    style WS fill:#10b981,stroke:#34d399,color:#fff
+```
+
+---
+
+## Client Routing
+
+```mermaid
+graph LR
+    ROOT["/ (index)"] --> DASH["Dashboard<br/>stats + agents + events"]
+    K["/kanban"] --> KANBAN["KanbanBoard<br/>5-column agent board"]
+    S["/sessions"] --> SESS["Sessions<br/>filterable table"]
+    D["/sessions/:id"] --> DETAIL["SessionDetail<br/>agents + timeline + cost"]
+    A["/activity"] --> ACT["ActivityFeed<br/>streaming event log"]
+    AN["/analytics"] --> ANALYTICS["Analytics<br/>tokens + heatmap + trends"]
+    ST["/settings"] --> SETTINGS["Settings<br/>pricing + hooks + export"]
+
+    ALL["All routes"] --> LAYOUT["Layout wrapper<br/>(Sidebar + Outlet)"]
+
+    style ALL fill:#6366f1,stroke:#818cf8,color:#fff
+    style LAYOUT fill:#1a1a28,stroke:#2a2a3d,color:#e4e4ed
+```
+
+---
+
+## Hook Handler Flow
+
+```mermaid
+flowchart TD
+    START["Claude Code fires hook"] --> STDIN["Read stdin to EOF"]
+    STDIN --> PARSE{"Parse JSON?"}
+    PARSE -->|Success| POST["POST to 127.0.0.1:4820<br/>/api/hooks/event"]
+    PARSE -->|Failure| WRAP["Wrap raw input as JSON"]
+    WRAP --> POST
+    POST --> RESP{"Response?"}
+    RESP -->|200 OK| EXIT0["exit(0)"]
+    RESP -->|Error| EXIT0
+    RESP -->|Timeout 3s| DESTROY["Destroy request"] --> EXIT0
+    SAFETY["Safety net: setTimeout 5s"] --> EXIT0
+
+    style EXIT0 fill:#10b981,stroke:#34d399,color:#fff
+    style START fill:#6366f1,stroke:#818cf8,color:#fff
+```
+
+---
+
+## Deployment Modes
+
+```mermaid
+graph LR
+    subgraph dev["Development — 2 processes"]
+        D_CMD["npm run dev"] --> D_SRV["Express :4820<br/>node --watch"]
+        D_CMD --> D_VITE["Vite :5173<br/>HMR"]
+        D_BROWSER["Browser"] --> D_VITE
+        D_VITE -->|"proxy /api + /ws"| D_SRV
+    end
+
+    subgraph prod["Production — 1 process"]
+        P_BUILD["npm run build"] --> P_DIST["client/dist/"]
+        P_START["npm start"] --> P_SRV["Express :4820<br/>serves static + API"]
+        P_BROWSER["Browser"] --> P_SRV
+    end
+
+    style D_VITE fill:#646CFF,stroke:#818cf8,color:#fff
+    style D_SRV fill:#339933,stroke:#5cb85c,color:#fff
+    style P_SRV fill:#339933,stroke:#5cb85c,color:#fff
+    style P_DIST fill:#646CFF,stroke:#818cf8,color:#fff
+```
 
 ---
 
