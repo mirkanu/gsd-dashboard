@@ -72,6 +72,9 @@ graph LR
 | **Auto-Discovery**    | Sessions and agents are created automatically from hook events               |
 | **History Import**    | Automatically imports legacy sessions from `~/.claude/` on server startup    |
 | **Background Agents** | Correctly tracks backgrounded subagents without premature completion         |
+| **Cost Tracking**     | Per-model cost estimation with configurable pricing rules and per-session breakdowns |
+| **Settings**          | System info, hook status, model pricing management, data export, session cleanup |
+| **Responsive Design** | Mobile-friendly layouts with stacking grids, scrollable tables, and collapsible sidebar |
 | **Seed Data**         | Built-in seed script for demos and development                               |
 | **Statusline**        | Color-coded CLI statusline showing model, context usage, git branch, tokens  |
 
@@ -219,6 +222,7 @@ stateDiagram-v2
 | `npm run install-hooks` | Configure Claude Code hooks in `~/.claude/settings.json`   |
 | `npm run seed`          | Populate database with sample data                         |
 | `npm run import-history`| Import legacy sessions from `~/.claude/` (also runs on startup) |
+| `npm run clear-data`    | Delete all sessions, agents, events, and token usage            |
 
 ---
 
@@ -280,6 +284,27 @@ All endpoints return JSON. Error responses follow the shape `{ error: { code, me
   }
 }
 ```
+
+### Pricing
+
+| Method   | Path                     | Description                              |
+| -------- | ------------------------ | ---------------------------------------- |
+| `GET`    | `/api/pricing`           | List all pricing rules                   |
+| `PUT`    | `/api/pricing`           | Create or update a pricing rule          |
+| `DELETE` | `/api/pricing/:pattern`  | Delete a pricing rule                    |
+| `GET`    | `/api/pricing/cost`      | Total cost across all sessions           |
+| `GET`    | `/api/pricing/cost/:id`  | Cost breakdown for a specific session    |
+
+### Settings
+
+| Method | Path                           | Description                                      |
+| ------ | ------------------------------ | ------------------------------------------------ |
+| `GET`  | `/api/settings/info`           | System info, DB stats, hook status               |
+| `POST` | `/api/settings/clear-data`     | Delete all sessions, agents, events, token usage |
+| `POST` | `/api/settings/reinstall-hooks`| Reinstall Claude Code hooks                      |
+| `POST` | `/api/settings/reset-pricing`  | Reset pricing to defaults                        |
+| `GET`  | `/api/settings/export`         | Export all data as JSON download                 |
+| `POST` | `/api/settings/cleanup`        | Abandon stale sessions, purge old data           |
 
 ### WebSocket
 
@@ -360,7 +385,9 @@ agent-dashboard/
 |       |-- agents.js            # Agent CRUD
 |       |-- events.js            # Event listing
 |       |-- stats.js             # Aggregate statistics
-|       +-- analytics.js        # Token, tool, and trend analytics
+|       |-- analytics.js        # Token, tool, and trend analytics
+|       |-- pricing.js            # Model pricing CRUD and cost calculation
+|       +-- settings.js           # System info, data management, export, cleanup
 |-- client/
 |   |-- package.json             # Client dependencies
 |   |-- index.html               # HTML entry point
@@ -391,7 +418,8 @@ agent-dashboard/
 |           |-- Sessions.tsx     # Sessions table
 |           |-- SessionDetail.tsx # Single session deep dive
 |           |-- ActivityFeed.tsx # Real-time event stream
-|           +-- Analytics.tsx   # Token usage, heatmap, trends
+|           |-- Analytics.tsx   # Token usage, heatmap, trends
+|           +-- Settings.tsx       # Model pricing, hooks, export, cleanup
 |-- scripts/
 |   |-- hook-handler.js          # Lightweight stdin-to-HTTP forwarder
 |   |-- install-hooks.js         # Auto-configures ~/.claude/settings.json
