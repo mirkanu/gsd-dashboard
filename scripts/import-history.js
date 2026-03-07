@@ -37,10 +37,7 @@ async function parseSessionFile(filePath) {
   const teams = new Set();
   let userMessageCount = 0;
   let assistantMessageCount = 0;
-  let totalInputTokens = 0;
-  let totalOutputTokens = 0;
-  let totalCacheRead = 0;
-  let totalCacheWrite = 0;
+  const tokensByModel = {};
 
   for await (const line of rl) {
     if (!line.trim()) continue;
@@ -69,12 +66,18 @@ async function parseSessionFile(filePath) {
     if (entry.type === "assistant") {
       assistantMessageCount++;
       const msg = entry.message || {};
-      if (!model && msg.model) model = msg.model;
-      const usage = msg.usage || {};
-      totalInputTokens += usage.input_tokens || 0;
-      totalOutputTokens += usage.output_tokens || 0;
-      totalCacheRead += usage.cache_read_input_tokens || 0;
-      totalCacheWrite += usage.cache_creation_input_tokens || 0;
+      const msgModel = msg.model || null;
+      if (!model && msgModel && msgModel !== "<synthetic>") model = msgModel;
+      if (msgModel && msgModel !== "<synthetic>" && msg.usage) {
+        const usage = msg.usage;
+        if (tokensByModel[msgModel] === undefined) {
+          tokensByModel[msgModel] = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+        }
+        tokensByModel[msgModel].input += usage.input_tokens || 0;
+        tokensByModel[msgModel].output += usage.output_tokens || 0;
+        tokensByModel[msgModel].cacheRead += usage.cache_read_input_tokens || 0;
+        tokensByModel[msgModel].cacheWrite += usage.cache_creation_input_tokens || 0;
+      }
     }
   }
 
@@ -98,12 +101,7 @@ async function parseSessionFile(filePath) {
     teams: [...teams],
     userMessages: userMessageCount,
     assistantMessages: assistantMessageCount,
-    tokens: {
-      input: totalInputTokens,
-      output: totalOutputTokens,
-      cacheRead: totalCacheRead,
-      cacheWrite: totalCacheWrite,
-    },
+    tokensByModel,
   };
 }
 
@@ -227,14 +225,17 @@ function importSession(dbModule, session) {
     );
   }
 
-  if (session.tokens.input > 0 || session.tokens.output > 0) {
-    stmts.upsertTokenUsage.run(
-      session.sessionId,
-      session.tokens.input,
-      session.tokens.output,
-      session.tokens.cacheRead,
-      session.tokens.cacheWrite
-    );
+  for (const [tokenModel, tokens] of Object.entries(session.tokensByModel)) {
+    if (tokens.input > 0 || tokens.output > 0 || tokens.cacheRead > 0 || tokens.cacheWrite > 0) {
+      stmts.upsertTokenUsage.run(
+        session.sessionId,
+        tokenModel,
+        tokens.input,
+        tokens.output,
+        tokens.cacheRead,
+        tokens.cacheWrite
+      );
+    }
   }
 
   return { skipped: false };
@@ -328,8 +329,12 @@ if (require.main === module) {
               console.log(`  SKIP ${file} (empty)`);
               continue;
             }
+            const totalTok = Object.values(session.tokensByModel).reduce(
+              (s, t) => s + t.input + t.output,
+              0
+            );
             console.log(
-              `  ${session.sessionId.slice(0, 12)}... | ${session.name.slice(0, 40).padEnd(40)} | msgs: ${session.userMessages}/${session.assistantMessages} | teams: ${session.teams.length} | tokens: ${session.tokens.input + session.tokens.output}`
+              `  ${session.sessionId.slice(0, 12)}... | ${session.name.slice(0, 40).padEnd(40)} | msgs: ${session.userMessages}/${session.assistantMessages} | teams: ${session.teams.length} | models: ${Object.keys(session.tokensByModel).join(",")} | tokens: ${totalTok}`
             );
           } catch (err) {
             console.error(`  ERROR ${file}: ${err.message}`);

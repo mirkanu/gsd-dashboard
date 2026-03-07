@@ -1,4 +1,12 @@
-import type { Agent, Analytics, DashboardEvent, Session, Stats } from "./types";
+import type {
+  Agent,
+  Analytics,
+  CostResult,
+  DashboardEvent,
+  ModelPricing,
+  Session,
+  Stats,
+} from "./types";
 
 const BASE = "/api";
 
@@ -59,5 +67,57 @@ export const api = {
 
   analytics: {
     get: () => request<Analytics>("/analytics"),
+  },
+
+  settings: {
+    info: () =>
+      request<{
+        db: { path: string; size: number; counts: Record<string, number> };
+        hooks: { installed: boolean; path: string; hooks: Record<string, boolean> };
+        server: { uptime: number; node_version: string; platform: string; ws_connections: number };
+      }>("/settings/info"),
+    clearData: () =>
+      request<{ ok: boolean; cleared: Record<string, number> }>("/settings/clear-data", {
+        method: "POST",
+      }),
+    reimport: () =>
+      request<{ ok: boolean; imported: number; skipped: number; errors: number }>(
+        "/settings/reimport",
+        { method: "POST" }
+      ),
+    reinstallHooks: () =>
+      request<{ ok: boolean; hooks: { installed: boolean; hooks: Record<string, boolean> } }>(
+        "/settings/reinstall-hooks",
+        { method: "POST" }
+      ),
+    resetPricing: () =>
+      request<{ ok: boolean; pricing: ModelPricing[] }>("/settings/reset-pricing", {
+        method: "POST",
+      }),
+    exportData: () => `${BASE}/settings/export`,
+    cleanup: (params: { abandon_hours?: number; purge_days?: number }) =>
+      request<{
+        ok: boolean;
+        abandoned: number;
+        purged_sessions: number;
+        purged_events: number;
+        purged_agents: number;
+      }>("/settings/cleanup", { method: "POST", body: JSON.stringify(params) }),
+  },
+
+  pricing: {
+    list: () => request<{ pricing: ModelPricing[] }>("/pricing"),
+    upsert: (data: Omit<ModelPricing, "updated_at">) =>
+      request<{ pricing: ModelPricing }>("/pricing", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (pattern: string) =>
+      request<{ ok: boolean }>(`/pricing/${encodeURIComponent(pattern)}`, {
+        method: "DELETE",
+      }),
+    totalCost: () => request<CostResult>("/pricing/cost"),
+    sessionCost: (sessionId: string) =>
+      request<CostResult>(`/pricing/cost/${encodeURIComponent(sessionId)}`),
   },
 };

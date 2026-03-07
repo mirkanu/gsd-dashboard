@@ -108,7 +108,7 @@ export function ActivityFeed() {
       ) : (
         <>
           <div className="card overflow-hidden">
-            <div className="divide-y divide-border max-h-[calc(100vh-260px)] overflow-y-auto">
+            <div className="divide-y divide-border max-h-[calc(100vh-260px)] overflow-y-auto overflow-x-auto">
               {events.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((event, i) => (
                 <div
                   key={event.id ?? i}

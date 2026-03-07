@@ -56,12 +56,24 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS token_usage (
-    session_id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    model TEXT NOT NULL DEFAULT 'unknown',
     input_tokens INTEGER NOT NULL DEFAULT 0,
     output_tokens INTEGER NOT NULL DEFAULT 0,
     cache_read_tokens INTEGER NOT NULL DEFAULT 0,
     cache_write_tokens INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (session_id, model),
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS model_pricing (
+    model_pattern TEXT PRIMARY KEY,
+    display_name TEXT NOT NULL,
+    input_per_mtok REAL NOT NULL DEFAULT 0,
+    output_per_mtok REAL NOT NULL DEFAULT 0,
+    cache_read_per_mtok REAL NOT NULL DEFAULT 0,
+    cache_write_per_mtok REAL NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
   CREATE INDEX IF NOT EXISTS idx_agents_session ON agents(session_id);
@@ -72,6 +84,70 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
   CREATE INDEX IF NOT EXISTS idx_sessions_started ON sessions(started_at DESC);
 `);
+
+// Seed default model pricing if table is empty
+const pricingCount = db.prepare("SELECT COUNT(*) as c FROM model_pricing").get();
+if (pricingCount.c === 0) {
+  const seedPricing = db.prepare(
+    "INSERT OR IGNORE INTO model_pricing (model_pattern, display_name, input_per_mtok, output_per_mtok, cache_read_per_mtok, cache_write_per_mtok) VALUES (?, ?, ?, ?, ?, ?)"
+  );
+  // Columns: pattern, display_name, input, output, cache_read (hits & refreshes), cache_write (5m ephemeral)
+  // Each model gets its own explicit row — no catch-all grouping
+  const defaults = [
+    // Opus family
+    ["claude-opus-4-6%", "Claude Opus 4.6", 5, 25, 0.5, 6.25],
+    ["claude-opus-4-5%", "Claude Opus 4.5", 5, 25, 0.5, 6.25],
+    ["claude-opus-4-1%", "Claude Opus 4.1", 15, 75, 1.5, 18.75],
+    ["claude-opus-4-2%", "Claude Opus 4", 15, 75, 1.5, 18.75],
+    // Sonnet family
+    ["claude-sonnet-4-6%", "Claude Sonnet 4.6", 3, 15, 0.3, 3.75],
+    ["claude-sonnet-4-5%", "Claude Sonnet 4.5", 3, 15, 0.3, 3.75],
+    ["claude-sonnet-4-2%", "Claude Sonnet 4", 3, 15, 0.3, 3.75],
+    ["claude-3-7-sonnet%", "Claude Sonnet 3.7", 3, 15, 0.3, 3.75],
+    ["claude-3-5-sonnet%", "Claude Sonnet 3.5", 3, 15, 0.3, 3.75],
+    // Haiku family
+    ["claude-haiku-4-5%", "Claude Haiku 4.5", 1, 5, 0.1, 1.25],
+    ["claude-3-5-haiku%", "Claude Haiku 3.5", 0.8, 4, 0.08, 1],
+    ["claude-3-haiku%", "Claude Haiku 3", 0.25, 1.25, 0.03, 0.3],
+    // Legacy
+    ["claude-3-opus%", "Claude Opus 3", 15, 75, 1.5, 18.75],
+  ];
+  for (const [pattern, name, inp, out, cr, cw] of defaults) {
+    seedPricing.run(pattern, name, inp, out, cr, cw);
+  }
+}
+
+// Migrate: if token_usage has rows without model column (old schema), add it
+try {
+  db.prepare("SELECT model FROM token_usage LIMIT 1").get();
+} catch {
+  // Old schema — recreate table with model column
+  db.pragma("foreign_keys = OFF");
+  db.prepare("ALTER TABLE token_usage RENAME TO token_usage_old").run();
+  db.prepare(
+    `
+    CREATE TABLE token_usage (
+      session_id TEXT NOT NULL,
+      model TEXT NOT NULL DEFAULT 'unknown',
+      input_tokens INTEGER NOT NULL DEFAULT 0,
+      output_tokens INTEGER NOT NULL DEFAULT 0,
+      cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+      cache_write_tokens INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (session_id, model),
+      FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+    )
+  `
+  ).run();
+  db.prepare(
+    `
+    INSERT INTO token_usage (session_id, model, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens)
+      SELECT tu.session_id, COALESCE(s.model, 'unknown'), tu.input_tokens, tu.output_tokens, tu.cache_read_tokens, tu.cache_write_tokens
+      FROM token_usage_old tu LEFT JOIN sessions s ON s.id = tu.session_id
+  `
+  ).run();
+  db.prepare("DROP TABLE token_usage_old").run();
+  db.pragma("foreign_keys = ON");
+}
 
 const stmts = {
   getSession: db.prepare("SELECT * FROM sessions WHERE id = ?"),
@@ -128,9 +204,9 @@ const stmts = {
   sessionStatusCounts: db.prepare("SELECT status, COUNT(*) as count FROM sessions GROUP BY status"),
 
   upsertTokenUsage: db.prepare(`
-    INSERT INTO token_usage (session_id, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens)
-    VALUES (?, ?, ?, ?, ?)
-    ON CONFLICT(session_id) DO UPDATE SET
+    INSERT INTO token_usage (session_id, model, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(session_id, model) DO UPDATE SET
       input_tokens = input_tokens + excluded.input_tokens,
       output_tokens = output_tokens + excluded.output_tokens,
       cache_read_tokens = cache_read_tokens + excluded.cache_read_tokens,
@@ -144,6 +220,28 @@ const stmts = {
       COALESCE(SUM(cache_write_tokens), 0) as total_cache_write
     FROM token_usage
   `),
+  getTokensBySession: db.prepare(
+    "SELECT model, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens FROM token_usage WHERE session_id = ?"
+  ),
+
+  // Model pricing
+  listPricing: db.prepare("SELECT * FROM model_pricing ORDER BY display_name ASC"),
+  getPricing: db.prepare("SELECT * FROM model_pricing WHERE model_pattern = ?"),
+  upsertPricing: db.prepare(`
+    INSERT INTO model_pricing (model_pattern, display_name, input_per_mtok, output_per_mtok, cache_read_per_mtok, cache_write_per_mtok, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+    ON CONFLICT(model_pattern) DO UPDATE SET
+      display_name = excluded.display_name,
+      input_per_mtok = excluded.input_per_mtok,
+      output_per_mtok = excluded.output_per_mtok,
+      cache_read_per_mtok = excluded.cache_read_per_mtok,
+      cache_write_per_mtok = excluded.cache_write_per_mtok,
+      updated_at = datetime('now')
+  `),
+  deletePricing: db.prepare("DELETE FROM model_pricing WHERE model_pattern = ?"),
+  matchPricing: db.prepare(
+    "SELECT * FROM model_pricing WHERE ? LIKE REPLACE(model_pattern, '%', '%') LIMIT 1"
+  ),
   toolUsageCounts: db.prepare(`
     SELECT tool_name, COUNT(*) as count
     FROM events

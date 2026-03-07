@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FolderOpen, Bot, Zap, Activity, ArrowRight } from "lucide-react";
+import { FolderOpen, Bot, Zap, DollarSign, Activity, ArrowRight } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
 import { StatCard } from "../components/StatCard";
@@ -15,20 +15,23 @@ export function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [activeAgents, setActiveAgents] = useState<Agent[]>([]);
   const [recentEvents, setRecentEvents] = useState<DashboardEvent[]>([]);
+  const [totalCost, setTotalCost] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const [statsRes, workingRes, connectedRes, idleRes, eventsRes] = await Promise.all([
+      const [statsRes, workingRes, connectedRes, idleRes, eventsRes, costRes] = await Promise.all([
         api.stats.get(),
         api.agents.list({ status: "working", limit: 20 }),
         api.agents.list({ status: "connected", limit: 20 }),
         api.agents.list({ status: "idle", limit: 20 }),
         api.events.list({ limit: 15 }),
+        api.pricing.totalCost(),
       ]);
       setStats(statsRes);
       setActiveAgents([...workingRes.agents, ...connectedRes.agents, ...idleRes.agents]);
       setRecentEvents(eventsRes.events);
+      setTotalCost(costRes.total_cost);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
@@ -77,7 +80,7 @@ export function Dashboard() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard
           label="Total Sessions"
           value={stats?.total_sessions ?? "-"}
@@ -102,9 +105,15 @@ export function Dashboard() {
           icon={Activity}
           accentColor="text-violet-400"
         />
+        <StatCard
+          label="Total Cost"
+          value={totalCost !== null ? `$${totalCost.toFixed(2)}` : "-"}
+          icon={DollarSign}
+          accentColor="text-emerald-400"
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Active agents */}
         <div>
           <div className="flex items-center justify-between mb-4">

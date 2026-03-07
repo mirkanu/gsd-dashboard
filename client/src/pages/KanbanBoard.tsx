@@ -79,7 +79,7 @@ export function KanbanBoard() {
         </button>
       </div>
 
-      <div className="flex gap-4 min-h-[600px] overflow-x-auto pb-4">
+      <div className="flex gap-4 min-h-[600px] overflow-x-auto pb-4 -mx-8 px-8">
         {COLUMNS.map((status) => {
           const config = STATUS_CONFIG[status];
           const items = grouped[status];

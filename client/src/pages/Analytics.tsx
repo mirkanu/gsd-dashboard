@@ -1,19 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-  RefreshCw,
-  Download,
-  Zap,
-  Bot,
-  FolderOpen,
-  Activity,
-  Cpu,
-  Github,
-  Globe,
-} from "lucide-react";
+import { RefreshCw, Download, Zap, Bot, FolderOpen, Cpu, DollarSign } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
 import { formatDateTime } from "../lib/format";
-import type { Analytics as AnalyticsData } from "../lib/types";
+import type { Analytics as AnalyticsData, CostResult } from "../lib/types";
 
 function fmt(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -282,14 +272,19 @@ function StatPill({
 
 export function Analytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
+  const [costData, setCostData] = useState<CostResult | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"tokens" | "workflow" | "productivity">("tokens");
 
   const load = useCallback(async () => {
     try {
-      const result = await api.analytics.get();
+      const [result, cost] = await Promise.all([
+        api.analytics.get(),
+        api.pricing.totalCost().catch(() => null),
+      ]);
       setData(result);
+      setCostData(cost);
       setLastUpdate(new Date());
     } finally {
       setLoading(false);
@@ -363,11 +358,6 @@ export function Analytics() {
   const maxAgentTypeCount = data?.agent_types[0]?.count ?? 1;
   const maxEventTypeCount = data?.event_types[0]?.count ?? 1;
 
-  const adoptionPct =
-    data && data.overview.total_agents > 0
-      ? Math.round((data.total_subagents / data.overview.total_agents) * 100)
-      : 0;
-
   const cacheHitPct =
     totalTokens > 0 ? Math.round(((data?.tokens.total_cache_read ?? 0) / totalTokens) * 100) : 0;
 
@@ -424,7 +414,7 @@ export function Analytics() {
       </div>
 
       {/* Key stats */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatPill
           label="Total Sessions"
           value={fmt(data?.overview.total_sessions ?? 0)}
@@ -447,24 +437,28 @@ export function Analytics() {
           color="text-violet-400"
         />
         <StatPill
+          label="Total Cost"
+          value={costData ? `$${costData.total_cost.toFixed(2)}` : "$0.00"}
+          sub={
+            costData
+              ? `${costData.breakdown.length} model${costData.breakdown.length !== 1 ? "s" : ""}`
+              : "No data"
+          }
+          icon={DollarSign}
+          color="text-emerald-400"
+        />
+        <StatPill
           label="Total Events"
           value={fmt(data?.overview.total_events ?? 0)}
           sub={`~${data?.avg_events_per_session ?? 0} per session`}
           icon={Zap}
           color="text-yellow-400"
         />
-        <StatPill
-          label="Subagent Uses"
-          value={fmt(data?.total_subagents ?? 0)}
-          sub={`${adoptionPct}% of agents`}
-          icon={Activity}
-          color="text-accent"
-        />
       </div>
 
       {/* Activity heatmap + 30-day sparkline */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="card p-5 col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="card p-5 lg:col-span-2 overflow-x-auto">
           <h3 className="text-sm font-medium text-gray-300 mb-4">Event Activity — Last 52 Weeks</h3>
           <div className="overflow-x-auto">
             <Heatmap weeks={weeks} />
@@ -520,7 +514,7 @@ export function Analytics() {
         </div>
 
         {activeTab === "tokens" && (
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Token bars */}
             <div className="card p-5">
               <h3 className="text-sm font-medium text-gray-300 mb-5">Token Distribution</h3>
@@ -605,31 +599,51 @@ export function Analytics() {
               )}
             </div>
 
-            {/* Token donut */}
+            {/* Cost by model */}
             <div className="card p-5">
-              <h3 className="text-sm font-medium text-gray-300 mb-5">Token Composition</h3>
-              <DonutChart
-                segments={[
-                  { label: "Input", value: data?.tokens.total_input ?? 0, color: "#3b82f6" },
-                  { label: "Output", value: data?.tokens.total_output ?? 0, color: "#10b981" },
-                  {
-                    label: "Cache Read",
-                    value: data?.tokens.total_cache_read ?? 0,
-                    color: "#8b5cf6",
-                  },
-                  {
-                    label: "Cache Write",
-                    value: data?.tokens.total_cache_write ?? 0,
-                    color: "#f59e0b",
-                  },
-                ].filter((s) => s.value > 0)}
-              />
+              <h3 className="text-sm font-medium text-gray-300 mb-5">Cost by Model</h3>
+              {costData && costData.breakdown.length > 0 ? (
+                <>
+                  <DonutChart
+                    segments={costData.breakdown
+                      .filter((b) => b.cost > 0)
+                      .map((b, i) => ({
+                        label: b.model,
+                        value: Math.round(b.cost * 100),
+                        color:
+                          ["#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#ec4899"][
+                            i % 6
+                          ] ?? "#6b7280",
+                      }))}
+                  />
+                  <div className="mt-4 pt-4 border-t border-border space-y-2">
+                    {costData.breakdown
+                      .filter((b) => b.cost > 0)
+                      .map((b) => (
+                        <div key={b.model} className="flex justify-between text-xs">
+                          <span className="text-gray-400 font-mono truncate">{b.model}</span>
+                          <span className="text-emerald-400 font-mono font-medium ml-2">
+                            ${b.cost.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    <div className="flex justify-between text-xs pt-2 border-t border-border">
+                      <span className="text-gray-300 font-medium">Total</span>
+                      <span className="text-emerald-400 font-mono font-semibold">
+                        ${costData.total_cost.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">No cost data yet.</p>
+              )}
             </div>
           </div>
         )}
 
         {activeTab === "workflow" && (
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Agent type distribution */}
             <div className="card p-5">
               <h3 className="text-sm font-medium text-gray-300 mb-5">Subagent Types</h3>
@@ -683,7 +697,7 @@ export function Analytics() {
         )}
 
         {activeTab === "productivity" && (
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Top tools */}
             <div className="card p-5">
               <h3 className="text-sm font-medium text-gray-300 mb-5">Tool Usage</h3>
@@ -761,31 +775,11 @@ export function Analytics() {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-[11px] text-gray-600 pt-4 border-t border-border">
+      <div className="text-[11px] text-gray-600 pt-4 border-t border-border">
         <span>
           Last updated:{" "}
           <span className="text-gray-500">{formatDateTime(lastUpdate.toISOString())}</span>
         </span>
-        <div className="flex items-center gap-4">
-          <a
-            href="https://github.com/hoangsonww"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-gray-400 transition-colors"
-          >
-            <Github className="w-3 h-3" />
-            github.com/hoangsonww
-          </a>
-          <a
-            href="https://sonnguyenhoang.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-gray-400 transition-colors"
-          >
-            <Globe className="w-3 h-3" />
-            sonnguyenhoang.com
-          </a>
-        </div>
       </div>
     </div>
   );

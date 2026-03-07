@@ -10,6 +10,8 @@ const eventsRouter = require("./routes/events");
 const statsRouter = require("./routes/stats");
 const hooksRouter = require("./routes/hooks");
 const analyticsRouter = require("./routes/analytics");
+const pricingRouter = require("./routes/pricing");
+const settingsRouter = require("./routes/settings");
 
 function createApp() {
   const app = express();
@@ -23,6 +25,8 @@ function createApp() {
   app.use("/api/stats", statsRouter);
   app.use("/api/hooks", hooksRouter);
   app.use("/api/analytics", analyticsRouter);
+  app.use("/api/pricing", pricingRouter);
+  app.use("/api/settings", settingsRouter);
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });

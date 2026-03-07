@@ -5,6 +5,7 @@ import {
   FolderOpen,
   Activity,
   BarChart3,
+  Settings,
   Wifi,
   WifiOff,
   Github,
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { to: "/sessions", icon: FolderOpen, label: "Sessions" },
   { to: "/activity", icon: Activity, label: "Activity Feed" },
   { to: "/analytics", icon: BarChart3, label: "Analytics" },
+  { to: "/settings", icon: Settings, label: "Settings" },
 ] as const;
 
 interface SidebarProps {
@@ -25,7 +27,7 @@ interface SidebarProps {
 
 export function Sidebar({ wsConnected }: SidebarProps) {
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-60 bg-surface-1 border-r border-border flex flex-col z-30">
+    <aside className="fixed left-0 top-0 bottom-0 w-60 bg-surface-1 border-r border-border flex flex-col z-30 overflow-y-auto overflow-x-hidden">
       <div className="px-5 py-5 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
