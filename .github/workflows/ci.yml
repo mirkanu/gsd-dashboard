@@ -1,4 +1,4 @@
-name: CI / CD
+name: CI / CD Pipeline for Claude Code Agent Monitor
 
 on:
   push:
