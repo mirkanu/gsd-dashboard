@@ -1,0 +1,15 @@
+node_modules/
+client/node_modules/
+client/dist/
+data/
+.git/
+.github/
+*.md
+!README.md
+images/
+wiki/
+index.html
+og-image.svg
+favicon.svg
+.prettierrc
+.prettierignore
