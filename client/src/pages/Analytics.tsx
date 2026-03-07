@@ -1,15 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-  RefreshCw,
-  Download,
-  Zap,
-  Bot,
-  FolderOpen,
-  Cpu,
-  DollarSign,
-  Github,
-  Globe,
-} from "lucide-react";
+import { RefreshCw, Download, Zap, Bot, FolderOpen, Cpu, DollarSign } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
 import { formatDateTime } from "../lib/format";
@@ -785,31 +775,11 @@ export function Analytics() {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-[11px] text-gray-600 pt-4 border-t border-border">
+      <div className="text-[11px] text-gray-600 pt-4 border-t border-border">
         <span>
           Last updated:{" "}
           <span className="text-gray-500">{formatDateTime(lastUpdate.toISOString())}</span>
         </span>
-        <div className="flex items-center gap-4">
-          <a
-            href="https://github.com/hoangsonww"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-gray-400 transition-colors"
-          >
-            <Github className="w-3 h-3" />
-            github.com/hoangsonww
-          </a>
-          <a
-            href="https://sonnguyenhoang.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-gray-400 transition-colors"
-          >
-            <Globe className="w-3 h-3" />
-            sonnguyenhoang.com
-          </a>
-        </div>
       </div>
     </div>
   );

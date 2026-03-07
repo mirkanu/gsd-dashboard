@@ -8,8 +8,14 @@ function calculateCost(tokenRows, pricingRules) {
   let totalCost = 0;
   const breakdown = [];
 
+  // Sort by pattern length descending so specific patterns (e.g. claude-opus-4-5%)
+  // match before catch-all patterns (e.g. claude-opus-4%)
+  const sortedRules = [...pricingRules].sort(
+    (a, b) => b.model_pattern.length - a.model_pattern.length
+  );
+
   for (const row of tokenRows) {
-    const rule = pricingRules.find((p) => {
+    const rule = sortedRules.find((p) => {
       const pattern = p.model_pattern.replace(/%/g, ".*");
       return new RegExp("^" + pattern + "$").test(row.model);
     });

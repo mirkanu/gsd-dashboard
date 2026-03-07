@@ -91,13 +91,26 @@ if (pricingCount.c === 0) {
   const seedPricing = db.prepare(
     "INSERT OR IGNORE INTO model_pricing (model_pattern, display_name, input_per_mtok, output_per_mtok, cache_read_per_mtok, cache_write_per_mtok) VALUES (?, ?, ?, ?, ?, ?)"
   );
+  // Columns: pattern, display_name, input, output, cache_read (hits & refreshes), cache_write (5m ephemeral)
+  // Each model gets its own explicit row — no catch-all grouping
   const defaults = [
-    ["claude-opus-4%", "Claude Opus 4", 15, 75, 1.5, 18.75],
-    ["claude-sonnet-4%", "Claude Sonnet 4", 3, 15, 0.3, 3.75],
-    ["claude-haiku-4%", "Claude Haiku 4", 0.8, 4, 0.08, 1],
-    ["claude-3-5-sonnet%", "Claude 3.5 Sonnet", 3, 15, 0.3, 3.75],
-    ["claude-3-5-haiku%", "Claude 3.5 Haiku", 0.8, 4, 0.08, 1],
-    ["claude-3-opus%", "Claude 3 Opus", 15, 75, 1.5, 18.75],
+    // Opus family
+    ["claude-opus-4-6%", "Claude Opus 4.6", 5, 25, 0.5, 6.25],
+    ["claude-opus-4-5%", "Claude Opus 4.5", 5, 25, 0.5, 6.25],
+    ["claude-opus-4-1%", "Claude Opus 4.1", 15, 75, 1.5, 18.75],
+    ["claude-opus-4-2%", "Claude Opus 4", 15, 75, 1.5, 18.75],
+    // Sonnet family
+    ["claude-sonnet-4-6%", "Claude Sonnet 4.6", 3, 15, 0.3, 3.75],
+    ["claude-sonnet-4-5%", "Claude Sonnet 4.5", 3, 15, 0.3, 3.75],
+    ["claude-sonnet-4-2%", "Claude Sonnet 4", 3, 15, 0.3, 3.75],
+    ["claude-3-7-sonnet%", "Claude Sonnet 3.7", 3, 15, 0.3, 3.75],
+    ["claude-3-5-sonnet%", "Claude Sonnet 3.5", 3, 15, 0.3, 3.75],
+    // Haiku family
+    ["claude-haiku-4-5%", "Claude Haiku 4.5", 1, 5, 0.1, 1.25],
+    ["claude-3-5-haiku%", "Claude Haiku 3.5", 0.8, 4, 0.08, 1],
+    ["claude-3-haiku%", "Claude Haiku 3", 0.25, 1.25, 0.03, 0.3],
+    // Legacy
+    ["claude-3-opus%", "Claude Opus 3", 15, 75, 1.5, 18.75],
   ];
   for (const [pattern, name, inp, out, cr, cw] of defaults) {
     seedPricing.run(pattern, name, inp, out, cr, cw);
