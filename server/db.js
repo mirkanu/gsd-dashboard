@@ -212,6 +212,15 @@ const stmts = {
       cache_read_tokens = cache_read_tokens + excluded.cache_read_tokens,
       cache_write_tokens = cache_write_tokens + excluded.cache_write_tokens
   `),
+  replaceTokenUsage: db.prepare(`
+    INSERT INTO token_usage (session_id, model, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(session_id, model) DO UPDATE SET
+      input_tokens = excluded.input_tokens,
+      output_tokens = excluded.output_tokens,
+      cache_read_tokens = excluded.cache_read_tokens,
+      cache_write_tokens = excluded.cache_write_tokens
+  `),
   getTokenTotals: db.prepare(`
     SELECT
       COALESCE(SUM(input_tokens), 0) as total_input,

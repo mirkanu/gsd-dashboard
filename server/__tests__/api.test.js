@@ -615,6 +615,75 @@ describe("Hook Event Processing", () => {
     assert.ok(types.includes("PostToolUse"));
     assert.ok(types.includes("Stop"));
   });
+
+  it("should extract token usage from transcript_path on Stop", async () => {
+    // Create a temporary JSONL transcript file
+    const transcriptPath = path.join(os.tmpdir(), `transcript-test-${Date.now()}.jsonl`);
+    const lines = [
+      JSON.stringify({ role: "user", content: "Hello" }),
+      JSON.stringify({
+        role: "assistant",
+        model: "claude-sonnet-4-6",
+        usage: {
+          input_tokens: 100,
+          output_tokens: 50,
+          cache_read_input_tokens: 200,
+          cache_creation_input_tokens: 10,
+        },
+      }),
+      JSON.stringify({
+        role: "assistant",
+        model: "claude-sonnet-4-6",
+        usage: {
+          input_tokens: 150,
+          output_tokens: 75,
+          cache_read_input_tokens: 300,
+          cache_creation_input_tokens: 0,
+        },
+      }),
+      JSON.stringify({
+        role: "assistant",
+        model: "claude-opus-4-6",
+        usage: {
+          input_tokens: 500,
+          output_tokens: 200,
+          cache_read_input_tokens: 0,
+          cache_creation_input_tokens: 50,
+        },
+      }),
+    ];
+    fs.writeFileSync(transcriptPath, lines.join("\n") + "\n");
+
+    // Send Stop event with transcript_path
+    await post("/api/hooks/event", {
+      hook_type: "PreToolUse",
+      data: { session_id: "hook-sess-transcript", tool_name: "Read" },
+    });
+    const res = await post("/api/hooks/event", {
+      hook_type: "Stop",
+      data: { session_id: "hook-sess-transcript", transcript_path: transcriptPath },
+    });
+    assert.equal(res.status, 200);
+
+    // Check token_usage was written
+    const costRes = await fetch("/api/pricing/cost/hook-sess-transcript");
+    assert.equal(costRes.status, 200);
+
+    const sonnet = costRes.body.breakdown.find((b) => b.model === "claude-sonnet-4-6");
+    assert.ok(sonnet, "Should have sonnet token data");
+    assert.equal(sonnet.input_tokens, 250);
+    assert.equal(sonnet.output_tokens, 125);
+    assert.equal(sonnet.cache_read_tokens, 500);
+    assert.equal(sonnet.cache_write_tokens, 10);
+
+    const opus = costRes.body.breakdown.find((b) => b.model === "claude-opus-4-6");
+    assert.ok(opus, "Should have opus token data");
+    assert.equal(opus.input_tokens, 500);
+    assert.equal(opus.output_tokens, 200);
+
+    // Clean up
+    fs.unlinkSync(transcriptPath);
+  });
 });
 
 // ============================================================

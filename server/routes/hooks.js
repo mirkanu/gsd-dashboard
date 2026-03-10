@@ -1,9 +1,43 @@
 const { Router } = require("express");
 const { v4: uuidv4 } = require("uuid");
+const fs = require("fs");
 const { stmts, db } = require("../db");
 const { broadcast } = require("../websocket");
 
 const router = Router();
+
+/**
+ * Parse a Claude Code transcript JSONL file and extract cumulative token usage per model.
+ * Returns null if the file can't be read or has no usage data.
+ */
+function extractTokensFromTranscript(transcriptPath) {
+  if (!transcriptPath) return null;
+  try {
+    if (!fs.existsSync(transcriptPath)) return null;
+    const content = fs.readFileSync(transcriptPath, "utf8");
+    const tokensByModel = {};
+    for (const line of content.split("\n")) {
+      if (!line) continue;
+      try {
+        const msg = JSON.parse(line);
+        const model = msg.model;
+        if (!model || model === "<synthetic>" || !msg.usage) continue;
+        if (!tokensByModel[model]) {
+          tokensByModel[model] = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+        }
+        tokensByModel[model].input += msg.usage.input_tokens || 0;
+        tokensByModel[model].output += msg.usage.output_tokens || 0;
+        tokensByModel[model].cacheRead += msg.usage.cache_read_input_tokens || 0;
+        tokensByModel[model].cacheWrite += msg.usage.cache_creation_input_tokens || 0;
+      } catch {
+        continue;
+      }
+    }
+    return Object.keys(tokensByModel).length > 0 ? tokensByModel : null;
+  } catch {
+    return null;
+  }
+}
 
 function ensureSession(sessionId, data) {
   let session = stmts.getSession.get(sessionId);
@@ -115,20 +149,6 @@ const processEvent = db.transaction((hookType, data) => {
       summary = `Session ended: ${data.stop_reason || "completed"}`;
       const endStatus = data.stop_reason === "error" ? "error" : "completed";
 
-      // Extract token usage from Stop event if present
-      if (data.usage) {
-        const session = stmts.getSession.get(sessionId);
-        const tokenModel = data.model || session?.model || "unknown";
-        stmts.upsertTokenUsage.run(
-          sessionId,
-          tokenModel,
-          data.usage.input_tokens || 0,
-          data.usage.output_tokens || 0,
-          data.usage.cache_read_input_tokens || 0,
-          data.usage.cache_creation_input_tokens || 0
-        );
-      }
-
       // End agents in this session, but skip working subagents (they're still running in background)
       const agents = stmts.listAgentsBySession.all(sessionId);
       const hasActiveSubagents = agents.some(
@@ -229,6 +249,26 @@ const processEvent = db.transaction((hookType, data) => {
 
     default: {
       summary = `Event: ${hookType}`;
+    }
+  }
+
+  // Extract token usage from transcript on every event that provides transcript_path.
+  // Claude Code hooks don't include usage/model in stdin — the transcript JSONL is
+  // the only reliable source. Using replaceTokenUsage (overwrite, not accumulate)
+  // since we compute totals from the full transcript each time.
+  if (data.transcript_path) {
+    const tokensByModel = extractTokensFromTranscript(data.transcript_path);
+    if (tokensByModel) {
+      for (const [model, tokens] of Object.entries(tokensByModel)) {
+        stmts.replaceTokenUsage.run(
+          sessionId,
+          model,
+          tokens.input,
+          tokens.output,
+          tokens.cacheRead,
+          tokens.cacheWrite
+        );
+      }
     }
   }
 
