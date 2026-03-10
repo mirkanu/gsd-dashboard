@@ -615,6 +615,149 @@ describe("Hook Event Processing", () => {
     assert.ok(types.includes("PostToolUse"));
     assert.ok(types.includes("Stop"));
   });
+
+  it("should extract token usage from transcript_path on Stop", async () => {
+    // Create a temporary JSONL transcript file
+    const transcriptPath = path.join(os.tmpdir(), `transcript-test-${Date.now()}.jsonl`);
+    // Real Claude Code transcript format: model/usage are nested inside entry.message
+    const lines = [
+      JSON.stringify({ type: "user", message: { role: "user", content: "Hello" } }),
+      JSON.stringify({
+        type: "assistant",
+        message: {
+          model: "claude-sonnet-4-6",
+          role: "assistant",
+          usage: {
+            input_tokens: 100,
+            output_tokens: 50,
+            cache_read_input_tokens: 200,
+            cache_creation_input_tokens: 10,
+          },
+        },
+      }),
+      JSON.stringify({
+        type: "assistant",
+        message: {
+          model: "claude-sonnet-4-6",
+          role: "assistant",
+          usage: {
+            input_tokens: 150,
+            output_tokens: 75,
+            cache_read_input_tokens: 300,
+            cache_creation_input_tokens: 0,
+          },
+        },
+      }),
+      JSON.stringify({ type: "progress" }), // Non-message entries should be skipped
+      JSON.stringify({
+        type: "assistant",
+        message: {
+          model: "claude-opus-4-6",
+          role: "assistant",
+          usage: {
+            input_tokens: 500,
+            output_tokens: 200,
+            cache_read_input_tokens: 0,
+            cache_creation_input_tokens: 50,
+          },
+        },
+      }),
+    ];
+    fs.writeFileSync(transcriptPath, lines.join("\n") + "\n");
+
+    // Send Stop event with transcript_path
+    await post("/api/hooks/event", {
+      hook_type: "PreToolUse",
+      data: { session_id: "hook-sess-transcript", tool_name: "Read" },
+    });
+    const res = await post("/api/hooks/event", {
+      hook_type: "Stop",
+      data: { session_id: "hook-sess-transcript", transcript_path: transcriptPath },
+    });
+    assert.equal(res.status, 200);
+
+    // Check token_usage was written
+    const costRes = await fetch("/api/pricing/cost/hook-sess-transcript");
+    assert.equal(costRes.status, 200);
+
+    const sonnet = costRes.body.breakdown.find((b) => b.model === "claude-sonnet-4-6");
+    assert.ok(sonnet, "Should have sonnet token data");
+    assert.equal(sonnet.input_tokens, 250);
+    assert.equal(sonnet.output_tokens, 125);
+    assert.equal(sonnet.cache_read_tokens, 500);
+    assert.equal(sonnet.cache_write_tokens, 10);
+
+    const opus = costRes.body.breakdown.find((b) => b.model === "claude-opus-4-6");
+    assert.ok(opus, "Should have opus token data");
+    assert.equal(opus.input_tokens, 500);
+    assert.equal(opus.output_tokens, 200);
+
+    // Clean up
+    fs.unlinkSync(transcriptPath);
+  });
+
+  it("should update token usage on every event, not just Stop", async () => {
+    // Create a transcript that grows over time (simulating mid-session reads)
+    const transcriptPath = path.join(os.tmpdir(), `transcript-mid-${Date.now()}.jsonl`);
+    const line1 = JSON.stringify({
+      type: "assistant",
+      message: {
+        model: "claude-sonnet-4-6",
+        role: "assistant",
+        usage: {
+          input_tokens: 100,
+          output_tokens: 50,
+          cache_read_input_tokens: 0,
+          cache_creation_input_tokens: 0,
+        },
+      },
+    });
+    fs.writeFileSync(transcriptPath, line1 + "\n");
+
+    // PreToolUse event with transcript_path should trigger token extraction
+    await post("/api/hooks/event", {
+      hook_type: "PreToolUse",
+      data: { session_id: "hook-sess-mid", tool_name: "Read", transcript_path: transcriptPath },
+    });
+
+    const midRes = await fetch("/api/pricing/cost/hook-sess-mid");
+    assert.equal(midRes.status, 200);
+    const midSonnet = midRes.body.breakdown.find((b) => b.model === "claude-sonnet-4-6");
+    assert.ok(midSonnet, "Should have token data after PreToolUse");
+    assert.equal(midSonnet.input_tokens, 100);
+    assert.equal(midSonnet.output_tokens, 50);
+
+    // Transcript grows — second assistant response added
+    const line2 = JSON.stringify({
+      type: "assistant",
+      message: {
+        model: "claude-sonnet-4-6",
+        role: "assistant",
+        usage: {
+          input_tokens: 200,
+          output_tokens: 80,
+          cache_read_input_tokens: 0,
+          cache_creation_input_tokens: 0,
+        },
+      },
+    });
+    fs.appendFileSync(transcriptPath, line2 + "\n");
+
+    // PostToolUse event should pick up the updated transcript
+    await post("/api/hooks/event", {
+      hook_type: "PostToolUse",
+      data: { session_id: "hook-sess-mid", tool_name: "Read", transcript_path: transcriptPath },
+    });
+
+    const updatedRes = await fetch("/api/pricing/cost/hook-sess-mid");
+    const updatedSonnet = updatedRes.body.breakdown.find((b) => b.model === "claude-sonnet-4-6");
+    assert.ok(updatedSonnet, "Should have updated token data after PostToolUse");
+    // replaceTokenUsage overwrites with totals from full transcript (100+200=300, 50+80=130)
+    assert.equal(updatedSonnet.input_tokens, 300);
+    assert.equal(updatedSonnet.output_tokens, 130);
+
+    fs.unlinkSync(transcriptPath);
+  });
 });
 
 // ============================================================

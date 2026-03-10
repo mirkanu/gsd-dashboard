@@ -11,6 +11,43 @@ function fmt(n: number): string {
   return String(n);
 }
 
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+
+function ChartTooltip({ x, y, children }: { x: number; y: number; children: React.ReactNode }) {
+  return (
+    <div
+      className="fixed z-50 px-2 py-1.5 text-xs bg-[#12121f] border border-[#2a2a4a] rounded shadow-xl text-gray-200 pointer-events-none whitespace-nowrap"
+      style={{ left: x + 14, top: y - 10 }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function useTooltip() {
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    content: React.ReactNode;
+  } | null>(null);
+
+  const show = (e: React.MouseEvent, content: React.ReactNode) => {
+    setTooltip({ x: e.clientX, y: e.clientY, content });
+  };
+  const move = (e: React.MouseEvent) => {
+    setTooltip((t) => t && { ...t, x: e.clientX, y: e.clientY });
+  };
+  const hide = () => setTooltip(null);
+
+  const node = tooltip ? (
+    <ChartTooltip x={tooltip.x} y={tooltip.y}>
+      {tooltip.content}
+    </ChartTooltip>
+  ) : null;
+
+  return { show, move, hide, node };
+}
+
 // ── Heatmap ──────────────────────────────────────────────────────────────────
 
 const MONTH_LABELS = [
@@ -29,15 +66,33 @@ const MONTH_LABELS = [
 ];
 const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
 
-function cellColor(count: number) {
-  if (count === 0) return "#1e1e2e";
-  if (count < 5) return "rgba(99,102,241,0.25)";
-  if (count < 15) return "rgba(99,102,241,0.50)";
-  if (count < 40) return "rgba(99,102,241,0.75)";
-  return "rgb(99,102,241)";
+function cellColor(count: number, max: number) {
+  if (count === 0) return "#161625";
+  // Log scale + RGB interpolation across a wide color ramp for maximum perceptual range
+  const t = Math.log(count + 1) / Math.log(Math.max(max, 1) + 1);
+  // Ramp: near-black indigo → deep indigo → bright indigo → lavender
+  type RGB = [number, number, number];
+  const stops: RGB[] = [
+    [22, 20, 60], // near-black indigo
+    [55, 48, 163], // deep indigo
+    [99, 102, 241], // bright indigo
+    [199, 210, 254], // lavender
+  ];
+  const scaled = t * (stops.length - 1);
+  const lo = Math.min(Math.floor(scaled), stops.length - 2);
+  const frac = scaled - lo;
+  const [r1, g1, b1]: RGB = stops[lo] as RGB;
+  const [r2, g2, b2]: RGB = stops[lo + 1] as RGB;
+  const r = Math.round(r1 + (r2 - r1) * frac);
+  const g = Math.round(g1 + (g2 - g1) * frac);
+  const b = Math.round(b1 + (b2 - b1) * frac);
+  return `rgb(${r},${g},${b})`;
 }
 
 function Heatmap({ weeks }: { weeks: Array<Array<{ date: string; count: number }>> }) {
+  const { show, move, hide, node } = useTooltip();
+  const maxCount = Math.max(...weeks.flatMap((w) => w.map((c) => c.count)), 1);
+
   // Compute month label positions (which week index a month starts)
   const monthPositions: Array<{ label: string; col: number }> = [];
   let lastMonth = -1;
@@ -53,6 +108,7 @@ function Heatmap({ weeks }: { weeks: Array<Array<{ date: string; count: number }
 
   return (
     <div>
+      {node}
       {/* Month labels */}
       <div className="flex mb-1 ml-7" style={{ gap: "3px" }}>
         {weeks.map((_, wi) => {
@@ -83,14 +139,27 @@ function Heatmap({ weeks }: { weeks: Array<Array<{ date: string; count: number }
             {week.map((cell) => (
               <div
                 key={cell.date}
-                title={`${cell.date}: ${cell.count} event${cell.count !== 1 ? "s" : ""}`}
+                onMouseEnter={(e) =>
+                  show(
+                    e,
+                    <>
+                      <span className="text-gray-400">{cell.date}</span>
+                      <span className="ml-2 font-medium">
+                        {cell.count} event{cell.count !== 1 ? "s" : ""}
+                      </span>
+                    </>
+                  )
+                }
+                onMouseMove={move}
+                onMouseLeave={hide}
                 style={{
                   width: 13,
                   height: 13,
                   borderRadius: 2,
-                  backgroundColor: cellColor(cell.count),
+                  backgroundColor: cellColor(cell.count, maxCount),
                   border: "1px solid rgba(255,255,255,0.06)",
                   flexShrink: 0,
+                  cursor: "default",
                 }}
               />
             ))}
@@ -100,18 +169,21 @@ function Heatmap({ weeks }: { weeks: Array<Array<{ date: string; count: number }
       {/* Legend */}
       <div className="flex items-center gap-2 mt-3 text-[11px] text-gray-600">
         <span>Less</span>
-        {[0, 3, 10, 25, 50].map((v) => (
-          <div
-            key={v}
-            style={{
-              width: 13,
-              height: 13,
-              borderRadius: 2,
-              backgroundColor: cellColor(v),
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          />
-        ))}
+        {[0, 0.25, 0.5, 0.75, 1].map((f) => {
+          const v = Math.round(f * maxCount);
+          return (
+            <div
+              key={f}
+              style={{
+                width: 13,
+                height: 13,
+                borderRadius: 2,
+                backgroundColor: cellColor(v, maxCount),
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+            />
+          );
+        })}
         <span>More</span>
       </div>
     </div>
@@ -127,19 +199,31 @@ function Sparkline({
   data: Array<{ date: string; count: number }>;
   color?: string;
 }) {
+  const { show, move, hide, node } = useTooltip();
   const max = Math.max(...data.map((d) => d.count), 1);
   return (
-    <div className="flex items-end gap-px h-16">
+    <div className="relative flex items-end gap-px h-16">
+      {node}
       {data.map(({ date, count }) => (
         <div
           key={date}
-          className="flex-1 rounded-sm transition-all"
+          className="flex-1 rounded-sm transition-all cursor-default"
           style={{
             height: `${Math.max(4, Math.round((count / max) * 100))}%`,
             backgroundColor: color,
             opacity: count === 0 ? 0.15 : 0.85,
           }}
-          title={`${date}: ${count}`}
+          onMouseEnter={(e) =>
+            show(
+              e,
+              <>
+                <span className="text-gray-400">{date}</span>
+                <span className="ml-2 font-medium">{count} events</span>
+              </>
+            )
+          }
+          onMouseMove={move}
+          onMouseLeave={hide}
         />
       ))}
     </div>
@@ -185,6 +269,7 @@ function DonutChart({
 }: {
   segments: Array<{ label: string; value: number; color: string }>;
 }) {
+  const { show, move, hide, node } = useTooltip();
   const total = segments.reduce((s, g) => s + g.value, 0);
   if (total === 0) return <div className="text-xs text-gray-500">No data</div>;
 
@@ -194,17 +279,23 @@ function DonutChart({
   const stroke = 18;
   const circumference = 2 * Math.PI * r;
 
-  let offset = -circumference / 4; // start at top
+  // offset starts at circumference/4 (top of circle) and decrements by each segment's arc.
+  // strokeDashoffset = offset (not negated) is the correct formula for starting at 12 o'clock.
+  let offset = circumference / 4;
   return (
     <div className="flex items-center gap-6">
+      {node}
       <svg width={128} height={128} viewBox="0 0 128 128" className="flex-shrink-0">
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e1e2e" strokeWidth={stroke} />
-        {segments.map(({ value, color }) => {
+        {segments.map(({ label, value, color }, i) => {
           const dash = (value / total) * circumference;
           const gap = circumference - dash;
-          const el = (
+          const pct = Math.round((value / total) * 100);
+          const currentOffset = offset;
+          offset -= dash;
+          return (
             <circle
-              key={color + offset}
+              key={i}
               cx={cx}
               cy={cy}
               r={r}
@@ -212,11 +303,21 @@ function DonutChart({
               stroke={color}
               strokeWidth={stroke}
               strokeDasharray={`${dash} ${gap}`}
-              strokeDashoffset={-offset}
+              strokeDashoffset={currentOffset}
+              style={{ cursor: "default" }}
+              onMouseEnter={(e) =>
+                show(
+                  e,
+                  <>
+                    <span style={{ color }}>{label}</span>
+                    <span className="ml-2 font-medium">{pct}%</span>
+                  </>
+                )
+              }
+              onMouseMove={move}
+              onMouseLeave={hide}
             />
           );
-          offset -= dash;
-          return el;
         })}
         <text x={cx} y={cy - 6} textAnchor="middle" className="fill-gray-300" fontSize={11}>
           {fmt(total)}
