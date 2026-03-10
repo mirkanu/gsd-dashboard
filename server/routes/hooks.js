@@ -19,7 +19,9 @@ function extractTokensFromTranscript(transcriptPath) {
     for (const line of content.split("\n")) {
       if (!line) continue;
       try {
-        const msg = JSON.parse(line);
+        const entry = JSON.parse(line);
+        // Transcript JSONL nests model/usage inside entry.message
+        const msg = entry.message || entry;
         const model = msg.model;
         if (!model || model === "<synthetic>" || !msg.usage) continue;
         if (!tokensByModel[model]) {
