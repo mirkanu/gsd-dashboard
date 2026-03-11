@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FolderOpen, Bot, Zap, DollarSign, Activity, ArrowRight } from "lucide-react";
+import { FolderOpen, Bot, Zap, DollarSign, Activity, ArrowRight, RefreshCw } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
 import { StatCard } from "../components/StatCard";
@@ -74,9 +74,14 @@ export function Dashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div>
-        <h2 className="text-xl font-semibold text-gray-100 mb-1">Dashboard</h2>
-        <p className="text-sm text-gray-500">Real-time overview of Claude Code agent activity</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-100 mb-1">Dashboard</h2>
+          <p className="text-sm text-gray-500">Real-time overview of Claude Code agent activity</p>
+        </div>
+        <button onClick={load} className="btn-ghost">
+          <RefreshCw className="w-4 h-4" /> Refresh
+        </button>
       </div>
 
       {/* Stats row */}

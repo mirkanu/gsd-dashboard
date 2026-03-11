@@ -12,12 +12,13 @@ const os = require("os");
 const SETTINGS_PATH = path.join(os.homedir(), ".claude", "settings.json");
 const HOOK_HANDLER = path.resolve(__dirname, "hook-handler.js").replace(/\\/g, "/");
 
-// New Claude Code hook format: each entry has matcher + hooks array
-const HOOK_TYPES = ["PreToolUse", "PostToolUse", "Stop", "SubagentStop", "Notification"];
+// Hook types to install. Some support matchers, some don't.
+const HOOKS_WITH_MATCHER = ["PreToolUse", "PostToolUse", "Stop", "SubagentStop", "Notification"];
+const HOOKS_WITHOUT_MATCHER = ["SessionStart", "SessionEnd"];
+const HOOK_TYPES = [...HOOKS_WITH_MATCHER, ...HOOKS_WITHOUT_MATCHER];
 
 function makeHookEntry(hookType) {
-  return {
-    matcher: "*",
+  const entry = {
     hooks: [
       {
         type: "command",
@@ -25,6 +26,10 @@ function makeHookEntry(hookType) {
       },
     ],
   };
+  if (HOOKS_WITH_MATCHER.includes(hookType)) {
+    entry.matcher = "*";
+  }
+  return entry;
 }
 
 function isOurEntry(entry) {

@@ -16,6 +16,7 @@ export function ActivityFeed() {
   const [paused, setPaused] = useState(false);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
+  const [bufferCount, setBufferCount] = useState(0);
   const bufferRef = useRef<DashboardEvent[]>([]);
   const pausedRef = useRef(paused);
 
@@ -40,6 +41,7 @@ export function ActivityFeed() {
         const event = msg.data as DashboardEvent;
         if (pausedRef.current) {
           bufferRef.current = [event, ...bufferRef.current];
+          setBufferCount(bufferRef.current.length);
         } else {
           setEvents((prev) => [event, ...prev.slice(0, 199)]);
         }
@@ -48,8 +50,13 @@ export function ActivityFeed() {
   }, []);
 
   function resume() {
-    setEvents((prev) => [...bufferRef.current, ...prev].slice(0, 200));
+    // Set ref synchronously first so any events arriving between now and
+    // React's re-render go directly to state instead of the cleared buffer.
+    pausedRef.current = false;
+    const buffered = bufferRef.current;
     bufferRef.current = [];
+    setBufferCount(0);
+    setEvents((prev) => [...buffered, ...prev].slice(0, 200));
     setPaused(false);
   }
 
@@ -75,9 +82,7 @@ export function ActivityFeed() {
           <p className="text-sm text-gray-500">
             Real-time stream of all agent events
             {paused && (
-              <span className="ml-2 text-yellow-400">
-                (paused - {bufferRef.current.length} buffered)
-              </span>
+              <span className="ml-2 text-yellow-400">(paused — {bufferCount} buffered)</span>
             )}
           </p>
         </div>

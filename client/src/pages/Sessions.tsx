@@ -6,7 +6,7 @@ import { eventBus } from "../lib/eventBus";
 import { SessionStatusBadge } from "../components/StatusBadge";
 import { EmptyState } from "../components/EmptyState";
 import { formatDateTime, formatDuration, truncate } from "../lib/format";
-import type { Session, SessionStatus } from "../lib/types";
+import type { Session, SessionStatus, DashboardEvent } from "../lib/types";
 
 const FILTER_OPTIONS: Array<{ label: string; value: string }> = [
   { label: "All", value: "" },
@@ -62,6 +62,14 @@ export function Sessions() {
       if (msg.type === "session_created" || msg.type === "session_updated") {
         load();
       }
+      // Reload on turn boundaries — token usage (and thus cost) updates on each hook event
+      // but only Stop/SessionEnd represent meaningful cost changes worth refreshing for.
+      if (msg.type === "new_event") {
+        const ev = msg.data as DashboardEvent;
+        if (ev.event_type === "Stop" || ev.event_type === "SessionEnd") {
+          load();
+        }
+      }
     });
   }, [load]);
 
@@ -88,7 +96,8 @@ export function Sessions() {
         <div>
           <h2 className="text-xl font-semibold text-gray-100 mb-1">Sessions</h2>
           <p className="text-sm text-gray-500">
-            {sessions.length} session{sessions.length !== 1 ? "s" : ""} recorded
+            {sessions.length}
+            {filter ? ` ${filter}` : ""} session{sessions.length !== 1 ? "s" : ""} recorded
           </p>
         </div>
         <button onClick={load} className="btn-ghost">
@@ -148,7 +157,7 @@ export function Sessions() {
                     Status
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                    Started
+                    Last Active
                   </th>
                   <th className="px-5 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                     Duration
@@ -186,7 +195,7 @@ export function Sessions() {
                       <SessionStatusBadge status={session.status as SessionStatus} />
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-400">
-                      {formatDateTime(session.started_at)}
+                      {formatDateTime(session.last_activity || session.started_at)}
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-400 font-mono">
                       {session.ended_at

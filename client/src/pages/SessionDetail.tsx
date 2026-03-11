@@ -97,7 +97,9 @@ export function SessionDetail() {
             )}
             <span className="inline-flex items-center gap-1.5 text-xs text-gray-400 bg-surface-2 px-2 py-1 rounded">
               <Clock className="w-3 h-3 text-gray-500" />
-              {formatDateTime(session.started_at)}
+              {events.length > 0 && events[0]
+                ? formatDateTime(events[0].created_at)
+                : formatDateTime(session.started_at)}
               {session.ended_at && (
                 <span className="text-gray-500 ml-1">
                   ({formatDuration(session.started_at, session.ended_at)})

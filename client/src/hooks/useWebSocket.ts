@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import type { WSMessage } from "../lib/types";
+import { eventBus } from "../lib/eventBus";
 
 type MessageHandler = (msg: WSMessage) => void;
 
@@ -21,7 +22,10 @@ export function useWebSocket(onMessage: MessageHandler) {
     const ws = new WebSocket(`${protocol}//${host}/ws`);
 
     ws.onopen = () => {
-      if (mountedRef.current) setConnected(true);
+      if (mountedRef.current) {
+        setConnected(true);
+        eventBus.setConnected(true);
+      }
     };
 
     ws.onmessage = (event) => {
@@ -36,6 +40,7 @@ export function useWebSocket(onMessage: MessageHandler) {
     ws.onclose = () => {
       if (mountedRef.current) {
         setConnected(false);
+        eventBus.setConnected(false);
         reconnectTimer.current = setTimeout(connect, 2000);
       }
     };

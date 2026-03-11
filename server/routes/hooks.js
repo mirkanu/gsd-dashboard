@@ -57,10 +57,11 @@ function ensureSession(sessionId, data) {
 
     // Create main agent for new session
     const mainAgentId = `${sessionId}-main`;
+    const sessionLabel = session.name || `Session ${sessionId.slice(0, 8)}`;
     stmts.insertAgent.run(
       mainAgentId,
       sessionId,
-      "Main Agent",
+      `Main Agent — ${sessionLabel}`,
       "main",
       null,
       "connected",
@@ -81,9 +82,23 @@ const processEvent = db.transaction((hookType, data) => {
   const sessionId = data.session_id;
   if (!sessionId) return null;
 
-  ensureSession(sessionId, data);
-  const mainAgent = getMainAgent(sessionId);
+  const session = ensureSession(sessionId, data);
+  let mainAgent = getMainAgent(sessionId);
   const mainAgentId = mainAgent?.id ?? null;
+
+  // Reactivate completed/error/abandoned sessions on new work events (resumed session)
+  const endingEvents = ["Stop", "SubagentStop", "SessionEnd"];
+  const isWorkEvent = !endingEvents.includes(hookType);
+  if (isWorkEvent && session.status !== "active") {
+    stmts.reactivateSession.run(sessionId);
+    broadcast("session_updated", stmts.getSession.get(sessionId));
+
+    if (mainAgent && mainAgent.status !== "working" && mainAgent.status !== "connected") {
+      stmts.reactivateAgent.run(mainAgentId);
+      mainAgent = stmts.getAgent.get(mainAgentId);
+      broadcast("agent_updated", mainAgent);
+    }
+  }
 
   let eventType = hookType;
   let toolName = data.tool_name || null;
@@ -121,9 +136,15 @@ const processEvent = db.transaction((hookType, data) => {
         summary = `Subagent spawned: ${subName}`;
       }
 
-      // Update main agent status — but only if it's actively running.
-      // Skip if idle (waiting for subagents) or already completed.
-      if (mainAgent && (mainAgent.status === "working" || mainAgent.status === "connected")) {
+      // Update main agent status for any non-terminal state.
+      // Skip only if already completed/error (stale event after SessionEnd).
+      // "idle" → "working" is the normal transition when a new turn starts after Stop.
+      if (
+        mainAgent &&
+        (mainAgent.status === "working" ||
+          mainAgent.status === "connected" ||
+          mainAgent.status === "idle")
+      ) {
         stmts.updateAgent.run(null, "working", null, toolName, null, null, mainAgentId);
         broadcast("agent_updated", stmts.getAgent.get(mainAgentId));
       }
@@ -147,22 +168,32 @@ const processEvent = db.transaction((hookType, data) => {
     }
 
     case "Stop": {
-      summary = `Session ended: ${data.stop_reason || "completed"}`;
-      const endStatus = data.stop_reason === "error" ? "error" : "completed";
+      const session = stmts.getSession.get(sessionId);
+      const sessionLabel = session?.name || `Session ${sessionId.slice(0, 8)}`;
+      summary =
+        data.stop_reason === "error"
+          ? `Error in ${sessionLabel}`
+          : `${sessionLabel} — ready for input`;
 
-      // Complete all agents in this session — including subagents.
-      // When Stop fires the main process is done; any subagents that haven't
-      // sent SubagentStop are orphaned and should not stay "working".
-      const agents = stmts.listAgentsBySession.all(sessionId);
+      // Stop means Claude finished its turn, NOT that the session is closed.
+      // Session stays active — user can still send more messages.
+      // Main agent goes to "idle" (waiting for user input).
+      // Background subagents may still be running — do NOT complete them here.
+      // They complete individually via SubagentStop, or all at once on SessionEnd.
       const now = new Date().toISOString();
-      for (const agent of agents) {
-        if (agent.status === "working" || agent.status === "connected" || agent.status === "idle") {
-          stmts.updateAgent.run(null, "completed", null, null, now, null, agent.id);
-          broadcast("agent_updated", stmts.getAgent.get(agent.id));
-        }
+
+      // Set main agent to idle (waiting for user), not completed.
+      // For non-tool turns the agent may already be "idle" — still update it
+      // so the timestamp and activity log reflect that a turn completed.
+      if (mainAgent && mainAgent.status !== "completed" && mainAgent.status !== "error") {
+        stmts.updateAgent.run(null, "idle", null, null, null, null, mainAgentId);
+        broadcast("agent_updated", stmts.getAgent.get(mainAgentId));
       }
 
-      stmts.updateSession.run(null, endStatus, now, null, sessionId);
+      // Mark error sessions on error stop_reason, but keep normal sessions active
+      if (data.stop_reason === "error") {
+        stmts.updateSession.run(null, "error", now, null, sessionId);
+      }
       broadcast("session_updated", stmts.getSession.get(sessionId));
       break;
     }
@@ -172,12 +203,22 @@ const processEvent = db.transaction((hookType, data) => {
       const subagents = stmts.listAgentsBySession.all(sessionId);
       let matchingSub = null;
 
-      // Try to identify which subagent stopped using available data
-      const subDesc = data.description || data.subagent_type || null;
+      // Try to identify which subagent stopped using available data.
+      // SubagentStop provides: agent_type (e.g. "Explore", "test-engineer"),
+      // agent_id (Claude's internal ID), description, last_assistant_message.
+      const subDesc = data.description || data.agent_type || data.subagent_type || null;
       if (subDesc) {
         const namePrefix = subDesc.length > 57 ? subDesc.slice(0, 57) : subDesc;
         matchingSub = subagents.find(
           (a) => a.type === "subagent" && a.status === "working" && a.name.startsWith(namePrefix)
+        );
+      }
+
+      // Try matching by agent_type against stored subagent_type
+      if (!matchingSub && data.agent_type) {
+        matchingSub = subagents.find(
+          (a) =>
+            a.type === "subagent" && a.status === "working" && a.subagent_type === data.agent_type
         );
       }
 
@@ -209,38 +250,57 @@ const processEvent = db.transaction((hookType, data) => {
         agentId = matchingSub.id;
         summary = `Subagent completed: ${matchingSub.name}`;
 
-        // If all subagents done and main isn't working, complete the session
-        const remainingWorking = subagents.filter(
-          (a) => a.type === "subagent" && a.status === "working" && a.id !== matchingSub.id
-        );
-        if (remainingWorking.length === 0) {
-          const session = stmts.getSession.get(sessionId);
-          if (session && session.status === "active") {
-            const currentMain = getMainAgent(sessionId);
-            if (!currentMain || currentMain.status !== "working") {
-              const completedAt = new Date().toISOString();
-              // Complete the main agent too if it's idle/connected
-              if (
-                currentMain &&
-                (currentMain.status === "idle" || currentMain.status === "connected")
-              ) {
-                stmts.updateAgent.run(
-                  null,
-                  "completed",
-                  null,
-                  null,
-                  completedAt,
-                  null,
-                  currentMain.id
-                );
-                broadcast("agent_updated", stmts.getAgent.get(currentMain.id));
-              }
-              stmts.updateSession.run(null, "completed", completedAt, null, sessionId);
-              broadcast("session_updated", stmts.getSession.get(sessionId));
-            }
+        // Session stays active — SubagentStop just means one subagent finished,
+        // the session is not over until the user explicitly closes it.
+      }
+      break;
+    }
+
+    case "SessionStart": {
+      summary = data.source === "resume" ? "Session resumed" : "Session started";
+      // Reactivation is already handled above for non-active sessions.
+      // Set main agent to connected (ready for work).
+      if (mainAgent && mainAgent.status === "idle") {
+        stmts.updateAgent.run(null, "connected", null, null, null, null, mainAgentId);
+        broadcast("agent_updated", stmts.getAgent.get(mainAgentId));
+      }
+
+      // Clean up orphaned sessions: when a user runs /resume inside a session,
+      // the parent session never receives Stop or SessionEnd. Mark any active
+      // session with no events for 5+ minutes as abandoned.
+      const staleSessions = stmts.findStaleSessions.all(sessionId, 5);
+      const now = new Date().toISOString();
+      for (const stale of staleSessions) {
+        const staleAgents = stmts.listAgentsBySession.all(stale.id);
+        for (const agent of staleAgents) {
+          if (agent.status !== "completed" && agent.status !== "error") {
+            stmts.updateAgent.run(null, "completed", null, null, now, null, agent.id);
+            broadcast("agent_updated", stmts.getAgent.get(agent.id));
           }
         }
+        stmts.updateSession.run(null, "abandoned", now, null, stale.id);
+        broadcast("session_updated", stmts.getSession.get(stale.id));
       }
+      break;
+    }
+
+    case "SessionEnd": {
+      const endSession = stmts.getSession.get(sessionId);
+      const endLabel = endSession?.name || `Session ${sessionId.slice(0, 8)}`;
+      summary = `Session closed: ${endLabel}`;
+
+      // SessionEnd is the definitive signal that the CLI process exited.
+      // Mark everything as completed.
+      const allAgents = stmts.listAgentsBySession.all(sessionId);
+      const now = new Date().toISOString();
+      for (const agent of allAgents) {
+        if (agent.status !== "completed" && agent.status !== "error") {
+          stmts.updateAgent.run(null, "completed", null, null, now, null, agent.id);
+          broadcast("agent_updated", stmts.getAgent.get(agent.id));
+        }
+      }
+      stmts.updateSession.run(null, "completed", now, null, sessionId);
+      broadcast("session_updated", stmts.getSession.get(sessionId));
       break;
     }
 
@@ -273,6 +333,9 @@ const processEvent = db.transaction((hookType, data) => {
       }
     }
   }
+
+  // Bump session updated_at on every event
+  stmts.touchSession.run(sessionId);
 
   stmts.insertEvent.run(
     sessionId,

@@ -2,7 +2,7 @@
 
 ## How it works
 
-Agent Dashboard integrates with Claude Code through its native hook system. When Claude Code performs any action (tool use, session start, session end), it fires a hook that calls a small Node.js script bundled with this project. That script forwards the event over HTTP to the dashboard server, which stores it in SQLite and broadcasts it to the browser over WebSocket.
+Agent Dashboard integrates with Claude Code through its native hook system. When Claude Code performs any action (session start, tool use, turn completion, subagent finish, session exit), it fires a hook that calls a small Node.js script bundled with this project. That script forwards the event over HTTP to the dashboard server, which stores it in SQLite and broadcasts it to the browser over WebSocket.
 
 ```
 Claude Code  →  hook fires  →  hook-handler.js  →  POST /api/hooks/event
@@ -23,14 +23,18 @@ The dashboard server writes the following to `~/.claude/settings.json` every tim
 ```json
 {
   "hooks": {
+    "SessionStart": [{ "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" SessionStart" }] }],
     "PreToolUse":   [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" PreToolUse" }] }],
     "PostToolUse":  [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" PostToolUse" }] }],
     "Stop":         [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" Stop" }] }],
     "SubagentStop": [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" SubagentStop" }] }],
-    "Notification": [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" Notification" }] }]
+    "Notification": [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" Notification" }] }],
+    "SessionEnd":   [{ "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" SessionEnd" }] }]
   }
 }
 ```
+
+> Note: `SessionStart` and `SessionEnd` hooks do not support the `matcher` field — they fire unconditionally on every session start and exit.
 
 Existing hooks in that file are preserved. The dashboard only adds or updates entries that contain `hook-handler.js`.
 
@@ -79,6 +83,7 @@ The Settings page (`/settings`) provides a UI for:
 - **Data Export** — download all sessions, agents, events, and pricing as a JSON file
 - **Session Cleanup** — abandon stale active sessions after N hours, purge old completed sessions after N days
 - **Clear All Data** — remove all sessions, agents, events, and token usage
+- **Data Management** and **About** sections render with loading placeholders while server info is being fetched, so the page is always fully navigable
 
 ### Seed demo data
 

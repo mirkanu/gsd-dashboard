@@ -70,9 +70,7 @@ export function useNotifications() {
         }
         case "session_updated": {
           const s = msg.data as Session;
-          if (s.status === "completed" && prefs.onSessionComplete) {
-            notify("Session Completed", s.name || `Session ${s.id.slice(0, 8)}`);
-          } else if (s.status === "error" && prefs.onSessionError) {
+          if (s.status === "error" && prefs.onSessionError) {
             notify("Session Error", s.name || `Session ${s.id.slice(0, 8)}`);
           }
           break;
@@ -87,7 +85,11 @@ export function useNotifications() {
         }
         case "new_event": {
           const ev = msg.data as DashboardEvent;
-          if (ev.event_type === "Notification") {
+          if (ev.event_type === "Stop" && prefs.onSessionComplete) {
+            notify("Claude Finished Responding", ev.summary || "Ready for input");
+          } else if (ev.event_type === "SessionEnd" && prefs.onSessionComplete) {
+            notify("Session Completed", ev.summary || "Session closed");
+          } else if (ev.event_type === "Notification") {
             notify("Claude Code", ev.summary || "Notification");
           }
           break;
