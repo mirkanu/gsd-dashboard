@@ -76,17 +76,19 @@ C4Context
 graph TB
     subgraph "Claude Code Process"
         CC[Claude Code CLI]
+        H0[SessionStart Hook]
         H1[PreToolUse Hook]
         H2[PostToolUse Hook]
         H3[Stop Hook]
         H4[SubagentStop Hook]
         H5[Notification Hook]
-        CC --> H1 & H2 & H3 & H4 & H5
+        H6[SessionEnd Hook]
+        CC --> H0 & H1 & H2 & H3 & H4 & H5 & H6
     end
 
     subgraph "Hook Layer"
         HH["hook-handler.js<br/>(stdin → HTTP)"]
-        H1 & H2 & H3 & H4 & H5 -->|stdin JSON| HH
+        H0 & H1 & H2 & H3 & H4 & H5 & H6 -->|stdin JSON| HH
     end
 
     subgraph "Server Process (port 4820)"
@@ -157,7 +159,7 @@ sequenceDiagram
     Note over TX: Creates session + main agent<br/>if first contact
 
     TX->>TX: Process by hook_type
-    Note over TX: PreToolUse → set agent working<br/>PostToolUse → set agent connected<br/>Stop → mark all completed<br/>SubagentStop → mark subagent done
+    Note over TX: SessionStart → create/reactivate session,<br/>abandon stale sessions (5+ min idle)<br/>PreToolUse → set agent working<br/>PostToolUse → clear current_tool<br/>Stop → main agent idle (including non-tool turns)<br/>SubagentStop → mark subagent done<br/>SessionEnd → mark all completed
 
     TX->>TX: insertEvent(...)
     TX->>TX: COMMIT
@@ -240,9 +242,9 @@ graph TD
 | Module                | Responsibility                                                                                                                                   |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `server/index.js`     | Express app setup, middleware (CORS, JSON parsing), route mounting, static file serving in production, HTTP server creation                      |
-| `server/db.js`        | SQLite connection with WAL mode, schema migration (CREATE TABLE IF NOT EXISTS), all prepared statements as a reusable `stmts` object             |
+| `server/db.js`        | SQLite connection with WAL mode, schema migration (CREATE TABLE IF NOT EXISTS + ALTER TABLE for column additions), all prepared statements as a reusable `stmts` object. Migrations use literal defaults for ALTER TABLE since SQLite does not support expressions like `strftime()` in column defaults added via ALTER TABLE |
 | `server/websocket.js` | WebSocket server on `/ws` path, 30s heartbeat with ping/pong dead connection detection, typed broadcast function                                 |
-| `routes/hooks.js`     | Core event processing inside a SQLite transaction. Auto-creates sessions/agents. Switch-case dispatch by hook type. Broadcasts all state changes |
+| `routes/hooks.js`     | Core event processing inside a SQLite transaction. Auto-creates sessions/agents (main agents named `Main Agent — {session name}`). Handles 7 hook types (SessionStart through SessionEnd). Manages agent state machine (connected → working → idle → completed), session reactivation on resume, orphaned session cleanup on SessionStart (abandons sessions idle for 5+ minutes), non-tool turn handling on Stop, and token usage extraction from transcripts |
 | `routes/sessions.js`  | Standard CRUD with pagination. GET includes agent count via LEFT JOIN. POST is idempotent on session ID                                          |
 | `routes/agents.js`    | CRUD with status/session_id filtering. PATCH broadcasts `agent_updated`                                                                          |
 | `routes/events.js`    | Read-only event listing with session_id filter and pagination                                                                                    |
@@ -328,7 +330,7 @@ graph TD
 graph TD
     MAIN["main.tsx<br/>React entry"]
     APP["App.tsx<br/>Router + WS + Notifications"]
-    EB["eventBus.ts<br/>Pub/sub"]
+    EB["eventBus.ts<br/>Pub/sub + connection state"]
     WS["useWebSocket.ts<br/>Auto-reconnect hook"]
     NOTIF["useNotifications.ts<br/>Browser notification triggers"]
     API["api.ts<br/>Typed fetch client"]
@@ -440,7 +442,7 @@ erDiagram
     agents {
         TEXT id PK "UUID or session_id-main"
         TEXT session_id FK "References sessions.id"
-        TEXT name "Agent display name"
+        TEXT name "Main Agent — {session name} or subagent description"
         TEXT type "main|subagent"
         TEXT subagent_type "Explore|general-purpose|etc"
         TEXT status "idle|connected|working|completed|error"
@@ -510,6 +512,8 @@ All queries use prepared statements (`db.prepare()`) for:
 - **Security** -- parameterized queries prevent SQL injection
 - **Performance** -- compiled once, executed many times
 - **Reliability** -- syntax errors caught at startup, not runtime
+
+Notable prepared statements include `findStaleSessions` (used by `SessionStart` to identify active sessions with no activity for a configurable number of minutes), `touchSession` (bumps `updated_at` on every event), and `reactivateSession` / `reactivateAgent` (used when a previously completed/abandoned session receives new work events).
 
 ---
 
@@ -630,7 +634,7 @@ flowchart TD
     EMPTY --> CHECK
 
     CHECK[Ensure hooks section exists]
-    CHECK --> LOOP["For each hook type:<br/>PreToolUse, PostToolUse,<br/>Stop, SubagentStop, Notification"]
+    CHECK --> LOOP["For each hook type:<br/>SessionStart, PreToolUse, PostToolUse,<br/>Stop, SubagentStop, Notification, SessionEnd"]
 
     LOOP --> EXISTS{Our hook<br/>already installed?}
     EXISTS -->|Yes| UPDATE[Update command path]
@@ -697,15 +701,18 @@ graph TD
 
 ### Event Bus
 
-The `eventBus` is a Set-based pub/sub with `subscribe()` returning an unsubscribe function:
+The `eventBus` is a Set-based pub/sub with `subscribe()` returning an unsubscribe function. It also tracks WebSocket connection state, exposing `connected` (boolean getter), `setConnected(value)`, and `onConnection(handler)` so any component can subscribe to connection status changes.
 
 ```typescript
-// Subscribe in useEffect, unsubscribe on cleanup
+// Subscribe to messages in useEffect, unsubscribe on cleanup
 useEffect(() => {
   return eventBus.subscribe((msg) => {
     if (msg.type === "agent_updated") load();
   });
 }, [load]);
+
+// Read connection state reactively (e.g. with useSyncExternalStore)
+const wsConnected = useSyncExternalStore(eventBus.onConnection, () => eventBus.connected);
 ```
 
 This pattern ensures:
@@ -713,6 +720,7 @@ This pattern ensures:
 - No memory leaks (cleanup on unmount)
 - No stale closures (subscribe with latest callback ref)
 - Only active pages receive messages
+- Connection state is available to any component without prop drilling
 
 ---
 
@@ -758,16 +766,19 @@ flowchart TD
     CHECK_TYPE -->|session_created| CHECK_NEW{"onNewSession<br/>enabled?"}
     CHECK_TYPE -->|session_updated| CHECK_STATUS{"Session status?"}
     CHECK_TYPE -->|agent_created| CHECK_SUB{"Subagent?<br/>onSubagentSpawn?"}
-    CHECK_TYPE -->|new_event| CHECK_NOTIF{"event_type ==<br/>Notification?"}
+    CHECK_TYPE -->|new_event| CHECK_EVENT{"event_type?"}
 
-    CHECK_STATUS -->|completed| CHECK_COMPLETE{"onSessionComplete?"}
     CHECK_STATUS -->|error| CHECK_ERROR{"onSessionError?"}
 
+    CHECK_EVENT -->|Stop| CHECK_STOP{"onSessionComplete?"}
+    CHECK_EVENT -->|SessionEnd| CHECK_END{"onSessionComplete?"}
+    CHECK_EVENT -->|Notification| FIRE
+
     CHECK_NEW -->|Yes| FIRE["new Notification(title, body)"]
-    CHECK_COMPLETE -->|Yes| FIRE
+    CHECK_STOP -->|Yes| FIRE_STOP["notify: Claude Finished Responding"]
+    CHECK_END -->|Yes| FIRE_END["notify: Session Completed"]
     CHECK_ERROR -->|Yes| FIRE
     CHECK_SUB -->|Yes| FIRE
-    CHECK_NOTIF -->|Yes| FIRE
 
     style FIRE fill:#10b981,stroke:#34d399,color:#fff
     style SKIP fill:#1a1a28,stroke:#2a2a3d,color:#e4e4ed

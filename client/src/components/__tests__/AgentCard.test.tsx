@@ -21,6 +21,7 @@ function makeAgent(overrides: Partial<Agent> = {}): Agent {
     current_tool: null,
     started_at: "2026-03-05T10:00:00.000Z",
     ended_at: null,
+    updated_at: "2026-03-05T10:00:00.000Z",
     parent_agent_id: null,
     metadata: null,
     ...overrides,
@@ -111,6 +112,6 @@ describe("AgentCard", () => {
         })}
       />
     );
-    expect(screen.getByText("5m 30s")).toBeInTheDocument();
+    expect(screen.getByText(/ran 5m 30s/)).toBeInTheDocument();
   });
 });

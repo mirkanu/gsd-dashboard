@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
 import { RefreshCw, Download, Zap, Bot, FolderOpen, Cpu, DollarSign } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
@@ -377,6 +377,7 @@ export function Analytics() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"tokens" | "workflow" | "productivity">("tokens");
+  const wsConnected = useSyncExternalStore(eventBus.onConnection, () => eventBus.connected);
 
   const load = useCallback(async () => {
     try {
@@ -492,10 +493,17 @@ export function Analytics() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h2 className="text-xl font-semibold text-gray-100">Analytics</h2>
-            <span className="flex items-center gap-1.5 text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-dot" />
-              Live
-            </span>
+            {wsConnected ? (
+              <span className="flex items-center gap-1.5 text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-dot" />
+                Live
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-[11px] text-gray-400 bg-gray-500/10 border border-gray-500/20 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                Offline
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-4 text-xs text-gray-500">
             <span>Real-time monitoring and analytics for Claude Code sessions</span>

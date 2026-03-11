@@ -2,7 +2,7 @@ import { Bot, GitBranch, Clock, Wrench } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AgentStatusBadge } from "./StatusBadge";
 import type { Agent } from "../lib/types";
-import { formatDuration, formatTime } from "../lib/format";
+import { formatDuration, timeAgo } from "../lib/format";
 
 interface AgentCardProps {
   agent: Agent;
@@ -64,12 +64,20 @@ export function AgentCard({ agent, onClick }: AgentCardProps) {
             {agent.current_tool}
           </span>
         )}
-        <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          {agent.ended_at
-            ? formatDuration(agent.started_at, agent.ended_at)
-            : formatTime(agent.started_at)}
-        </span>
+        {agent.ended_at ? (
+          <>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              ran {formatDuration(agent.started_at, agent.ended_at)}
+            </span>
+            <span className="text-gray-600">{timeAgo(agent.ended_at)}</span>
+          </>
+        ) : (
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {timeAgo(agent.updated_at || agent.started_at)}
+          </span>
+        )}
         <span className="ml-auto font-mono opacity-50">{agent.session_id.slice(0, 8)}</span>
       </div>
     </div>

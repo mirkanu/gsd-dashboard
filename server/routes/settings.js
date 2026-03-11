@@ -34,7 +34,15 @@ function getHookStatus() {
     }
     const raw = fs.readFileSync(CLAUDE_SETTINGS_PATH, "utf8");
     const settings = JSON.parse(raw);
-    const hookTypes = ["PreToolUse", "PostToolUse", "Stop", "SubagentStop", "Notification"];
+    const hookTypes = [
+      "PreToolUse",
+      "PostToolUse",
+      "Stop",
+      "SubagentStop",
+      "Notification",
+      "SessionStart",
+      "SessionEnd",
+    ];
     const hooks = {};
     for (const ht of hookTypes) {
       const entries = settings.hooks?.[ht] || [];

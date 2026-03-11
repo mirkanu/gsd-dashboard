@@ -12,6 +12,7 @@ export interface Session {
   ended_at: string | null;
   metadata: string | null;
   agent_count?: number;
+  last_activity?: string;
 }
 
 export interface Agent {
@@ -25,6 +26,7 @@ export interface Agent {
   current_tool: string | null;
   started_at: string;
   ended_at: string | null;
+  updated_at: string;
   parent_agent_id: string | null;
   metadata: string | null;
 }

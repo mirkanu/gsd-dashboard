@@ -844,20 +844,22 @@ export function Settings() {
         </h3>
         <p className="text-xs text-gray-500 mb-4">Database info, import/export, and cleanup.</p>
 
-        {sysInfo && (
-          <div className="space-y-4">
-            {/* DB stats grid */}
-            <div className="card p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                  Database Overview
-                </p>
+        <div className="space-y-4">
+          {/* DB stats grid */}
+          <div className="card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                Database Overview
+              </p>
+              {sysInfo && (
                 <div className="flex items-center gap-1.5 text-[11px] text-gray-600 font-mono bg-surface-2 px-2.5 py-1 rounded-md">
                   <HardDrive className="w-3 h-3 flex-shrink-0" />
                   <span className="truncate max-w-[300px]">{sysInfo.db.path}</span>
                 </div>
-              </div>
+              )}
+            </div>
 
+            {sysInfo ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                 {(() => {
                   const tableIcons: Record<string, React.ReactNode> = {
@@ -901,139 +903,141 @@ export function Settings() {
                   </p>
                 </div>
               </div>
-            </div>
-
-            {/* Session Cleanup */}
-            <div className="card p-5 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                  <Eraser className="w-4 h-4 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-300">Session Cleanup</p>
-                  <p className="text-xs text-gray-500">Abandon stale sessions and purge old data</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="bg-surface-2 rounded-lg px-4 py-3">
-                  <label className="text-xs text-gray-400 block mb-2">
-                    Abandon stale active sessions older than
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="1"
-                      value={abandonHours}
-                      onChange={(e) => setAbandonHours(e.target.value)}
-                      className="input w-20 text-sm text-right font-mono"
-                    />
-                    <span className="text-xs text-gray-500">hours</span>
-                  </div>
-                </div>
-                <div className="bg-surface-2 rounded-lg px-4 py-3">
-                  <label className="text-xs text-gray-400 block mb-2">
-                    Purge completed/errored sessions older than
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="1"
-                      value={purgeDays}
-                      onChange={(e) => setPurgeDays(e.target.value)}
-                      className="input w-20 text-sm text-right font-mono"
-                    />
-                    <span className="text-xs text-gray-500">days</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() =>
-                  confirmAction === "cleanup" ? handleCleanup() : setConfirmAction("cleanup")
-                }
-                disabled={actionLoading !== null}
-                className={`text-xs px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 ${
-                  confirmAction === "cleanup"
-                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                    : "text-gray-400 hover:text-gray-300 hover:bg-surface-4 border border-border"
-                }`}
-              >
-                {actionLoading === "cleanup" ? (
-                  <RefreshCw className="w-3 h-3 animate-spin inline mr-1" />
-                ) : (
-                  <Eraser className="w-3 h-3 inline mr-1" />
-                )}
-                {confirmAction === "cleanup" ? "Confirm Cleanup" : "Run Cleanup"}
-              </button>
-
-              {actionBanner(["cleanup"])}
-            </div>
-
-            {/* Danger zone */}
-            <div className="card p-5 space-y-4 border-red-500/10">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                  <AlertTriangle className="w-4 h-4 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-red-400">Danger Zone</p>
-                  <p className="text-xs text-gray-500">
-                    Irreversible actions that delete data permanently
-                  </p>
-                </div>
-              </div>
-
-              {confirmAction === "clear" ? (
-                <div className="bg-red-500/5 border border-red-500/20 rounded-lg px-4 py-3 flex items-center justify-between flex-wrap gap-3">
-                  <span className="text-xs text-amber-400">
-                    This will delete all sessions, agents, events, and token data. Are you sure?
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleClearData}
-                      disabled={actionLoading !== null}
-                      className="text-xs px-3 py-1.5 rounded-md bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50"
-                    >
-                      {actionLoading === "clear" ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin inline mr-1" />
-                      ) : null}
-                      Yes, Clear All
-                    </button>
-                    <button
-                      onClick={() => setConfirmAction(null)}
-                      className="text-xs px-3 py-1.5 rounded-md text-gray-400 hover:bg-surface-4 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setConfirmAction("clear")}
-                  disabled={actionLoading !== null}
-                  className="text-xs px-3 py-1.5 rounded-md text-red-400 hover:bg-red-500/10 border border-red-500/20 transition-colors disabled:opacity-50"
-                >
-                  <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
-                  Clear All Data
-                </button>
-              )}
-
-              {actionBanner(["clear"])}
-            </div>
+            ) : (
+              <p className="text-xs text-gray-500">Loading database info...</p>
+            )}
           </div>
-        )}
+
+          {/* Session Cleanup */}
+          <div className="card p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                <Eraser className="w-4 h-4 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-300">Session Cleanup</p>
+                <p className="text-xs text-gray-500">Abandon stale sessions and purge old data</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-surface-2 rounded-lg px-4 py-3">
+                <label className="text-xs text-gray-400 block mb-2">
+                  Abandon stale active sessions older than
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    value={abandonHours}
+                    onChange={(e) => setAbandonHours(e.target.value)}
+                    className="input w-20 text-sm text-right font-mono"
+                  />
+                  <span className="text-xs text-gray-500">hours</span>
+                </div>
+              </div>
+              <div className="bg-surface-2 rounded-lg px-4 py-3">
+                <label className="text-xs text-gray-400 block mb-2">
+                  Purge completed/errored sessions older than
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    value={purgeDays}
+                    onChange={(e) => setPurgeDays(e.target.value)}
+                    className="input w-20 text-sm text-right font-mono"
+                  />
+                  <span className="text-xs text-gray-500">days</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() =>
+                confirmAction === "cleanup" ? handleCleanup() : setConfirmAction("cleanup")
+              }
+              disabled={actionLoading !== null}
+              className={`text-xs px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 ${
+                confirmAction === "cleanup"
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                  : "text-gray-400 hover:text-gray-300 hover:bg-surface-4 border border-border"
+              }`}
+            >
+              {actionLoading === "cleanup" ? (
+                <RefreshCw className="w-3 h-3 animate-spin inline mr-1" />
+              ) : (
+                <Eraser className="w-3 h-3 inline mr-1" />
+              )}
+              {confirmAction === "cleanup" ? "Confirm Cleanup" : "Run Cleanup"}
+            </button>
+
+            {actionBanner(["cleanup"])}
+          </div>
+
+          {/* Danger zone */}
+          <div className="card p-5 space-y-4 border-red-500/10">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4 text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-red-400">Danger Zone</p>
+                <p className="text-xs text-gray-500">
+                  Irreversible actions that delete data permanently
+                </p>
+              </div>
+            </div>
+
+            {confirmAction === "clear" ? (
+              <div className="bg-red-500/5 border border-red-500/20 rounded-lg px-4 py-3 flex items-center justify-between flex-wrap gap-3">
+                <span className="text-xs text-amber-400">
+                  This will delete all sessions, agents, events, and token data. Are you sure?
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleClearData}
+                    disabled={actionLoading !== null}
+                    className="text-xs px-3 py-1.5 rounded-md bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                  >
+                    {actionLoading === "clear" ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin inline mr-1" />
+                    ) : null}
+                    Yes, Clear All
+                  </button>
+                  <button
+                    onClick={() => setConfirmAction(null)}
+                    className="text-xs px-3 py-1.5 rounded-md text-gray-400 hover:bg-surface-4 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmAction("clear")}
+                disabled={actionLoading !== null}
+                className="text-xs px-3 py-1.5 rounded-md text-red-400 hover:bg-red-500/10 border border-red-500/20 transition-colors disabled:opacity-50"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
+                Clear All Data
+              </button>
+            )}
+
+            {actionBanner(["clear"])}
+          </div>
+        </div>
       </section>
 
       {/* ─── ABOUT ─── */}
-      {sysInfo && (
-        <section>
-          <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2 mb-1">
-            <Server className="w-4 h-4 text-gray-500" />
-            About
-          </h3>
-          <p className="text-xs text-gray-500 mb-4">Server runtime information.</p>
+      <section>
+        <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2 mb-1">
+          <Server className="w-4 h-4 text-gray-500" />
+          About
+        </h3>
+        <p className="text-xs text-gray-500 mb-4">Server runtime information.</p>
 
+        {sysInfo ? (
           <div className="card p-5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="bg-surface-2 rounded-lg px-4 py-3">
@@ -1072,8 +1076,10 @@ export function Settings() {
               </div>
             </div>
           </div>
-        </section>
-      )}
+        ) : (
+          <p className="text-xs text-gray-500">Loading server info...</p>
+        )}
+      </section>
     </div>
   );
 }

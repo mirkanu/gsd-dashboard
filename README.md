@@ -112,7 +112,7 @@ The dashboard offers a comprehensive set of features to monitor and analyze your
 | **Sessions**          | Searchable, filterable, paginated table of all Claude Code sessions          |
 | **Session Detail**    | Per-session agent cards and full event timeline                              |
 | **Activity Feed**     | Real-time streaming event log with pause/resume and pagination               |
-| **Analytics**         | Token usage, tool frequency, activity heatmap, session trends                |
+| **Analytics**         | Token usage, tool frequency, activity heatmap, session trends, live/offline connection indicator |
 | **Live Updates**      | WebSocket push -- no polling, instant UI updates                             |
 | **Auto-Discovery**    | Sessions and agents are created automatically from hook events               |
 | **History Import**    | Automatically imports legacy sessions from `~/.claude/` on server startup    |
@@ -194,22 +194,24 @@ sequenceDiagram
     WS->>UI: Push message
     UI->>UI: Re-render component
 
-    Note over CC,HH: Hooks fire on PreToolUse,<br/>PostToolUse, Stop,<br/>SubagentStop, Notification
+    Note over CC,HH: Hooks fire on SessionStart,<br/>PreToolUse, PostToolUse,<br/>Stop, SubagentStop,<br/>SessionEnd, Notification
     Note over API,DB: Transactional writes<br/>with auto session/agent creation
     Note over WS,UI: ~0ms latency,<br/>no polling
 ```
 
 ### Hook Lifecycle
 
-1. **Claude Code** fires a hook when a tool is used, a session ends, or a subagent completes
+1. **Claude Code** fires a hook on session start, tool use, turn end, subagent completion, and session exit
 2. **Hook Handler** (`scripts/hook-handler.js`) reads the JSON event from stdin and POSTs it to the API. Fails silently with a 5s timeout so it never blocks Claude Code
 3. **Server** processes the event inside a SQLite transaction:
    - Auto-creates sessions and main agents on first contact
    - Detects `Agent` tool calls to track subagent creation
    - Sets agent to "working" on `PreToolUse`, keeps it working through `PostToolUse`
-   - Preserves running background subagents on `Stop` (main agent goes "idle")
+   - On `Stop` (Claude finishes responding), main agent goes to "idle" — even on non-tool turns where Claude responds without invoking any tools, ensuring timestamps and activity logs stay accurate. Background subagents continue running. Session stays `active` — the user can send more messages
    - Marks subagents completed individually via `SubagentStop`
-   - Auto-completes session when the last subagent finishes
+   - On `SessionEnd` (CLI process exits), marks all agents and the session as `completed`
+   - On `SessionStart`, any other active session with no activity for 5+ minutes is automatically marked "abandoned" with its agents completed. This handles `/resume` inside a session, Ctrl+C, and other scenarios where a session is orphaned without a clean `SessionEnd`
+   - Reactivates completed/error/abandoned sessions when new work events arrive (session resumed)
 4. **WebSocket** broadcasts the change to all connected clients
 5. **UI** receives the update and re-renders the affected components
 
@@ -220,10 +222,12 @@ stateDiagram-v2
     [*] --> connected: Agent created
     connected --> working: PreToolUse
     working --> working: PreToolUse (different tool)
-    working --> idle: Stop (subagents still running)
-    working --> completed: Stop (no subagents)
-    idle --> idle: Tool events from subagents
-    idle --> completed: Last SubagentStop
+    working --> idle: Stop (turn ended)
+    idle --> working: PreToolUse (next turn)
+    idle --> connected: SessionStart (resume)
+    working --> completed: SessionEnd
+    idle --> completed: SessionEnd
+    connected --> completed: SessionEnd
     working --> error: Error occurred
     completed --> [*]
     error --> [*]
@@ -233,11 +237,14 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> active: First hook event received
-    active --> active: Stop (subagents still running)
-    active --> completed: Stop (no subagents) / last SubagentStop
-    active --> error: Stop hook (error)
-    active --> abandoned: No activity timeout
+    [*] --> active: First hook event / SessionStart
+    active --> active: Stop (turn ended, waiting for user)
+    active --> error: Stop (error stop_reason)
+    active --> completed: SessionEnd (CLI exited)
+    active --> abandoned: No activity for 5+ min (SessionStart cleanup)
+    completed --> active: Session resumed (new work event)
+    error --> active: Session resumed (new work event)
+    abandoned --> active: Session resumed (new work event)
     completed --> [*]
     error --> [*]
     abandoned --> [*]
@@ -397,13 +404,15 @@ stateDiagram-v2
 
 The dashboard processes these Claude Code hook types:
 
-| Hook Type      | Trigger                   | Dashboard Action                                                                             |
-| -------------- | ------------------------- | -------------------------------------------------------------------------------------------- |
-| `PreToolUse`   | Agent starts using a tool | Sets agent to `working`, sets `current_tool`. If tool is `Agent`, creates subagent record    |
-| `PostToolUse`  | Tool execution completed  | Clears `current_tool`. Agent stays `working` (no status change)                              |
-| `Stop`         | Session/turn ended        | Main agent to `idle` if subagents running, else `completed`. Session stays active if subagents remain |
-| `SubagentStop` | Background agent finished | Matches and completes the subagent. Auto-completes session when last subagent finishes       |
-| `Notification` | Agent notification        | Logs event. Triggers a browser notification if the user has notifications enabled             |
+| Hook Type      | Trigger                        | Dashboard Action                                                                             |
+| -------------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
+| `SessionStart` | Claude Code session begins     | Creates session and main agent. Reactivates resumed sessions. Abandons orphaned sessions with no activity for 5+ minutes |
+| `PreToolUse`   | Agent starts using a tool      | Sets agent to `working`, sets `current_tool`. If tool is `Agent`, creates subagent record    |
+| `PostToolUse`  | Tool execution completed       | Clears `current_tool`. Agent stays `working` (no status change)                              |
+| `Stop`         | Claude finishes responding     | Main agent to `idle` (even on non-tool turns). Background subagents keep running. Session stays `active` |
+| `SubagentStop` | Background agent finished      | Matches and completes the subagent by description, type, or task                             |
+| `Notification` | Agent notification             | Logs event. Triggers a browser notification if the user has notifications enabled             |
+| `SessionEnd`   | Claude Code CLI process exits  | Marks all agents and the session as `completed`                                              |
 
 ---
 
@@ -417,12 +426,13 @@ The dashboard supports native browser notifications for real-time alerts when yo
 2. **Grant** browser permission when prompted (required by the Web Notifications API)
 3. **Configure** which events trigger notifications:
 
-| Event               | Default | Description                                          |
-| ------------------- | ------- | ---------------------------------------------------- |
-| New session starts  | On      | Fires when a new Claude Code session is created      |
-| Session completes   | Off     | Fires when a session finishes successfully           |
-| Session errors      | On      | Fires when a session ends with an error              |
-| Subagent spawned    | Off     | Fires when a background subagent is created          |
+| Event                        | Default | Description                                                     |
+| ---------------------------- | ------- | --------------------------------------------------------------- |
+| New session starts           | On      | Fires when a new Claude Code session is created                 |
+| Claude finished responding   | Off     | Fires on `Stop` events when Claude finishes a response turn     |
+| Session closed               | Off     | Fires on `SessionEnd` when the CLI process exits                |
+| Session errors               | On      | Fires when a session ends with an error                         |
+| Subagent spawned             | Off     | Fires when a background subagent is created                     |
 
 Additionally, any `Notification` hook event from Claude Code triggers a browser notification regardless of the per-event toggles (as long as the master toggle is enabled).
 
@@ -467,7 +477,7 @@ erDiagram
     agents {
         TEXT id PK "UUID or session_id-main"
         TEXT session_id FK
-        TEXT name "Display name"
+        TEXT name "Main Agent — {session name} or subagent description"
         TEXT type "main|subagent"
         TEXT status "idle|connected|working|completed|error"
         TEXT current_tool "Active tool or NULL"

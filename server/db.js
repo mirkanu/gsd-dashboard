@@ -149,6 +149,39 @@ try {
   db.pragma("foreign_keys = ON");
 }
 
+// Migrate: add updated_at columns to sessions and agents
+try {
+  db.prepare("SELECT updated_at FROM sessions LIMIT 1").get();
+} catch {
+  db.prepare("ALTER TABLE sessions ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''").run();
+  db.prepare("UPDATE sessions SET updated_at = COALESCE(ended_at, started_at)").run();
+}
+try {
+  db.prepare("SELECT updated_at FROM agents LIMIT 1").get();
+} catch {
+  db.prepare("ALTER TABLE agents ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''").run();
+  db.prepare("UPDATE agents SET updated_at = COALESCE(ended_at, started_at)").run();
+}
+
+// Startup cleanup: mark stale active sessions as completed.
+// Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
+// so they stay "active" forever. Complete any active session whose last event is older than
+// 1 hour — the CLI process is certainly gone by then.
+db.prepare(
+  `
+  UPDATE sessions SET
+    status = 'completed',
+    ended_at = COALESCE(ended_at, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  WHERE status = 'active'
+    AND started_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-1 hour')
+    AND NOT EXISTS (
+      SELECT 1 FROM events e
+      WHERE e.session_id = sessions.id
+        AND e.created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-1 hour')
+    )
+`
+).run();
+
 // Startup cleanup: complete orphaned agents on finished sessions
 db.prepare(
   `
@@ -163,16 +196,23 @@ db.prepare(
 const stmts = {
   getSession: db.prepare("SELECT * FROM sessions WHERE id = ?"),
   listSessions: db.prepare(
-    "SELECT s.*, COUNT(a.id) as agent_count FROM sessions s LEFT JOIN agents a ON a.session_id = s.id GROUP BY s.id ORDER BY s.started_at DESC LIMIT ? OFFSET ?"
+    `SELECT s.*, COUNT(a.id) as agent_count, s.updated_at as last_activity
+     FROM sessions s LEFT JOIN agents a ON a.session_id = s.id
+     GROUP BY s.id ORDER BY s.updated_at DESC LIMIT ? OFFSET ?`
   ),
   listSessionsByStatus: db.prepare(
-    "SELECT s.*, COUNT(a.id) as agent_count FROM sessions s LEFT JOIN agents a ON a.session_id = s.id WHERE s.status = ? GROUP BY s.id ORDER BY s.started_at DESC LIMIT ? OFFSET ?"
+    `SELECT s.*, COUNT(a.id) as agent_count, s.updated_at as last_activity
+     FROM sessions s LEFT JOIN agents a ON a.session_id = s.id
+     WHERE s.status = ? GROUP BY s.id ORDER BY s.updated_at DESC LIMIT ? OFFSET ?`
   ),
   insertSession: db.prepare(
-    "INSERT INTO sessions (id, name, status, cwd, model, started_at, metadata) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), ?)"
+    "INSERT INTO sessions (id, name, status, cwd, model, started_at, updated_at, metadata) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), ?)"
   ),
   updateSession: db.prepare(
-    "UPDATE sessions SET name = COALESCE(?, name), status = COALESCE(?, status), ended_at = COALESCE(?, ended_at), metadata = COALESCE(?, metadata) WHERE id = ?"
+    "UPDATE sessions SET name = COALESCE(?, name), status = COALESCE(?, status), ended_at = COALESCE(?, ended_at), metadata = COALESCE(?, metadata), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?"
+  ),
+  reactivateSession: db.prepare(
+    "UPDATE sessions SET status = 'active', ended_at = NULL, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?"
   ),
 
   getAgent: db.prepare("SELECT * FROM agents WHERE id = ?"),
@@ -184,10 +224,22 @@ const stmts = {
     "SELECT * FROM agents WHERE status = ? ORDER BY started_at DESC LIMIT ? OFFSET ?"
   ),
   insertAgent: db.prepare(
-    "INSERT INTO agents (id, session_id, name, type, subagent_type, status, task, started_at, parent_agent_id, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), ?, ?)"
+    "INSERT INTO agents (id, session_id, name, type, subagent_type, status, task, started_at, updated_at, parent_agent_id, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), ?, ?)"
   ),
   updateAgent: db.prepare(
-    "UPDATE agents SET name = COALESCE(?, name), status = COALESCE(?, status), task = COALESCE(?, task), current_tool = ?, ended_at = COALESCE(?, ended_at), metadata = COALESCE(?, metadata) WHERE id = ?"
+    "UPDATE agents SET name = COALESCE(?, name), status = COALESCE(?, status), task = COALESCE(?, task), current_tool = ?, ended_at = COALESCE(?, ended_at), metadata = COALESCE(?, metadata), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?"
+  ),
+  reactivateAgent: db.prepare(
+    "UPDATE agents SET status = 'connected', ended_at = NULL, current_tool = NULL, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?"
+  ),
+
+  touchSession: db.prepare(
+    "UPDATE sessions SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?"
+  ),
+  findStaleSessions: db.prepare(
+    `SELECT id FROM sessions
+     WHERE status = 'active' AND id != ?
+       AND updated_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-' || ? || ' minutes')`
   ),
 
   insertEvent: db.prepare(
@@ -195,7 +247,7 @@ const stmts = {
   ),
   listEvents: db.prepare("SELECT * FROM events ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?"),
   listEventsBySession: db.prepare(
-    "SELECT * FROM events WHERE session_id = ? ORDER BY created_at ASC, id ASC"
+    "SELECT * FROM events WHERE session_id = ? ORDER BY created_at DESC, id DESC"
   ),
   countEvents: db.prepare("SELECT COUNT(*) as count FROM events"),
   countEventsSince: db.prepare("SELECT COUNT(*) as count FROM events WHERE created_at >= ?"),
