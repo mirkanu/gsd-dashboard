@@ -220,8 +220,19 @@ const processEvent = db.transaction((hookType, data) => {
             if (!currentMain || currentMain.status !== "working") {
               const completedAt = new Date().toISOString();
               // Complete the main agent too if it's idle/connected
-              if (currentMain && (currentMain.status === "idle" || currentMain.status === "connected")) {
-                stmts.updateAgent.run(null, "completed", null, null, completedAt, null, currentMain.id);
+              if (
+                currentMain &&
+                (currentMain.status === "idle" || currentMain.status === "connected")
+              ) {
+                stmts.updateAgent.run(
+                  null,
+                  "completed",
+                  null,
+                  null,
+                  completedAt,
+                  null,
+                  currentMain.id
+                );
                 broadcast("agent_updated", stmts.getAgent.get(currentMain.id));
               }
               stmts.updateSession.run(null, "completed", completedAt, null, sessionId);
