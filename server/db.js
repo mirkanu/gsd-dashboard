@@ -149,6 +149,15 @@ try {
   db.pragma("foreign_keys = ON");
 }
 
+// Startup cleanup: complete orphaned agents on finished sessions
+db.prepare(`
+  UPDATE agents SET
+    status = 'completed',
+    ended_at = COALESCE(ended_at, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  WHERE status IN ('working', 'connected', 'idle')
+    AND session_id IN (SELECT id FROM sessions WHERE status IN ('completed', 'error', 'abandoned'))
+`).run();
+
 const stmts = {
   getSession: db.prepare("SELECT * FROM sessions WHERE id = ?"),
   listSessions: db.prepare(
