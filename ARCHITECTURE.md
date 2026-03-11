@@ -1,6 +1,4 @@
-# Architecture
-
-### Agent Dashboard - System Design and Technical Reference
+# Agent Dashboard - System Design and Technical Reference
 
 ![Claude Code](https://img.shields.io/badge/Claude_Code-1.0-orange?style=flat-square&logo=claude&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white)
@@ -36,6 +34,7 @@
 - [WebSocket Protocol](#websocket-protocol)
 - [Hook Integration](#hook-integration)
 - [State Management](#state-management)
+- [Browser Notification System](#browser-notification-system)
 - [Security Considerations](#security-considerations)
 - [Performance Characteristics](#performance-characteristics)
 - [Deployment Modes](#deployment-modes)
@@ -300,9 +299,12 @@ graph TD
     ACTIVITY["ActivityFeed.tsx"]
     SETTINGS_P["Settings.tsx"]
 
+    ANALYTICS_P["Analytics.tsx"]
+    NOTFOUND["NotFound.tsx"]
+
     APP --> LAYOUT
     LAYOUT --> SIDEBAR
-    LAYOUT --> DASH & KANBAN & SESS & DETAIL & ACTIVITY & SETTINGS_P
+    LAYOUT --> DASH & KANBAN & SESS & DETAIL & ACTIVITY & ANALYTICS_P & SETTINGS_P & NOTFOUND
 
     DASH --> SC1["StatCard x4"]
     DASH --> AC1["AgentCard[]"]
@@ -325,9 +327,10 @@ graph TD
 ```mermaid
 graph TD
     MAIN["main.tsx<br/>React entry"]
-    APP["App.tsx<br/>Router + WS"]
+    APP["App.tsx<br/>Router + WS + Notifications"]
     EB["eventBus.ts<br/>Pub/sub"]
     WS["useWebSocket.ts<br/>Auto-reconnect hook"]
+    NOTIF["useNotifications.ts<br/>Browser notification triggers"]
     API["api.ts<br/>Typed fetch client"]
     TYPES["types.ts<br/>Interfaces + configs"]
     FMT["format.ts<br/>Date/time utilities"]
@@ -335,6 +338,8 @@ graph TD
     MAIN --> APP
     APP --> WS
     APP --> EB
+    APP --> NOTIF
+    NOTIF --> EB
     WS --> TYPES
     EB --> TYPES
 
@@ -344,13 +349,15 @@ graph TD
         S[Sessions]
         SD[SessionDetail]
         AF[ActivityFeed]
+        AN[Analytics]
         SET[Settings]
+        NF[NotFound]
     end
 
-    APP --> D & K & S & SD & AF
-    D & K & S & SD & AF --> API
-    D & K & S & SD & AF --> EB
-    D & K & S & SD & AF --> FMT
+    APP --> D & K & S & SD & AF & AN
+    D & K & S & SD & AF & AN --> API
+    D & K & S & SD & AF & AN --> EB
+    D & K & S & SD & AF & AN --> FMT
     SET --> API
     SET --> EB
     SET --> FMT
@@ -387,6 +394,9 @@ graph LR
     SESS_R["/sessions"] --> SESS[Sessions]
     DETAIL_R["/sessions/:id"] --> DETAIL[SessionDetail]
     ACT_R["/activity"] --> ACT[ActivityFeed]
+    AN_R["/analytics"] --> AN[Analytics]
+    SET_R["/settings"] --> SET[Settings]
+    NF_R["/*"] --> NF[NotFound]
 
     ALL["All routes"] --> LAYOUT["Layout wrapper<br/>(Sidebar + Outlet)"]
 ```
@@ -398,7 +408,9 @@ graph LR
 | `/sessions`     | Sessions      | `GET /api/sessions`                                    |
 | `/sessions/:id` | SessionDetail | `GET /api/sessions/:id` (includes agents + events)     |
 | `/activity`     | ActivityFeed  | `GET /api/events?limit=100`                            |
-| `/settings`     | Settings      | `GET /api/settings/info`, `GET /api/pricing`, `GET /api/pricing/cost` |
+| `/analytics`    | Analytics     | `GET /api/analytics/tokens`, `GET /api/analytics/tools`, `GET /api/analytics/trends`, `GET /api/analytics/agents` |
+| `/settings`     | Settings      | `GET /api/settings/info`, `GET /api/pricing`, `GET /api/pricing/cost` + `localStorage` for notification prefs |
+| `/*`            | NotFound      | None (static 404 page)                                 |
 
 ---
 
@@ -647,10 +659,15 @@ graph TD
     subgraph "Data Sources"
         REST["REST API<br/>(initial load + refresh)"]
         WSM["WebSocket Messages<br/>(real-time updates)"]
+        LS["localStorage<br/>(notification prefs)"]
     end
 
     subgraph "Distribution"
         EB["eventBus<br/>(Set-based pub/sub)"]
+    end
+
+    subgraph "App-Level Hooks"
+        NOTIF_H["useNotifications<br/>reads prefs, fires<br/>browser notifications"]
     end
 
     subgraph "Page State"
@@ -659,18 +676,22 @@ graph TD
         US3["useState<br/>Sessions"]
         US4["useState<br/>SessionDetail"]
         US5["useState<br/>ActivityFeed"]
+        US6["useState<br/>Analytics"]
         US7["useState<br/>Settings"]
     end
 
-    REST --> US1 & US2 & US3 & US4 & US5 & US7
+    REST --> US1 & US2 & US3 & US4 & US5 & US6 & US7
     WSM --> EB
-    EB --> US1 & US2 & US3 & US4 & US5 & US7
+    EB --> US1 & US2 & US3 & US4 & US5 & US6 & US7
+    EB --> NOTIF_H
+    LS --> NOTIF_H
+    LS --> US7
 ```
 
 **Why no Redux / Zustand / Context:**
 
 - Each page owns its data and lifecycle
-- No cross-page state sharing needed
+- No cross-page state sharing needed (notification prefs use `localStorage` as the shared store)
 - WebSocket events trigger reload or append, not complex state merging
 - Simpler mental model, fewer abstraction layers, easier to debug
 
@@ -692,6 +713,91 @@ This pattern ensures:
 - No memory leaks (cleanup on unmount)
 - No stale closures (subscribe with latest callback ref)
 - Only active pages receive messages
+
+---
+
+## Browser Notification System
+
+The dashboard implements native browser notifications using the Web Notifications API, allowing users to receive alerts when they're not actively viewing the dashboard tab.
+
+### Notification Architecture
+
+```mermaid
+graph TD
+    subgraph "Server Side"
+        WS_SRV["WebSocket Server<br/>broadcasts events"]
+    end
+
+    subgraph "Client Side"
+        WS_CLI["useWebSocket hook<br/>receives messages"]
+        EB["eventBus<br/>distributes messages"]
+        NOTIF["useNotifications hook<br/>evaluates notification rules"]
+        PREFS["localStorage<br/>(notification preferences)"]
+        API_N["Web Notifications API<br/>(browser native)"]
+    end
+
+    WS_SRV -->|push| WS_CLI
+    WS_CLI --> EB
+    EB --> NOTIF
+    NOTIF -->|reads| PREFS
+    NOTIF -->|fires| API_N
+
+    style NOTIF fill:#f59e0b,stroke:#fbbf24,color:#000
+    style API_N fill:#10b981,stroke:#34d399,color:#fff
+    style PREFS fill:#6366f1,stroke:#818cf8,color:#fff
+```
+
+### Notification Flow
+
+```mermaid
+flowchart TD
+    MSG["WebSocket message received"] --> CHECK_ENABLED{"Notifications<br/>enabled?"}
+    CHECK_ENABLED -->|No| SKIP[Skip]
+    CHECK_ENABLED -->|Yes| CHECK_TYPE{"Message type?"}
+
+    CHECK_TYPE -->|session_created| CHECK_NEW{"onNewSession<br/>enabled?"}
+    CHECK_TYPE -->|session_updated| CHECK_STATUS{"Session status?"}
+    CHECK_TYPE -->|agent_created| CHECK_SUB{"Subagent?<br/>onSubagentSpawn?"}
+    CHECK_TYPE -->|new_event| CHECK_NOTIF{"event_type ==<br/>Notification?"}
+
+    CHECK_STATUS -->|completed| CHECK_COMPLETE{"onSessionComplete?"}
+    CHECK_STATUS -->|error| CHECK_ERROR{"onSessionError?"}
+
+    CHECK_NEW -->|Yes| FIRE["new Notification(title, body)"]
+    CHECK_COMPLETE -->|Yes| FIRE
+    CHECK_ERROR -->|Yes| FIRE
+    CHECK_SUB -->|Yes| FIRE
+    CHECK_NOTIF -->|Yes| FIRE
+
+    style FIRE fill:#10b981,stroke:#34d399,color:#fff
+    style SKIP fill:#1a1a28,stroke:#2a2a3d,color:#e4e4ed
+```
+
+### Preference Storage
+
+Notification preferences are stored in `localStorage` as a JSON object:
+
+```typescript
+interface NotifPrefs {
+  enabled: boolean;          // Master toggle
+  onNewSession: boolean;     // New session created
+  onSessionError: boolean;   // Session ended with error
+  onSessionComplete: boolean; // Session completed successfully
+  onSubagentSpawn: boolean;  // Background subagent spawned
+}
+```
+
+**Key:** `agent-monitor-notifications`
+
+The Settings page provides a UI for toggling each preference, managing browser permission state (granted/denied/prompt), and sending test notifications.
+
+### Permission States
+
+| Browser Permission | UI Indicator     | Behavior                                        |
+| ------------------ | ---------------- | ----------------------------------------------- |
+| `granted`          | Green shield     | Notifications fire immediately                  |
+| `denied`           | Red shield       | Notifications silently suppressed by browser     |
+| `default`          | Amber shield     | Enabling triggers `Notification.requestPermission()` |
 
 ---
 

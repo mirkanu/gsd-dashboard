@@ -2,6 +2,8 @@
 
 ### Real-time monitoring platform for Claude Code agent activity
 
+A professional dashboard to track and visualize your Claude Code agent sessions, tool usage, and subagent orchestration in real-time. Built with Node.js, Express, React, and SQLite, it integrates directly with Claude Code via its native hook system for seamless session tracking and analytics.
+
 ![Claude Code](https://img.shields.io/badge/Claude_Code-1.0-orange?style=flat-square&logo=claude&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4.21-000000?style=flat-square&logo=express&logoColor=white)
@@ -25,6 +27,31 @@
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [How It Works](#how-it-works)
+- [Configuration](#configuration)
+- [npm Scripts](#npm-scripts)
+- [API Reference](#api-reference)
+- [Hook Events](#hook-events)
+- [Browser Notifications](#browser-notifications)
+- [Data Storage](#data-storage)
+- [Statusline](#statusline)
+- [Server Architecture](#server-architecture)
+- [Client Routing](#client-routing)
+- [Hook Handler Flow](#hook-handler-flow)
+- [Deployment Modes](#deployment-modes)
+- [Project Structure](#project-structure)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
+---
+
+## Overview
+
 Track sessions, monitor agents in real-time, visualize tool usage, and observe subagent orchestration through a professional dark-themed web interface. Integrates directly with Claude Code via its native hook system.
 
 ```mermaid
@@ -37,6 +64,10 @@ graph LR
     style C fill:#1a1a28,stroke:#2a2a3d,color:#e4e4ed
     style D fill:#10b981,stroke:#34d399,color:#fff
 ```
+
+### User Interface
+
+Comes with a sleek dark theme, responsive design, and intuitive navigation to explore your agent activity:
 
 <p align="center">
   <img src="images/dashboard.png" alt="Dashboard Overview" width="100%">
@@ -66,9 +97,13 @@ graph LR
   <img src="images/settings.png" alt="Settings Overview" width="100%">
 </p>
 
+The sidebar provides quick access to the Dashboard, Kanban Board, Sessions list, Activity Feed, Analytics, and Settings. Each page is designed to give you deep insights into your Claude Code agent activity with real-time updates and rich visualizations.
+
 ---
 
 ## Features
+
+The dashboard offers a comprehensive set of features to monitor and analyze your Claude Code sessions and agents:
 
 | Feature               | Description                                                                  |
 | --------------------- | ---------------------------------------------------------------------------- |
@@ -83,7 +118,8 @@ graph LR
 | **History Import**    | Automatically imports legacy sessions from `~/.claude/` on server startup    |
 | **Background Agents** | Correctly tracks backgrounded subagents without premature completion         |
 | **Cost Tracking**     | Per-model cost estimation with configurable pricing rules and per-session breakdowns |
-| **Settings**          | System info, hook status, model pricing management, data export, session cleanup |
+| **Notifications**     | Browser notifications for session starts, completions, errors, and subagent spawns. Configurable per-event toggles with permission management |
+| **Settings**          | System info, hook status, model pricing management, notification preferences, data export, session cleanup |
 | **Responsive Design** | Mobile-friendly layouts with stacking grids, scrollable tables, and collapsible sidebar |
 | **Seed Data**         | Built-in seed script for demos and development                               |
 | **Statusline**        | Color-coded CLI statusline showing model, context usage, git branch, tokens  |
@@ -367,7 +403,36 @@ The dashboard processes these Claude Code hook types:
 | `PostToolUse`  | Tool execution completed  | Clears `current_tool`. Agent stays `working` (no status change)                              |
 | `Stop`         | Session/turn ended        | Main agent to `idle` if subagents running, else `completed`. Session stays active if subagents remain |
 | `SubagentStop` | Background agent finished | Matches and completes the subagent. Auto-completes session when last subagent finishes       |
-| `Notification` | Agent notification        | Logs event                                                                                   |
+| `Notification` | Agent notification        | Logs event. Triggers a browser notification if the user has notifications enabled             |
+
+---
+
+## Browser Notifications
+
+The dashboard supports native browser notifications for real-time alerts when you're not actively viewing the dashboard tab.
+
+### How It Works
+
+1. **Enable** notifications in the Settings page via the master toggle
+2. **Grant** browser permission when prompted (required by the Web Notifications API)
+3. **Configure** which events trigger notifications:
+
+| Event               | Default | Description                                          |
+| ------------------- | ------- | ---------------------------------------------------- |
+| New session starts  | On      | Fires when a new Claude Code session is created      |
+| Session completes   | Off     | Fires when a session finishes successfully           |
+| Session errors      | On      | Fires when a session ends with an error              |
+| Subagent spawned    | Off     | Fires when a background subagent is created          |
+
+Additionally, any `Notification` hook event from Claude Code triggers a browser notification regardless of the per-event toggles (as long as the master toggle is enabled).
+
+### Architecture
+
+- **Preferences** are stored in `localStorage` under the key `agent-monitor-notifications`
+- **`useNotifications` hook** subscribes to the WebSocket event bus at the app root level (`App.tsx`) and fires `new Notification()` calls based on the saved preferences
+- **Permission management** is handled in the Settings page with visual indicators for granted/denied/prompt states
+- **Test notification** button in Settings lets you verify the setup works
+- No server-side component - notifications are entirely client-side, triggered by WebSocket messages
 
 ---
 
@@ -507,7 +572,8 @@ graph LR
     D["/sessions/:id"] --> DETAIL["SessionDetail<br/>agents + timeline + cost"]
     A["/activity"] --> ACT["ActivityFeed<br/>streaming event log"]
     AN["/analytics"] --> ANALYTICS["Analytics<br/>tokens + heatmap + trends"]
-    ST["/settings"] --> SETTINGS["Settings<br/>pricing + hooks + export"]
+    ST["/settings"] --> SETTINGS["Settings<br/>pricing + notifications + hooks + export"]
+    NF["/*"] --> NOTFOUND["NotFound<br/>404 catch-all"]
 
     ALL["All routes"] --> LAYOUT["Layout wrapper<br/>(Sidebar + Outlet)"]
 
@@ -597,7 +663,8 @@ agent-dashboard/
 |       |   |-- format.ts        # Date/time formatting utilities
 |       |   +-- eventBus.ts      # Pub/sub for WebSocket distribution
 |       |-- hooks/
-|       |   +-- useWebSocket.ts  # Auto-reconnecting WebSocket hook
+|       |   |-- useWebSocket.ts  # Auto-reconnecting WebSocket hook
+|       |   +-- useNotifications.ts # Browser notification triggers from WebSocket events
 |       |-- components/
 |       |   |-- Layout.tsx       # Shell with sidebar + outlet
 |       |   |-- Sidebar.tsx      # Navigation + connection indicator
@@ -612,7 +679,8 @@ agent-dashboard/
 |           |-- SessionDetail.tsx # Single session deep dive
 |           |-- ActivityFeed.tsx # Real-time event stream
 |           |-- Analytics.tsx   # Token usage, heatmap, trends
-|           +-- Settings.tsx       # Model pricing, hooks, export, cleanup
+|           |-- Settings.tsx       # Model pricing, notifications, hooks, export, cleanup
+|           +-- NotFound.tsx       # 404 catch-all page
 |-- scripts/
 |   |-- hook-handler.js          # Lightweight stdin-to-HTTP forwarder
 |   |-- install-hooks.js         # Auto-configures ~/.claude/settings.json
