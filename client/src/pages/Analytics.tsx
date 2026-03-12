@@ -12,6 +12,12 @@ function fmt(n: number): string {
   return String(n);
 }
 
+function fmtCost(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(2)}K`;
+  return `$${n.toFixed(2)}`;
+}
+
 function Tip({ raw, children }: { raw: string; children: React.ReactNode }) {
   const [show, setShow] = useState(false);
   return (
@@ -573,7 +579,8 @@ export function Analytics() {
         />
         <StatPill
           label="Total Cost"
-          value={costData ? `$${costData.total_cost.toFixed(2)}` : "$0.00"}
+          value={costData ? fmtCost(costData.total_cost) : "$0.00"}
+          raw={costData ? `$${costData.total_cost.toFixed(2)}` : undefined}
           sub={
             costData
               ? `${costData.breakdown.length} model${costData.breakdown.length !== 1 ? "s" : ""}`
@@ -765,14 +772,16 @@ export function Analytics() {
                         <div key={b.model} className="flex justify-between text-xs">
                           <span className="text-gray-400 font-mono truncate">{b.model}</span>
                           <span className="text-emerald-400 font-mono font-medium ml-2">
-                            ${b.cost.toFixed(2)}
+                            <Tip raw={`$${b.cost.toFixed(2)}`}>{fmtCost(b.cost)}</Tip>
                           </span>
                         </div>
                       ))}
                     <div className="flex justify-between text-xs pt-2 border-t border-border">
                       <span className="text-gray-300 font-medium">Total</span>
                       <span className="text-emerald-400 font-mono font-semibold">
-                        ${costData.total_cost.toFixed(2)}
+                        <Tip raw={`$${costData.total_cost.toFixed(2)}`}>
+                          {fmtCost(costData.total_cost)}
+                        </Tip>
                       </span>
                     </div>
                   </div>
