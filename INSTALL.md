@@ -52,7 +52,7 @@ This starts two processes concurrently:
 Open **http://localhost:5173** in your browser.
 
 > [!TIP]
-> On first startup the server automatically writes the Claude Code hook configuration to `~/.claude/settings.json`. No manual hook installation step is needed.
+> When you run the dashboard directly on the host with `npm run dev` or `npm start`, the server automatically writes the Claude Code hook configuration to `~/.claude/settings.json`. If you run the dashboard in Docker or Podman, install hooks from the host with `npm run install-hooks` after the container is up.
 
 ---
 
@@ -91,6 +91,54 @@ npm start       # Start Express serving client/dist on port 4820
 ```
 
 Open **http://localhost:4820** in your browser.
+
+---
+
+## Container mode (Docker / Podman)
+
+The repository includes both a multi-stage `Dockerfile` and a `docker-compose.yml` file. Docker and Podman are both supported.
+
+### Compose
+
+```bash
+# Docker Compose
+docker compose up -d --build
+
+# Podman Compose
+CLAUDE_HOME="$HOME/.claude" podman compose up -d --build
+```
+
+Open **http://localhost:4820** in your browser.
+
+### Plain Docker / Podman
+
+```bash
+# Docker
+docker build -t agent-monitor .
+docker run -d --name agent-monitor \
+  -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor
+
+# Podman
+podman build -t agent-monitor .
+podman run -d --name agent-monitor \
+  -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor
+```
+
+### Container notes
+
+| Mount | Purpose |
+|---|---|
+| `~/.claude:/root/.claude:ro` | Lets the server import legacy Claude session history |
+| `agent-monitor-data:/app/data` | Persists the SQLite database across container restarts |
+
+> [!IMPORTANT]
+> Claude Code hooks run on the host, not inside the container. After the container is healthy on `http://localhost:4820`, run `npm run install-hooks` on the host so Claude Code posts hook events back to the containerized server.
 
 <p align="center">
   <img src="images/dashboard.png" alt="Dashboard Overview" width="100%">

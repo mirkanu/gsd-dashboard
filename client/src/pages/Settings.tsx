@@ -38,7 +38,10 @@ import {
   BarChart3,
 } from "lucide-react";
 import { api } from "../lib/api";
-import type { ModelPricing } from "../lib/types";
+import { eventBus } from "../lib/eventBus";
+import { fmt, fmtCost } from "../lib/format";
+import { Tip } from "../components/Tip";
+import type { ModelPricing, WSMessage } from "../lib/types";
 
 // ─── Notification preferences ───
 
@@ -206,6 +209,34 @@ export function Settings() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Live refresh: periodic for uptime/ws-clients, WS-driven for DB counts
+  useEffect(() => {
+    const refreshInfo = () =>
+      api.settings
+        .info()
+        .then(setSysInfo)
+        .catch(() => {});
+    const interval = setInterval(refreshInfo, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    return eventBus.subscribe((msg: WSMessage) => {
+      if (
+        msg.type === "session_created" ||
+        msg.type === "session_updated" ||
+        msg.type === "agent_created" ||
+        msg.type === "agent_updated" ||
+        msg.type === "new_event"
+      ) {
+        api.settings
+          .info()
+          .then(setSysInfo)
+          .catch(() => {});
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (!actionResult) return;
@@ -463,12 +494,12 @@ export function Settings() {
   return (
     <div className="animate-fade-in space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-gray-100 mb-1">Settings</h2>
           <p className="text-sm text-gray-500">Manage pricing, notifications, data, and hooks</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <a
             href={api.settings.exportData()}
             download
@@ -493,7 +524,15 @@ export function Settings() {
             <div>
               <p className="text-sm text-gray-500">Total Estimated Cost</p>
               <p className="text-2xl font-semibold text-gray-100">
-                ${totalCost !== null ? totalCost.toFixed(2) : "-.--"}
+                <Tip
+                  raw={
+                    totalCost !== null
+                      ? `$${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : undefined
+                  }
+                >
+                  {totalCost !== null ? fmtCost(totalCost) : "$-.--"}
+                </Tip>
               </p>
             </div>
           </div>
@@ -506,7 +545,7 @@ export function Settings() {
 
       {/* ─── MODEL PRICING ─── */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-gray-500" />
@@ -847,14 +886,14 @@ export function Settings() {
         <div className="space-y-4">
           {/* DB stats grid */}
           <div className="card p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold flex-shrink-0">
                 Database Overview
               </p>
               {sysInfo && (
-                <div className="flex items-center gap-1.5 text-[11px] text-gray-600 font-mono bg-surface-2 px-2.5 py-1 rounded-md">
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-600 font-mono bg-surface-2 px-2.5 py-1 rounded-md min-w-0">
                   <HardDrive className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate max-w-[300px]">{sysInfo.db.path}</span>
+                  <span className="truncate">{sysInfo.db.path}</span>
                 </div>
               )}
             </div>
@@ -868,6 +907,13 @@ export function Settings() {
                     events: <Activity className="w-4 h-4 text-violet-400" />,
                     token_usage: <Coins className="w-4 h-4 text-amber-400" />,
                     model_pricing: <BarChart3 className="w-4 h-4 text-cyan-400" />,
+                  };
+                  const tableLabels: Record<string, string> = {
+                    sessions: "sessions",
+                    agents: "agents",
+                    events: "events",
+                    token_usage: "sessions with cost",
+                    model_pricing: "pricing rules",
                   };
                   const tableColors: Record<string, string> = {
                     sessions: "border-blue-500/20",
@@ -884,11 +930,11 @@ export function Settings() {
                       <div className="flex items-center gap-2 mb-1.5">
                         {tableIcons[table] || <Database className="w-4 h-4 text-gray-500" />}
                         <p className="text-[11px] text-gray-500 uppercase tracking-wider">
-                          {table.replace(/_/g, " ")}
+                          {tableLabels[table] || table.replace(/_/g, " ")}
                         </p>
                       </div>
                       <p className="text-xl font-semibold text-gray-200">
-                        {count.toLocaleString()}
+                        <Tip raw={count.toLocaleString()}>{fmt(count)}</Tip>
                       </p>
                     </div>
                   ));

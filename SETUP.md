@@ -10,7 +10,7 @@ Claude Code  →  hook fires  →  hook-handler.js  →  POST /api/hooks/event
 Browser  ←  WebSocket broadcast  ←  Express server  ←  SQLite
 ```
 
-No Claude Code configuration is required beyond running this dashboard — the server configures the hooks automatically on startup.
+No extra Claude Code configuration is required in the normal host-run path — when you start the dashboard with `npm run dev` or `npm start`, the server configures the hooks automatically on startup. Container deployments are the exception: after the container is up, run `npm run install-hooks` on the host so Claude Code points at `http://localhost:4820`.
 
 ---
 
@@ -18,7 +18,7 @@ No Claude Code configuration is required beyond running this dashboard — the s
 
 ### Hook auto-installation
 
-The dashboard server writes the following to `~/.claude/settings.json` every time it starts:
+When the dashboard is running directly on the host, the server writes the following to `~/.claude/settings.json` every time it starts:
 
 ```json
 {
@@ -34,6 +34,7 @@ The dashboard server writes the following to `~/.claude/settings.json` every tim
 }
 ```
 
+> [!NOTE]
 > Note: `SessionStart` and `SessionEnd` hooks do not support the `matcher` field — they fire unconditionally on every session start and exit.
 
 Existing hooks in that file are preserved. The dashboard only adds or updates entries that contain `hook-handler.js`.
@@ -44,11 +45,50 @@ To re-run hook installation manually:
 npm run install-hooks
 ```
 
+> [!TIP]
+> Container note: do not rely on hook auto-install from inside Docker or Podman. The hook path written by a container would point at the container filesystem, not the host. Start the container first, then run `npm run install-hooks` on the host.
+
+### Container runtime (Docker / Podman)
+
+The repo includes both a multi-stage `Dockerfile` and a `docker-compose.yml` file. The container image serves the built client and API on port `4820`, stores SQLite data under `/app/data`, and can import legacy Claude history from a read-only `~/.claude` mount.
+
+```bash
+# Docker Compose
+docker compose up -d --build
+
+# Podman Compose
+CLAUDE_HOME="$HOME/.claude" podman compose up -d --build
+
+# Plain Docker
+docker build -t agent-monitor .
+docker run -d --name agent-monitor \
+  -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor
+
+# Plain Podman
+podman build -t agent-monitor .
+podman run -d --name agent-monitor \
+  -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor
+```
+
+Container-specific behavior:
+
+- The dashboard is available at `http://localhost:4820`
+- `~/.claude:/root/.claude:ro` is used for history import only
+- `agent-monitor-data:/app/data` persists the SQLite database
+- Claude Code hooks still execute on the host, so install them from the host with `npm run install-hooks`
+
 ### Environment variables
 
 | Variable | Default | Description |
 |---|---|---|
 | `DASHBOARD_PORT` | `4820` | Port the Express server listens on |
+| `CLAUDE_DASHBOARD_PORT` | `4820` | Port the hook handler uses when posting events to the dashboard |
 | `DASHBOARD_DB_PATH` | `data/dashboard.db` | Path to the SQLite database file |
 | `NODE_ENV` | `development` | Set to `production` to serve built client |
 
@@ -58,7 +98,8 @@ Example with custom port:
 DASHBOARD_PORT=9000 npm run dev
 ```
 
-> If you change the port, update `client/vite.config.ts` proxy target to match, and re-run `npm run install-hooks` so the hook handler points to the new port.
+> [!IMPORTANT]
+> If you change the dashboard port, update `client/vite.config.ts` so the dev client proxies to the same port. Claude Code hooks reach the server through `CLAUDE_DASHBOARD_PORT`, so start Claude Code with that environment variable set to the new port, or change the default in `scripts/hook-handler.js`.
 
 ---
 
@@ -191,10 +232,9 @@ proxy: {
 }
 ```
 
-And reinstall hooks:
+And make sure Claude Code posts hooks to the new port:
 
 ```bash
-DASHBOARD_PORT=4821 npm run install-hooks
-# This does not currently pass the port — edit scripts/hook-handler.js
-# and change the default port, or set CLAUDE_DASHBOARD_PORT=4821 in your env.
+CLAUDE_DASHBOARD_PORT=4821 claude
+# or edit scripts/hook-handler.js and change the default port
 ```

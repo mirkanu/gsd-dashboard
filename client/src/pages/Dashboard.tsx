@@ -7,7 +7,7 @@ import { StatCard } from "../components/StatCard";
 import { AgentCard } from "../components/AgentCard";
 import { AgentStatusBadge } from "../components/StatusBadge";
 import { EmptyState } from "../components/EmptyState";
-import { timeAgo } from "../lib/format";
+import { timeAgo, fmt, fmtCost } from "../lib/format";
 import type { Stats, Agent, DashboardEvent, WSMessage } from "../lib/types";
 
 export function Dashboard() {
@@ -74,12 +74,12 @@ export function Dashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-gray-100 mb-1">Dashboard</h2>
           <p className="text-sm text-gray-500">Real-time overview of Claude Code agent activity</p>
         </div>
-        <button onClick={load} className="btn-ghost">
+        <button onClick={load} className="btn-ghost flex-shrink-0">
           <RefreshCw className="w-4 h-4" /> Refresh
         </button>
       </div>
@@ -88,7 +88,8 @@ export function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard
           label="Total Sessions"
-          value={stats?.total_sessions ?? "-"}
+          value={stats ? fmt(stats.total_sessions) : "-"}
+          raw={stats ? stats.total_sessions.toLocaleString() : undefined}
           icon={FolderOpen}
           trend={stats ? `${stats.active_sessions} active` : undefined}
         />
@@ -100,19 +101,26 @@ export function Dashboard() {
         />
         <StatCard
           label="Events Today"
-          value={stats?.events_today ?? "-"}
+          value={stats ? fmt(stats.events_today) : "-"}
+          raw={stats ? stats.events_today.toLocaleString() : undefined}
           icon={Zap}
           accentColor="text-yellow-400"
         />
         <StatCard
           label="Total Events"
-          value={stats?.total_events ?? "-"}
+          value={stats ? fmt(stats.total_events) : "-"}
+          raw={stats ? stats.total_events.toLocaleString() : undefined}
           icon={Activity}
           accentColor="text-violet-400"
         />
         <StatCard
           label="Total Cost"
-          value={totalCost !== null ? `$${totalCost.toFixed(2)}` : "-"}
+          value={totalCost !== null ? fmtCost(totalCost) : "-"}
+          raw={
+            totalCost !== null
+              ? `$${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              : undefined
+          }
           icon={DollarSign}
           accentColor="text-emerald-400"
         />

@@ -42,6 +42,7 @@ A professional dashboard to track and visualize your Claude Code agent sessions,
     - [3. Start](#3-start)
     - [4. Open](#4-open)
     - [Optional: Seed Demo Data](#optional-seed-demo-data)
+    - [Alternative: Docker / Podman](#alternative-docker--podman)
   - [How It Works](#how-it-works)
     - [Hook Lifecycle](#hook-lifecycle)
     - [Agent State Machine](#agent-state-machine)
@@ -200,6 +201,54 @@ npm run seed
 ```
 
 Creates 8 sample sessions, 23 agents, and 106 events so you can explore the UI immediately.
+
+### Alternative: Docker / Podman
+
+A `Dockerfile` and `docker-compose.yml` are included. Both Docker and Podman are supported.
+
+**With Docker Compose:**
+
+```bash
+docker compose up -d --build
+```
+
+**With Podman Compose:**
+
+```bash
+CLAUDE_HOME="$HOME/.claude" podman compose up -d --build
+```
+
+**With plain Docker or Podman (no Compose):**
+
+```bash
+# Docker
+docker build -t agent-monitor .
+docker run -d --name agent-monitor \
+  -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor
+
+# Podman
+podman build -t agent-monitor .
+podman run -d --name agent-monitor \
+  -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor
+```
+
+The dashboard is then available at `http://localhost:4820`.
+
+**Volume mounts:**
+
+| Mount | Purpose |
+|---|---|
+| `~/.claude:/root/.claude:ro` | Read legacy session history for import |
+| `agent-monitor-data:/app/data` | Persist the SQLite database across restarts |
+
+> [!IMPORTANT]
+> **Note:** Claude Code hooks must still point to a running hook-handler process on the host. The container itself does not receive hooks — run `npm run install-hooks` on the host to configure hooks that POST to `http://localhost:4820`.
 
 ---
 

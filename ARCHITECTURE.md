@@ -897,6 +897,52 @@ graph LR
 | **File watching** | `node --watch` + Vite HMR            | None                            |
 | **Source maps**   | Inline                               | External files                  |
 
+### Container (Docker / Podman)
+
+A multi-stage `Dockerfile` builds the client and server into a single production image. Both Docker and Podman are fully supported — the image is OCI-compliant.
+
+```mermaid
+graph LR
+    subgraph "Multi-Stage Build"
+        S1["Stage 1: server-deps\nnode:20-alpine\nnpm ci --omit=dev\n+ python3/make/g++ for native modules"]
+        S2["Stage 2: client-build\nnode:20-alpine\nnpm ci + vite build"]
+        S3["Stage 3: runtime\nnode:20-alpine\nCopies node_modules + client/dist"]
+        S1 --> S3
+        S2 --> S3
+    end
+
+    subgraph "Container Runtime"
+        VOL1["~/.claude (ro)\nlegacy session import"]
+        VOL2["agent-monitor-data\nSQLite persistence"]
+        S3 -->|"EXPOSE 4820"| SRV["node server/index.js\nport 4820"]
+        VOL1 --> SRV
+        VOL2 --> SRV
+    end
+
+    style S3 fill:#339933,stroke:#5cb85c,color:#fff
+    style SRV fill:#6366f1,stroke:#818cf8,color:#fff
+```
+
+**Usage:**
+
+```bash
+# Docker Compose
+docker compose up -d --build
+
+# Podman Compose
+CLAUDE_HOME="$HOME/.claude" podman compose up -d --build
+
+# Plain Docker / Podman (equivalent)
+docker build -t agent-monitor .
+docker run -d -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor
+```
+
+> [!NOTE]
+> **Hook note:** Claude Code hooks run on the host, not inside the container. The containerized server still receives hook events via HTTP on `localhost:4820` — run `npm run install-hooks` on the host after the container is up.
+
 ---
 
 ## Statusline Utility

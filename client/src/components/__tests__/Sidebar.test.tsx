@@ -3,10 +3,10 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { Sidebar } from "../Sidebar";
 
-function renderSidebar(wsConnected: boolean) {
+function renderSidebar(wsConnected: boolean, collapsed = false) {
   return render(
     <MemoryRouter>
-      <Sidebar wsConnected={wsConnected} />
+      <Sidebar wsConnected={wsConnected} collapsed={collapsed} onToggle={() => {}} />
     </MemoryRouter>
   );
 }
