@@ -9,10 +9,15 @@ import type { Analytics as AnalyticsData, CostResult } from "../lib/types";
 // ── Tooltip ───────────────────────────────────────────────────────────────────
 
 function ChartTooltip({ x, y, children }: { x: number; y: number; children: React.ReactNode }) {
+  const nearRight = x > window.innerWidth - 200;
   return (
     <div
       className="fixed z-50 px-2 py-1.5 text-xs bg-[#12121f] border border-[#2a2a4a] rounded shadow-xl text-gray-200 pointer-events-none whitespace-nowrap"
-      style={{ left: x + 14, top: y - 10 }}
+      style={{
+        left: nearRight ? x - 14 : x + 14,
+        top: y - 10,
+        transform: nearRight ? "translateX(-100%)" : undefined,
+      }}
     >
       {children}
     </div>
@@ -490,8 +495,8 @@ export function Analytics() {
   return (
     <div className="animate-fade-in space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
           <div className="flex items-center gap-3 mb-1">
             <h2 className="text-xl font-semibold text-gray-100">Analytics</h2>
             {wsConnected ? (
@@ -506,7 +511,7 @@ export function Analytics() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
             <span>Real-time monitoring and analytics for Claude Code sessions</span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 bg-surface-2 px-2 py-0.5 rounded-md font-mono">
               <Clock className="w-3 h-3" />
@@ -514,7 +519,7 @@ export function Analytics() {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button onClick={load} className="btn-ghost" disabled={loading}>
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             Refresh

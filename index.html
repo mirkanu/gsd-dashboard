@@ -742,15 +742,37 @@ npm run dev
 # http://localhost:5173  (dev)
 # http://localhost:4820  (prod after npm run build && npm start)</code></pre>
 
+          <h3>Alternative: Docker / Podman</h3>
+          <p>
+            A multi-stage <code>Dockerfile</code> and <code>docker-compose.yml</code> are included.
+            You can run the monitor with either Docker or Podman and keep the SQLite database in a
+            named volume.
+          </p>
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code># Docker Compose
+docker compose up -d --build
+
+# Podman Compose
+CLAUDE_HOME="$HOME/.claude" podman compose up -d --build
+
+# Plain Docker / Podman
+docker build -t agent-monitor .
+docker run -d --name agent-monitor \
+  -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor</code></pre>
+
           <div class="callout callout-success">
             <div class="callout-icon">✓</div>
             <div class="callout-body">
-              <strong>Hooks auto-install on startup</strong>
+              <strong>Hooks auto-install in local mode</strong>
               <p>
-                The server automatically writes Claude Code hook entries to
-                <code>~/.claude/settings.json</code> every time it starts. No manual configuration
-                step is required. Restart Claude Code after the first server startup to activate the
-                hooks.
+                When you run the server directly on the host with <code>npm run dev</code> or
+                <code>npm start</code>, it automatically writes Claude Code hook entries to
+                <code>~/.claude/settings.json</code>. If you run the dashboard in Docker or Podman,
+                install hooks from the host with <code>npm run install-hooks</code> after the
+                container is up, then restart Claude Code.
               </p>
             </div>
           </div>
@@ -2182,6 +2204,83 @@ npm run dev
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <h3>Container Runtime (Docker / Podman)</h3>
+          <p>
+            The production image is OCI-compatible and works with both Docker and Podman. The
+            server listens on <code>4820</code>, reads legacy Claude history from a read-only mount,
+            and persists SQLite data under <code>/app/data</code>.
+          </p>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              graph LR
+                subgraph build["Multi-stage image build"]
+                  C1["server-deps\nnode:20-alpine\nnpm ci --omit=dev"]
+                  C2["client-build\nvite build"]
+                  C3["runtime image\nnode server/index.js"]
+                  C1 --> C3
+                  C2 --> C3
+                end
+
+                subgraph runtime["Container runtime"]
+                  V1["~/.claude\nmounted read-only"]
+                  V2["agent-monitor-data\npersistent volume"]
+                  PORT["localhost:4820"]
+                  C3 --> PORT
+                  V1 --> C3
+                  V2 --> C3
+                end
+            </div>
+            <p class="diagram-label">Container image build and runtime mounts</p>
+          </div>
+
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code># Docker Compose
+docker compose up -d --build
+
+# Podman Compose
+CLAUDE_HOME="$HOME/.claude" podman compose up -d --build
+
+# Stop the stack
+docker compose down
+# or
+podman compose down</code></pre>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mount</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>~/.claude:/root/.claude:ro</code></td>
+                  <td>Read historical Claude session files for import without modifying them</td>
+                </tr>
+                <tr>
+                  <td><code>agent-monitor-data:/app/data</code></td>
+                  <td>Persist the SQLite database across rebuilds and container restarts</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-icon">⚠</div>
+            <div class="callout-body">
+              <strong>Hooks still run on the host</strong>
+              <p>
+                Claude Code fires hooks from the host machine, not from inside the container. After
+                the container is healthy on <code>http://localhost:4820</code>, run
+                <code>npm run install-hooks</code> on the host so hook events post back to the
+                containerized server.
+              </p>
+            </div>
           </div>
         </section>
 

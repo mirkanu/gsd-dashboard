@@ -494,12 +494,12 @@ export function Settings() {
   return (
     <div className="animate-fade-in space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-gray-100 mb-1">Settings</h2>
           <p className="text-sm text-gray-500">Manage pricing, notifications, data, and hooks</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <a
             href={api.settings.exportData()}
             download
@@ -545,7 +545,7 @@ export function Settings() {
 
       {/* ─── MODEL PRICING ─── */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-gray-500" />
@@ -886,14 +886,14 @@ export function Settings() {
         <div className="space-y-4">
           {/* DB stats grid */}
           <div className="card p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold flex-shrink-0">
                 Database Overview
               </p>
               {sysInfo && (
-                <div className="flex items-center gap-1.5 text-[11px] text-gray-600 font-mono bg-surface-2 px-2.5 py-1 rounded-md">
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-600 font-mono bg-surface-2 px-2.5 py-1 rounded-md min-w-0">
                   <HardDrive className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate max-w-[300px]">{sysInfo.db.path}</span>
+                  <span className="truncate">{sysInfo.db.path}</span>
                 </div>
               )}
             </div>

@@ -74,12 +74,12 @@ export function Dashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-gray-100 mb-1">Dashboard</h2>
           <p className="text-sm text-gray-500">Real-time overview of Claude Code agent activity</p>
         </div>
-        <button onClick={load} className="btn-ghost">
+        <button onClick={load} className="btn-ghost flex-shrink-0">
           <RefreshCw className="w-4 h-4" /> Refresh
         </button>
       </div>
