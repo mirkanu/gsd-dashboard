@@ -38,6 +38,7 @@ async function parseSessionFile(filePath) {
   let userMessageCount = 0;
   let assistantMessageCount = 0;
   const tokensByModel = {};
+  const messageTimestamps = [];
 
   for await (const line of rl) {
     if (!line.trim()) continue;
@@ -65,6 +66,10 @@ async function parseSessionFile(filePath) {
     if (entry.type === "user") userMessageCount++;
     if (entry.type === "assistant") {
       assistantMessageCount++;
+      if (ts) {
+        const isoTs = typeof ts === "number" ? new Date(ts).toISOString() : ts;
+        messageTimestamps.push(isoTs);
+      }
       const msg = entry.message || {};
       const msgModel = msg.model || null;
       if (!model && msgModel && msgModel !== "<synthetic>") model = msgModel;
@@ -102,6 +107,7 @@ async function parseSessionFile(filePath) {
     userMessages: userMessageCount,
     assistantMessages: assistantMessageCount,
     tokensByModel,
+    messageTimestamps,
   };
 }
 
@@ -123,15 +129,30 @@ function importSession(dbModule, session) {
         const insertEvent = db.prepare(
           "INSERT INTO events (session_id, agent_id, event_type, tool_name, summary, data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
         );
-        insertEvent.run(
-          session.sessionId,
-          mainAgentId,
-          "Stop",
-          null,
-          `Session: ${session.name} (${session.userMessages} user / ${session.assistantMessages} assistant msgs)`,
-          JSON.stringify({ imported: true }),
-          session.startedAt
-        );
+        const importedData = JSON.stringify({ imported: true });
+        if (session.messageTimestamps && session.messageTimestamps.length > 0) {
+          for (const ts of session.messageTimestamps) {
+            insertEvent.run(
+              session.sessionId,
+              mainAgentId,
+              "Stop",
+              null,
+              `${session.name} — response`,
+              importedData,
+              ts
+            );
+          }
+        } else {
+          insertEvent.run(
+            session.sessionId,
+            mainAgentId,
+            "Stop",
+            null,
+            `Session: ${session.name} (${session.userMessages} user / ${session.assistantMessages} assistant msgs)`,
+            importedData,
+            session.startedAt
+          );
+        }
         return { skipped: false, backfilled: true };
       }
     }
@@ -200,29 +221,48 @@ function importSession(dbModule, session) {
     );
   }
 
-  // Create a synthetic event so the activity heatmap reflects historical data
+  // Create synthetic events at actual message timestamps so the activity heatmap
+  // reflects when work actually happened, not just session start/end.
   const insertEvent = db.prepare(
     "INSERT INTO events (session_id, agent_id, event_type, tool_name, summary, data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
   );
-  insertEvent.run(
-    session.sessionId,
-    mainAgentId,
-    "Stop",
-    null,
-    `Session: ${session.name} (${session.userMessages} user / ${session.assistantMessages} assistant msgs)`,
-    JSON.stringify({ imported: true }),
-    session.startedAt
-  );
-  if (session.endedAt && session.endedAt !== session.startedAt) {
+  const importedData = JSON.stringify({ imported: true });
+
+  if (session.messageTimestamps && session.messageTimestamps.length > 0) {
+    // One event per assistant message at its actual timestamp
+    for (const ts of session.messageTimestamps) {
+      insertEvent.run(
+        session.sessionId,
+        mainAgentId,
+        "Stop",
+        null,
+        `${session.name} — response`,
+        importedData,
+        ts
+      );
+    }
+  } else {
+    // Fallback: no message timestamps available, use session start/end
     insertEvent.run(
       session.sessionId,
       mainAgentId,
       "Stop",
       null,
-      `Session ended: ${session.name}`,
-      JSON.stringify({ imported: true }),
-      session.endedAt
+      `Session: ${session.name} (${session.userMessages} user / ${session.assistantMessages} assistant msgs)`,
+      importedData,
+      session.startedAt
     );
+    if (session.endedAt && session.endedAt !== session.startedAt) {
+      insertEvent.run(
+        session.sessionId,
+        mainAgentId,
+        "Stop",
+        null,
+        `Session ended: ${session.name}`,
+        importedData,
+        session.endedAt
+      );
+    }
   }
 
   for (const [tokenModel, tokens] of Object.entries(session.tokensByModel)) {

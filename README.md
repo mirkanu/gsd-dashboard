@@ -29,24 +29,50 @@ A professional dashboard to track and visualize your Claude Code agent sessions,
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Features](#features)
-- [Quick Start](#quick-start)
-- [How It Works](#how-it-works)
-- [Configuration](#configuration)
-- [npm Scripts](#npm-scripts)
-- [API Reference](#api-reference)
-- [Hook Events](#hook-events)
-- [Browser Notifications](#browser-notifications)
-- [Data Storage](#data-storage)
-- [Statusline](#statusline)
-- [Server Architecture](#server-architecture)
-- [Client Routing](#client-routing)
-- [Hook Handler Flow](#hook-handler-flow)
-- [Deployment Modes](#deployment-modes)
-- [Project Structure](#project-structure)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
+- [Agent Dashboard for Claude Code](#agent-dashboard-for-claude-code)
+    - [Real-time monitoring platform for Claude Code agent activity](#real-time-monitoring-platform-for-claude-code-agent-activity)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+    - [User Interface](#user-interface)
+  - [Features](#features)
+  - [Quick Start](#quick-start)
+    - [Prerequisites](#prerequisites)
+    - [1. Install](#1-install)
+    - [2. Configure Claude Code Hooks](#2-configure-claude-code-hooks)
+    - [3. Start](#3-start)
+    - [4. Open](#4-open)
+    - [Optional: Seed Demo Data](#optional-seed-demo-data)
+  - [How It Works](#how-it-works)
+    - [Hook Lifecycle](#hook-lifecycle)
+    - [Agent State Machine](#agent-state-machine)
+    - [Session State Machine](#session-state-machine)
+    - [Cost Calculation Flow](#cost-calculation-flow)
+  - [Configuration](#configuration)
+  - [npm Scripts](#npm-scripts)
+  - [API Reference](#api-reference)
+    - [Health](#health)
+    - [Sessions](#sessions)
+    - [Agents](#agents)
+    - [Events](#events)
+    - [Stats](#stats)
+    - [Hooks](#hooks)
+    - [Pricing](#pricing)
+    - [Settings](#settings)
+    - [WebSocket](#websocket)
+  - [Hook Events](#hook-events)
+  - [Browser Notifications](#browser-notifications)
+    - [How It Works](#how-it-works-1)
+    - [Architecture](#architecture)
+  - [Data Storage](#data-storage)
+    - [Entity Relationship Diagram](#entity-relationship-diagram)
+  - [Statusline](#statusline)
+  - [Server Architecture](#server-architecture)
+  - [Client Routing](#client-routing)
+  - [Hook Handler Flow](#hook-handler-flow)
+  - [Deployment Modes](#deployment-modes)
+  - [Project Structure](#project-structure)
+  - [Troubleshooting](#troubleshooting)
+  - [License](#license)
 
 ---
 
@@ -120,6 +146,7 @@ The dashboard offers a comprehensive set of features to monitor and analyze your
 | **Cost Tracking**     | Per-model cost estimation with configurable pricing rules and per-session breakdowns |
 | **Notifications**     | Browser notifications for session starts, completions, errors, and subagent spawns. Configurable per-event toggles with permission management |
 | **Settings**          | System info, hook status, model pricing management, notification preferences, data export, session cleanup |
+| **Subsessions/Resumed Sessions** | Automatically reactivates sessions when new events arrive, correctly handles `/resume` and orphaned sessions |
 | **Responsive Design** | Mobile-friendly layouts with stacking grids, scrollable tables, and collapsible sidebar |
 | **Seed Data**         | Built-in seed script for demos and development                               |
 | **Statusline**        | Color-coded CLI statusline showing model, context usage, git branch, tokens  |
@@ -177,6 +204,8 @@ Creates 8 sample sessions, 23 agents, and 106 events so you can explore the UI i
 ---
 
 ## How It Works
+
+The dashboard integrates with Claude Code via its native hook system to provide real-time monitoring of agent activity. Here's an overview of the architecture and data flow:
 
 ```mermaid
 sequenceDiagram
@@ -264,6 +293,9 @@ flowchart LR
     style PR fill:#6366f1,stroke:#818cf8,color:#fff
     style RESULT fill:#10b981,stroke:#34d399,color:#fff
 ```
+
+> [!IMPORTANT]
+> The cost calculation flow is based on token usage and model pricing rules. Ensure your pricing rules are up-to-date to reflect accurate costs. Update the model pricing table via the Settings page to maintain accurate cost tracking - the dashboard does not automatically fetch pricing updates from external sources. Once you set the pricing rules, the dashboard applies them retroactively to all sessions for consistent cost reporting.
 
 ---
 

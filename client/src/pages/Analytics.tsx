@@ -6,9 +6,34 @@ import { formatDateTime } from "../lib/format";
 import type { Analytics as AnalyticsData, CostResult } from "../lib/types";
 
 function fmt(n: number): string {
+  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
+}
+
+function fmtCost(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(2)}K`;
+  return `$${n.toFixed(2)}`;
+}
+
+function Tip({ raw, children }: { raw: string; children: React.ReactNode }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span
+      className="relative inline-block cursor-default"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 text-xs font-mono text-gray-100 bg-gray-800 border border-gray-700 rounded shadow-lg whitespace-nowrap z-50 pointer-events-none">
+          {raw}
+        </span>
+      )}
+    </span>
+  );
 }
 
 // ── Tooltip ───────────────────────────────────────────────────────────────────
@@ -257,7 +282,9 @@ function BarRow({
           style={{ width: `${width}%` }}
         />
       </div>
-      <span className="text-xs text-gray-500 w-10 text-right flex-shrink-0">{fmt(count)}</span>
+      <Tip raw={count.toLocaleString()}>
+        <span className="text-xs text-gray-500 w-10 text-right flex-shrink-0">{fmt(count)}</span>
+      </Tip>
     </div>
   );
 }
@@ -347,12 +374,14 @@ function DonutChart({
 function StatPill({
   label,
   value,
+  raw,
   sub,
   icon: Icon,
   color = "text-accent",
 }: {
   label: string;
   value: string | number;
+  raw?: string;
   sub?: string;
   icon: React.ElementType;
   color?: string;
@@ -363,7 +392,7 @@ function StatPill({
         <span className="text-xs text-gray-500 uppercase tracking-wider">{label}</span>
         <Icon className={`w-4 h-4 ${color}`} />
       </div>
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
+      <p className={`text-2xl font-bold ${color}`}>{raw ? <Tip raw={raw}>{value}</Tip> : value}</p>
       {sub && <p className="text-[11px] text-gray-500">{sub}</p>}
     </div>
   );
@@ -527,6 +556,7 @@ export function Analytics() {
         <StatPill
           label="Total Sessions"
           value={fmt(data?.overview.total_sessions ?? 0)}
+          raw={(data?.overview.total_sessions ?? 0).toLocaleString()}
           sub={`${data?.overview.active_sessions ?? 0} active`}
           icon={FolderOpen}
           color="text-blue-400"
@@ -534,6 +564,7 @@ export function Analytics() {
         <StatPill
           label="Total Agents"
           value={fmt(data?.overview.total_agents ?? 0)}
+          raw={(data?.overview.total_agents ?? 0).toLocaleString()}
           sub={`${data?.overview.active_agents ?? 0} active`}
           icon={Bot}
           color="text-emerald-400"
@@ -541,13 +572,15 @@ export function Analytics() {
         <StatPill
           label="Total Tokens"
           value={fmt(totalTokens)}
+          raw={totalTokens.toLocaleString()}
           sub={`${cacheHitPct}% cache hit rate`}
           icon={Cpu}
           color="text-violet-400"
         />
         <StatPill
           label="Total Cost"
-          value={costData ? `$${costData.total_cost.toFixed(2)}` : "$0.00"}
+          value={costData ? fmtCost(costData.total_cost) : "$0.00"}
+          raw={costData ? `$${costData.total_cost.toFixed(2)}` : undefined}
           sub={
             costData
               ? `${costData.breakdown.length} model${costData.breakdown.length !== 1 ? "s" : ""}`
@@ -559,6 +592,7 @@ export function Analytics() {
         <StatPill
           label="Total Events"
           value={fmt(data?.overview.total_events ?? 0)}
+          raw={(data?.overview.total_events ?? 0).toLocaleString()}
           sub={`~${data?.avg_events_per_session ?? 0} per session`}
           icon={Zap}
           color="text-yellow-400"
@@ -585,13 +619,19 @@ export function Analytics() {
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">Peak day</span>
               <span className="text-gray-300 font-mono">
-                {fmt(Math.max(...last30.map((d) => d.count)))} events
+                <Tip raw={Math.max(...last30.map((d) => d.count)).toLocaleString()}>
+                  {fmt(Math.max(...last30.map((d) => d.count)))}
+                </Tip>{" "}
+                events
               </span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">Total (30d)</span>
               <span className="text-gray-300 font-mono">
-                {fmt(last30.reduce((s, d) => s + d.count, 0))} events
+                <Tip raw={last30.reduce((s, d) => s + d.count, 0).toLocaleString()}>
+                  {fmt(last30.reduce((s, d) => s + d.count, 0))}
+                </Tip>{" "}
+                events
               </span>
             </div>
           </div>
@@ -732,14 +772,16 @@ export function Analytics() {
                         <div key={b.model} className="flex justify-between text-xs">
                           <span className="text-gray-400 font-mono truncate">{b.model}</span>
                           <span className="text-emerald-400 font-mono font-medium ml-2">
-                            ${b.cost.toFixed(2)}
+                            <Tip raw={`$${b.cost.toFixed(2)}`}>{fmtCost(b.cost)}</Tip>
                           </span>
                         </div>
                       ))}
                     <div className="flex justify-between text-xs pt-2 border-t border-border">
                       <span className="text-gray-300 font-medium">Total</span>
                       <span className="text-emerald-400 font-mono font-semibold">
-                        ${costData.total_cost.toFixed(2)}
+                        <Tip raw={`$${costData.total_cost.toFixed(2)}`}>
+                          {fmtCost(costData.total_cost)}
+                        </Tip>
                       </span>
                     </div>
                   </div>
