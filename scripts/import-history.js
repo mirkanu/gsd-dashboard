@@ -39,6 +39,7 @@ async function parseSessionFile(filePath) {
   let assistantMessageCount = 0;
   const tokensByModel = {};
   const messageTimestamps = [];
+  const toolUses = [];
 
   for await (const line of rl) {
     if (!line.trim()) continue;
@@ -66,10 +67,8 @@ async function parseSessionFile(filePath) {
     if (entry.type === "user") userMessageCount++;
     if (entry.type === "assistant") {
       assistantMessageCount++;
-      if (ts) {
-        const isoTs = typeof ts === "number" ? new Date(ts).toISOString() : ts;
-        messageTimestamps.push(isoTs);
-      }
+      const isoTs = ts ? (typeof ts === "number" ? new Date(ts).toISOString() : ts) : null;
+      if (isoTs) messageTimestamps.push(isoTs);
       const msg = entry.message || {};
       const msgModel = msg.model || null;
       if (!model && msgModel && msgModel !== "<synthetic>") model = msgModel;
@@ -82,6 +81,15 @@ async function parseSessionFile(filePath) {
         tokensByModel[msgModel].output += usage.output_tokens || 0;
         tokensByModel[msgModel].cacheRead += usage.cache_read_input_tokens || 0;
         tokensByModel[msgModel].cacheWrite += usage.cache_creation_input_tokens || 0;
+      }
+      // Extract tool_use names from assistant message content
+      const content = msg.content || [];
+      if (Array.isArray(content)) {
+        for (const block of content) {
+          if (block.type === "tool_use" && block.name) {
+            toolUses.push({ name: block.name, timestamp: isoTs || firstTimestamp });
+          }
+        }
       }
     }
   }
@@ -108,6 +116,7 @@ async function parseSessionFile(filePath) {
     assistantMessages: assistantMessageCount,
     tokensByModel,
     messageTimestamps,
+    toolUses,
   };
 }
 
@@ -118,45 +127,71 @@ function importSession(dbModule, session) {
   const { db, stmts } = dbModule;
   const existing = stmts.getSession.get(session.sessionId);
   if (existing) {
-    // Backfill events for previously imported sessions that have none
-    const eventCount = db
-      .prepare("SELECT COUNT(*) as c FROM events WHERE session_id = ? AND data LIKE '%imported%'")
+    const meta = existing.metadata ? JSON.parse(existing.metadata) : {};
+    if (!meta.imported) return { skipped: true };
+
+    const mainAgentId = `${session.sessionId}-main`;
+    const insertEvent = db.prepare(
+      "INSERT INTO events (session_id, agent_id, event_type, tool_name, summary, data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    );
+    const importedData = JSON.stringify({ imported: true });
+    let backfilled = false;
+
+    // Backfill Stop events if none exist
+    const stopCount = db
+      .prepare(
+        "SELECT COUNT(*) as c FROM events WHERE session_id = ? AND data LIKE '%imported%' AND event_type = 'Stop'"
+      )
       .get(session.sessionId);
-    if (eventCount.c === 0) {
-      const meta = existing.metadata ? JSON.parse(existing.metadata) : {};
-      if (meta.imported) {
-        const mainAgentId = `${session.sessionId}-main`;
-        const insertEvent = db.prepare(
-          "INSERT INTO events (session_id, agent_id, event_type, tool_name, summary, data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        );
-        const importedData = JSON.stringify({ imported: true });
-        if (session.messageTimestamps && session.messageTimestamps.length > 0) {
-          for (const ts of session.messageTimestamps) {
-            insertEvent.run(
-              session.sessionId,
-              mainAgentId,
-              "Stop",
-              null,
-              `${session.name} — response`,
-              importedData,
-              ts
-            );
-          }
-        } else {
+    if (stopCount.c === 0) {
+      if (session.messageTimestamps && session.messageTimestamps.length > 0) {
+        for (const ts of session.messageTimestamps) {
           insertEvent.run(
             session.sessionId,
             mainAgentId,
             "Stop",
             null,
-            `Session: ${session.name} (${session.userMessages} user / ${session.assistantMessages} assistant msgs)`,
+            `${session.name} — response`,
             importedData,
-            session.startedAt
+            ts
           );
         }
-        return { skipped: false, backfilled: true };
+      } else {
+        insertEvent.run(
+          session.sessionId,
+          mainAgentId,
+          "Stop",
+          null,
+          `Session: ${session.name} (${session.userMessages} user / ${session.assistantMessages} assistant msgs)`,
+          importedData,
+          session.startedAt
+        );
       }
+      backfilled = true;
     }
-    return { skipped: true };
+
+    // Backfill tool use events if none exist
+    const toolCount = db
+      .prepare(
+        "SELECT COUNT(*) as c FROM events WHERE session_id = ? AND data LIKE '%imported%' AND tool_name IS NOT NULL"
+      )
+      .get(session.sessionId);
+    if (toolCount.c === 0 && session.toolUses && session.toolUses.length > 0) {
+      for (const tu of session.toolUses) {
+        insertEvent.run(
+          session.sessionId,
+          mainAgentId,
+          "PostToolUse",
+          tu.name,
+          `${tu.name} (imported)`,
+          importedData,
+          tu.timestamp
+        );
+      }
+      backfilled = true;
+    }
+
+    return backfilled ? { skipped: false, backfilled: true } : { skipped: true };
   }
 
   const metadata = JSON.stringify({
@@ -261,6 +296,21 @@ function importSession(dbModule, session) {
         `Session ended: ${session.name}`,
         importedData,
         session.endedAt
+      );
+    }
+  }
+
+  // Create tool use events from extracted tool_use blocks
+  if (session.toolUses && session.toolUses.length > 0) {
+    for (const tu of session.toolUses) {
+      insertEvent.run(
+        session.sessionId,
+        mainAgentId,
+        "PostToolUse",
+        tu.name,
+        `${tu.name} (imported)`,
+        importedData,
+        tu.timestamp
       );
     }
   }

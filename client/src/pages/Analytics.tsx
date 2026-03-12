@@ -293,8 +293,10 @@ function BarRow({
 
 function DonutChart({
   segments,
+  formatTotal,
 }: {
   segments: Array<{ label: string; value: number; color: string }>;
+  formatTotal?: (total: number) => string;
 }) {
   const { show, move, hide, node } = useTooltip();
   const total = segments.reduce((s, g) => s + g.value, 0);
@@ -347,7 +349,7 @@ function DonutChart({
           );
         })}
         <text x={cx} y={cy - 6} textAnchor="middle" className="fill-gray-300" fontSize={11}>
-          {fmt(total)}
+          {(formatTotal ?? fmt)(total)}
         </text>
         <text x={cx} y={cy + 10} textAnchor="middle" className="fill-gray-600" fontSize={9}>
           total
@@ -764,6 +766,7 @@ export function Analytics() {
                             i % 6
                           ] ?? "#6b7280",
                       }))}
+                    formatTotal={(cents) => fmtCost(cents / 100)}
                   />
                   <div className="mt-4 pt-4 border-t border-border space-y-2">
                     {costData.breakdown
