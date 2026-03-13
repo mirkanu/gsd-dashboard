@@ -84,41 +84,51 @@ if (require.main === module) {
   const cleanupDb = require("./db");
   const { broadcast } = require("./websocket");
   const { importCompactions, findCompactionsInFile } = require("../scripts/import-history");
-  setInterval(() => {
-    // 1. Stale session cleanup
-    const stale = cleanupDb.stmts.findStaleSessions.all("__periodic__", 5);
-    const now = new Date().toISOString();
-    for (const s of stale) {
-      const agents = cleanupDb.stmts.listAgentsBySession.all(s.id);
-      for (const agent of agents) {
-        if (agent.status !== "completed" && agent.status !== "error") {
-          cleanupDb.stmts.updateAgent.run(null, "completed", null, null, now, null, agent.id);
-          broadcast("agent_updated", cleanupDb.stmts.getAgent.get(agent.id));
+  setInterval(
+    () => {
+      // 1. Stale session cleanup
+      const stale = cleanupDb.stmts.findStaleSessions.all("__periodic__", 5);
+      const now = new Date().toISOString();
+      for (const s of stale) {
+        const agents = cleanupDb.stmts.listAgentsBySession.all(s.id);
+        for (const agent of agents) {
+          if (agent.status !== "completed" && agent.status !== "error") {
+            cleanupDb.stmts.updateAgent.run(null, "completed", null, null, now, null, agent.id);
+            broadcast("agent_updated", cleanupDb.stmts.getAgent.get(agent.id));
+          }
         }
+        cleanupDb.stmts.updateSession.run(null, "abandoned", now, null, s.id);
+        broadcast("session_updated", cleanupDb.stmts.getSession.get(s.id));
       }
-      cleanupDb.stmts.updateSession.run(null, "abandoned", now, null, s.id);
-      broadcast("session_updated", cleanupDb.stmts.getSession.get(s.id));
-    }
 
-    // 2. Scan active sessions for new compaction entries
-    const active = cleanupDb.db
-      .prepare("SELECT DISTINCT e.session_id, json_extract(e.data, '$.transcript_path') as tp FROM events e JOIN sessions s ON s.id = e.session_id WHERE s.status = 'active' AND json_extract(e.data, '$.transcript_path') IS NOT NULL GROUP BY e.session_id ORDER BY MAX(e.id) DESC")
-      .all();
-    for (const row of active) {
-      if (!row.tp) continue;
-      try {
-        const compactions = findCompactionsInFile(row.tp);
-        if (compactions.length === 0) continue;
-        const mainAgentId = `${row.session_id}-main`;
-        const created = importCompactions(cleanupDb, row.session_id, mainAgentId, compactions);
-        if (created > 0) {
-          broadcast("agent_created", cleanupDb.stmts.getAgent.get(`${row.session_id}-compact-${compactions[compactions.length - 1].uuid}`));
+      // 2. Scan active sessions for new compaction entries
+      const active = cleanupDb.db
+        .prepare(
+          "SELECT DISTINCT e.session_id, json_extract(e.data, '$.transcript_path') as tp FROM events e JOIN sessions s ON s.id = e.session_id WHERE s.status = 'active' AND json_extract(e.data, '$.transcript_path') IS NOT NULL GROUP BY e.session_id ORDER BY MAX(e.id) DESC"
+        )
+        .all();
+      for (const row of active) {
+        if (!row.tp) continue;
+        try {
+          const compactions = findCompactionsInFile(row.tp);
+          if (compactions.length === 0) continue;
+          const mainAgentId = `${row.session_id}-main`;
+          const created = importCompactions(cleanupDb, row.session_id, mainAgentId, compactions);
+          if (created > 0) {
+            broadcast(
+              "agent_created",
+              cleanupDb.stmts.getAgent.get(
+                `${row.session_id}-compact-${compactions[compactions.length - 1].uuid}`
+              )
+            );
+          }
+        } catch {
+          continue;
         }
-      } catch {
-        continue;
       }
-    }
-  }, 2 * 60 * 1000);
+    },
+    2 * 60 * 1000
+  );
 
   // Auto-import legacy sessions and backfill compaction tracking on startup
   const { importAllSessions, backfillCompactions } = require("../scripts/import-history");

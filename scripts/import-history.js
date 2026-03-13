@@ -597,4 +597,9 @@ function findCompactionsInFile(filePath) {
   return compactions;
 }
 
-module.exports = { importAllSessions, backfillCompactions, importCompactions, findCompactionsInFile };
+module.exports = {
+  importAllSessions,
+  backfillCompactions,
+  importCompactions,
+  findCompactionsInFile,
+};

@@ -17,9 +17,7 @@ export function KanbanBoard() {
 
   const load = useCallback(async () => {
     try {
-      const results = await Promise.all(
-        COLUMNS.map((status) => api.agents.list({ status }))
-      );
+      const results = await Promise.all(COLUMNS.map((status) => api.agents.list({ status })));
       setAgents(results.flatMap((r) => r.agents));
     } finally {
       setLoading(false);
