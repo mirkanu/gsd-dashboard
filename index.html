@@ -456,7 +456,7 @@
             to a React UI over WebSocket — with no external services required.
           </p>
           <div class="hero-badges">
-            <span class="tech-badge badge-node">Node.js ≥ 18</span>
+            <span class="tech-badge badge-node">Node.js ≥ 18 (22+ recommended)</span>
             <span class="tech-badge badge-react">React 18.3</span>
             <span class="tech-badge badge-ts">TypeScript Strict</span>
             <span class="tech-badge badge-sqlite">SQLite WAL</span>
@@ -1191,7 +1191,7 @@ docker run -d --name agent-monitor \
             <div class="mermaid">
               graph TD
                 INDEX["server/index.js<br/>Express app + HTTP server"]
-                DB["server/db.js<br/>SQLite + prepared statements"]
+                DB["server/db.js<br/>SQLite + prepared statements<br/>better-sqlite3 / node:sqlite fallback"]
                 WS["server/websocket.js<br/>WS server + heartbeat"]
                 HOOKS["routes/hooks.js<br/>Hook event processing"]
                 SESSIONS["routes/sessions.js<br/>Session CRUD"]
@@ -1249,7 +1249,17 @@ docker run -d --name agent-monitor \
                   <td>
                     SQLite connection, WAL/FK pragmas, schema migrations (<code
                       >CREATE TABLE IF NOT EXISTS</code
-                    >), all prepared statements as a reusable <code>stmts</code> object
+                    >), all prepared statements as a reusable <code>stmts</code> object. Tries
+                    <code>better-sqlite3</code> first, falls back to built-in
+                    <code>node:sqlite</code> via <code>compat-sqlite.js</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>server/compat-sqlite.js</code></td>
+                  <td>
+                    Compatibility wrapper giving Node.js built-in <code>node:sqlite</code>
+                    (<code>DatabaseSync</code>) the same API as <code>better-sqlite3</code> —
+                    pragma, transaction, prepare. Used as automatic fallback on Node 22+
                   </td>
                 </tr>
                 <tr>
@@ -2230,7 +2240,7 @@ docker run -d --name agent-monitor \
             <div class="mermaid">
               graph LR
                 subgraph build["Multi-stage image build"]
-                  C1["server-deps\nnode:20-alpine\nnpm ci --omit=dev"]
+                  C1["server-deps\nnode:22-alpine\nnpm ci --omit=dev"]
                   C2["client-build\nvite build"]
                   C3["runtime image\nnode server/index.js"]
                   C1 --> C3
@@ -2356,7 +2366,7 @@ docker run -d --name agent-monitor \
               <tbody>
                 <tr>
                   <td><strong>server-deps</strong></td>
-                  <td>Installs production <code>node_modules</code> (including native <code>better-sqlite3</code> compilation via python3/make/g++)</td>
+                  <td>Installs production <code>node_modules</code> on <code>node:22-alpine</code>. <code>better-sqlite3</code> is optional — if prebuilds are unavailable, the server falls back to built-in <code>node:sqlite</code></td>
                 </tr>
                 <tr>
                   <td><strong>client-build</strong></td>
@@ -2364,7 +2374,7 @@ docker run -d --name agent-monitor \
                 </tr>
                 <tr>
                   <td><strong>runtime</strong></td>
-                  <td>Clean <code>node:20-alpine</code> with only <code>node_modules</code>, server code, and <code>client/dist</code></td>
+                  <td>Clean <code>node:22-alpine</code> with only <code>node_modules</code>, server code, and <code>client/dist</code></td>
                 </tr>
               </tbody>
             </table>
@@ -2561,10 +2571,12 @@ npm run install-hooks</code></pre>
               </thead>
               <tbody>
                 <tr>
-                  <td><code>better-sqlite3</code> fails to install</td>
+                  <td><code>better-sqlite3</code> errors during install</td>
                   <td>
-                    Ensure Node.js ≥ 18. On Windows, install Visual Studio Build Tools with C++
-                    workload.
+                    This is non-fatal — <code>better-sqlite3</code> is an optional dependency. On
+                    Node 22+ the server automatically falls back to built-in
+                    <code>node:sqlite</code>. On older Node versions, install Python 3 + C++ build
+                    tools, then run <code>npm rebuild better-sqlite3</code>.
                   </td>
                 </tr>
                 <tr>
@@ -2600,6 +2612,23 @@ npm run install-hooks</code></pre>
                     <code>matcher: "*"</code> string (not object).
                   </td>
                 </tr>
+                <tr>
+                  <td>"SQLite backend not available" on startup</td>
+                  <td>
+                    Neither <code>better-sqlite3</code> nor <code>node:sqlite</code> could load.
+                    Upgrade to Node.js 22+ (recommended), or install Python 3 + C++ build tools
+                    and run <code>npm rebuild better-sqlite3</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Docker container runs but no sessions appear</td>
+                  <td>
+                    Hooks run on the host, not inside the container. Run
+                    <code>npm run install-hooks</code> on the host after the container starts.
+                    Verify hooks in <code>~/.claude/settings.json</code> point to
+                    <code>localhost:4820</code>.
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -2620,11 +2649,13 @@ npm run install-hooks</code></pre>
               </thead>
               <tbody>
                 <tr>
-                  <td><strong>SQLite</strong> (better-sqlite3)</td>
+                  <td><strong>SQLite</strong> (better-sqlite3 / node:sqlite)</td>
                   <td>
                     Zero-config, embedded, no server process. WAL mode gives concurrent reads.
-                    Synchronous API is simpler than async for this use case — hooks are short-lived
-                    sequential writes.
+                    Synchronous API is simpler than async for this use case.
+                    <code>better-sqlite3</code> is preferred when prebuilds are available; falls back
+                    to Node.js built-in <code>node:sqlite</code> on Node 22+ when the native module
+                    cannot be compiled.
                   </td>
                 </tr>
                 <tr>
