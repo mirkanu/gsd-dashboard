@@ -213,7 +213,9 @@ export function SessionDetail() {
                               )}
                             </button>
                           ) : (
-                            <span className="w-6" />
+                            <span className="flex items-center justify-center w-6">
+                              <span className="w-1.5 h-1.5 rounded-full bg-gray-600" />
+                            </span>
                           )}
                           <div className="flex-1">
                             <AgentCard agent={main} />
@@ -237,9 +239,7 @@ export function SessionDetail() {
                         {/* Subagent count badge when collapsed */}
                         {hasChildren && !isExpanded && (
                           <button
-                            onClick={() =>
-                              setExpandedAgents((prev) => new Set([...prev, main.id]))
-                            }
+                            onClick={() => setExpandedAgents((prev) => new Set([...prev, main.id]))}
                             className="ml-7 mt-1 text-[11px] text-violet-400 hover:text-violet-300 transition-colors"
                           >
                             {children.length} subagent{children.length !== 1 ? "s" : ""}

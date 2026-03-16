@@ -55,9 +55,7 @@ export function Dashboard() {
       const subagentResults = await Promise.all(
         activeSessionIds.map((sid) => api.agents.list({ session_id: sid, limit: 100 }))
       );
-      const subs = subagentResults
-        .flatMap((r) => r.agents)
-        .filter((a) => a.type === "subagent");
+      const subs = subagentResults.flatMap((r) => r.agents).filter((a) => a.type === "subagent");
       setAllSubagents(subs);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
@@ -140,7 +138,9 @@ export function Dashboard() {
         />
         <StatCard
           label="Active Subagents"
-          value={allSubagents.filter((a) => a.status === "working" || a.status === "connected").length}
+          value={
+            allSubagents.filter((a) => a.status === "working" || a.status === "connected").length
+          }
           icon={GitBranch}
           accentColor="text-violet-400"
           trend={`${allSubagents.length} total`}
@@ -193,9 +193,7 @@ export function Dashboard() {
                 .filter((a) => a.type === "main")
                 .slice(0, 5)
                 .map((main) => {
-                  const children = allSubagents.filter(
-                    (a) => a.parent_agent_id === main.id
-                  );
+                  const children = allSubagents.filter((a) => a.parent_agent_id === main.id);
                   const isExpanded = expandedAgents.has(main.id);
                   const hasChildren = children.length > 0;
                   const activeCount = children.filter(
@@ -224,7 +222,9 @@ export function Dashboard() {
                             )}
                           </button>
                         ) : (
-                          <span className="w-6" />
+                          <span className="flex items-center justify-center w-6">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-600" />
+                          </span>
                         )}
                         <div className="flex-1">
                           <AgentCard agent={main} />
@@ -246,16 +246,12 @@ export function Dashboard() {
 
                       {hasChildren && !isExpanded && (
                         <button
-                          onClick={() =>
-                            setExpandedAgents((prev) => new Set([...prev, main.id]))
-                          }
+                          onClick={() => setExpandedAgents((prev) => new Set([...prev, main.id]))}
                           className="ml-7 mt-1 text-[11px] text-violet-400 hover:text-violet-300 transition-colors"
                         >
                           {children.length} subagent{children.length !== 1 ? "s" : ""}
                           {activeCount > 0 && (
-                            <span className="text-emerald-400 ml-1">
-                              ({activeCount} active)
-                            </span>
+                            <span className="text-emerald-400 ml-1">({activeCount} active)</span>
                           )}
                         </button>
                       )}
