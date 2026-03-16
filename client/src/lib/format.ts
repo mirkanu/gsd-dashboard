@@ -77,3 +77,8 @@ export function fmtCost(n: number): string {
   if (n >= 1_000) return `$${(n / 1_000).toFixed(2)}K`;
   return `$${n.toFixed(2)}`;
 }
+
+/** Format dollar amounts with commas (for tooltips / full display). */
+export function fmtCostFull(n: number, decimals = 2): string {
+  return `$${n.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+}

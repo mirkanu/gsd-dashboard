@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useSyncExternalStore } from "react";
 import { RefreshCw, Download, Zap, Bot, FolderOpen, Cpu, DollarSign, Clock } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
-import { fmt, fmtCost } from "../lib/format";
+import { fmt, fmtCost, fmtCostFull } from "../lib/format";
 import { Tip } from "../components/Tip";
 import type { Analytics as AnalyticsData, CostResult } from "../lib/types";
 
@@ -590,7 +590,7 @@ export function Analytics() {
         <StatPill
           label="Total Cost"
           value={costData ? fmtCost(costData.total_cost) : "$0.00"}
-          raw={costData ? `$${costData.total_cost.toFixed(2)}` : undefined}
+          raw={costData ? fmtCostFull(costData.total_cost) : undefined}
           sub={
             costData
               ? `${costData.breakdown.length} model${costData.breakdown.length !== 1 ? "s" : ""}`
@@ -785,14 +785,14 @@ export function Analytics() {
                         <div key={b.model} className="flex justify-between text-xs">
                           <span className="text-gray-400 font-mono truncate">{b.model}</span>
                           <span className="text-emerald-400 font-mono font-medium ml-2">
-                            <Tip raw={`$${b.cost.toFixed(2)}`}>{fmtCost(b.cost)}</Tip>
+                            <Tip raw={fmtCostFull(b.cost)}>{fmtCost(b.cost)}</Tip>
                           </span>
                         </div>
                       ))}
                     <div className="flex justify-between text-xs pt-2 border-t border-border">
                       <span className="text-gray-300 font-medium">Total</span>
                       <span className="text-emerald-400 font-mono font-semibold">
-                        <Tip raw={`$${costData.total_cost.toFixed(2)}`}>
+                        <Tip raw={fmtCostFull(costData.total_cost)}>
                           {fmtCost(costData.total_cost)}
                         </Tip>
                       </span>
