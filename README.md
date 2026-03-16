@@ -134,15 +134,16 @@ The dashboard offers a comprehensive set of features to monitor and analyze your
 
 | Feature               | Description                                                                  |
 | --------------------- | ---------------------------------------------------------------------------- |
-| **Dashboard**         | Overview stats, active agent cards, recent activity feed                     |
+| **Dashboard**         | Overview stats, active agent cards with collapsible subagent hierarchy, recent activity feed |
 | **Kanban Board**      | 5-column agent status board with paginated columns, per-status fetching (no artificial limits) |
 | **Sessions**          | Searchable, filterable, paginated table of all Claude Code sessions          |
-| **Session Detail**    | Per-session agent cards and full event timeline                              |
+| **Session Detail**    | Per-session agent hierarchy tree (parent/child) and full event timeline      |
 | **Activity Feed**     | Real-time streaming event log with pause/resume and pagination               |
 | **Analytics**         | Token usage, tool frequency, activity heatmap, session trends, live/offline connection indicator |
 | **Live Updates**      | WebSocket push -- no polling, instant UI updates                             |
 | **Auto-Discovery**    | Sessions and agents are created automatically from hook events               |
 | **History Import**    | Automatically imports legacy sessions from `~/.claude/` on server startup    |
+| **Subagent Hierarchy** | Collapsible parent-child agent tree on Dashboard and Session Detail. Agents with subagents show expand/collapse chevrons; leaf agents show a dot indicator. Auto-expands when subagents are active |
 | **Background Agents** | Correctly tracks backgrounded subagents without premature completion         |
 | **Cost Tracking**     | Per-model cost estimation with configurable pricing rules and per-session breakdowns. Compaction-aware token accounting preserves totals across context compressions |
 | **Notifications**     | Browser notifications for session starts, completions, errors, and subagent spawns. Configurable per-event toggles with permission management |
