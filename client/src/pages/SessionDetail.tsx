@@ -16,7 +16,7 @@ import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
 import { AgentCard } from "../components/AgentCard";
 import { SessionStatusBadge, AgentStatusBadge } from "../components/StatusBadge";
-import { formatDateTime, formatDuration, timeAgo } from "../lib/format";
+import { formatDateTime, formatDuration, fmtCostFull, timeAgo } from "../lib/format";
 import type { Session, Agent, DashboardEvent, SessionStatus, CostResult } from "../lib/types";
 
 export function SessionDetail() {
@@ -140,7 +140,8 @@ export function SessionDetail() {
             </span>
             {cost && cost.total_cost > 0 && (
               <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
-                <DollarSign className="w-3 h-3" />${cost.total_cost.toFixed(2)}
+                <DollarSign className="w-3 h-3" />
+                {fmtCostFull(cost.total_cost).slice(1)}
               </span>
             )}
           </div>
@@ -317,7 +318,7 @@ export function SessionDetail() {
                       {row.cache_write_tokens.toLocaleString()}
                     </td>
                     <td className="px-5 py-2.5 text-sm text-emerald-400 text-right font-mono font-medium">
-                      ${row.cost.toFixed(4)}
+                      {fmtCostFull(row.cost, 4)}
                     </td>
                   </tr>
                 ))}
@@ -326,7 +327,7 @@ export function SessionDetail() {
                     Total
                   </td>
                   <td className="px-5 py-2.5 text-sm text-emerald-400 text-right font-mono font-semibold">
-                    ${cost.total_cost.toFixed(4)}
+                    {fmtCostFull(cost.total_cost, 4)}
                   </td>
                 </tr>
               </tbody>
