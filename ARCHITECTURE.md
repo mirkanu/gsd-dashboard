@@ -309,15 +309,15 @@ graph TD
     LAYOUT --> SIDEBAR
     LAYOUT --> DASH & KANBAN & SESS & DETAIL & ACTIVITY & ANALYTICS_P & SETTINGS_P & NOTFOUND
 
-    DASH --> SC1["StatCard x4"]
-    DASH --> AC1["AgentCard[]"]
+    DASH --> SC1["StatCard x5<br/>(sessions/agents/subagents/events/cost)"]
+    DASH --> AC1["AgentCard[]<br/>with collapsible subagent hierarchy"]
     DASH --> EV1["Event rows"]
 
     KANBAN --> COL["Column x5<br/>(idle/connected/<br/>working/completed/error)"]
     COL --> AC2["AgentCard[]"]
 
     SESS --> TABLE["Session Table<br/>with filters"]
-    DETAIL --> AC3["AgentCard grid"]
+    DETAIL --> AC3["AgentCard hierarchy<br/>parent → children tree"]
     DETAIL --> TL["Event Timeline"]
     ACTIVITY --> FEED["Streaming<br/>Event List"]
 
@@ -406,7 +406,7 @@ graph LR
 
 | Route           | Page          | Data Sources                                           |
 | --------------- | ------------- | ------------------------------------------------------ |
-| `/`             | Dashboard     | `GET /api/stats`, `GET /api/agents`, `GET /api/events` |
+| `/`             | Dashboard     | `GET /api/stats`, `GET /api/agents`, `GET /api/events`, `GET /api/agents?session_id={sid}` (subagent hierarchy) |
 | `/kanban`       | KanbanBoard   | `GET /api/agents?status={each}` per-status (no limit)  |
 | `/sessions`     | Sessions      | `GET /api/sessions`                                    |
 | `/sessions/:id` | SessionDetail | `GET /api/sessions/:id` (includes agents + events)     |

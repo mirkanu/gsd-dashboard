@@ -539,8 +539,8 @@
               <div class="feature-icon ic-indigo">⬡</div>
               <h3>Live Dashboard</h3>
               <p>
-                Overview stats, active agent cards, and recent activity feed — all updating in
-                real-time via WebSocket.
+                Overview stats, active agent cards with collapsible subagent hierarchy, and recent
+                activity feed — all updating in real-time via WebSocket.
               </p>
             </div>
             <div class="feature-card">
@@ -563,8 +563,8 @@
               <div class="feature-icon ic-violet">◎</div>
               <h3>Session Detail</h3>
               <p>
-                Per-session agent grid and full chronological event timeline with tool names and
-                summaries.
+                Per-session agent hierarchy tree (parent/child with expand/collapse) and full
+                chronological event timeline with tool names and summaries.
               </p>
             </div>
             <div class="feature-card">
@@ -609,10 +609,12 @@
             </div>
             <div class="feature-card">
               <div class="feature-icon ic-violet">⊜</div>
-              <h3>Background Agents</h3>
+              <h3>Subagent Hierarchy</h3>
               <p>
-                Correctly tracks backgrounded subagents without premature completion. Sessions stay
-                active until the last subagent finishes.
+                Collapsible parent-child agent tree on Dashboard and Session Detail. Agents with
+                subagents show expand/collapse chevrons; leaf agents show a dot indicator.
+                Auto-expands when subagents are active. Correctly tracks backgrounded subagents
+                without premature completion.
               </p>
             </div>
             <div class="feature-card">
