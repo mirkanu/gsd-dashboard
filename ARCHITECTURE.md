@@ -10,6 +10,7 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=flat-square&logo=sqlite&logoColor=white)
 ![WebSocket](https://img.shields.io/badge/WebSocket-RFC_6455-010101?style=flat-square&logo=socketdotio&logoColor=white)
+![Model Context Protocol](https://img.shields.io/badge/Model_Context_Protocol-1.0-0f766e?style=flat-square&logo=modelcontextprotocol&logoColor=white)
 ![better--sqlite3](https://img.shields.io/badge/better--sqlite3-11.7-003B57?style=flat-square&logo=sqlite&logoColor=white)
 ![React Router](https://img.shields.io/badge/React_Router-6.28-CA4245?style=flat-square&logo=reactrouter&logoColor=white)
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.474-F56565?style=flat-square&logo=lucide&logoColor=white)
@@ -33,6 +34,8 @@
 - [Database Design](#database-design)
 - [WebSocket Protocol](#websocket-protocol)
 - [Hook Integration](#hook-integration)
+- [Agent Extension Layer](#agent-extension-layer)
+- [MCP Integration](#mcp-integration)
 - [State Management](#state-management)
 - [Browser Notification System](#browser-notification-system)
 - [Security Considerations](#security-considerations)
@@ -657,6 +660,116 @@ flowchart TD
 
 ---
 
+## Agent Extension Layer
+
+The repository includes a dual extension strategy:
+
+- Claude Code-native extensions (`CLAUDE.md`, `.claude/rules`, `.claude/skills`)
+- Codex-native extensions (`AGENTS.md`, `codex/rules`, `codex/agents`, `codex/skills`)
+
+```mermaid
+graph TD
+    USER["Developer"] --> CLAUDE["Claude Code"]
+    USER --> CODEX["Codex"]
+
+    CLAUDE --> C_MEM["CLAUDE.md"]
+    CLAUDE --> C_RULES[".claude/rules/*"]
+    CLAUDE --> C_SKILLS[".claude/skills/*"]
+
+    CODEX --> X_MEM["AGENTS.md"]
+    CODEX --> X_RULES["codex/rules/*.rules"]
+    CODEX --> X_AGENTS["codex/agents/*.toml"]
+    CODEX --> X_SKILLS["codex/skills/*"]
+```
+
+### Claude Code extension scope
+
+- `CLAUDE.md` defines always-on project working agreements.
+- `.claude/rules/` adds path-scoped guidance by file area.
+- `.claude/skills/` provides reusable workflows:
+  - onboarding
+  - feature shipping
+  - MCP operations
+  - live issue debugging
+- `.claude/agents/` provides specialized review workers:
+  - backend reviewer
+  - frontend reviewer
+  - MCP reviewer
+
+### Codex extension scope
+
+- `AGENTS.md` provides project-wide default behavior.
+- `codex/rules/default.rules` controls external execution decisions.
+- `codex/agents/` provides custom subagent templates.
+- `codex/skills/` provides reusable task workflows.
+- `npm run codex:sync` copies `codex/agents` and `codex/skills` into Codex runtime directories when needed.
+
+---
+
+## MCP Integration
+
+The repository includes an enterprise-grade local MCP server in `mcp/` that exposes dashboard functionality as tools for MCP hosts such as Claude Code and Claude Desktop.
+
+### MCP Runtime Topology
+
+```mermaid
+graph LR
+    HOST["MCP Host<br/>(Claude Code / Claude Desktop)"]
+    MCP["MCP Server<br/>mcp/build/index.js<br/>STDIO"]
+    API["Dashboard API<br/>http://127.0.0.1:4820/api/*"]
+    DB["SQLite"]
+
+    HOST -->|"tools/list + tools/call"| MCP
+    MCP -->|"validated HTTP requests"| API
+    API --> DB
+
+    style HOST fill:#6366f1,stroke:#818cf8,color:#fff
+    style MCP fill:#0f766e,stroke:#14b8a6,color:#fff
+    style API fill:#339933,stroke:#5cb85c,color:#fff
+    style DB fill:#003B57,stroke:#005f8a,color:#fff
+```
+
+### MCP Module Architecture
+
+```mermaid
+graph TD
+    ENTRY["src/index.ts"]
+    SERVER["src/server.ts"]
+    CONFIG["config/app-config.ts"]
+    CLIENT["clients/dashboard-api-client.ts"]
+    CORE["core/*<br/>logger, tool-registry, tool-result"]
+    POLICY["policy/tool-guards.ts"]
+    TOOLS["tools/index.ts"]
+    DOMAINS["tools/domains/*<br/>observability, sessions, agents,<br/>events, pricing, maintenance"]
+
+    ENTRY --> CONFIG
+    ENTRY --> SERVER
+    SERVER --> TOOLS
+    TOOLS --> DOMAINS
+    DOMAINS --> CLIENT
+    DOMAINS --> POLICY
+    DOMAINS --> CORE
+```
+
+### MCP Safety Model
+
+- API target is restricted to loopback hosts only (`127.0.0.1`, `localhost`, `::1`)
+- Tool inputs are schema-validated with zod before execution
+- Mutating tools require `MCP_DASHBOARD_ALLOW_MUTATIONS=true`
+- Destructive tools additionally require `MCP_DASHBOARD_ALLOW_DESTRUCTIVE=true` and explicit confirmation token
+- Logging is written to `stderr` only so stdio protocol traffic is never corrupted
+
+### MCP Tool Domains
+
+- Observability: health/stats/analytics/system/export/snapshot
+- Sessions: list/get/create/update
+- Agents: list/get/create/update
+- Events: list + hook event ingestion
+- Pricing: rule CRUD + total/per-session cost
+- Maintenance: cleanup/reimport/reinstall-hooks/clear-data (guarded)
+
+---
+
 ## State Management
 
 ### Client-Side Architecture
@@ -885,7 +998,7 @@ graph LR
 
 ```mermaid
 graph LR
-    BUILD["npm run build<br/>(tsc + vite build)"] --> DIST["client/dist/<br/>Static files"]
+    BUILD["npm run build<br/>(vite build in client/)"] --> DIST["client/dist/<br/>Static files"]
     START["npm start"] --> SERVER["node server/index.js<br/>Port 4820"]
     SERVER -->|serves| DIST
     BROWSER["Browser"] --> SERVER
@@ -901,6 +1014,22 @@ graph LR
 | **API proxy**     | Vite proxies `/api` + `/ws` to :4820 | Same origin, no proxy needed    |
 | **File watching** | `node --watch` + Vite HMR            | None                            |
 | **Source maps**   | Inline                               | External files                  |
+
+### MCP Sidecar (Optional)
+
+```mermaid
+graph LR
+    MCP["MCP Server<br/>npm run mcp:start"] --> API["Dashboard API<br/>:4820"]
+    HOST["MCP Host"] --> MCP
+```
+
+| Command | Purpose |
+| --- | --- |
+| `npm run mcp:install` | Install MCP package dependencies |
+| `npm run mcp:build` | Compile MCP server to `mcp/build/` |
+| `npm run mcp:start` | Run compiled MCP server |
+| `npm run mcp:dev` | Run MCP server with `tsx` |
+| `npm run mcp:typecheck` | Type-check MCP source |
 
 ### Container (Docker / Podman)
 

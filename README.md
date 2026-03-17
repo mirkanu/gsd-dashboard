@@ -14,6 +14,7 @@ A professional dashboard to track and visualize your Claude Code agent sessions,
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=flat-square&logo=sqlite&logoColor=white)
 ![WebSocket](https://img.shields.io/badge/WebSocket-RFC_6455-010101?style=flat-square&logo=socketdotio&logoColor=white)
+![Model Context Protocol](https://img.shields.io/badge/Model_Context_Protocol-1.0-0f766e?style=flat-square&logo=modelcontextprotocol&logoColor=white)
 ![better--sqlite3](https://img.shields.io/badge/better--sqlite3-11.7_(optional)-003B57?style=flat-square&logo=sqlite&logoColor=white)
 ![React Router](https://img.shields.io/badge/React_Router-6.28-CA4245?style=flat-square&logo=reactrouter&logoColor=white)
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.474-F56565?style=flat-square&logo=lucide&logoColor=white)
@@ -41,6 +42,7 @@ A professional dashboard to track and visualize your Claude Code agent sessions,
     - [2. Configure Claude Code Hooks](#2-configure-claude-code-hooks)
     - [3. Start](#3-start)
     - [4. Open](#4-open)
+    - [5. Optional: Build and run the local MCP server](#5-optional-build-and-run-the-local-mcp-server)
     - [Optional: Seed Demo Data](#optional-seed-demo-data)
     - [Alternative: Docker / Podman](#alternative-docker--podman)
   - [How It Works](#how-it-works)
@@ -50,6 +52,14 @@ A professional dashboard to track and visualize your Claude Code agent sessions,
     - [Cost Calculation Flow](#cost-calculation-flow)
   - [Configuration](#configuration)
   - [npm Scripts](#npm-scripts)
+  - [Agent Extensions](#agent-extensions)
+    - [Extension Architecture](#extension-architecture)
+    - [Claude Code Layer](#claude-code-layer)
+    - [Codex Layer](#codex-layer)
+  - [MCP Integration](#mcp-integration)
+    - [MCP Architecture](#mcp-architecture)
+    - [MCP Tool Surface](#mcp-tool-surface)
+    - [MCP Operational Modes](#mcp-operational-modes)
   - [API Reference](#api-reference)
     - [Health](#health)
     - [Sessions](#sessions)
@@ -148,6 +158,7 @@ The dashboard offers a comprehensive set of features to monitor and analyze your
 | **Cost Tracking**     | Per-model cost estimation with configurable pricing rules and per-session breakdowns. Compaction-aware token accounting preserves totals across context compressions |
 | **Notifications**     | Browser notifications for session starts, completions, errors, and subagent spawns. Configurable per-event toggles with permission management |
 | **Settings**          | System info, hook status, model pricing management, notification preferences, data export, session cleanup |
+| **MCP Server (Local)** | Enterprise-grade local MCP server in `mcp/` exposing dashboard operations as tools for Claude Code and other MCP hosts, with strict input schemas, retries/timeouts, localhost-only API target enforcement, and mutation/destructive safety gates |
 | **Compaction Tracking** | Detects `/compact` events from JSONL transcripts, creates compaction agents and events. Backfills legacy compactions on startup. Periodic scanner catches compactions within 2 minutes even when no hooks fire |
 | **Subsessions/Resumed Sessions** | Automatically reactivates sessions when new events arrive, correctly handles `/resume` and orphaned sessions. Periodic sweep (every 2 min) marks abandoned sessions that slip past event-based detection |
 | **Responsive Design** | Mobile-friendly layouts with stacking grids, scrollable tables, and collapsible sidebar |
@@ -195,6 +206,21 @@ npm run build && npm start
 | ----------- | ----------------------- |
 | Development | `http://localhost:5173` |
 | Production  | `http://localhost:4820` |
+
+### 5. Optional: Build and run the local MCP server
+
+```bash
+npm run mcp:install
+npm run mcp:build
+npm run mcp:start
+```
+
+Then configure your MCP host (Claude Code / Claude Desktop / other MCP clients) to run:
+
+- command: `node`
+- args: `["<ABSOLUTE_PATH>/mcp/build/index.js"]`
+
+See [mcp/README.md](./mcp/README.md) for full host configuration, safety flags, and tool catalog.
 
 ### Optional: Seed Demo Data
 
@@ -370,12 +396,141 @@ flowchart LR
 | `npm run dev`           | Start server (watch mode) + client (Vite HMR) concurrently |
 | `npm run dev:server`    | Start only the Express server with `--watch`               |
 | `npm run dev:client`    | Start only the Vite dev server                             |
-| `npm run build`         | TypeScript check + Vite production build                   |
+| `npm run build`         | Build the React client to `client/dist/`                   |
 | `npm start`             | Start production server (serves built client)              |
 | `npm run install-hooks` | Configure Claude Code hooks in `~/.claude/settings.json`   |
 | `npm run seed`          | Populate database with sample data                         |
 | `npm run import-history`| Import legacy sessions from `~/.claude/` (also runs on startup) |
 | `npm run clear-data`    | Delete all sessions, agents, events, and token usage            |
+| `npm run mcp:install`   | Install dependencies for local MCP package (`mcp/`)       |
+| `npm run mcp:build`     | Build MCP server TypeScript into `mcp/build/`             |
+| `npm run mcp:start`     | Start MCP server from `mcp/build/index.js`                |
+| `npm run mcp:dev`       | Run MCP server in dev mode (`tsx`)                        |
+| `npm run mcp:typecheck` | Type-check MCP source without emitting build output        |
+| `npm run codex:sync`    | Sync `codex/agents` + `codex/skills` into `.codex/agents` + `.agents/skills` |
+
+---
+
+## Agent Extensions
+
+This repository now includes a comprehensive extension layer for both Claude Code and Codex:
+
+- Claude Code: `CLAUDE.md`, `.claude/rules/`, `.claude/skills/`
+- Claude subagents: `.claude/agents/`
+- Codex: `AGENTS.md`, `codex/rules/`, `codex/agents/`, `codex/skills/`
+
+### Extension Architecture
+
+```mermaid
+graph TD
+    USER["Developer"]
+    CLAUDE["Claude Code"]
+    CODEX["Codex"]
+    MEMORY["CLAUDE.md + .claude/rules/*"]
+    C_SKILLS[".claude/skills/*"]
+    AGENTS_MD["AGENTS.md"]
+    X_RULES["codex/rules/*.rules"]
+    X_AGENTS["codex/agents/*.toml"]
+    X_SKILLS["codex/skills/*"]
+
+    USER --> CLAUDE
+    USER --> CODEX
+    CLAUDE --> MEMORY
+    CLAUDE --> C_SKILLS
+    CODEX --> AGENTS_MD
+    CODEX --> X_RULES
+    CODEX --> X_AGENTS
+    CODEX --> X_SKILLS
+```
+
+### Claude Code Layer
+
+- Persistent context:
+  - [`CLAUDE.md`](./CLAUDE.md)
+- Path-scoped rules:
+  - [`.claude/rules/backend-node.md`](./.claude/rules/backend-node.md)
+  - [`.claude/rules/frontend-react.md`](./.claude/rules/frontend-react.md)
+  - [`.claude/rules/mcp-typescript.md`](./.claude/rules/mcp-typescript.md)
+  - [`.claude/rules/docs-markdown.md`](./.claude/rules/docs-markdown.md)
+- Skills:
+  - `repo-onboarding`
+  - `ship-feature`
+  - `mcp-operations`
+  - `debug-live-issue`
+- Subagents:
+  - `backend-reviewer`
+  - `frontend-reviewer`
+  - `mcp-reviewer`
+
+### Codex Layer
+
+- Persistent context:
+  - [`AGENTS.md`](./AGENTS.md)
+- Execution policy:
+  - [`codex/rules/default.rules`](./codex/rules/default.rules)
+- Custom subagent templates:
+  - [`codex/agents/`](./codex/agents)
+- Skills:
+  - [`codex/skills/`](./codex/skills)
+- Activation instructions:
+  - [`codex/README.md`](./codex/README.md)
+  - quick sync: `npm run codex:sync`
+
+---
+
+## MCP Integration
+
+This project includes a local, production-grade MCP server at `mcp/` that exposes dashboard operations as tools for AI agents.
+
+### MCP Architecture
+
+```mermaid
+graph LR
+    HOST["MCP Host<br/>(Claude Code / Claude Desktop)"]
+    MCP["Local MCP Server<br/>mcp/build/index.js<br/>STDIO transport"]
+    API["Dashboard API<br/>Express /api/*"]
+    DB["SQLite<br/>data/dashboard.db"]
+
+    HOST -->|"tools/list, tools/call"| MCP
+    MCP -->|"HTTP localhost only"| API
+    API --> DB
+
+    style HOST fill:#6366f1,stroke:#818cf8,color:#fff
+    style MCP fill:#0f766e,stroke:#14b8a6,color:#fff
+    style API fill:#339933,stroke:#5cb85c,color:#fff
+    style DB fill:#003B57,stroke:#005f8a,color:#fff
+```
+
+### MCP Tool Surface
+
+```mermaid
+graph TD
+    ROOT["MCP Tools"]
+    OBS["Observability<br/>health, stats, analytics,<br/>system info, export, snapshot"]
+    SES["Sessions<br/>list/get/create/update"]
+    AGT["Agents<br/>list/get/create/update"]
+    EVT["Events & Hooks<br/>list events, ingest hook events"]
+    PRC["Pricing & Cost<br/>rules CRUD, total/session cost, reset defaults"]
+    MNT["Maintenance<br/>cleanup, reimport, reinstall hooks, clear-all (guarded)"]
+
+    ROOT --> OBS
+    ROOT --> SES
+    ROOT --> AGT
+    ROOT --> EVT
+    ROOT --> PRC
+    ROOT --> MNT
+```
+
+### MCP Operational Modes
+
+- Read-only mode (default): `MCP_DASHBOARD_ALLOW_MUTATIONS=false`
+- Admin mode: `MCP_DASHBOARD_ALLOW_MUTATIONS=true`
+- Destructive mode: requires both:
+  - `MCP_DASHBOARD_ALLOW_MUTATIONS=true`
+  - `MCP_DASHBOARD_ALLOW_DESTRUCTIVE=true`
+  - tool input `confirmation_token: "CLEAR_ALL_DATA"`
+
+Full details: [mcp/README.md](./mcp/README.md)
 
 ---
 
@@ -723,13 +878,27 @@ graph LR
     style P_DIST fill:#646CFF,stroke:#818cf8,color:#fff
 ```
 
+Optional local MCP sidecar:
+
+```mermaid
+graph LR
+    M["MCP Server<br/>npm run mcp:start"] --> D["Dashboard Server<br/>:4820"]
+    H["MCP Host<br/>(Claude Code / Claude Desktop)"] --> M
+```
+
 ---
 
 ## Project Structure
 
 ```
 agent-dashboard/
-|-- package.json                 # Root scripts + server dependencies
+|-- CLAUDE.md                   # Claude Code project memory and working agreements
+|-- AGENTS.md                   # Codex project instructions
+|-- package.json                 # Root scripts (dashboard + MCP helpers) + server dependencies
+|-- .claude/
+|   +-- rules/                  # Path-scoped Claude rules
+|   +-- skills/                 # Claude reusable project skills
+|   +-- agents/                 # Claude custom subagents
 |-- server/
 |   |-- index.js                 # Express app, HTTP server, static serving
 |   |-- db.js                    # SQLite schema, migrations, prepared statements
@@ -783,6 +952,24 @@ agent-dashboard/
 |   |-- install-hooks.js         # Auto-configures ~/.claude/settings.json
 |   |-- import-history.js        # Imports legacy sessions from ~/.claude/
 |   +-- seed.js                  # Sample data generator
+|-- mcp/
+|   |-- package.json             # MCP package scripts + dependencies
+|   |-- README.md                # MCP setup, host config, tool catalog, safety model
+|   |-- src/
+|   |   |-- index.ts             # MCP runtime entrypoint
+|   |   |-- server.ts            # MCP server assembly
+|   |   |-- clients/             # Dashboard API client
+|   |   |-- config/              # Environment/config parsing
+|   |   |-- core/                # Logger/tool registry/result helpers
+|   |   |-- policy/              # Mutation/destructive guards
+|   |   |-- tools/               # Domain-specific tool modules
+|   |   +-- types/               # Shared MCP type definitions
+|   +-- build/                   # Built MCP runtime output
+|-- codex/
+|   |-- README.md                # Codex activation guide for agents and skills
+|   |-- rules/                   # Codex execution policy rules
+|   |-- agents/                  # Codex custom agent templates
+|   +-- skills/                  # Codex project skills
 |-- statusline/
 |   |-- README.md                # Statusline installation & usage guide
 |   |-- statusline.py            # Python script that renders the statusline
@@ -802,6 +989,7 @@ agent-dashboard/
 | Dashboard shows no data           | Ensure the server is running (`npm run dev`) before starting a Claude Code session. Check `http://localhost:4820/api/health`                                     |
 | WebSocket disconnected            | The client auto-reconnects every 2 seconds. Check that port 4820 is not blocked by a firewall                                                                    |
 | Stale data after restart          | The database persists across restarts. Run `npm run seed` for fresh demo data, or delete `data/dashboard.db` to reset                                            |
+| MCP tools fail to connect         | Confirm dashboard API is up on `MCP_DASHBOARD_BASE_URL` and rebuild/start MCP (`npm run mcp:build`, `npm run mcp:start`)                                         |
 
 ---
 

@@ -91,6 +91,9 @@ Container-specific behavior:
 | `CLAUDE_DASHBOARD_PORT` | `4820` | Port the hook handler uses when posting events to the dashboard |
 | `DASHBOARD_DB_PATH` | `data/dashboard.db` | Path to the SQLite database file |
 | `NODE_ENV` | `development` | Set to `production` to serve built client |
+| `MCP_DASHBOARD_BASE_URL` | `http://127.0.0.1:4820` | Base URL used by the local MCP server to call dashboard APIs |
+| `MCP_DASHBOARD_ALLOW_MUTATIONS` | `false` | Enables mutating MCP tools |
+| `MCP_DASHBOARD_ALLOW_DESTRUCTIVE` | `false` | Enables destructive MCP tools (in addition to mutations) |
 
 Example with custom port:
 
@@ -100,6 +103,44 @@ DASHBOARD_PORT=9000 npm run dev
 
 > [!IMPORTANT]
 > If you change the dashboard port, update `client/vite.config.ts` so the dev client proxies to the same port. Claude Code hooks reach the server through `CLAUDE_DASHBOARD_PORT`, so start Claude Code with that environment variable set to the new port, or change the default in `scripts/hook-handler.js`.
+
+### MCP server (optional)
+
+The project includes a local MCP server under `mcp/` so AI agents can call dashboard operations through standardized tools.
+
+```mermaid
+graph LR
+  HOST["MCP Host"] --> MCP["Local MCP Server<br/>npm run mcp:start"]
+  MCP --> API["Dashboard API<br/>http://127.0.0.1:4820/api/*"]
+```
+
+Quick start:
+
+```bash
+npm run mcp:install
+npm run mcp:build
+npm run mcp:start
+```
+
+For full host config and tool catalog, see [mcp/README.md](./mcp/README.md).
+
+### Agent extension setup (Claude Code + Codex)
+
+This repository ships extension files for both agent ecosystems:
+
+- Claude Code:
+  - `CLAUDE.md`
+  - `.claude/rules/*`
+  - `.claude/skills/*`
+  - `.claude/agents/*`
+- Codex:
+  - `AGENTS.md`
+  - `codex/rules/default.rules`
+  - `codex/agents/*`
+  - `codex/skills/*`
+
+Use [`codex/README.md`](./codex/README.md) to sync Codex agent and skill files into runtime directories (`.codex/agents` and `.agents/skills`) if needed by your local Codex configuration.
+If hidden directories are restricted in your environment, set `CODEX_PROJECT_AGENTS_DIR` and `CODEX_PROJECT_SKILLS_DIR` when running `npm run codex:sync`.
 
 ---
 
@@ -148,6 +189,13 @@ npm run seed
 | `clear-data` | `npm run clear-data` | Delete all data from the database |
 | `seed` | `npm run seed` | Insert demo sessions/agents/events |
 | `import-history` | `npm run import-history` | Import legacy sessions from `~/.claude/` (also runs on startup) |
+| `mcp:install` | `npm run mcp:install` | Install MCP package dependencies |
+| `mcp:build` | `npm run mcp:build` | Build MCP server into `mcp/build/` |
+| `mcp:start` | `npm run mcp:start` | Start compiled MCP server |
+| `mcp:dev` | `npm run mcp:dev` | Start MCP server in dev mode |
+| `mcp:typecheck` | `npm run mcp:typecheck` | Type-check MCP source |
+| `codex:sync` | `npm run codex:sync` | Sync Codex agent and skill templates into runtime locations |
+| `claude` | Claude CLI | Uses `CLAUDE.md`, `.claude/rules`, and `.claude/skills` automatically |
 | `test` | `npm test` | Run all server and client tests |
 | `test:server` | `npm run test:server` | Run server integration tests only |
 | `test:client` | `npm run test:client` | Run client unit tests only |

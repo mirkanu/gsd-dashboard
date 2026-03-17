@@ -94,6 +94,51 @@ Open **http://localhost:4820** in your browser.
 
 ---
 
+## Optional: Local MCP server
+
+If you want AI agents to call dashboard functionality through MCP tools, run the local MCP server in `mcp/`:
+
+```bash
+npm run mcp:install
+npm run mcp:build
+npm run mcp:start
+```
+
+```mermaid
+graph LR
+  HOST["MCP Host"] --> MCP["Local MCP Server<br/>mcp/build/index.js"]
+  MCP --> API["Dashboard API<br/>http://127.0.0.1:4820/api/*"]
+```
+
+See [mcp/README.md](./mcp/README.md) for host config, tool catalog, and safety flags.
+
+---
+
+## Optional: Agent extension packs
+
+This repository includes extension packs for both Claude Code and Codex.
+
+- Claude Code loads project extensions from:
+  - `CLAUDE.md`
+  - `.claude/rules/`
+  - `.claude/skills/`
+  - `.claude/agents/`
+- Codex project packs are provided under:
+  - `AGENTS.md`
+  - `codex/rules/`
+  - `codex/agents/`
+  - `codex/skills/`
+
+For Codex activation details and copy/symlink commands, see [codex/README.md](./codex/README.md).
+
+Quick sync command:
+
+```bash
+npm run codex:sync
+```
+
+---
+
 ## Container mode (Docker / Podman)
 
 The repository includes both a multi-stage `Dockerfile` and a `docker-compose.yml` file. Docker and Podman are both supported.
