@@ -1,0 +1,71 @@
+# Default execution policy rules for this repository.
+
+# Safe, routine read-only git inspection can run with prompt.
+prefix_rule(
+    pattern = ["git", ["status", "diff", "log", "show"]],
+    decision = "prompt",
+    justification = "Git inspection is allowed with approval.",
+    match = [
+        "git status",
+        "git diff",
+        "git log --oneline -20",
+        "git show HEAD~1",
+    ],
+    not_match = [
+        "git checkout -b feature/new-branch",
+    ],
+)
+
+# Destructive reset-style operations are blocked.
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Hard reset is blocked to prevent data loss. Use explicit file edits or safe restore strategies.",
+    match = [
+        "git reset --hard",
+        "git reset --hard HEAD~1",
+    ],
+    not_match = [
+        "git reset --soft HEAD~1",
+    ],
+)
+
+# Installing dependencies should always require approval.
+prefix_rule(
+    pattern = ["npm", "install"],
+    decision = "prompt",
+    justification = "Dependency installation changes lockfiles and runtime behavior; require explicit approval.",
+    match = [
+        "npm install",
+        "npm install some-package",
+    ],
+    not_match = [
+        "npm run build",
+    ],
+)
+
+# Potentially destructive filesystem deletes are blocked.
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "forbidden",
+    justification = "Recursive force deletion is blocked. Use targeted edits or safer deletion commands.",
+    match = [
+        "rm -rf /tmp/test-folder",
+    ],
+    not_match = [
+        "rm -r ./tmp",
+    ],
+)
+
+# Network fetch commands should be reviewed each time.
+prefix_rule(
+    pattern = ["curl"],
+    decision = "prompt",
+    justification = "Network access should be explicitly reviewed per command.",
+    match = [
+        "curl https://example.com",
+    ],
+    not_match = [
+        "cat README.md",
+    ],
+)
