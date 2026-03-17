@@ -112,6 +112,14 @@ graph LR
 
 See [mcp/README.md](./mcp/README.md) for host config, tool catalog, and safety flags.
 
+To build the MCP server as a container image instead:
+
+```bash
+npm run mcp:docker:build
+# or
+npm run mcp:podman:build
+```
+
 ---
 
 ## Optional: Agent extension packs

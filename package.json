@@ -15,6 +15,8 @@
     "mcp:start": "npm --prefix mcp run start",
     "mcp:dev": "npm --prefix mcp run dev",
     "mcp:typecheck": "npm --prefix mcp run typecheck",
+    "mcp:docker:build": "docker build -f mcp/Dockerfile -t agent-dashboard-mcp:local .",
+    "mcp:podman:build": "podman build -f mcp/Dockerfile -t localhost/agent-dashboard-mcp:local .",
     "codex:sync": "node scripts/setup-codex-extensions.js",
     "install-hooks": "node scripts/install-hooks.js",
     "seed": "node scripts/seed.js",

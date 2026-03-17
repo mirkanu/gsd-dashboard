@@ -194,6 +194,8 @@ npm run seed
 | `mcp:start` | `npm run mcp:start` | Start compiled MCP server |
 | `mcp:dev` | `npm run mcp:dev` | Start MCP server in dev mode |
 | `mcp:typecheck` | `npm run mcp:typecheck` | Type-check MCP source |
+| `mcp:docker:build` | `npm run mcp:docker:build` | Build MCP container image with Docker |
+| `mcp:podman:build` | `npm run mcp:podman:build` | Build MCP container image with Podman |
 | `codex:sync` | `npm run codex:sync` | Sync Codex agent and skill templates into runtime locations |
 | `claude` | Claude CLI | Uses `CLAUDE.md`, `.claude/rules`, and `.claude/skills` automatically |
 | `test` | `npm test` | Run all server and client tests |

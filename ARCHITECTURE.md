@@ -1030,6 +1030,8 @@ graph LR
 | `npm run mcp:start` | Run compiled MCP server |
 | `npm run mcp:dev` | Run MCP server with `tsx` |
 | `npm run mcp:typecheck` | Type-check MCP source |
+| `npm run mcp:docker:build` | Build MCP container image with Docker |
+| `npm run mcp:podman:build` | Build MCP container image with Podman |
 
 ### Container (Docker / Podman)
 

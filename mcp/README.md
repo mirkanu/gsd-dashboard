@@ -12,6 +12,7 @@ It exposes the existing dashboard backend (`/api/*`) as MCP tools for Claude Cod
 - [Safety and Control Model](#safety-and-control-model)
 - [Prerequisites](#prerequisites)
 - [Setup and Commands](#setup-and-commands)
+- [Container Runtime (Docker / Podman)](#container-runtime-docker--podman)
 - [Host Configuration](#host-configuration)
 - [Configuration Variables](#configuration-variables)
 - [Enterprise File Structure](#enterprise-file-structure)
@@ -39,7 +40,7 @@ graph LR
     DB["SQLite<br/>data/dashboard.db"]
 
     HOST -->|"tools/list / tools/call"| MCP
-    MCP -->|"HTTP (loopback only)"| API
+    MCP -->|"HTTP (local-only targets)"| API
     API --> DB
 
     style HOST fill:#6366f1,stroke:#818cf8,color:#fff
@@ -125,7 +126,7 @@ flowchart TD
 
 Core controls:
 
-- Loopback-only API target enforcement (`localhost`, `127.0.0.1`, `::1`)
+- Local dashboard host enforcement (`localhost`, `127.0.0.1`, `::1`, `host.docker.internal`, `gateway.docker.internal`, `host.containers.internal`)
 - Strict schema validation per tool
 - Centralized mutation/destructive policy gates
 - Retry/backoff and timeout for resilient API calls
@@ -164,8 +165,71 @@ Available scripts:
 - `npm run mcp:start`
 - `npm run mcp:dev`
 - `npm run mcp:typecheck`
+- `npm run mcp:docker:build` (from repo root)
+- `npm run mcp:podman:build` (from repo root)
+- `npm --prefix mcp run docker:build` (from repo root)
+- `npm --prefix mcp run podman:build` (from repo root)
+
+## Container Runtime (Docker / Podman)
+
+The MCP server uses stdio transport. In containers, it should run as a short-lived interactive process
+(`-i`) that your MCP host launches on demand.
+
+Build from repository root:
+
+```bash
+# Docker
+npm run mcp:docker:build
+
+# Podman
+npm run mcp:podman:build
+```
+
+Manual build commands:
+
+```bash
+# Docker (repo root)
+docker build -f mcp/Dockerfile -t agent-dashboard-mcp:local .
+
+# Podman (repo root)
+podman build -f mcp/Dockerfile -t localhost/agent-dashboard-mcp:local .
+```
+
+Container networking options:
+
+```mermaid
+flowchart LR
+    HOST["MCP Host"]
+    CTR["MCP Container<br/>stdio process"]
+    API["Dashboard API<br/>:4820"]
+
+    HOST -->|"docker/podman run -i"| CTR
+    CTR -->|"MCP_DASHBOARD_BASE_URL"| API
+```
+
+Recommended runtime patterns:
+
+```bash
+# Docker bridge network, map host alias explicitly
+docker run --rm -i --init \
+  --add-host=host.docker.internal:host-gateway \
+  -e MCP_DASHBOARD_BASE_URL=http://host.docker.internal:4820 \
+  agent-dashboard-mcp:local
+
+# Podman host network (Linux/rootless): keep loopback URL
+podman run --rm -i --network=host \
+  -e MCP_DASHBOARD_BASE_URL=http://127.0.0.1:4820 \
+  localhost/agent-dashboard-mcp:local
+
+# Podman bridge mode: use built-in host alias
+podman run --rm -i \
+  -e MCP_DASHBOARD_BASE_URL=http://host.containers.internal:4820 \
+  localhost/agent-dashboard-mcp:local
+```
 
 ## Host Configuration
+
+### Direct Node runtime (recommended for local development)
 
 Example MCP host config (Windows path style):
 
@@ -190,13 +254,65 @@ Example MCP host config (Windows path style):
 
 For macOS/Linux, use POSIX paths in `args`.
 
+### Docker runtime wrapper
+
+```json
+{
+  "mcpServers": {
+    "agent-dashboard": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--init",
+        "--add-host=host.docker.internal:host-gateway",
+        "-e",
+        "MCP_DASHBOARD_BASE_URL=http://host.docker.internal:4820",
+        "agent-dashboard-mcp:local"
+      ],
+      "env": {
+        "MCP_DASHBOARD_ALLOW_MUTATIONS": "false",
+        "MCP_DASHBOARD_ALLOW_DESTRUCTIVE": "false",
+        "MCP_LOG_LEVEL": "info"
+      }
+    }
+  }
+}
+```
+
+### Podman runtime wrapper
+
+```json
+{
+  "mcpServers": {
+    "agent-dashboard": {
+      "command": "podman",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--network=host",
+        "localhost/agent-dashboard-mcp:local"
+      ],
+      "env": {
+        "MCP_DASHBOARD_BASE_URL": "http://127.0.0.1:4820",
+        "MCP_DASHBOARD_ALLOW_MUTATIONS": "false",
+        "MCP_DASHBOARD_ALLOW_DESTRUCTIVE": "false",
+        "MCP_LOG_LEVEL": "info"
+      }
+    }
+  }
+}
+```
+
 ## Configuration Variables
 
 | Variable | Default | Description |
 | --- | --- | --- |
 | `MCP_SERVER_NAME` | `agent-dashboard-mcp` | MCP server name reported to host |
 | `MCP_SERVER_VERSION` | `1.0.0` | MCP server version |
-| `MCP_DASHBOARD_BASE_URL` | `http://127.0.0.1:4820` | Dashboard API base URL (loopback required) |
+| `MCP_DASHBOARD_BASE_URL` | `http://127.0.0.1:4820` | Dashboard API base URL (must be local-only hostname; supports loopback and container host aliases) |
 | `MCP_DASHBOARD_TIMEOUT_MS` | `10000` | API timeout per request |
 | `MCP_DASHBOARD_RETRY_COUNT` | `2` | Retries for idempotent requests |
 | `MCP_DASHBOARD_RETRY_BACKOFF_MS` | `250` | Exponential retry backoff base |
@@ -236,6 +352,7 @@ mcp/
     server.ts
     index.ts
   build/
+  Dockerfile
   package.json
   tsconfig.json
 ```
@@ -302,3 +419,12 @@ High-risk workflow:
 4. Host cannot start MCP
    - Confirm absolute path to `mcp/build/index.js`
    - Rebuild: `npm run mcp:build`
+5. Docker runtime cannot reach dashboard
+   - Use Docker host alias + `--add-host=host.docker.internal:host-gateway`
+   - Set `MCP_DASHBOARD_BASE_URL=http://host.docker.internal:4820`
+6. Podman runtime cannot reach dashboard
+   - Prefer `--network=host` with `MCP_DASHBOARD_BASE_URL=http://127.0.0.1:4820`
+   - For bridge mode, use `MCP_DASHBOARD_BASE_URL=http://host.containers.internal:4820`
+7. Container image build fails
+   - Build from repository root so `file:..` dependency resolves
+   - Use `docker build -f mcp/Dockerfile ... .` or `podman build -f mcp/Dockerfile ... .`
