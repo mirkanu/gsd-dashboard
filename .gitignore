@@ -6,5 +6,4 @@ client/tsconfig.tsbuildinfo
 *.db-wal
 *.db-shm
 .env
-.claude/
 .vs/
