@@ -407,6 +407,8 @@ flowchart LR
 | `npm run mcp:start`     | Start MCP server from `mcp/build/index.js`                |
 | `npm run mcp:dev`       | Run MCP server in dev mode (`tsx`)                        |
 | `npm run mcp:typecheck` | Type-check MCP source without emitting build output        |
+| `npm run mcp:docker:build` | Build MCP container image with Docker (`agent-dashboard-mcp:local`) |
+| `npm run mcp:podman:build` | Build MCP container image with Podman (`localhost/agent-dashboard-mcp:local`) |
 | `npm run codex:sync`    | Sync `codex/agents` + `codex/skills` into `.codex/agents` + `.agents/skills` |
 
 ---

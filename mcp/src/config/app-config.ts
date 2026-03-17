@@ -12,7 +12,14 @@ export interface AppConfig {
   logLevel: LogLevel;
 }
 
-const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
+const LOCAL_DASHBOARD_HOSTS = new Set([
+  "127.0.0.1",
+  "localhost",
+  "::1",
+  "host.docker.internal",
+  "gateway.docker.internal",
+  "host.containers.internal",
+]);
 const VALID_LOG_LEVELS = new Set<LogLevel>(["debug", "info", "warn", "error"]);
 
 function parseBoolean(value: string | undefined, fallback: boolean): boolean {
@@ -55,9 +62,9 @@ function parseDashboardUrl(raw: string | undefined): URL {
     );
   }
 
-  if (!LOOPBACK_HOSTS.has(url.hostname)) {
+  if (!LOCAL_DASHBOARD_HOSTS.has(url.hostname)) {
     throw new Error(
-      `MCP_DASHBOARD_BASE_URL must point to localhost/loopback. Received hostname "${url.hostname}".`
+      `MCP_DASHBOARD_BASE_URL must target a local dashboard host (${Array.from(LOCAL_DASHBOARD_HOSTS).join(", ")}). Received hostname "${url.hostname}".`
     );
   }
 

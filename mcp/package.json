@@ -12,7 +12,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "npm run clean && tsc -p tsconfig.json",
     "start": "node build/index.js",
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "docker:build": "docker build -f Dockerfile -t agent-dashboard-mcp:local ..",
+    "podman:build": "podman build -f Dockerfile -t localhost/agent-dashboard-mcp:local .."
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
