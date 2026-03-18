@@ -17,9 +17,11 @@ const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
 
 function basicAuth(req, res, next) {
-  // Skip auth for localhost requests
+  // Skip auth for localhost and internal hook events
   const host = req.hostname || "";
   if (host === "localhost" || host === "127.0.0.1") return next();
+  if (req.path.startsWith("/api/hooks")) return next();
+  if (req.path.startsWith("/api/gsd")) return next();
 
   const user = process.env.DASHBOARD_USER || "admin";
   const pass = process.env.DASHBOARD_PASS;
