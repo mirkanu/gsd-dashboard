@@ -1,0 +1,47 @@
+{
+  "name": "agent-dashboard",
+  "version": "1.0.0",
+  "description": "Real-time dashboard for tracking Claude Code agent activity",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "node --watch server/index.js",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "node server/index.js",
+    "setup": "npm install && cd client && npm install",
+    "mcp:install": "npm --prefix mcp install",
+    "mcp:build": "npm --prefix mcp run build",
+    "mcp:start": "npm --prefix mcp run start",
+    "mcp:dev": "npm --prefix mcp run dev",
+    "mcp:typecheck": "npm --prefix mcp run typecheck",
+    "mcp:docker:build": "docker build -f mcp/Dockerfile -t agent-dashboard-mcp:local .",
+    "mcp:podman:build": "podman build -f mcp/Dockerfile -t localhost/agent-dashboard-mcp:local .",
+    "codex:sync": "node scripts/setup-codex-extensions.js",
+    "install-hooks": "node scripts/install-hooks.js",
+    "seed": "node scripts/seed.js",
+    "import-history": "node scripts/import-history.js",
+    "clear-data": "node scripts/clear-data.js",
+    "test": "node --test server/__tests__/*.test.js && cd client && npm test",
+    "test:server": "node --test server/__tests__/*.test.js",
+    "test:client": "cd client && npm test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.7.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "prettier": "^3.8.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

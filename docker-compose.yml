@@ -1,0 +1,16 @@
+services:
+  agent-monitor:
+    build: .
+    container_name: agent-monitor
+    ports:
+      - "${DASHBOARD_PORT:-4820}:4820"
+    volumes:
+      - dashboard-data:/app/data
+      - ${CLAUDE_HOME:-~/.claude}:/root/.claude:ro
+    environment:
+      - NODE_ENV=production
+      - DASHBOARD_PORT=4820
+    restart: unless-stopped
+
+volumes:
+  dashboard-data:
