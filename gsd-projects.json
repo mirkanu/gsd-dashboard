@@ -1,0 +1,20 @@
+{
+  "projects": [
+    {
+      "name": "josie",
+      "root": "/data/home/josie"
+    },
+    {
+      "name": "gsddashboard",
+      "root": "/data/home/gsddashboard"
+    },
+    {
+      "name": "debates",
+      "root": "/data/home/debates"
+    },
+    {
+      "name": "reforma",
+      "root": "/data/home/reforma"
+    }
+  ]
+}
