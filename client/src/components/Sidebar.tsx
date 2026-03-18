@@ -6,6 +6,7 @@ import {
   Activity,
   BarChart3,
   Settings,
+  MapPin,
   Wifi,
   WifiOff,
   Github,
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { to: "/sessions", icon: FolderOpen, label: "Sessions" },
   { to: "/activity", icon: Activity, label: "Activity Feed" },
   { to: "/analytics", icon: BarChart3, label: "Analytics" },
+  { to: "/gsd", icon: MapPin, label: "GSD Projects" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ] as const;
 
