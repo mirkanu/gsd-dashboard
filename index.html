@@ -1,0 +1,3103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <title>Claude Code Agent Monitor - Project Wiki</title>
+    <meta
+      name="description"
+      content="Comprehensive technical wiki for Claude Code Agent Monitor — real-time local monitoring with MCP server integration plus Claude Code and Codex extension scaffolding."
+    />
+    <meta
+      name="keywords"
+      content="Claude Code, Codex, MCP, Model Context Protocol, Claude Code Agent Monitor, AI monitoring, real-time dashboard, WebSocket, SQLite, React, TypeScript, developer tools, session tracking, agent skills"
+    />
+    <meta name="author" content="Son Nguyen Hoang" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#6366f1" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Claude Code Agent Monitor" />
+    <meta property="og:title" content="Claude Code Agent Monitor - Project Wiki" />
+    <meta
+      property="og:description"
+      content="Comprehensive technical wiki for Claude Code Agent Monitor — real-time local monitoring with MCP server integration plus Claude Code and Codex extension scaffolding."
+    />
+    <meta property="og:image" content="og-image.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta
+      property="og:image:alt"
+      content="Claude Code Agent Monitor — real-time Claude Code monitoring platform"
+    />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Claude Code Agent Monitor - Project Wiki" />
+    <meta
+      name="twitter:description"
+      content="Real-time local monitoring for Claude Code agent activity with MCP integration, extension scaffolding, analytics, and WebSocket push."
+    />
+    <meta name="twitter:image" content="og-image.svg" />
+    <meta
+      name="twitter:image:alt"
+      content="Claude Code Agent Monitor — real-time Claude Code monitoring platform"
+    />
+    <meta name="twitter:creator" content="@hoangsonww" />
+
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Claude Code Agent Monitor",
+        "description": "Real-time monitoring platform for Claude Code agent activity. Tracks sessions, agents, and tool events via native hooks, stores them in SQLite, and streams updates to a React UI over WebSocket.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Windows, macOS, Linux",
+        "license": "https://opensource.org/licenses/MIT",
+        "author": {
+          "@type": "Person",
+          "name": "Son Nguyen Hoang",
+          "url": "https://sonnguyenhoang.com"
+        },
+        "codeRepository": "https://github.com/hoangsonww/Claude-Code-Agent-Monitor",
+        "programmingLanguage": ["TypeScript", "JavaScript", "Python"],
+        "runtimePlatform": "Node.js",
+        "keywords": "Claude Code, Codex, MCP, Model Context Protocol, agent monitoring, real-time dashboard, WebSocket, SQLite, React"
+      }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    />
+    <link rel="stylesheet" href="wiki/style.css" />
+    <style>
+      :root {
+        --sidebar-expanded: 260px;
+        --sidebar-collapsed: 56px;
+      }
+
+      body {
+        --sidebar-current: var(--sidebar-expanded);
+        overflow-x: hidden;
+      }
+
+      body.sidebar-collapsed {
+        --sidebar-current: var(--sidebar-collapsed);
+      }
+
+      .sidebar {
+        display: flex !important;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: var(--sidebar-current);
+        overflow-x: hidden;
+        transition: width 0.2s ease;
+      }
+
+      .main-content {
+        margin-left: var(--sidebar-current) !important;
+        width: calc(100vw - var(--sidebar-current)) !important;
+        max-width: calc(100vw - var(--sidebar-current)) !important;
+        overflow-x: clip;
+        transition:
+          margin-left 0.2s ease,
+          width 0.2s ease;
+      }
+
+      .diagram-wrap .mermaid {
+        display: block;
+        width: 100%;
+      }
+
+      .diagram-wrap .mermaid svg {
+        width: 118%;
+        max-width: 118%;
+        height: auto;
+      }
+
+      .sidebar-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .sidebar-logo .logo-sub {
+        margin-top: 7px;
+      }
+
+      .sidebar-toggle {
+        width: 30px;
+        height: 30px;
+        border: 1px solid var(--border, #252538);
+        border-radius: 7px;
+        background: var(--bg-card, #1a1a2b);
+        color: var(--text, #e2e2f0);
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      body.sidebar-collapsed .sidebar .logo-text,
+      body.sidebar-collapsed .sidebar .search-wrap,
+      body.sidebar-collapsed .sidebar .nav-section,
+      body.sidebar-collapsed .sidebar .sidebar-footer {
+        display: none;
+      }
+
+      body.sidebar-collapsed .sidebar .sidebar-header {
+        padding: 12px 8px;
+      }
+
+      body.sidebar-collapsed .sidebar .sidebar-logo {
+        justify-content: center;
+        margin-bottom: 0;
+      }
+
+      body.sidebar-collapsed .sidebar .sidebar-topbar {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      body.sidebar-collapsed .sidebar .sidebar-nav {
+        padding-top: 8px;
+      }
+
+      body.sidebar-collapsed .sidebar .nav-link {
+        justify-content: center;
+        gap: 0;
+        padding-left: 0;
+        padding-right: 0;
+        font-size: 0;
+      }
+
+      body.sidebar-collapsed .sidebar .nav-link .nav-icon {
+        width: auto;
+        font-size: 13px;
+      }
+
+      .sidebar-scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s ease;
+        z-index: 180;
+      }
+
+      .wiki-footer.footer-enhanced {
+        margin-top: 84px;
+        padding: 24px;
+        border: 1px solid var(--border, #252538);
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.06));
+        display: grid;
+        grid-template-columns: 1.6fr 1fr 1fr;
+        gap: 22px;
+        align-items: start;
+      }
+
+      .footer-brand-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text, #e2e2f0);
+        margin-bottom: 6px;
+      }
+
+      .footer-note {
+        font-size: 13px;
+        color: var(--text-muted, #8888aa);
+        margin-bottom: 12px;
+        line-height: 1.55;
+      }
+
+      .footer-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .footer-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        color: var(--text-muted, #8888aa);
+        border: 1px solid var(--border, #252538);
+        background: rgba(18, 18, 30, 0.75);
+      }
+
+      .footer-col-title {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-dim, #55556a);
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+
+      .footer-col-links {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .footer-col-links a {
+        color: var(--text-muted, #8888aa);
+        text-decoration: none;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+
+      .footer-col-links a:hover {
+        color: var(--text, #e2e2f0);
+      }
+
+      @media (max-width: 1250px) {
+        .sidebar {
+          display: flex !important;
+          z-index: 200;
+        }
+
+        .main-content {
+          display: block;
+          padding: 32px 16px;
+          margin-left: var(--sidebar-collapsed) !important;
+          width: calc(100vw - var(--sidebar-collapsed)) !important;
+          max-width: calc(100vw - var(--sidebar-collapsed)) !important;
+        }
+
+        .diagram-wrap .mermaid svg {
+          width: 100%;
+          max-width: 100%;
+        }
+
+        body:not(.sidebar-collapsed) .sidebar {
+          width: min(86vw, 320px);
+          box-shadow: 10px 0 28px rgba(0, 0, 0, 0.4);
+        }
+
+        body:not(.sidebar-collapsed) .sidebar-scrim {
+          opacity: 1;
+          pointer-events: auto;
+        }
+
+        .wiki-footer.footer-enhanced {
+          grid-template-columns: 1fr;
+          gap: 16px;
+          padding: 20px;
+        }
+      }
+    </style>
+    <!-- Mermaid -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  </head>
+  <body>
+    <div class="wiki-layout">
+      <div id="sidebar-scrim" class="sidebar-scrim" aria-hidden="true"></div>
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ SIDEBAR ━━━ -->
+      <nav id="wiki-sidebar" class="sidebar" aria-label="Wiki navigation">
+        <div class="sidebar-header">
+          <div class="sidebar-topbar">
+            <a href="#hero" class="sidebar-logo">
+              <div class="logo-icon">⬡</div>
+              <div class="logo-text">
+                Claude Code Agent Monitor
+                <span class="logo-sub">Project Wiki</span>
+              </div>
+            </a>
+            <button
+              id="sidebar-toggle"
+              class="sidebar-toggle"
+              type="button"
+              aria-label="Toggle sidebar"
+              aria-controls="wiki-sidebar"
+              aria-expanded="true"
+            >
+              ‹
+            </button>
+          </div>
+        </div>
+
+        <div class="search-wrap">
+          <input
+            id="sidebar-search"
+            class="search-input"
+            type="text"
+            placeholder="Search docs…"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="sidebar-nav">
+          <div class="nav-section">Getting Started</div>
+          <a href="#overview" class="nav-link"><span class="nav-icon">◈</span>Overview</a>
+          <a href="#features" class="nav-link"><span class="nav-icon">◈</span>Features</a>
+          <a href="#quickstart" class="nav-link"><span class="nav-icon">◈</span>Quick Start</a>
+          <a href="#configuration" class="nav-link"><span class="nav-icon">◈</span>Configuration</a>
+          <a href="#scripts" class="nav-link"><span class="nav-icon">◈</span>Scripts Reference</a>
+
+          <div class="nav-section">Architecture</div>
+          <a href="#arch-overview" class="nav-link"
+            ><span class="nav-icon">◈</span>System Overview</a
+          >
+          <a href="#data-flow" class="nav-link"><span class="nav-icon">◈</span>Data Flow</a>
+          <a href="#server-arch" class="nav-link"
+            ><span class="nav-icon">◈</span>Server Architecture</a
+          >
+          <a href="#client-arch" class="nav-link"
+            ><span class="nav-icon">◈</span>Client Architecture</a
+          >
+          <a href="#state-mgmt" class="nav-link"><span class="nav-icon">◈</span>State Management</a>
+
+          <div class="nav-section">Data & APIs</div>
+          <a href="#database" class="nav-link"><span class="nav-icon">◈</span>Database Design</a>
+          <a href="#api-reference" class="nav-link"><span class="nav-icon">◈</span>API Reference</a>
+          <a href="#websocket" class="nav-link"
+            ><span class="nav-icon">◈</span>WebSocket Protocol</a
+          >
+
+          <div class="nav-section">Integrations</div>
+          <a href="#hooks" class="nav-link"><span class="nav-icon">◈</span>Hook Integration</a>
+          <a href="#mcp-agent-extensions" class="nav-link"
+            ><span class="nav-icon">◈</span>MCP &amp; Agent Extensions</a
+          >
+          <a href="#statusline" class="nav-link"
+            ><span class="nav-icon">◈</span>Statusline Utility</a
+          >
+          <a href="#settings-page" class="nav-link"><span class="nav-icon">◈</span>Settings Page</a>
+
+          <div class="nav-section">Ops & Reference</div>
+          <a href="#deployment" class="nav-link"><span class="nav-icon">◈</span>Deployment Modes</a>
+          <a href="#docker" class="nav-link"><span class="nav-icon">◈</span>Docker / Podman</a>
+          <a href="#performance" class="nav-link"><span class="nav-icon">◈</span>Performance</a>
+          <a href="#security" class="nav-link"><span class="nav-icon">◈</span>Security</a>
+          <a href="#troubleshoot" class="nav-link"
+            ><span class="nav-icon">◈</span>Troubleshooting</a
+          >
+          <a href="#tech-choices" class="nav-link"><span class="nav-icon">◈</span>Tech Choices</a>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-links">
+            <a href="https://github.com/hoangsonww" target="_blank" rel="noopener">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"
+                />
+              </svg>
+              hoangsonww
+            </a>
+            <a href="https://sonnguyenhoang.com" target="_blank" rel="noopener">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path
+                  d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"
+                />
+              </svg>
+              sonnguyenhoang.com
+            </a>
+            <a href="README.md" target="_blank" rel="noopener">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              README
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ MAIN CONTENT ━━━ -->
+      <main class="main-content">
+        <!-- ─── Hero ─────────────────────────────────────────────────────── -->
+        <div id="hero" class="hero">
+          <div class="hero-badge">
+            <span class="dot"></span>
+            Real-time · Local-first · Zero-config
+          </div>
+          <h1 style="padding-bottom: 2px">Claude Code Agent Monitor</h1>
+          <p class="hero-desc">
+            A professional monitoring platform for Claude Code agent activity. Captures sessions,
+            agents, and tool events via native hooks, persists them in SQLite, and streams updates
+            to a React UI over WebSocket — with no external services required.
+          </p>
+          <div class="hero-badges">
+            <span class="tech-badge badge-node">Node.js ≥ 18 (22+ recommended)</span>
+            <span class="tech-badge badge-react">React 18.3</span>
+            <span class="tech-badge badge-ts">TypeScript Strict</span>
+            <span class="tech-badge badge-sqlite">SQLite WAL</span>
+            <span class="tech-badge badge-ws">WebSocket</span>
+            <span class="tech-badge badge-vite">Vite 6</span>
+            <span class="tech-badge badge-node">Local MCP Server</span>
+            <span class="tech-badge badge-react">Claude + Codex Extensions</span>
+            <span class="tech-badge badge-python">Python 3.6+</span>
+            <span class="tech-badge badge-mit">MIT License</span>
+          </div>
+        </div>
+
+        <!-- ─── Overview ──────────────────────────────────────────────────── -->
+        <section id="overview">
+          <div class="section-label">◈ Introduction</div>
+          <h2>System Overview</h2>
+          <p>
+            Claude Code Agent Monitor integrates with Claude Code through its native hook system. When Claude
+            Code performs any action — tool use, session start, subagent orchestration, session end
+            — it fires a hook that calls a small Node.js script bundled with this project. That
+            script forwards the event over HTTP to the dashboard server, which stores it in SQLite
+            and broadcasts it to the browser over WebSocket.
+          </p>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              graph LR
+                CC["Claude Code\nSession"]:::cc -->|"hooks fire on\ntool use / stop"| HH["hook-handler.js\n(stdin → HTTP)"]:::mid
+                HH -->|"HTTP POST\n/api/hooks/event"| SRV["Express Server\n+ SQLite"]:::mid
+                SRV -->|"WebSocket\nbroadcast"| UI["React Dashboard\n(browser)"]:::ui
+
+                classDef cc fill:#6366f1,stroke:#818cf8,color:#fff
+                classDef mid fill:#1a1a2b,stroke:#2e2e48,color:#e2e2f0
+                classDef ui fill:#10b981,stroke:#34d399,color:#fff
+            </div>
+            <p class="diagram-label">End-to-end data pipeline from Claude Code to the browser</p>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-highlight">
+              <div class="stat-val">&lt; 50ms</div>
+              <div class="stat-label">Hook latency</div>
+            </div>
+            <div class="stat-highlight">
+              <div class="stat-val">5</div>
+              <div class="stat-label">Hook types captured</div>
+            </div>
+            <div class="stat-highlight">
+              <div class="stat-val">~30 MB</div>
+              <div class="stat-label">Server memory</div>
+            </div>
+            <div class="stat-highlight">
+              <div class="stat-val">1 M+</div>
+              <div class="stat-label">Events before slowdown</div>
+            </div>
+          </div>
+
+          <div class="callout callout-info">
+            <div class="callout-icon">ℹ</div>
+            <div class="callout-body">
+              <strong>Local-first by design</strong>
+              <p>
+                The server binds to <code>0.0.0.0</code> but everything runs on your machine. No
+                data leaves your system. No API keys. No external services.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Features ──────────────────────────────────────────────────── -->
+        <section id="features">
+          <div class="section-label">◈ Features</div>
+          <h2>What's Included</h2>
+          <p>
+            Every feature is driven by real hook events — nothing is hardcoded or simulated in
+            production mode.
+          </p>
+
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon ic-indigo">⬡</div>
+              <h3>Live Dashboard</h3>
+              <p>
+                Overview stats, active agent cards with collapsible subagent hierarchy, and recent
+                activity feed — all updating in real-time via WebSocket.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-emerald">⊞</div>
+              <h3>Kanban Board</h3>
+              <p>
+                5-column agent status board (Idle / Connected / Working / Completed / Error) with
+                paginated columns (10 per page) and horizontal scroll on overflow.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-amber">≡</div>
+              <h3>Sessions Table</h3>
+              <p>
+                Searchable, filterable, paginated table of all sessions with status badges, agent
+                counts, and duration.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-violet">◎</div>
+              <h3>Session Detail</h3>
+              <p>
+                Per-session agent hierarchy tree (parent/child with expand/collapse) and full
+                chronological event timeline with tool names and summaries.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-pink">⊲</div>
+              <h3>Activity Feed</h3>
+              <p>
+                Real-time streaming event log with pause/resume, pagination, and buffering while
+                paused.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-cyan">▦</div>
+              <h3>Analytics</h3>
+              <p>
+                Token usage, tool frequency, agent type distribution, activity heatmap, session
+                trends, and donut charts.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-blue">⚡</div>
+              <h3>WebSocket Push</h3>
+              <p>
+                Sub-5ms update latency. Automatic 2-second reconnection. Heartbeat ping/pong
+                dead-connection detection.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-rose">⌨</div>
+              <h3>Statusline</h3>
+              <p>
+                Standalone CLI statusline showing model, user, git branch, context window bar, and
+                token counts.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-emerald">⟳</div>
+              <h3>History Import</h3>
+              <p>
+                Automatically imports legacy sessions from <code>~/.claude/</code> on server
+                startup with correct historical timestamps.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-violet">⊜</div>
+              <h3>Subagent Hierarchy</h3>
+              <p>
+                Collapsible parent-child agent tree on Dashboard and Session Detail. Agents with
+                subagents show expand/collapse chevrons; leaf agents show a dot indicator.
+                Auto-expands when subagents are active. Correctly tracks backgrounded subagents
+                without premature completion.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-amber">$</div>
+              <h3>Cost Tracking</h3>
+              <p>
+                Per-model cost estimation with configurable pricing rules. View total and per-session
+                cost breakdowns based on input, output, and cache token rates. Compaction-aware token
+                accounting preserves totals across context compressions so no usage is ever lost.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-indigo">⚙</div>
+              <h3>Settings &amp; Management</h3>
+              <p>
+                Model pricing editor, hook configuration status, JSON data export, session cleanup
+                (abandon stale, purge old), and system information dashboard.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-blue">⎇</div>
+              <h3>Local MCP Server</h3>
+              <p>
+                Enterprise-grade local MCP sidecar under <code>mcp/</code> with typed tools,
+                transport-safe runtime, retry-aware API access, and policy gates for mutation and
+                destructive operations.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-rose">⚑</div>
+              <h3>Claude + Codex Extensions</h3>
+              <p>
+                Comprehensive instruction, skills, rules, and custom-agent layers for both Claude
+                Code and Codex, plus helper automation to sync runtime extension directories.
+              </p>
+            </div>
+          </div>
+
+          <h3>Hook Events Captured</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Hook Type</th>
+                  <th>Trigger</th>
+                  <th>Dashboard Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>PreToolUse</code></td>
+                  <td>Agent begins using a tool</td>
+                  <td>
+                    Agent →
+                    <span class="status-chip chip-working"
+                      ><span class="chip-dot"></span>Working</span
+                    >, <code>current_tool</code> set. If tool is <code>Agent</code>, subagent record
+                    created.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>PostToolUse</code></td>
+                  <td>Tool execution completes</td>
+                  <td>
+                    <code>current_tool</code> cleared. Agent stays
+                    <span class="status-chip chip-working"
+                      ><span class="chip-dot"></span>Working</span
+                    > (no status change).
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>Stop</code></td>
+                  <td>Session/turn ended</td>
+                  <td>
+                    Main agent →
+                    <span class="status-chip chip-idle"
+                      ><span class="chip-dot"></span>Idle</span
+                    > if subagents still running, else
+                    <span class="status-chip chip-completed"
+                      ><span class="chip-dot"></span>Completed</span
+                    >. Running subagents are preserved. Token usage recorded.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>SubagentStop</code></td>
+                  <td>Background agent finished</td>
+                  <td>
+                    Matched subagent →
+                    <span class="status-chip chip-completed"
+                      ><span class="chip-dot"></span>Completed</span
+                    >. Auto-completes session when the last subagent finishes.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>Notification</code></td>
+                  <td>Agent sends notification</td>
+                  <td>Event logged to activity feed. Compaction-related notifications tagged as <code>Compaction</code> events.</td>
+                </tr>
+                <tr>
+                  <td><code>Compaction</code></td>
+                  <td><code>/compact</code> detected in JSONL</td>
+                  <td>
+                    Creates a compaction subagent →
+                    <span class="status-chip chip-completed"
+                      ><span class="chip-dot"></span>Completed</span
+                    >. Detected via <code>isCompactSummary</code> entries in the transcript. Token baselines preserve pre-compaction totals. Periodic scanner (every 2 min) catches compactions when no hooks fire.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── Quick Start ───────────────────────────────────────────────── -->
+        <section id="quickstart">
+          <div class="section-label">◈ Getting Started</div>
+          <h2>Quick Start</h2>
+
+          <div class="quick-start-grid">
+            <div class="qs-card">
+              <div class="qs-step">1</div>
+              <h3>Clone</h3>
+              <p>Clone the repository to your machine</p>
+            </div>
+            <div class="qs-card">
+              <div class="qs-step">2</div>
+              <h3>Install</h3>
+              <p>Run <code>npm run setup</code> to install all dependencies</p>
+            </div>
+            <div class="qs-card">
+              <div class="qs-step">3</div>
+              <h3>Start</h3>
+              <p>Run <code>npm run dev</code> — server + client launch automatically</p>
+            </div>
+            <div class="qs-card">
+              <div class="qs-step">4</div>
+              <h3>Use Claude</h3>
+              <p>Start a new Claude Code session — events appear in real-time</p>
+            </div>
+          </div>
+
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code># 1. Clone
+git clone https://github.com/hoangsonww/Claude-Code-Agent-Monitor.git
+cd Claude-Code-Agent-Monitor
+
+# 2. Install all dependencies (server + client)
+npm run setup
+
+# 3. Start in development mode
+npm run dev
+# → Express server on http://localhost:4820
+# → Vite dev server on http://localhost:5173
+
+# 4. (Optional) Build and run the local MCP server
+npm run mcp:install
+npm run mcp:build
+npm run mcp:start
+
+# 5. (Optional) Sync Codex runtime extension folders
+npm run codex:sync
+
+# 6. Open the dashboard
+# http://localhost:5173  (dev)
+# http://localhost:4820  (prod after npm run build && npm start)</code></pre>
+
+          <h3>Alternative: Docker / Podman</h3>
+          <p>
+            A multi-stage <code>Dockerfile</code> and <code>docker-compose.yml</code> are included.
+            You can run the monitor with either Docker or Podman and keep the SQLite database in a
+            named volume.
+          </p>
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code># Docker Compose
+docker compose up -d --build
+
+# Podman Compose
+CLAUDE_HOME="$HOME/.claude" podman compose up -d --build
+
+# Plain Docker / Podman
+docker build -t agent-monitor .
+docker run -d --name agent-monitor \
+  -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor</code></pre>
+
+          <div class="callout callout-success">
+            <div class="callout-icon">✓</div>
+            <div class="callout-body">
+              <strong>Hooks auto-install in local mode</strong>
+              <p>
+                When you run the server directly on the host with <code>npm run dev</code> or
+                <code>npm start</code>, it automatically writes Claude Code hook entries to
+                <code>~/.claude/settings.json</code>. If you run the dashboard in Docker or Podman,
+                install hooks from the host with <code>npm run install-hooks</code> after the
+                container is up, then restart Claude Code.
+              </p>
+            </div>
+          </div>
+
+          <h3>Optional: Enable MCP and Agent Extensions</h3>
+          <p>
+            This repository also ships a local MCP server under <code>mcp/</code> and extension
+            scaffolding for both Claude Code and Codex. These are optional for the dashboard UI, but
+            recommended for complete local-agent workflows.
+          </p>
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code># MCP lifecycle
+npm run mcp:install
+npm run mcp:build
+npm run mcp:start
+
+# Sync codex extension templates into runtime dirs
+# (copies codex/agents -> .codex/agents and codex/skills -> .agents/skills)
+npm run codex:sync</code></pre>
+
+          <h3>Verification</h3>
+          <p>After starting a Claude Code session, you should see:</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Page</th>
+                  <th>Expected</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Sessions</td>
+                  <td>
+                    Your session listed with status
+                    <span class="status-chip chip-active"
+                      ><span class="chip-dot"></span>Active</span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>Kanban Board</td>
+                  <td>A <em>Main Agent</em> card in the Connected column</td>
+                </tr>
+                <tr>
+                  <td>Activity Feed</td>
+                  <td>Events streaming in as Claude Code uses tools</td>
+                </tr>
+                <tr>
+                  <td>Dashboard</td>
+                  <td>Stats updating in real-time</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-icon">⚠</div>
+            <div class="callout-body">
+              <strong>Start server before Claude Code</strong>
+              <p>
+                Hooks only fire to a running server. If Claude Code was already running when you
+                started the dashboard, restart the Claude Code session.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Configuration ─────────────────────────────────────────────── -->
+        <section id="configuration">
+          <div class="section-label">◈ Configuration</div>
+          <h2>Configuration</h2>
+
+          <h3>Environment Variables</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Variable</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>DASHBOARD_PORT</code></td>
+                  <td><code>4820</code></td>
+                  <td>Port the Express server listens on</td>
+                </tr>
+                <tr>
+                  <td><code>CLAUDE_DASHBOARD_PORT</code></td>
+                  <td><code>4820</code></td>
+                  <td>
+                    Port used by the hook handler to reach the server (for custom port setups)
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>MCP_DASHBOARD_BASE_URL</code></td>
+                  <td><code>http://127.0.0.1:4820</code></td>
+                  <td>Base URL used by the local MCP server when calling dashboard APIs</td>
+                </tr>
+                <tr>
+                  <td><code>DASHBOARD_DB_PATH</code></td>
+                  <td><code>data/dashboard.db</code></td>
+                  <td>Path to the SQLite database file</td>
+                </tr>
+                <tr>
+                  <td><code>NODE_ENV</code></td>
+                  <td><code>development</code></td>
+                  <td>
+                    Set to <code>production</code> to serve built client from
+                    <code>client/dist/</code>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Hook Configuration</h3>
+          <p>
+            The server writes the following to <code>~/.claude/settings.json</code> on every
+            startup:
+          </p>
+
+          <div class="code-header"><span class="code-lang">json</span></div>
+          <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" PreToolUse" }] }
+    ],
+    "PostToolUse": [
+      { "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" PostToolUse" }] }
+    ],
+    "Stop":         [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" Stop" }] }],
+    "SubagentStop": [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" SubagentStop" }] }],
+    "Notification": [{ "matcher": "*", "hooks": [{ "type": "command", "command": "node \"/path/to/scripts/hook-handler.js\" Notification" }] }]
+  }
+}</code></pre>
+
+          <p>
+            Existing hooks are preserved. The installer only adds or updates entries containing
+            <code>hook-handler.js</code>.
+          </p>
+        </section>
+
+        <!-- ─── Scripts ───────────────────────────────────────────────────── -->
+        <section id="scripts">
+          <div class="section-label">◈ Reference</div>
+          <h2>Scripts Reference</h2>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Script</th>
+                  <th>Command</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>setup</code></td>
+                  <td><code>npm run setup</code></td>
+                  <td>Install all dependencies (server + client)</td>
+                </tr>
+                <tr>
+                  <td><code>dev</code></td>
+                  <td><code>npm run dev</code></td>
+                  <td>Start server + client in development mode with hot reload</td>
+                </tr>
+                <tr>
+                  <td><code>dev:server</code></td>
+                  <td><code>npm run dev:server</code></td>
+                  <td>Start only the Express server with <code>--watch</code></td>
+                </tr>
+                <tr>
+                  <td><code>dev:client</code></td>
+                  <td><code>npm run dev:client</code></td>
+                  <td>Start only the Vite dev server</td>
+                </tr>
+                <tr>
+                  <td><code>build</code></td>
+                  <td><code>npm run build</code></td>
+                  <td>TypeScript check + Vite production build to <code>client/dist/</code></td>
+                </tr>
+                <tr>
+                  <td><code>start</code></td>
+                  <td><code>npm start</code></td>
+                  <td>Start Express in production mode serving built client</td>
+                </tr>
+                <tr>
+                  <td><code>install-hooks</code></td>
+                  <td><code>npm run install-hooks</code></td>
+                  <td>Manually write Claude Code hooks to <code>~/.claude/settings.json</code></td>
+                </tr>
+                <tr>
+                  <td><code>seed</code></td>
+                  <td><code>npm run seed</code></td>
+                  <td>
+                    Insert demo sessions, agents, and events (8 sessions / 23 agents / 106 events)
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>import-history</code></td>
+                  <td><code>npm run import-history</code></td>
+                  <td>Import historical Claude Code sessions from <code>~/.claude</code></td>
+                </tr>
+                <tr>
+                  <td><code>clear-data</code></td>
+                  <td><code>npm run clear-data</code></td>
+                  <td>Delete all data from the database (keeps schema)</td>
+                </tr>
+                <tr>
+                  <td><code>test</code></td>
+                  <td><code>npm test</code></td>
+                  <td>Run all server and client tests</td>
+                </tr>
+                <tr>
+                  <td><code>test:server</code></td>
+                  <td><code>npm run test:server</code></td>
+                  <td>Server integration tests only (Node built-in test runner)</td>
+                </tr>
+                <tr>
+                  <td><code>test:client</code></td>
+                  <td><code>npm run test:client</code></td>
+                  <td>Client unit tests only (Vitest + Testing Library)</td>
+                </tr>
+                <tr>
+                  <td><code>mcp:install</code></td>
+                  <td><code>npm run mcp:install</code></td>
+                  <td>Install dependencies for the local MCP package under <code>mcp/</code></td>
+                </tr>
+                <tr>
+                  <td><code>mcp:typecheck</code></td>
+                  <td><code>npm run mcp:typecheck</code></td>
+                  <td>Type-check MCP source without emitting build output</td>
+                </tr>
+                <tr>
+                  <td><code>mcp:build</code></td>
+                  <td><code>npm run mcp:build</code></td>
+                  <td>Compile MCP server into <code>mcp/build/</code></td>
+                </tr>
+                <tr>
+                  <td><code>mcp:start</code></td>
+                  <td><code>npm run mcp:start</code></td>
+                  <td>Start compiled MCP server over stdio transport</td>
+                </tr>
+                <tr>
+                  <td><code>mcp:dev</code></td>
+                  <td><code>npm run mcp:dev</code></td>
+                  <td>Run MCP server in dev mode with <code>tsx</code></td>
+                </tr>
+                <tr>
+                  <td><code>mcp:docker:build</code></td>
+                  <td><code>npm run mcp:docker:build</code></td>
+                  <td>Build MCP container image with Docker (<code>agent-dashboard-mcp:local</code>)</td>
+                </tr>
+                <tr>
+                  <td><code>mcp:podman:build</code></td>
+                  <td><code>npm run mcp:podman:build</code></td>
+                  <td>
+                    Build MCP container image with Podman
+                    (<code>localhost/agent-dashboard-mcp:local</code>)
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>codex:sync</code></td>
+                  <td><code>npm run codex:sync</code></td>
+                  <td>
+                    Sync <code>codex/agents</code> + <code>codex/skills</code> into runtime
+                    directories (<code>.codex/agents</code> + <code>.agents/skills</code>)
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>format</code></td>
+                  <td><code>npm run format</code></td>
+                  <td>Format all files with Prettier</td>
+                </tr>
+                <tr>
+                  <td><code>format:check</code></td>
+                  <td><code>npm run format:check</code></td>
+                  <td>Check formatting without writing</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── MCP + Agent Extensions ─────────────────────────────────────── -->
+        <section id="mcp-agent-extensions">
+          <div class="section-label">◈ Integrations</div>
+          <h2>MCP &amp; Agent Extensions</h2>
+          <p>
+            In addition to dashboard telemetry, this project now includes a production-grade local
+            MCP server and complete extension scaffolding for both Claude Code and Codex. This gives
+            agents a richer local tool surface while keeping all execution local-first.
+          </p>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              graph LR
+                subgraph Hosts["Agent Hosts"]
+                  CC["Claude Code"]
+                  CX["Codex"]
+                end
+
+                subgraph Layers["Instruction + Skill Layers"]
+                  CL["CLAUDE.md + .claude/rules + .claude/skills + .claude/agents"]
+                  AG["AGENTS.md + codex/rules + codex/skills + codex/agents"]
+                end
+
+                subgraph Runtime["Local Runtime"]
+                  MCP["Local MCP Server (stdio)\nmcp/build/index.js"]
+                  API["Dashboard API\nhttp://127.0.0.1:4820"]
+                end
+
+                CC --> CL
+                CX --> AG
+                CC -->|"MCP tool calls"| MCP
+                MCP -->|"REST"| API
+            </div>
+            <p class="diagram-label">
+              Local extension architecture: host instructions + skills + local MCP sidecar
+            </p>
+          </div>
+
+          <h3>Local MCP Server Runtime</h3>
+          <p>
+            The <code>mcp/</code> package exposes dashboard-oriented tools for AI agents. Mutation and
+            destructive operations are policy-gated by environment variables and disabled by default.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Location</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>MCP source</td>
+                  <td><code>mcp/src/</code></td>
+                  <td>TypeScript server, tools, policy guards, transport bootstrap</td>
+                </tr>
+                <tr>
+                  <td>MCP build output</td>
+                  <td><code>mcp/build/</code></td>
+                  <td>Compiled JavaScript used by local stdio server runtime</td>
+                </tr>
+                <tr>
+                  <td>MCP docs</td>
+                  <td><code>mcp/README.md</code></td>
+                  <td>Tool catalog, architecture diagrams, host integration examples</td>
+                </tr>
+                <tr>
+                  <td>Runtime commands</td>
+                  <td><code>npm run mcp:install|typecheck|build|start|dev|docker:build|podman:build</code></td>
+                  <td>Install, validate, compile, and run MCP locally</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Agent Extension Layout</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Target</th>
+                  <th>Files</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Claude Code</td>
+                  <td><code>CLAUDE.md</code>, <code>.claude/rules/</code></td>
+                  <td>Persistent project instructions + path-scoped coding rules</td>
+                </tr>
+                <tr>
+                  <td>Claude Code Skills</td>
+                  <td><code>.claude/skills/</code></td>
+                  <td>Reusable workflows (onboarding, shipping, MCP ops, live debugging)</td>
+                </tr>
+                <tr>
+                  <td>Claude Code Subagents</td>
+                  <td><code>.claude/agents/</code></td>
+                  <td>Specialized reviewers for backend, frontend, and MCP code paths</td>
+                </tr>
+                <tr>
+                  <td>Codex Base Instructions</td>
+                  <td><code>AGENTS.md</code>, <code>codex/rules/default.rules</code></td>
+                  <td>Project-wide guidance + execution policy defaults</td>
+                </tr>
+                <tr>
+                  <td>Codex Skills</td>
+                  <td><code>codex/skills/</code></td>
+                  <td>Task-specific skills aligned to this repository</td>
+                </tr>
+                <tr>
+                  <td>Codex Agents</td>
+                  <td><code>codex/agents/</code></td>
+                  <td>Reusable custom-agent templates for implementation and review</td>
+                </tr>
+                <tr>
+                  <td>Codex runtime sync</td>
+                  <td><code>scripts/setup-codex-extensions.js</code></td>
+                  <td>Copies templates into <code>.agents/skills</code> and <code>.codex/agents</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Root Helper Scripts</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Script</th>
+                  <th>Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>scripts/hook-handler.js</code></td>
+                  <td>Receives Claude hook payloads over stdin and forwards them to dashboard API</td>
+                </tr>
+                <tr>
+                  <td><code>scripts/install-hooks.js</code></td>
+                  <td>Writes/updates hook registration in <code>~/.claude/settings.json</code></td>
+                </tr>
+                <tr>
+                  <td><code>scripts/import-history.js</code></td>
+                  <td>Imports historical session data into local database</td>
+                </tr>
+                <tr>
+                  <td><code>scripts/seed.js</code></td>
+                  <td>Loads deterministic demo data for testing and demos</td>
+                </tr>
+                <tr>
+                  <td><code>scripts/clear-data.js</code></td>
+                  <td>Removes persisted rows while preserving schema</td>
+                </tr>
+                <tr>
+                  <td><code>scripts/setup-codex-extensions.js</code></td>
+                  <td>Syncs Codex extension templates to active runtime directories</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-icon">⚠</div>
+            <div class="callout-body">
+              <strong>Runtime sync note</strong>
+              <p>
+                If hidden directories are restricted in your environment, run
+                <code>npm run codex:sync</code> with <code>CODEX_PROJECT_AGENTS_DIR</code> and
+                <code>CODEX_PROJECT_SKILLS_DIR</code> overrides.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Architecture Overview ────────────────────────────────────── -->
+        <section id="arch-overview">
+          <div class="section-label">◈ Architecture</div>
+          <h2>System Architecture</h2>
+          <p>
+            Core dashboard telemetry is composed of three processes (Claude hook source, dashboard
+            server, browser UI). When the local MCP sidecar is enabled, a fourth process
+            (<code>mcp/</code>) integrates with the same dashboard API.
+          </p>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              graph TB
+                subgraph Claude["Claude Code Process"]
+                  CC["Claude Code CLI"]
+                  H1["PreToolUse Hook"]
+                  H2["PostToolUse Hook"]
+                  H3["Stop Hook"]
+                  H4["SubagentStop Hook"]
+                  H5["Notification Hook"]
+                  CC --> H1
+                  CC --> H2
+                  CC --> H3
+                  CC --> H4
+                  CC --> H5
+                end
+
+                subgraph Hook["Hook Layer"]
+                  HH["hook-handler.js"]
+                end
+
+                subgraph Server["Server Process — port 4820"]
+                  direction TB
+                  EX["Express App"]
+                  HR["/api/hooks"]
+                  SR["/api/sessions"]
+                  AR["/api/agents"]
+                  AN["/api/analytics"]
+                  DB[("SQLite WAL")]
+                  WSS["WebSocket Server"]
+                  EX --> HR
+                  EX --> SR
+                  EX --> AR
+                  EX --> AN
+                  HR -->|transaction| DB
+                  SR --> DB
+                  AR --> DB
+                  AN --> DB
+                  HR -->|broadcast| WSS
+                end
+
+                subgraph Client["Browser"]
+                  direction TB
+                  APP["React App"]
+                  WS_C["WS Client"]
+                  EB["Event Bus"]
+                  PAGES["Dashboard / Kanban /\nSessions / Analytics"]
+                  APP --> WS_C
+                  WS_C --> EB
+                  EB --> PAGES
+                end
+
+                H1 -->|stdin JSON| HH
+                H2 -->|stdin JSON| HH
+                H3 -->|stdin JSON| HH
+                H4 -->|stdin JSON| HH
+                H5 -->|stdin JSON| HH
+                HH -->|"POST /api/hooks/event"| HR
+                WSS -->|push| WS_C
+                PAGES -->|fetch| EX
+            </div>
+            <p class="diagram-label">
+              Full system architecture — Claude Code process → Hook Layer → Server → Browser
+            </p>
+          </div>
+
+          <h3>Agent State Machine</h3>
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              stateDiagram-v2
+                [*] --> connected: Agent created
+                connected --> working: PreToolUse
+                working --> working: PreToolUse (different tool)
+                working --> idle: Stop (subagents still running)
+                working --> completed: Stop (no subagents)
+                idle --> idle: Tool events from subagents
+                idle --> completed: Last SubagentStop
+                working --> error: Error occurred
+                completed --> [*]
+                error --> [*]
+            </div>
+            <p class="diagram-label">Agent status transitions driven by hook events</p>
+          </div>
+
+          <h3>Session State Machine</h3>
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              stateDiagram-v2
+                [*] --> active: First hook event received
+                active --> active: Stop (subagents still running)
+                active --> completed: Stop (no subagents) / last SubagentStop
+                active --> error: Stop hook (error)
+                active --> abandoned: No activity timeout
+                completed --> [*]
+                error --> [*]
+                abandoned --> [*]
+            </div>
+            <p class="diagram-label">Session status lifecycle</p>
+          </div>
+        </section>
+
+        <!-- ─── Data Flow ─────────────────────────────────────────────────── -->
+        <section id="data-flow">
+          <div class="section-label">◈ Architecture</div>
+          <h2>Data Flow</h2>
+
+          <h3>Event Ingestion Pipeline</h3>
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              sequenceDiagram
+                participant CC as Claude Code
+                participant HH as hook-handler.js
+                participant API as POST /api/hooks/event
+                participant TX as SQLite Transaction
+                participant WS as WebSocket.broadcast()
+                participant UI as React Client
+
+                CC->>HH: stdin JSON payload
+                Note over HH: Reads stdin to EOF<br/>Parses JSON and adds hook_type
+                HH->>API: POST {"hook_type":"PreToolUse","data":{...}}
+                API->>TX: BEGIN TRANSACTION
+                TX->>TX: ensureSession(session_id)
+                Note over TX: Creates session + main agent<br/>on first contact
+                TX->>TX: process by hook_type
+                Note over TX: PreToolUse -> agent working<br/>PostToolUse -> clear current_tool<br/>Stop -> idle if subagents, else completed<br/>SubagentStop -> complete matched subagent
+                TX->>TX: insertEvent(...)
+                TX->>TX: COMMIT
+                API->>WS: broadcast("agent_updated", agent)
+                API->>WS: broadcast("new_event", event)
+                WS->>UI: {"type":"agent_updated","data":{...}}
+                UI->>UI: eventBus.publish -> page re-renders
+            </div>
+            <p class="diagram-label">
+              Complete event ingestion from hook fire to browser re-render
+            </p>
+          </div>
+
+          <h3>Client Data Loading Pattern</h3>
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              sequenceDiagram
+                participant Page as React Page
+                participant API as api.ts
+                participant Server as Express
+                participant EB as eventBus
+                participant WS as WebSocket
+
+                Note over Page: Component mounts
+                Page->>API: load() via useEffect
+                API->>Server: GET /api/sessions (or agents, events, stats)
+                Server-->>API: JSON response
+                API-->>Page: setState(data)
+                Note over Page: Subscribes to live updates
+                Page->>EB: eventBus.subscribe(handler)
+                loop Real-time updates
+                  WS->>EB: eventBus.publish(msg)
+                  EB->>Page: handler(msg)
+                  Page->>Page: reload or optimistic update
+                end
+                Note over Page: Component unmounts
+                Page->>EB: unsubscribe()
+            </div>
+            <p class="diagram-label">Initial load + WebSocket subscription lifecycle</p>
+          </div>
+        </section>
+
+        <!-- ─── Server Architecture ──────────────────────────────────────── -->
+        <section id="server-arch">
+          <div class="section-label">◈ Architecture</div>
+          <h2>Server Architecture</h2>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              graph TD
+                INDEX["server/index.js<br/>Express app + HTTP server"]
+                DB["server/db.js<br/>SQLite + prepared statements<br/>better-sqlite3 / node:sqlite fallback"]
+                WS["server/websocket.js<br/>WS server + heartbeat"]
+                HOOKS["routes/hooks.js<br/>Hook event processing"]
+                SESSIONS["routes/sessions.js<br/>Session CRUD"]
+                AGENTS["routes/agents.js<br/>Agent CRUD"]
+                EVENTS["routes/events.js<br/>Event listing"]
+                STATS["routes/stats.js<br/>Aggregate queries"]
+                ANALYTICS["routes/analytics.js<br/>Analytics metrics"]
+                PRICING["routes/pricing.js<br/>Pricing CRUD + cost calc"]
+                SETTINGS_R["routes/settings.js<br/>System info + data mgmt"]
+
+                INDEX --> DB
+                INDEX --> WS
+                INDEX --> HOOKS
+                INDEX --> SESSIONS
+                INDEX --> AGENTS
+                INDEX --> EVENTS
+                INDEX --> STATS
+                INDEX --> ANALYTICS
+                INDEX --> PRICING
+                INDEX --> SETTINGS_R
+                HOOKS --> DB
+                HOOKS --> WS
+                SESSIONS --> DB
+                SESSIONS --> WS
+                AGENTS --> DB
+                AGENTS --> WS
+                EVENTS --> DB
+                STATS --> DB
+                ANALYTICS --> DB
+                PRICING --> DB
+                SETTINGS_R --> DB
+            </div>
+            <p class="diagram-label">Server module dependency graph</p>
+          </div>
+
+          <h3>Server Modules</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Module</th>
+                  <th>Responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>server/index.js</code></td>
+                  <td>
+                    Express app setup, middleware (CORS, JSON 1MB limit), route mounting, static
+                    serving in production, HTTP server, auto-hook installation on startup
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>server/db.js</code></td>
+                  <td>
+                    SQLite connection, WAL/FK pragmas, schema migrations (<code
+                      >CREATE TABLE IF NOT EXISTS</code
+                    >), all prepared statements as a reusable <code>stmts</code> object. Tries
+                    <code>better-sqlite3</code> first, falls back to built-in
+                    <code>node:sqlite</code> via <code>compat-sqlite.js</code>
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>server/compat-sqlite.js</code></td>
+                  <td>
+                    Compatibility wrapper giving Node.js built-in <code>node:sqlite</code>
+                    (<code>DatabaseSync</code>) the same API as <code>better-sqlite3</code> —
+                    pragma, transaction, prepare. Used as automatic fallback on Node 22+
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>server/websocket.js</code></td>
+                  <td>
+                    WebSocket server on <code>/ws</code> path, 30s ping/pong heartbeat, typed
+                    <code>broadcast(type, data)</code> function
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>routes/hooks.js</code></td>
+                  <td>
+                    Core event processing inside SQLite transactions. Auto-creates sessions/agents.
+                    Switch-case dispatch by hook type. Extracts token usage from Stop events.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>routes/sessions.js</code></td>
+                  <td>
+                    CRUD with pagination. GET includes agent count via LEFT JOIN. POST is idempotent
+                    on session ID.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>routes/agents.js</code></td>
+                  <td>
+                    CRUD with status/session_id filtering. PATCH broadcasts
+                    <code>agent_updated</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>routes/events.js</code></td>
+                  <td>Read-only event listing with session_id filter and pagination.</td>
+                </tr>
+                <tr>
+                  <td><code>routes/stats.js</code></td>
+                  <td>
+                    Single aggregate query — total/active counts, status distributions, WS
+                    connection count.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>routes/analytics.js</code></td>
+                  <td>
+                    Extended analytics — token totals, tool usage counts, daily event/session
+                    trends, agent type distribution, event type breakdown, average events per
+                    session.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>routes/pricing.js</code></td>
+                  <td>
+                    Model pricing CRUD (list, upsert, delete). Per-session and global cost
+                    calculation with pattern-based model matching and specificity sorting.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>routes/settings.js</code></td>
+                  <td>
+                    System info (DB size, row counts, hook status, server uptime). Data export as
+                    JSON. Session cleanup (abandon stale active sessions, purge old completed
+                    sessions). Clear all data. Reset pricing to defaults. Reinstall hooks.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── Client Architecture ───────────────────────────────────────── -->
+        <section id="client-arch">
+          <div class="section-label">◈ Architecture</div>
+          <h2>Client Architecture</h2>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              graph TD
+                APP["App.tsx — Router + WebSocket"]:::root
+                LAYOUT["Layout.tsx — Sidebar + Outlet"]
+                SIDEBAR["Sidebar.tsx — Nav + Connection Status"]
+                DASH["Dashboard.tsx"]
+                KANBAN["KanbanBoard.tsx"]
+                SESS["Sessions.tsx"]
+                DETAIL["SessionDetail.tsx"]
+                ACTIVITY["ActivityFeed.tsx"]
+                ANALYTICS["Analytics.tsx"]
+                SETTINGS_P["Settings.tsx"]
+                SC["StatCard x4"]
+                AC["AgentCard list"]
+                COL["Column x5\n(idle/connected/working/completed/error)"]
+                AC2["AgentCard list"]
+
+                APP --> LAYOUT
+                LAYOUT --> SIDEBAR
+                LAYOUT --> DASH
+                LAYOUT --> KANBAN
+                LAYOUT --> SESS
+                LAYOUT --> DETAIL
+                LAYOUT --> ACTIVITY
+                LAYOUT --> ANALYTICS
+                LAYOUT --> SETTINGS_P
+                DASH --> SC
+                DASH --> AC
+                KANBAN --> COL
+                COL --> AC2
+
+                classDef root fill:#6366f1,stroke:#818cf8,color:#fff
+            </div>
+            <p class="diagram-label">React component tree</p>
+          </div>
+
+          <h3>Client Routes</h3>
+          <div class="route-list">
+            <div class="route-item">
+              <span class="route-path">/</span>
+              <span class="route-desc">Dashboard — stats, active agents, recent events</span>
+            </div>
+            <div class="route-item">
+              <span class="route-path">/kanban</span>
+              <span class="route-desc">KanbanBoard — agent status columns</span>
+            </div>
+            <div class="route-item">
+              <span class="route-path">/sessions</span>
+              <span class="route-desc">Sessions — searchable, filterable table</span>
+            </div>
+            <div class="route-item">
+              <span class="route-path">/sessions/:id</span>
+              <span class="route-desc">SessionDetail — agents + full event timeline</span>
+            </div>
+            <div class="route-item">
+              <span class="route-path">/activity</span>
+              <span class="route-desc">ActivityFeed — real-time streaming event log</span>
+            </div>
+            <div class="route-item">
+              <span class="route-path">/analytics</span>
+              <span class="route-desc"
+                >Analytics — token usage, heatmap, tool charts, donut charts</span
+              >
+            </div>
+            <div class="route-item">
+              <span class="route-path">/settings</span>
+              <span class="route-desc"
+                >Settings — model pricing, hook status, data export, session cleanup</span
+              >
+            </div>
+          </div>
+
+          <h3>Key Client Modules</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Module</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>lib/api.ts</code></td>
+                  <td>
+                    Typed fetch wrapper — one method per REST endpoint. All return typed promises.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>lib/types.ts</code></td>
+                  <td>
+                    TypeScript interfaces: <code>Session</code>, <code>Agent</code>,
+                    <code>DashboardEvent</code>, <code>Stats</code>, <code>Analytics</code>,
+                    <code>WSMessage</code>. Status config maps.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>lib/eventBus.ts</code></td>
+                  <td>
+                    Set-based pub/sub. <code>subscribe(fn)</code> returns an unsubscribe function
+                    for clean useEffect teardown.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>lib/format.ts</code></td>
+                  <td>Date/time formatting helpers — relative time, duration, ISO display.</td>
+                </tr>
+                <tr>
+                  <td><code>hooks/useWebSocket.ts</code></td>
+                  <td>
+                    Auto-reconnecting WebSocket React hook. 2-second reconnect interval. Publishes
+                    messages to eventBus.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── State Management ──────────────────────────────────────────── -->
+        <section id="state-mgmt">
+          <div class="section-label">◈ Architecture</div>
+          <h2>State Management</h2>
+          <p>
+            The client deliberately avoids Redux / Zustand / Context. Each page owns its data and
+            lifecycle. WebSocket events trigger a reload or append — no complex state merging.
+          </p>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              graph TD
+                REST["REST API\n(initial load)"]:::source
+                WSM["WebSocket Messages\n(real-time updates)"]:::source
+                EB["eventBus\n(Set-based pub/sub)"]:::bus
+                US1["useState\nDashboard"]
+                US2["useState\nKanbanBoard"]
+                US3["useState\nSessions"]
+                US4["useState\nSessionDetail"]
+                US5["useState\nActivityFeed"]
+                US6["useState\nAnalytics"]
+                US7["useState\nSettings"]
+
+                REST --> US1
+                REST --> US2
+                REST --> US3
+                REST --> US4
+                REST --> US5
+                REST --> US6
+                REST --> US7
+                WSM --> EB
+                EB --> US1
+                EB --> US2
+                EB --> US3
+                EB --> US4
+                EB --> US5
+                EB --> US6
+                EB --> US7
+
+                classDef source fill:#6366f1,stroke:#818cf8,color:#fff
+                classDef bus fill:#f59e0b,stroke:#fbbf24,color:#000
+            </div>
+            <p class="diagram-label">
+              Each page pulls initial data from REST then subscribes to eventBus for live updates
+            </p>
+          </div>
+
+          <div class="callout callout-info">
+            <div class="callout-icon">ℹ</div>
+            <div class="callout-body">
+              <strong>No global store — by design</strong>
+              <p>
+                There is no cross-page shared state. Each page fetches and owns exactly the data it
+                displays. This simplifies debugging and avoids stale-closure hazards that are common
+                with global stores in long-running WebSocket apps.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Database Design ───────────────────────────────────────────── -->
+        <section id="database">
+          <div class="section-label">◈ Data</div>
+          <h2>Database Design</h2>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              erDiagram
+                sessions ||--o{ agents : has
+                sessions ||--o{ events : has
+                sessions ||--o{ token_usage : tracks
+                agents ||--o{ events : generates
+                agents ||--o{ agents : spawns_subagents
+
+                sessions {
+                  TEXT id PK "UUID"
+                  TEXT name "Human-readable label"
+                  TEXT status "active|completed|error|abandoned"
+                  TEXT cwd "Working directory path"
+                  TEXT model "Claude model ID"
+                  TEXT started_at "ISO 8601"
+                  TEXT ended_at "ISO 8601 or NULL"
+                  TEXT metadata "JSON blob"
+                }
+
+                agents {
+                  TEXT id PK "UUID or session_id-main"
+                  TEXT session_id FK
+                  TEXT name "Display name"
+                  TEXT type "main|subagent"
+                  TEXT subagent_type "Explore|general-purpose|etc"
+                  TEXT status "idle|connected|working|completed|error"
+                  TEXT task "Current task description"
+                  TEXT current_tool "Active tool or NULL"
+                  TEXT started_at "ISO 8601"
+                  TEXT ended_at "ISO 8601 or NULL"
+                  TEXT parent_agent_id FK "References agents.id"
+                  TEXT metadata "JSON blob"
+                }
+
+                events {
+                  INTEGER id PK "Auto-increment"
+                  TEXT session_id FK
+                  TEXT agent_id FK
+                  TEXT event_type "PreToolUse|PostToolUse|Stop|etc"
+                  TEXT tool_name "Tool that fired the event"
+                  TEXT summary "Human-readable summary"
+                  TEXT data "Full event JSON"
+                  TEXT created_at "ISO 8601"
+                }
+
+                token_usage {
+                  TEXT session_id PK "Composite PK with model"
+                  TEXT model PK "Model identifier"
+                  INTEGER input_tokens
+                  INTEGER output_tokens
+                  INTEGER cache_read_tokens
+                  INTEGER cache_write_tokens
+                }
+
+                model_pricing {
+                  TEXT model_pattern PK "SQL LIKE pattern"
+                  TEXT display_name "Human-readable name"
+                  REAL input_per_mtok "USD per million input tokens"
+                  REAL output_per_mtok "USD per million output tokens"
+                  REAL cache_read_per_mtok "USD per million cache read tokens"
+                  REAL cache_write_per_mtok "USD per million cache write tokens"
+                  TEXT updated_at "ISO 8601"
+                }
+            </div>
+            <p class="diagram-label">Entity Relationship Diagram — SQLite schema</p>
+          </div>
+
+          <h3>Indexes</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Index</th>
+                  <th>Table</th>
+                  <th>Column(s)</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>idx_agents_session</code></td>
+                  <td>agents</td>
+                  <td><code>session_id</code></td>
+                  <td>Fast agent lookup by session</td>
+                </tr>
+                <tr>
+                  <td><code>idx_agents_status</code></td>
+                  <td>agents</td>
+                  <td><code>status</code></td>
+                  <td>Kanban column queries</td>
+                </tr>
+                <tr>
+                  <td><code>idx_events_session</code></td>
+                  <td>events</td>
+                  <td><code>session_id</code></td>
+                  <td>Session detail event list</td>
+                </tr>
+                <tr>
+                  <td><code>idx_events_type</code></td>
+                  <td>events</td>
+                  <td><code>event_type</code></td>
+                  <td>Filter events by type</td>
+                </tr>
+                <tr>
+                  <td><code>idx_events_created</code></td>
+                  <td>events</td>
+                  <td><code>created_at DESC</code></td>
+                  <td>Activity feed ordering</td>
+                </tr>
+                <tr>
+                  <td><code>idx_sessions_status</code></td>
+                  <td>sessions</td>
+                  <td><code>status</code></td>
+                  <td>Status filter on sessions page</td>
+                </tr>
+                <tr>
+                  <td><code>idx_sessions_started</code></td>
+                  <td>sessions</td>
+                  <td><code>started_at DESC</code></td>
+                  <td>Default sort order</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>SQLite Configuration</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pragma</th>
+                  <th>Value</th>
+                  <th>Rationale</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>journal_mode</code></td>
+                  <td><code>WAL</code></td>
+                  <td>Concurrent reads during writes. Far better for read-heavy dashboards.</td>
+                </tr>
+                <tr>
+                  <td><code>foreign_keys</code></td>
+                  <td><code>ON</code></td>
+                  <td>Referential integrity — prevents orphaned agents/events.</td>
+                </tr>
+                <tr>
+                  <td><code>busy_timeout</code></td>
+                  <td><code>5000</code></td>
+                  <td>Wait up to 5s for write lock instead of failing immediately under load.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── API Reference ─────────────────────────────────────────────── -->
+        <section id="api-reference">
+          <div class="section-label">◈ Data</div>
+          <h2>API Reference</h2>
+          <p>
+            All endpoints return JSON. Errors follow
+            <code>{ "error": { "code", "message" } }</code>.
+          </p>
+
+          <h3>Health</h3>
+          <div class="route-list">
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/health</span>
+              <span class="route-desc"
+                >Returns <code>{ "status": "ok", "timestamp": "..." }</code></span
+              >
+            </div>
+          </div>
+
+          <h3>Sessions</h3>
+          <div class="route-list">
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/sessions</span>
+              <span class="route-desc"
+                >List sessions — params: <code>status</code>, <code>limit</code>,
+                <code>offset</code></span
+              >
+            </div>
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/sessions/:id</span>
+              <span class="route-desc">Session detail with agents and events</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-post">POST</span>
+              <span class="route-path">/api/sessions</span>
+              <span class="route-desc">Create session (idempotent on <code>id</code>)</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-patch">PATCH</span>
+              <span class="route-path">/api/sessions/:id</span>
+              <span class="route-desc">Update session status / metadata</span>
+            </div>
+          </div>
+
+          <h3>Agents</h3>
+          <div class="route-list">
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/agents</span>
+              <span class="route-desc"
+                >List agents — params: <code>status</code>, <code>session_id</code>,
+                <code>limit</code>, <code>offset</code></span
+              >
+            </div>
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/agents/:id</span>
+              <span class="route-desc">Single agent detail</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-post">POST</span>
+              <span class="route-path">/api/agents</span>
+              <span class="route-desc">Create agent</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-patch">PATCH</span>
+              <span class="route-path">/api/agents/:id</span>
+              <span class="route-desc">Update agent status / task / current_tool</span>
+            </div>
+          </div>
+
+          <h3>Events, Stats, Analytics</h3>
+          <div class="route-list">
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/events</span>
+              <span class="route-desc"
+                >List events newest-first — params: <code>session_id</code>, <code>limit</code>,
+                <code>offset</code></span
+              >
+            </div>
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/stats</span>
+              <span class="route-desc"
+                >Aggregate counts + status distributions + WS connections</span
+              >
+            </div>
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/analytics</span>
+              <span class="route-desc"
+                >Token totals, tool usage, daily trends, agent types, event types, averages</span
+              >
+            </div>
+          </div>
+
+          <h3>Hooks Ingestion</h3>
+          <div class="route-list">
+            <div class="route-item">
+              <span class="method method-post">POST</span>
+              <span class="route-path">/api/hooks/event</span>
+              <span class="route-desc"
+                >Receive and process a Claude Code hook event (called by hook-handler.js)</span
+              >
+            </div>
+          </div>
+
+          <h3>Pricing</h3>
+          <div class="route-list">
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/pricing</span>
+              <span class="route-desc">List all model pricing rules</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-put">PUT</span>
+              <span class="route-path">/api/pricing</span>
+              <span class="route-desc">Create or update a pricing rule</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-delete">DELETE</span>
+              <span class="route-path">/api/pricing/:pattern</span>
+              <span class="route-desc">Delete a pricing rule</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/pricing/cost</span>
+              <span class="route-desc">Total cost across all sessions</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/pricing/cost/:sessionId</span>
+              <span class="route-desc">Cost breakdown for a specific session</span>
+            </div>
+          </div>
+
+          <h3>Settings</h3>
+          <div class="route-list">
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/settings/info</span>
+              <span class="route-desc">System info, DB stats, hook installation status</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-post">POST</span>
+              <span class="route-path">/api/settings/clear-data</span>
+              <span class="route-desc">Delete all sessions, agents, events, token usage</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-post">POST</span>
+              <span class="route-path">/api/settings/reinstall-hooks</span>
+              <span class="route-desc">Reinstall Claude Code hooks</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-post">POST</span>
+              <span class="route-path">/api/settings/reset-pricing</span>
+              <span class="route-desc">Reset pricing rules to defaults</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-get">GET</span>
+              <span class="route-path">/api/settings/export</span>
+              <span class="route-desc">Export all data as JSON download</span>
+            </div>
+            <div class="route-item">
+              <span class="method method-post">POST</span>
+              <span class="route-path">/api/settings/cleanup</span>
+              <span class="route-desc"
+                >Abandon stale sessions (by hours), purge old data (by days)</span
+              >
+            </div>
+          </div>
+
+          <div class="code-header"><span class="code-lang">json — Hook event payload</span></div>
+          <pre><code>{
+  "hook_type": "PreToolUse",
+  "data": {
+    "session_id": "abc-123",
+    "tool_name":  "Bash",
+    "tool_input": { "command": "ls -la" }
+  }
+}</code></pre>
+        </section>
+
+        <!-- ─── WebSocket Protocol ────────────────────────────────────────── -->
+        <section id="websocket">
+          <div class="section-label">◈ Data</div>
+          <h2>WebSocket Protocol</h2>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Path</td>
+                  <td><code>ws://localhost:4820/ws</code></td>
+                </tr>
+                <tr>
+                  <td>Protocol</td>
+                  <td>Standard WebSocket (RFC 6455)</td>
+                </tr>
+                <tr>
+                  <td>Heartbeat</td>
+                  <td>Server pings every 30s — clients that don't pong are terminated</td>
+                </tr>
+                <tr>
+                  <td>Reconnect</td>
+                  <td>Client retries every 2 seconds on disconnect</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Message Envelope</h3>
+          <div class="code-header"><span class="code-lang">typescript</span></div>
+          <pre><code>// All messages use this shape
+{
+  type:      "session_created" | "session_updated" |
+             "agent_created"   | "agent_updated"   | "new_event";
+  data:      Session | Agent | DashboardEvent;
+  timestamp: string;  // ISO 8601
+}</code></pre>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              stateDiagram-v2
+                [*] --> Connecting: Component mounts
+                Connecting --> Connected: onopen
+                Connected --> Closed: onclose / onerror
+                Closed --> Connecting: setTimeout 2000ms
+                Connected --> [*]: Component unmounts
+                Closed --> [*]: Component unmounts
+            </div>
+            <p class="diagram-label">Client WebSocket auto-reconnect state machine</p>
+          </div>
+        </section>
+
+        <!-- ─── Hook Integration ──────────────────────────────────────────── -->
+        <section id="hooks">
+          <div class="section-label">◈ Integrations</div>
+          <h2>Hook Integration</h2>
+
+          <h3>Hook Handler Design</h3>
+          <p>
+            <code>scripts/hook-handler.js</code> is a minimal, fail-safe forwarder. It always exits
+            0 so it can never block Claude Code regardless of server state.
+          </p>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              flowchart TD
+                START[Claude Code fires hook] --> STDIN[Read stdin to EOF]
+                STDIN --> PARSE{Parse JSON?}
+                PARSE -->|Success| POST["POST to 127.0.0.1:4820\n/api/hooks/event"]
+                PARSE -->|Failure| WRAP["Wrap raw input payload"]
+                WRAP --> POST
+                POST --> RESP{Response?}
+                RESP -->|200| EXIT0[exit 0]
+                RESP -->|Error| EXIT0
+                RESP -->|Timeout 3s| DESTROY[Destroy request]
+                DESTROY --> EXIT0
+                SAFETY["Safety net: setTimeout 5s"] --> EXIT0
+            </div>
+            <p class="diagram-label">
+              hook-handler.js flow — always exits 0, never blocks Claude Code
+            </p>
+          </div>
+
+          <h3>Hook Installation Flow</h3>
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              flowchart TD
+                START[Server startup or npm run install-hooks] --> READ{"~/.claude/settings.json\nexists?"}
+                READ -->|Yes| PARSE[Parse JSON]
+                READ -->|No| EMPTY[Start with empty object]
+                PARSE --> CHECK[Ensure hooks section exists]
+                EMPTY --> CHECK
+                CHECK --> LOOP["For each hook type:\nPreToolUse, PostToolUse,\nStop, SubagentStop, Notification"]
+                LOOP --> EXISTS{"Our hook\nalready installed?"}
+                EXISTS -->|Yes| UPDATE[Update command path]
+                EXISTS -->|No| APPEND[Append to array]
+                UPDATE --> NEXT{More hook types?}
+                APPEND --> NEXT
+                NEXT -->|Yes| LOOP
+                NEXT -->|No| WRITE["Write settings.json\n(preserves all other hooks)"]
+                WRITE --> DONE[Done]
+            </div>
+            <p class="diagram-label">
+              Hook installation is idempotent — safe to run multiple times
+            </p>
+          </div>
+        </section>
+
+        <!-- ─── Statusline Utility ────────────────────────────────────────── -->
+        <section id="statusline">
+          <div class="section-label">◈ Integrations</div>
+          <h2>Statusline Utility</h2>
+          <p>
+            The <code>statusline/</code> directory contains a standalone CLI statusline for Claude
+            Code — completely independent of the web dashboard. It renders a color-coded bar at the
+            bottom of the Claude Code terminal showing context window usage, token counts, and git
+            branch.
+          </p>
+
+          <div class="code-header"><span class="code-lang">terminal output</span></div>
+          <pre><code>Sonnet 4.6 | nguyens6 | ~/agent-dashboard/client | main | ████████░░ 79% | 3↑ 2↓ 156586c</code></pre>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Segment</th>
+                  <th>Source</th>
+                  <th>Color Logic</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Model</td>
+                  <td><code>data.model.display_name</code></td>
+                  <td>Always cyan</td>
+                </tr>
+                <tr>
+                  <td>User</td>
+                  <td><code>$USERNAME</code> / <code>$USER</code></td>
+                  <td>Always green</td>
+                </tr>
+                <tr>
+                  <td>Working Dir</td>
+                  <td><code>data.workspace.current_dir</code></td>
+                  <td>Always yellow, <code>~</code> prefix for home</td>
+                </tr>
+                <tr>
+                  <td>Git Branch</td>
+                  <td><code>git symbolic-ref --short HEAD</code></td>
+                  <td>Always magenta, hidden outside git repos</td>
+                </tr>
+                <tr>
+                  <td>Context Bar</td>
+                  <td><code>data.context_window.used_percentage</code></td>
+                  <td>Green &lt; 50%, Yellow 50–79%, Red ≥ 80%</td>
+                </tr>
+                <tr>
+                  <td>Token Counts</td>
+                  <td><code>data.context_window.current_usage</code></td>
+                  <td>
+                    Dim — <code>↑</code> input, <code>↓</code> output, <code>c</code> cache reads
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              sequenceDiagram
+                participant CC as Claude Code
+                participant SH as statusline-command.sh
+                participant PY as statusline.py
+                participant GIT as git CLI
+
+                CC->>SH: stdin (JSON payload)
+                SH->>PY: Pipe stdin through (PYTHONUTF8=1)
+                PY->>PY: Parse JSON (model, cwd, context_window)
+                PY->>GIT: git symbolic-ref --short HEAD
+                GIT-->>PY: Branch name
+                PY->>PY: Build ANSI-colored segments
+                PY-->>CC: stdout (formatted statusline)
+            </div>
+            <p class="diagram-label">
+              Statusline rendering pipeline — invoked on each Claude Code update
+            </p>
+          </div>
+
+          <h3>Installation</h3>
+          <p>Add this to <code>~/.claude/settings.json</code>:</p>
+          <div class="code-header"><span class="code-lang">json</span></div>
+          <pre><code>{
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"/absolute/path/to/statusline/statusline-command.sh\""
+  }
+}</code></pre>
+
+          <div class="callout callout-info">
+            <div class="callout-icon">ℹ</div>
+            <div class="callout-body">
+              <strong>No dependencies required</strong>
+              <p>
+                The statusline uses only Python 3.6+ stdlib (<code>sys</code>, <code>json</code>,
+                <code>os</code>, <code>subprocess</code>). It fails silently on empty input or JSON
+                errors and never blocks Claude Code.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Settings Page ──────────────────────────────────────────────── -->
+        <section id="settings-page">
+          <div class="section-label">◈ Integrations</div>
+          <h2>Settings Page</h2>
+          <p>
+            The <code>/settings</code> route provides a comprehensive management interface with
+            five sections:
+          </p>
+
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon ic-amber">$</div>
+              <h3>Model Pricing</h3>
+              <p>
+                Editable table of per-model pricing rules. Each Claude model variant has its own
+                explicit pattern (e.g., <code>claude-opus-4-6%</code>). Rates cover input, output,
+                cache read, and cache write tokens. Reset to defaults or add custom models.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-emerald">⊞</div>
+              <h3>Hook Configuration</h3>
+              <p>
+                Shows per-hook installation status (PreToolUse, PostToolUse, Stop, SubagentStop,
+                Notification). One-click reinstall if hooks are missing or outdated.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-cyan">▦</div>
+              <h3>Data Management</h3>
+              <p>
+                View database row counts and size. Session cleanup: abandon stale active sessions
+                after N hours, purge old completed sessions after N days. Danger zone: clear all
+                data with confirmation.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-violet">◎</div>
+              <h3>Data Export</h3>
+              <p>
+                Download all sessions, agents, events, token usage, and pricing rules as a single
+                JSON file for backup or analysis.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon ic-blue">⚡</div>
+              <h3>System Info</h3>
+              <p>
+                Server uptime, Node.js version, platform, active WebSocket connections. At-a-glance
+                health monitoring for the dashboard itself.
+              </p>
+            </div>
+          </div>
+
+          <div class="callout callout-info">
+            <div class="callout-icon">ℹ</div>
+            <div class="callout-body">
+              <strong>Per-model pricing — no catch-all grouping</strong>
+              <p>
+                Each Claude model variant (e.g., Opus 4.6 vs Opus 4.1) has its own explicit pricing
+                pattern because different model versions have different rates. The cost engine uses
+                specificity sorting — longer patterns match before shorter ones.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Deployment ─────────────────────────────────────────────────── -->
+        <section id="deployment">
+          <div class="section-label">◈ Operations</div>
+          <h2>Deployment Modes</h2>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              graph LR
+                subgraph dev["Development — 2 processes"]
+                  D_CMD["npm run dev\n(concurrently)"]
+                  D_SRV["node --watch server/index.js\nport 4820 — auto-restart"]
+                  D_VITE["vite dev server\nport 5173 — HMR"]
+                  D_BROWSER["Browser"]
+                  D_CMD --> D_SRV
+                  D_CMD --> D_VITE
+                  D_BROWSER --> D_VITE
+                  D_VITE -->|"proxy /api + /ws"| D_SRV
+                end
+
+                subgraph prod["Production — 1 process"]
+                  P_BUILD["npm run build\n(tsc + vite build)"]
+                  P_DIST["client/dist/\nstatic files"]
+                  P_START["npm start"]
+                  P_SRV["node server/index.js\nport 4820 — serves dist"]
+                  P_BROWSER["Browser"]
+                  P_BUILD --> P_DIST
+                  P_START --> P_SRV
+                  P_BROWSER --> P_SRV
+                end
+            </div>
+            <p class="diagram-label">Development vs production deployment topology</p>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Aspect</th>
+                  <th>Development</th>
+                  <th>Production</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Processes</td>
+                  <td>2 (Express + Vite)</td>
+                  <td>1 (Express only)</td>
+                </tr>
+                <tr>
+                  <td>Client URL</td>
+                  <td><code>http://localhost:5173</code></td>
+                  <td><code>http://localhost:4820</code></td>
+                </tr>
+                <tr>
+                  <td>API proxy</td>
+                  <td>Vite proxies <code>/api</code> + <code>/ws</code> to :4820</td>
+                  <td>Same origin, no proxy</td>
+                </tr>
+                <tr>
+                  <td>File watching</td>
+                  <td><code>node --watch</code> + Vite HMR</td>
+                  <td>None</td>
+                </tr>
+                <tr>
+                  <td>Source maps</td>
+                  <td>Inline</td>
+                  <td>External files</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Container Runtime (Docker / Podman)</h3>
+          <p>
+            The production image is OCI-compatible and works with both Docker and Podman. The
+            server listens on <code>4820</code>, reads legacy Claude history from a read-only mount,
+            and persists SQLite data under <code>/app/data</code>.
+          </p>
+
+          <div class="diagram-wrap">
+            <!-- prettier-ignore -->
+            <div class="mermaid">
+              graph LR
+                subgraph build["Multi-stage image build"]
+                  C1["server-deps\nnode:22-alpine\nnpm ci --omit=dev"]
+                  C2["client-build\nvite build"]
+                  C3["runtime image\nnode server/index.js"]
+                  C1 --> C3
+                  C2 --> C3
+                end
+
+                subgraph runtime["Container runtime"]
+                  V1["~/.claude\nmounted read-only"]
+                  V2["agent-monitor-data\npersistent volume"]
+                  PORT["localhost:4820"]
+                  C3 --> PORT
+                  V1 --> C3
+                  V2 --> C3
+                end
+            </div>
+            <p class="diagram-label">Container image build and runtime mounts</p>
+          </div>
+
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code># Docker Compose
+docker compose up -d --build
+
+# Podman Compose
+CLAUDE_HOME="$HOME/.claude" podman compose up -d --build
+
+# Stop the stack
+docker compose down
+# or
+podman compose down</code></pre>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mount</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>~/.claude:/root/.claude:ro</code></td>
+                  <td>Read historical Claude session files for import without modifying them</td>
+                </tr>
+                <tr>
+                  <td><code>agent-monitor-data:/app/data</code></td>
+                  <td>Persist the SQLite database across rebuilds and container restarts</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-icon">⚠</div>
+            <div class="callout-body">
+              <strong>Hooks still run on the host</strong>
+              <p>
+                Claude Code fires hooks from the host machine, not from inside the container. After
+                the container is healthy on <code>http://localhost:4820</code>, run
+                <code>npm run install-hooks</code> on the host so hook events post back to the
+                containerized server.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── Docker / Podman ──────────────────────────────────────────── -->
+        <section id="docker">
+          <div class="section-label">◈ Operations</div>
+          <h2>Docker / Podman</h2>
+          <p>
+            A multi-stage <code>Dockerfile</code> and <code>docker-compose.yml</code> are included.
+            Both <strong>Docker</strong> and <strong>Podman</strong> are fully supported — the image is OCI-compliant.
+          </p>
+
+          <h3>Quick Start</h3>
+          <pre><code># Docker Compose
+docker compose up -d --build
+
+# Podman Compose
+CLAUDE_HOME="$HOME/.claude" podman compose up -d --build</code></pre>
+
+          <h3>Plain Docker / Podman (no Compose)</h3>
+          <pre><code># Build the image
+docker build -t agent-monitor .
+# — or —
+podman build -t agent-monitor .
+
+# Run the container
+docker run -d --name agent-monitor \
+  -p 4820:4820 \
+  -v "$HOME/.claude:/root/.claude:ro" \
+  -v agent-monitor-data:/app/data \
+  agent-monitor</code></pre>
+
+          <h3>Volume Mounts</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Mount</th><th>Purpose</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>~/.claude:/root/.claude:ro</code></td>
+                  <td>Read-only access to legacy session history for automatic import on startup</td>
+                </tr>
+                <tr>
+                  <td><code>agent-monitor-data:/app/data</code></td>
+                  <td>Persists the SQLite database across container restarts</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Multi-Stage Build</h3>
+          <p>
+            The Dockerfile uses three stages to minimize the final image size:
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Stage</th><th>Purpose</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>server-deps</strong></td>
+                  <td>Installs production <code>node_modules</code> on <code>node:22-alpine</code>. <code>better-sqlite3</code> is optional — if prebuilds are unavailable, the server falls back to built-in <code>node:sqlite</code></td>
+                </tr>
+                <tr>
+                  <td><strong>client-build</strong></td>
+                  <td>Runs <code>npm ci</code> + <code>vite build</code> to produce optimized static assets</td>
+                </tr>
+                <tr>
+                  <td><strong>runtime</strong></td>
+                  <td>Clean <code>node:22-alpine</code> with only <code>node_modules</code>, server code, and <code>client/dist</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-warn">
+            <strong>Hook note:</strong> Claude Code hooks run on the host, not inside the container.
+            The containerized server receives hook events via HTTP on <code>localhost:4820</code>.
+            Run <code>npm run install-hooks</code> on the host after starting the container.
+          </div>
+        </section>
+
+        <!-- ─── Performance ───────────────────────────────────────────────── -->
+        <section id="performance">
+          <div class="section-label">◈ Operations</div>
+          <h2>Performance Characteristics</h2>
+
+          <div class="stats-row">
+            <div class="stat-highlight">
+              <div class="stat-val">&lt;200ms</div>
+              <div class="stat-label">Server startup</div>
+            </div>
+            <div class="stat-highlight">
+              <div class="stat-val">&lt;50ms</div>
+              <div class="stat-label">Hook-to-broadcast latency</div>
+            </div>
+            <div class="stat-highlight">
+              <div class="stat-val">200 KB</div>
+              <div class="stat-label">JS bundle (63 KB gzipped)</div>
+            </div>
+            <div class="stat-highlight">
+              <div class="stat-val">50k/s</div>
+              <div class="stat-label">SQLite inserts/sec (WAL)</div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Value</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Server startup</td>
+                  <td>&lt; 200ms</td>
+                  <td>SQLite opens instantly; schema migration is idempotent</td>
+                </tr>
+                <tr>
+                  <td>Hook latency</td>
+                  <td>&lt; 50ms</td>
+                  <td>Transaction + broadcast, no async I/O beyond SQLite</td>
+                </tr>
+                <tr>
+                  <td>Client JS bundle</td>
+                  <td>200 KB / 63 KB gzip</td>
+                  <td>CSS: 17 KB / 4 KB gzip</td>
+                </tr>
+                <tr>
+                  <td>WebSocket latency</td>
+                  <td>&lt; 5ms</td>
+                  <td>Local loopback, JSON serialization only</td>
+                </tr>
+                <tr>
+                  <td>SQLite write throughput</td>
+                  <td>~50,000 inserts/sec</td>
+                  <td>WAL mode on SSD; far exceeds any hook event rate</td>
+                </tr>
+                <tr>
+                  <td>Max events before slowdown</td>
+                  <td>~1M rows</td>
+                  <td>Pagination prevents full-table scans</td>
+                </tr>
+                <tr>
+                  <td>Server memory</td>
+                  <td>~30 MB</td>
+                  <td>SQLite in-process, no ORM overhead</td>
+                </tr>
+                <tr>
+                  <td>Client memory</td>
+                  <td>~15 MB</td>
+                  <td>React + Tailwind, minimal runtime deps</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── Security ──────────────────────────────────────────────────── -->
+        <section id="security">
+          <div class="section-label">◈ Operations</div>
+          <h2>Security Considerations</h2>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Area</th>
+                  <th>Approach</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>SQL injection</td>
+                  <td>
+                    All queries use prepared statements with parameterized values — no string
+                    interpolation
+                  </td>
+                </tr>
+                <tr>
+                  <td>Request size</td>
+                  <td>Express JSON body parser limited to 1MB</td>
+                </tr>
+                <tr>
+                  <td>Input validation</td>
+                  <td>
+                    Required fields checked before DB operations; CHECK constraints on status enums
+                  </td>
+                </tr>
+                <tr>
+                  <td>Hook safety</td>
+                  <td>
+                    Hook handler always exits 0; 5s max lifetime; uses <code>127.0.0.1</code> not
+                    external hosts
+                  </td>
+                </tr>
+                <tr>
+                  <td>CORS</td>
+                  <td>
+                    Enabled for development; in production same-origin (Express serves the client)
+                  </td>
+                </tr>
+                <tr>
+                  <td>Authentication</td>
+                  <td>
+                    Intentionally none — local dev tool. Restrict via firewall if exposing on LAN.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Secrets</td>
+                  <td>No API keys, tokens, or credentials stored or transmitted anywhere</td>
+                </tr>
+                <tr>
+                  <td>Dependency surface</td>
+                  <td>5 runtime server deps, 4 runtime client deps — minimal attack surface</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── Troubleshooting ───────────────────────────────────────────── -->
+        <section id="troubleshoot">
+          <div class="section-label">◈ Operations</div>
+          <h2>Troubleshooting</h2>
+
+          <h3>No sessions appearing after starting Claude Code</h3>
+
+          <h4>Check 1 — Is the server running?</h4>
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code>curl http://localhost:4820/api/health
+# Expected: {"status":"ok","timestamp":"..."}</code></pre>
+
+          <h4>Check 2 — Are hooks installed?</h4>
+          <div class="code-header"><span class="code-lang">bash</span></div>
+          <pre><code># Open ~/.claude/settings.json and confirm it contains "hook-handler.js"
+# If not, re-run:
+npm run install-hooks</code></pre>
+
+          <h4>Check 3 — Start a new Claude Code session</h4>
+          <p>
+            Hooks only apply to sessions started <em>after</em> installation. Restart Claude Code
+            after starting the dashboard.
+          </p>
+
+          <h4>Check 4 — Is Node.js in PATH?</h4>
+          <p>
+            On some systems the shell environment when Claude Code fires hooks may not include the
+            full PATH. Test with <code>node --version</code>. If not found, use the absolute path to
+            <code>node</code> in the hook command.
+          </p>
+
+          <h3>Common Issues</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Problem</th>
+                  <th>Solution</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>better-sqlite3</code> errors during install</td>
+                  <td>
+                    This is non-fatal — <code>better-sqlite3</code> is an optional dependency. On
+                    Node 22+ the server automatically falls back to built-in
+                    <code>node:sqlite</code>. On older Node versions, install Python 3 + C++ build
+                    tools, then run <code>npm rebuild better-sqlite3</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Dashboard shows "Disconnected"</td>
+                  <td>
+                    Server is not running. Start it with <code>npm run dev</code>. Client
+                    auto-reconnects every 2s.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Events Today shows 0</td>
+                  <td>
+                    Ensure you are on the latest version (timezone bug was fixed). Restart the
+                    server.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Port 4820 already in use</td>
+                  <td>
+                    Run <code>DASHBOARD_PORT=4821 npm run dev</code>, update Vite proxy in
+                    <code>client/vite.config.ts</code>, and re-run
+                    <code>npm run install-hooks</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Stale seed data shown</td>
+                  <td>Run <code>npm run clear-data</code> to wipe all rows, then restart.</td>
+                </tr>
+                <tr>
+                  <td>Hooks show validation error about matcher</td>
+                  <td>
+                    Ensure you're on the latest version — the hook format was updated to use
+                    <code>matcher: "*"</code> string (not object).
+                  </td>
+                </tr>
+                <tr>
+                  <td>"SQLite backend not available" on startup</td>
+                  <td>
+                    Neither <code>better-sqlite3</code> nor <code>node:sqlite</code> could load.
+                    Upgrade to Node.js 22+ (recommended), or install Python 3 + C++ build tools
+                    and run <code>npm rebuild better-sqlite3</code>.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Docker container runs but no sessions appear</td>
+                  <td>
+                    Hooks run on the host, not inside the container. Run
+                    <code>npm run install-hooks</code> on the host after the container starts.
+                    Verify hooks in <code>~/.claude/settings.json</code> point to
+                    <code>localhost:4820</code>.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── Technology Choices ────────────────────────────────────────── -->
+        <section id="tech-choices">
+          <div class="section-label">◈ Reference</div>
+          <h2>Technology Choices</h2>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Technology</th>
+                  <th>Why This Over Alternatives</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>SQLite</strong> (better-sqlite3 / node:sqlite)</td>
+                  <td>
+                    Zero-config, embedded, no server process. WAL mode gives concurrent reads.
+                    Synchronous API is simpler than async for this use case.
+                    <code>better-sqlite3</code> is preferred when prebuilds are available; falls back
+                    to Node.js built-in <code>node:sqlite</code> on Node 22+ when the native module
+                    cannot be compiled.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Express</strong></td>
+                  <td>
+                    Battle-tested, minimal, well-understood. Fastify would be overkill; raw
+                    <code>http</code> module would require too much boilerplate for routing.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>ws</strong></td>
+                  <td>
+                    Fastest, most lightweight WebSocket library for Node. No Socket.IO overhead
+                    needed — we only push typed JSON messages one-way.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>React 18</strong></td>
+                  <td>
+                    Stable, widely known, strong TypeScript support. No Server Components or RSC
+                    needed for a client-rendered local SPA.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Vite 6</strong></td>
+                  <td>
+                    Fast builds, native ESM, excellent dev experience. Proxy config handles the dev
+                    server split cleanly with no ejection.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Tailwind CSS</strong></td>
+                  <td>
+                    Utility-first approach keeps styles colocated with markup. No CSS module
+                    boilerplate. Custom dark theme config for the dark UI.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>React Router 6</strong></td>
+                  <td>
+                    Standard routing for React SPAs. Layout routes with
+                    <code>&lt;Outlet&gt;</code> give clean shell composition without prop drilling.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Lucide React</strong></td>
+                  <td>
+                    Tree-shakeable icon library — only imports what's used (~20 icons). No heavy
+                    icon font.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>TypeScript Strict</strong></td>
+                  <td>
+                    Catches null/undefined bugs at compile time.
+                    <code>noUncheckedIndexedAccess</code> prevents array bounds issues in analytics
+                    aggregations.
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Python (statusline)</strong></td>
+                  <td>
+                    Available on virtually all systems. Handles ANSI and JSON natively with stdlib
+                    only. No install step required.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ─── Footer ─────────────────────────────────────────────────────── -->
+        <footer class="wiki-footer footer-enhanced">
+          <div>
+            <div class="footer-brand-name">Claude Code Agent Monitor</div>
+            <p class="footer-note">
+              Local-first monitoring for Claude Code sessions, agents, and tool events. Built for
+              real-time visibility with zero external dependencies.
+            </p>
+          </div>
+          <div>
+            <div class="footer-col-title">Documentation</div>
+            <div class="footer-col-links">
+              <a href="README.md">README</a>
+              <a href="ARCHITECTURE.md">Architecture</a>
+              <a href="INSTALL.md">Install</a>
+              <a href="SETUP.md">Setup</a>
+            </div>
+          </div>
+          <div>
+            <div class="footer-col-title">Project Links</div>
+            <div class="footer-col-links">
+              <a href="https://github.com/hoangsonww" target="_blank" rel="noopener">GitHub</a>
+              <a href="https://sonnguyenhoang.com" target="_blank" rel="noopener"
+                >sonnguyenhoang.com</a
+              >
+              <div class="footer-note">&copy; 2026</div>
+            </div>
+          </div>
+        </footer>
+      </main>
+      <!-- /.main-content -->
+    </div>
+    <!-- /.wiki-layout -->
+
+    <script src="wiki/script.js"></script>
+    <script>
+      (function () {
+        const btn = document.getElementById("sidebar-toggle");
+        const scrim = document.getElementById("sidebar-scrim");
+        if (!btn) return;
+
+        const key = "wiki-sidebar-collapsed";
+        const COLLAPSE_WIDTH = 1460;
+
+        function shouldAutoCollapse() {
+          return window.innerWidth <= COLLAPSE_WIDTH;
+        }
+
+        function applyCollapsed(collapsed) {
+          document.body.classList.toggle("sidebar-collapsed", collapsed);
+          btn.setAttribute("aria-expanded", String(!collapsed));
+          btn.textContent = collapsed ? "›" : "‹";
+          if (scrim) {
+            var isMobile = window.innerWidth <= 1250;
+            scrim.setAttribute("aria-hidden", String(collapsed || !isMobile));
+          }
+        }
+
+        // On load: auto-collapse if narrow, otherwise respect saved preference
+        if (shouldAutoCollapse()) {
+          applyCollapsed(true);
+        } else {
+          var saved = localStorage.getItem(key);
+          applyCollapsed(saved === "1");
+        }
+
+        btn.addEventListener("click", function () {
+          var next = !document.body.classList.contains("sidebar-collapsed");
+          applyCollapsed(next);
+          if (!shouldAutoCollapse()) {
+            localStorage.setItem(key, next ? "1" : "0");
+          }
+        });
+
+        if (scrim) {
+          scrim.addEventListener("click", function () {
+            applyCollapsed(true);
+            localStorage.setItem(key, "1");
+          });
+        }
+
+        window.addEventListener("resize", function () {
+          if (shouldAutoCollapse()) {
+            applyCollapsed(true);
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

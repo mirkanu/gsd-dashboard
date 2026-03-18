@@ -1,0 +1,205 @@
+name: 🚀 CI / CD Pipeline for Claude Code Agent Monitor
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+env:
+  NODE_VERSION: "22"
+  IMAGE_NAME: claude-code-agent-monitor
+
+jobs:
+  # ────────────────────────────────────────────────────────────────
+  #  🧹 Format Check                                               #
+  # ────────────────────────────────────────────────────────────────
+  format:
+    name: "🧹 Check Formatting"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - name: Install root dependencies
+        run: npm ci
+      - name: Check formatting
+        run: npm run format:check
+
+  # ────────────────────────────────────────────────────────────────
+  #  🧪 Tests                                                      #
+  # ────────────────────────────────────────────────────────────────
+  test:
+    name: "🧪 Run Tests"
+    runs-on: ubuntu-latest
+    needs: format
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install client dependencies
+        run: cd client && npm ci
+      - name: Run server tests
+        run: npm run test:server
+      - name: Run client tests
+        run: npm run test:client
+
+  # ────────────────────────────────────────────────────────────────
+  #  🏗️ Build Client                                               #
+  # ────────────────────────────────────────────────────────────────
+  build:
+    name: "🏗️ Build & Upload Artifact"
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install client dependencies
+        run: cd client && npm ci
+      - name: Build client
+        run: npm run build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-dist
+          path: client/dist/
+          retention-days: 7
+
+  # ────────────────────────────────────────────────────────────────
+  #  🐳 Docker Build & Push to GHCR                                #
+  #   Only pushes on push to main/master (not PRs)                 #
+  # ────────────────────────────────────────────────────────────────
+  docker:
+    name: "🐳 Docker → GHCR"
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ────────────────────────────────────────────────────────────────
+  #  🎉 Pipeline Summary                                            #
+  #   Runs after all jobs — reports final status to step summary    #
+  # ────────────────────────────────────────────────────────────────
+  pipeline-status:
+    name: "🎉 Pipeline Status"
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [format, test, build, docker]
+    steps:
+      - name: Determine overall result
+        id: result
+        run: |
+          # Map each job result
+          FORMAT="${{ needs.format.result }}"
+          TEST="${{ needs.test.result }}"
+          BUILD="${{ needs.build.result }}"
+          DOCKER="${{ needs.docker.result }}"
+
+          echo "format=$FORMAT" >> "$GITHUB_OUTPUT"
+          echo "test=$TEST" >> "$GITHUB_OUTPUT"
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "docker=$DOCKER" >> "$GITHUB_OUTPUT"
+
+          # Overall: fail if any required job failed
+          if [[ "$FORMAT" == "failure" || "$TEST" == "failure" || "$BUILD" == "failure" || "$DOCKER" == "failure" ]]; then
+            echo "overall=failure" >> "$GITHUB_OUTPUT"
+          elif [[ "$FORMAT" == "cancelled" || "$TEST" == "cancelled" || "$BUILD" == "cancelled" || "$DOCKER" == "cancelled" ]]; then
+            echo "overall=cancelled" >> "$GITHUB_OUTPUT"
+          else
+            echo "overall=success" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Status icon helper
+        id: icons
+        run: |
+          icon() {
+            case "$1" in
+              success)   echo "✅" ;;
+              failure)   echo "❌" ;;
+              cancelled) echo "⚪" ;;
+              skipped)   echo "⏭️" ;;
+              *)         echo "❓" ;;
+            esac
+          }
+          echo "format=$(icon ${{ steps.result.outputs.format }})" >> "$GITHUB_OUTPUT"
+          echo "test=$(icon ${{ steps.result.outputs.test }})" >> "$GITHUB_OUTPUT"
+          echo "build=$(icon ${{ steps.result.outputs.build }})" >> "$GITHUB_OUTPUT"
+          echo "docker=$(icon ${{ steps.result.outputs.docker }})" >> "$GITHUB_OUTPUT"
+          echo "overall=$(icon ${{ steps.result.outputs.overall }})" >> "$GITHUB_OUTPUT"
+
+      - name: Write pipeline summary
+        run: |
+          PUSH_INFO=""
+          if [[ "${{ github.event_name }}" == "push" && ( "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ) ]]; then
+            PUSH_INFO="| **Docker Image** | \`ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest\` |"
+          fi
+
+          cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+          ## ${{ steps.icons.outputs.overall }} CI / CD Pipeline — ${GITHUB_REF_NAME}
+
+          | Stage | Status | Job |
+          |-------|--------|-----|
+          | Formatting | ${{ steps.icons.outputs.format }} \`${{ steps.result.outputs.format }}\` | \`format\` |
+          | Tests | ${{ steps.icons.outputs.test }} \`${{ steps.result.outputs.test }}\` | \`test\` |
+          | Client Build | ${{ steps.icons.outputs.build }} \`${{ steps.result.outputs.build }}\` | \`build\` |
+          | Docker | ${{ steps.icons.outputs.docker }} \`${{ steps.result.outputs.docker }}\` | \`docker\` |
+
+          | Detail | Value |
+          |--------|-------|
+          | **Commit** | [\`${GITHUB_SHA::7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${GITHUB_SHA}) |
+          | **Branch** | \`${GITHUB_REF_NAME}\` |
+          | **Trigger** | \`${{ github.event_name }}\` by \`${{ github.actor }}\` |
+          | **Runner** | \`ubuntu-latest\` · Node ${{ env.NODE_VERSION }} |
+          ${PUSH_INFO}
+          | **Completed** | $(date -u +"%Y-%m-%d %H:%M:%S UTC") |
+          EOF
+
+      - name: Fail pipeline if any job failed
+        if: steps.result.outputs.overall != 'success'
+        run: |
+          echo "::error::Pipeline finished with status: ${{ steps.result.outputs.overall }}"
+          exit 1

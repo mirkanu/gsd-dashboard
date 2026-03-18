@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta name="theme-color" content="#6366f1" />
+    <title>Agent Dashboard - Claude Code Monitor</title>
+    <meta
+      name="description"
+      content="Real-time monitoring platform for Claude Code agent activity. Track sessions, monitor agents, visualize analytics, manage cost tracking, and receive browser notifications — all with live WebSocket updates."
+    />
+    <meta
+      name="keywords"
+      content="Claude Code, agent dashboard, AI monitoring, real-time dashboard, developer tools, session tracking, kanban, activity feed, analytics, cost tracking, browser notifications, token usage"
+    />
+    <meta name="author" content="Son Nguyen Hoang" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Agent Dashboard" />
+    <meta property="og:title" content="Agent Dashboard — Claude Code Monitor" />
+    <meta
+      property="og:description"
+      content="Real-time monitoring platform for Claude Code agent activity. Track sessions, monitor agents, visualize analytics, manage cost tracking, and receive browser notifications — all with live WebSocket updates."
+    />
+    <meta property="og:image" content="/og-image.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:alt" content="Agent Dashboard — real-time Claude Code monitoring" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Agent Dashboard — Claude Code Monitor" />
+    <meta
+      name="twitter:description"
+      content="Real-time monitoring platform for Claude Code agent activity. Sessions, Kanban board, analytics, cost tracking, browser notifications, and WebSocket push."
+    />
+    <meta name="twitter:image" content="/og-image.svg" />
+    <meta name="twitter:image:alt" content="Agent Dashboard — real-time Claude Code monitoring" />
+    <meta name="twitter:creator" content="@hoangsonww" />
+
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Agent Dashboard",
+        "description": "Real-time monitoring platform for Claude Code agent activity. Tracks sessions, agents, tool events, token usage analytics, cost tracking, and browser notifications via native hooks with live WebSocket push.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Windows, macOS, Linux",
+        "softwareVersion": "1.0.0",
+        "license": "https://opensource.org/licenses/MIT",
+        "author": {
+          "@type": "Person",
+          "name": "Son Nguyen Hoang",
+          "url": "https://sonnguyenhoang.com"
+        },
+        "codeRepository": "https://github.com/hoangsonww/Claude-Code-Agent-Monitor",
+        "featureList": "Real-time dashboard, Kanban board, Session tracking, Activity feed, Token usage analytics, Cost tracking, Browser notifications, WebSocket live updates, CLI statusline"
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-surface-0 text-gray-200 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

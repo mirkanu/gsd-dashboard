@@ -1,0 +1,13 @@
+node_modules/
+data/
+client/dist/
+client/node_modules/
+*.db
+*.db-wal
+*.db-shm
+package-lock.json
+client/package-lock.json
+.vs/
+*.md
+index.html
+*.yml
