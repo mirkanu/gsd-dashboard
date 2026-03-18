@@ -19,6 +19,7 @@ WORKDIR /app
 COPY --from=server-deps /app/node_modules ./node_modules/
 COPY package.json ./
 COPY server/ ./server/
+COPY gsd-projects.json ./
 COPY scripts/ ./scripts/
 COPY statusline/ ./statusline/
 COPY --from=client-build /app/client/dist ./client/dist/

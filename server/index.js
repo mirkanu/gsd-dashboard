@@ -16,9 +16,28 @@ const pricingRouter = require("./routes/pricing");
 const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
 
+function basicAuth(req, res, next) {
+  // Skip auth for localhost requests
+  const host = req.hostname || "";
+  if (host === "localhost" || host === "127.0.0.1") return next();
+
+  const user = process.env.DASHBOARD_USER || "admin";
+  const pass = process.env.DASHBOARD_PASS;
+  if (!pass) return next(); // no password set = no auth
+
+  const header = req.headers["authorization"] || "";
+  const b64 = header.startsWith("Basic ") ? header.slice(6) : "";
+  const [u, p] = Buffer.from(b64, "base64").toString().split(":");
+  if (u === user && p === pass) return next();
+
+  res.set("WWW-Authenticate", 'Basic realm="GSD Dashboard"');
+  res.status(401).send("Authentication required");
+}
+
 function createApp() {
   const app = express();
 
+  app.use(basicAuth);
   app.use(cors());
   app.use(express.json({ limit: "1mb" }));
 
@@ -65,7 +84,7 @@ function startServer(app, port) {
 }
 
 if (require.main === module) {
-  const PORT = parseInt(process.env.DASHBOARD_PORT || "4820", 10);
+  const PORT = parseInt(process.env.PORT || process.env.DASHBOARD_PORT || "4820", 10);
   const app = createApp();
   startServer(app, PORT);
 
