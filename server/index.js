@@ -14,6 +14,7 @@ const hooksRouter = require("./routes/hooks");
 const analyticsRouter = require("./routes/analytics");
 const pricingRouter = require("./routes/pricing");
 const settingsRouter = require("./routes/settings");
+const gsdRouter = require("./routes/gsd");
 
 function createApp() {
   const app = express();
@@ -29,6 +30,7 @@ function createApp() {
   app.use("/api/analytics", analyticsRouter);
   app.use("/api/pricing", pricingRouter);
   app.use("/api/settings", settingsRouter);
+  app.use("/api/gsd", gsdRouter);
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
