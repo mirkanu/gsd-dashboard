@@ -1,3 +1,46 @@
+// ─── GSD Types ────────────────────────────────────────────────────────────────
+
+export interface GsdPhase {
+  name: string;
+  plans_done: number | null;
+  plans_total: number | null;
+  status: string;
+}
+
+export interface GsdProgress {
+  percent: number | null;
+  completed_phases: number | null;
+  total_phases: number | null;
+  completed_plans: number | null;
+  total_plans: number | null;
+}
+
+export interface GsdState {
+  milestone: string | null;
+  milestone_name: string | null;
+  status: string | null;
+  current_phase: string | null;
+  last_activity: string | null;
+  progress: GsdProgress;
+  blockers: string[];
+}
+
+export interface GsdRequirements {
+  total: number;
+  checked: number;
+  percent: number;
+}
+
+export interface GsdProject {
+  name: string;
+  root: string;
+  state: GsdState | null;
+  roadmap: { phases: GsdPhase[] } | null;
+  requirements: GsdRequirements | null;
+}
+
+// ─── Agent/Session Types ──────────────────────────────────────────────────────
+
 export type SessionStatus = "active" | "completed" | "error" | "abandoned";
 export type AgentStatus = "idle" | "connected" | "working" | "completed" | "error";
 export type AgentType = "main" | "subagent";

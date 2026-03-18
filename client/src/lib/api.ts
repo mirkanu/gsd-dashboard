@@ -105,6 +105,10 @@ export const api = {
       }>("/settings/cleanup", { method: "POST", body: JSON.stringify(params) }),
   },
 
+  gsd: {
+    projects: () => request<{ projects: import("./types").GsdProject[] }>("/gsd/projects"),
+  },
+
   pricing: {
     list: () => request<{ pricing: ModelPricing[] }>("/pricing"),
     upsert: (data: Omit<ModelPricing, "updated_at">) =>
