@@ -20,15 +20,14 @@ What's working:
 - Self-healing tunnel script (`scripts/tunnel.sh`) runs under s6-supervise — auto-restarts, updates Railway env var on each restart
 - Existing agent monitoring features (sessions, Kanban, cost tracking) fully preserved
 
-## Next Milestone Goals
+## Current Milestone: v1.1 — File Viewer & Card Enhancements
 
-*Not yet defined. Run `/gsd:new-milestone` to plan v2.*
+**Goal:** Make each project card richer (version, live URL) and let users drill into raw planning files via a drawer + full-screen markdown viewer.
 
-Candidate enhancements from v1 planning:
-- Auto-refresh GSD data every N minutes (configurable interval)
-- Click-through to view raw planning file content inline
-- Phase timeline / Gantt-style view across projects
-- Named Cloudflare Tunnel for stable permanent URL (no URL changes on restart)
+**Target features:**
+- Project cards show current version and live URL (parsed from PROJECT.md)
+- Clicking a card opens a side drawer with tabs for STATE.md, ROADMAP.md, REQUIREMENTS.md, active PLAN.md
+- Each tab renders markdown; clicking opens full-screen beautiful markdown view
 
 ## Context
 
@@ -54,4 +53,4 @@ Candidate enhancements from v1 planning:
 | Railway deployment + cloudflared proxy | Keep GSD readers local (filesystem access), expose via tunnel to Railway-hosted UI | ✅ Working — self-healing tunnel handles URL changes |
 
 ---
-*Last updated: 2026-03-18 — v1 complete*
+*Last updated: 2026-03-18 — v1.1 started*
