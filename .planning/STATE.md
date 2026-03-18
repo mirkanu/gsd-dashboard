@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 4 — Backend File API
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-18 — Milestone v1.1 started
+Status: Not started
+Last activity: 2026-03-18 — Roadmap created for v1.1
 
 Progress: [          ] 0%
 
@@ -32,6 +32,7 @@ Progress: [          ] 0%
 - Configurable project list (not hardcoded) — Correct, edit gsd-projects.json only
 - Railway deployment + cloudflared proxy — Working, self-healing tunnel handles URL changes
 - Version + URL parsed from PROJECT.md (not gsd-projects.json) — Avoids duplication, source of truth already in PROJECT.md
+- react-markdown for drawer/full-screen rendering — Already in ecosystem, handles GFM tables and checkboxes cleanly
 
 ### Pending Todos
 
@@ -44,6 +45,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Milestone v1.1 requirements defined
+Stopped at: v1.1 roadmap created (phases 4-6)
 Resume file: None
-Next action: `/gsd:plan-phase 4` to plan the first phase
+Next action: `/gsd:plan-phase 4` to plan Phase 4: Backend File API
