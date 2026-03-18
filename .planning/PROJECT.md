@@ -8,30 +8,27 @@ A web dashboard forked from Claude Code Agent Monitor that adds a GSD (Get Shit 
 
 At a glance, see where every GSD project stands — which phase is active, what's done, what's blocked — without opening individual planning files.
 
-## Requirements
+## Current State
 
-### Validated
+**Version: v1 — Shipped 2026-03-18**
 
-(None yet — ship to validate)
+Live at: https://gsd-dashboard-production.up.railway.app (admin / see DASHBOARD_PASS env var)
 
-### Active
+What's working:
+- GSD Projects tab shows all 4 projects (josie, gsddashboard, debates, reforma) with phase progress, status badges, roadmap panels, and requirements coverage
+- Backend reads `.planning/` files locally; Railway deployment proxies via cloudflared tunnel (`GSD_DATA_URL`)
+- Self-healing tunnel script (`scripts/tunnel.sh`) runs under s6-supervise — auto-restarts, updates Railway env var on each restart
+- Existing agent monitoring features (sessions, Kanban, cost tracking) fully preserved
 
-- [ ] Fork Claude Code Agent Monitor and add a GSD tab alongside existing agent monitoring
-- [ ] Backend endpoint scans configured project roots for `.planning/` directories and parses GSD files
-- [ ] Display roadmap overview: all phases across all projects at a glance
-- [ ] Display phase progress: current phase, which plans/tasks are done vs pending
-- [ ] Display state/blockers: current STATUS.md content — last action, next step, blockers
-- [ ] Display requirements coverage: how many REQ-IDs are checked off in REQUIREMENTS.md
-- [ ] Initial projects configured: josie, gsddashboard, debates, reforma (all under /data/home)
-- [ ] Project list is configurable — new projects can be added without code changes
-- [ ] Dashboard loads current data on page load (manual refresh, no WebSocket needed for GSD data)
+## Next Milestone Goals
 
-### Out of Scope
+*Not yet defined. Run `/gsd:new-milestone` to plan v2.*
 
-- Real-time GSD file watching / WebSocket push for planning updates — manual refresh is sufficient
-- Authentication / multi-user support — single developer tool
-- Editing planning files from the dashboard — read-only view
-- Hosting outside this machine — local development server only (for now)
+Candidate enhancements from v1 planning:
+- Auto-refresh GSD data every N minutes (configurable interval)
+- Click-through to view raw planning file content inline
+- Phase timeline / Gantt-style view across projects
+- Named Cloudflare Tunnel for stable permanent URL (no URL changes on restart)
 
 ## Context
 
@@ -45,15 +42,16 @@ At a glance, see where every GSD project stands — which phase is active, what'
 
 - **Tech stack**: Fork of Claude Code Agent Monitor — React frontend, Express backend, must stay compatible
 - **Data source**: Read-only filesystem access to `.planning/` directories on the same machine
-- **Deployment**: Local only — runs as a dev server, no production hosting required initially
+- **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Fork + add GSD tab (not standalone app) | Reuses React + Express boilerplate, preserves existing agent monitoring, faster to build | — Pending |
-| Manual refresh for GSD data | Sufficient for the use case, avoids complexity of file watchers + WebSocket for a second data stream | — Pending |
-| Configurable project list (not hardcoded) | User has 4 projects now but expects to add more — config file approach scales cleanly | — Pending |
+| Fork + add GSD tab (not standalone app) | Reuses React + Express boilerplate, preserves existing agent monitoring, faster to build | ✅ Correct — built in one day |
+| Manual refresh for GSD data | Sufficient for the use case, avoids complexity of file watchers | ✅ Correct — works well in practice |
+| Configurable project list (not hardcoded) | User has 4 projects now but expects to add more — config file approach scales cleanly | ✅ Correct — edit gsd-projects.json only |
+| Railway deployment + cloudflared proxy | Keep GSD readers local (filesystem access), expose via tunnel to Railway-hosted UI | ✅ Working — self-healing tunnel handles URL changes |
 
 ---
-*Last updated: 2026-03-18 after initialization*
+*Last updated: 2026-03-18 — v1 complete*
