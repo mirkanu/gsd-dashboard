@@ -18,11 +18,13 @@ const HOOKS_WITHOUT_MATCHER = ["SessionStart", "SessionEnd"];
 const HOOK_TYPES = [...HOOKS_WITH_MATCHER, ...HOOKS_WITHOUT_MATCHER];
 
 function makeHookEntry(hookType) {
+  const remoteUrl = process.env.CLAUDE_DASHBOARD_URL || "";
+  const envPrefix = remoteUrl ? `CLAUDE_DASHBOARD_URL="${remoteUrl}" ` : "";
   const entry = {
     hooks: [
       {
         type: "command",
-        command: `node "${HOOK_HANDLER}" ${hookType}`,
+        command: `${envPrefix}node "${HOOK_HANDLER}" ${hookType}`,
       },
     ],
   };

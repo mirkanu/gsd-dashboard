@@ -6,6 +6,7 @@ const { readProject } = require("../gsd/readers");
 const router = express.Router();
 
 const CONFIG_PATH = path.resolve(__dirname, "../../gsd-projects.json");
+const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
 
 function loadConfig() {
   const raw = fs.readFileSync(CONFIG_PATH, "utf8");
@@ -22,7 +23,17 @@ router.get("/config", (_req, res) => {
 });
 
 // GET /api/gsd/projects — return parsed planning data for all configured projects
-router.get("/projects", (_req, res) => {
+router.get("/projects", async (_req, res) => {
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) });
+      const data = await upstream.json();
+      res.json(data);
+    } catch (err) {
+      res.status(502).json({ error: "Failed to reach GSD data source", detail: err.message });
+    }
+    return;
+  }
   try {
     const { projects } = loadConfig();
     const data = projects.map(({ name, root }) => readProject(name, root));
