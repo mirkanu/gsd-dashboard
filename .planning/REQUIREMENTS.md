@@ -45,22 +45,22 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CARD-01 | — | Pending |
-| CARD-02 | — | Pending |
-| CARD-03 | — | Pending |
-| DRAW-01 | — | Pending |
-| DRAW-02 | — | Pending |
-| DRAW-03 | — | Pending |
-| DRAW-04 | — | Pending |
-| DRAW-05 | — | Pending |
-| API-01 | — | Pending |
-| API-02 | — | Pending |
-| API-03 | — | Pending |
+| CARD-01 | Phase 5 | Pending |
+| CARD-02 | Phase 5 | Pending |
+| CARD-03 | Phase 5 | Pending |
+| DRAW-01 | Phase 6 | Pending |
+| DRAW-02 | Phase 6 | Pending |
+| DRAW-03 | Phase 6 | Pending |
+| DRAW-04 | Phase 6 | Pending |
+| DRAW-05 | Phase 6 | Pending |
+| API-01 | Phase 4 | Pending |
+| API-02 | Phase 4 | Pending |
+| API-03 | Phase 4 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 11 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 11
+- Mapped to phases: 11
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-18*
