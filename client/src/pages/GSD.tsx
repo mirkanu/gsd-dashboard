@@ -10,6 +10,7 @@ import {
   MapPin,
   Layers,
   ClipboardList,
+  ExternalLink,
 } from "lucide-react";
 import { api } from "../lib/api";
 import type { GsdProject, GsdPhase } from "../lib/types";
@@ -112,6 +113,11 @@ function ProjectCard({ project }: { project: GsdProject }) {
           <div className="flex items-center gap-2 min-w-0">
             <MapPin className="w-4 h-4 text-accent flex-shrink-0" />
             <h3 className="text-sm font-semibold text-gray-100 truncate capitalize">{project.name}</h3>
+            {project.version && (
+              <span className="text-[11px] font-medium px-1.5 py-0.5 rounded border bg-surface-3 text-gray-400 border-border flex-shrink-0">
+                {project.version}
+              </span>
+            )}
           </div>
           <StatusBadge status={state?.status ?? null} />
         </div>
@@ -121,6 +127,18 @@ function ProjectCard({ project }: { project: GsdProject }) {
         )}
         {state?.milestone_name && state.milestone_name !== "milestone" && (
           <p className="text-xs text-gray-600 truncate pl-6">{state.milestone_name}</p>
+        )}
+        {project.liveUrl && (
+          <a
+            href={project.liveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-[11px] text-accent hover:text-accent/80 truncate pl-6 block mt-0.5 hover:underline"
+          >
+            <ExternalLink className="w-3 h-3 inline mr-1 align-middle" />
+            {project.liveUrl}
+          </a>
         )}
       </div>
 
