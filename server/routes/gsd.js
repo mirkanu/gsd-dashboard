@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const { readProject } = require("../gsd/readers");
+const { resolveFile } = require("../gsd/fileResolver");
 
 const router = express.Router();
 
@@ -40,6 +41,31 @@ router.get("/projects", async (_req, res) => {
     res.json({ projects: data });
   } catch (err) {
     res.status(500).json({ error: "Failed to read project data", detail: err.message });
+  }
+});
+
+// GET /api/gsd/projects/:name/files/:fileId — serve raw planning file content
+router.get('/projects/:name/files/:fileId', (req, res) => {
+  const { name, fileId } = req.params;
+  const { projects } = loadConfig();
+  const project = projects.find((p) => p.name === name);
+  if (!project) {
+    return res.status(404).json({ error: 'Project not found' });
+  }
+  const validIds = ['state', 'roadmap', 'requirements', 'plan'];
+  if (!validIds.includes(fileId)) {
+    return res.status(400).json({ error: 'Unknown file identifier' });
+  }
+  const filePath = resolveFile(name, project.root, fileId);
+  if (!filePath) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    res.set('Content-Type', 'text/plain; charset=utf-8');
+    res.send(content);
+  } catch {
+    res.status(404).json({ error: 'File not found' });
   }
 });
 
