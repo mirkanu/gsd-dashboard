@@ -15,6 +15,7 @@ import {
 import { api } from "../lib/api";
 import type { GsdProject, GsdPhase } from "../lib/types";
 import { GsdDrawer } from "../components/GsdDrawer";
+import { MarkdownViewer } from "../components/MarkdownViewer";
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -230,6 +231,14 @@ export function GSD() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProject, setSelectedProject] = useState<GsdProject | null>(null);
+  const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
+
+  const TAB_TITLES: Record<string, string> = {
+    state: "State",
+    roadmap: "Roadmap",
+    requirements: "Requirements",
+    plan: "Plan",
+  };
 
   const load = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
@@ -317,7 +326,18 @@ export function GSD() {
       )}
 
       {selectedProject && (
-        <GsdDrawer project={selectedProject} onClose={() => setSelectedProject(null)} />
+        <GsdDrawer
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+          onExpand={(content, tabId) => setFullScreen({ content, title: TAB_TITLES[tabId] ?? tabId })}
+        />
+      )}
+      {fullScreen && (
+        <MarkdownViewer
+          content={fullScreen.content}
+          title={fullScreen.title}
+          onClose={() => setFullScreen(null)}
+        />
       )}
     </div>
   );

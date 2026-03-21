@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { X } from "lucide-react";
+import { X, Maximize2 } from "lucide-react";
 import { api } from "../lib/api";
 import type { GsdProject } from "../lib/types";
 
@@ -20,7 +20,7 @@ interface GsdDrawerProps {
   onExpand?: (content: string, tabId: FileTabId) => void;
 }
 
-export function GsdDrawer({ project, onClose, onExpand: _onExpand }: GsdDrawerProps) {
+export function GsdDrawer({ project, onClose, onExpand }: GsdDrawerProps) {
   const [activeTab, setActiveTab] = useState<FileTabId>("state");
   const [content, setContent]     = useState<string | null>(null);
   const [loading, setLoading]     = useState(false);
@@ -82,6 +82,17 @@ export function GsdDrawer({ project, onClose, onExpand: _onExpand }: GsdDrawerPr
                 {tab.label}
               </button>
             ))}
+            {/* Expand button — only shown when content is loaded */}
+            {content !== null && onExpand && (
+              <button
+                onClick={() => onExpand(content, activeTab)}
+                className="ml-auto px-2 py-2 text-gray-500 hover:text-gray-300 transition-colors"
+                aria-label="Expand to full screen"
+                title="Full screen"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Content area */}
