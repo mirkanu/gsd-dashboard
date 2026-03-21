@@ -17,5 +17,4 @@ jobs:
       - name: Deploy
         run: railway up --service "GSD Dashboard" --environment production --detach
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_API_KEY: ${{ secrets.RAILWAY_TOKEN }}
