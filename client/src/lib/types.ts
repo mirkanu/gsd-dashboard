@@ -37,6 +37,8 @@ export interface GsdProject {
   state: GsdState | null;
   roadmap: { phases: GsdPhase[] } | null;
   requirements: GsdRequirements | null;
+  version: string | null;
+  liveUrl: string | null;
 }
 
 // ─── Agent/Session Types ──────────────────────────────────────────────────────
