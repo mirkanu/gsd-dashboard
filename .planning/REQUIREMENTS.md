@@ -65,30 +65,30 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-01 | TBD | Pending |
-| PIPE-02 | TBD | Pending |
-| PIPE-03 | TBD | Pending |
-| PIPE-04 | TBD | Pending |
-| NEXT-01 | TBD | Pending |
-| NEXT-02 | TBD | Pending |
-| BLOCK-01 | TBD | Pending |
-| BLOCK-02 | TBD | Pending |
-| BLOCK-03 | TBD | Pending |
-| SESS-01 | TBD | Pending |
-| SESS-02 | TBD | Pending |
-| SESS-03 | TBD | Pending |
-| VEL-01 | TBD | Pending |
-| VEL-02 | TBD | Pending |
-| VEL-03 | TBD | Pending |
-| TTL-01 | TBD | Pending |
-| TTL-02 | TBD | Pending |
-| TTL-03 | TBD | Pending |
-| TTL-04 | TBD | Pending |
+| PIPE-01 | Phase 7 | Pending |
+| PIPE-02 | Phase 7 | Pending |
+| PIPE-03 | Phase 7 | Pending |
+| PIPE-04 | Phase 7 | Pending |
+| NEXT-01 | Phase 8 | Pending |
+| NEXT-02 | Phase 8 | Pending |
+| BLOCK-01 | Phase 8 | Pending |
+| BLOCK-02 | Phase 8 | Pending |
+| BLOCK-03 | Phase 8 | Pending |
+| VEL-01 | Phase 8 | Pending |
+| VEL-02 | Phase 8 | Pending |
+| VEL-03 | Phase 8 | Pending |
+| TTL-01 | Phase 8 | Pending |
+| TTL-02 | Phase 8 | Pending |
+| TTL-03 | Phase 8 | Pending |
+| TTL-04 | Phase 8 | Pending |
+| SESS-01 | Phase 9 | Pending |
+| SESS-02 | Phase 9 | Pending |
+| SESS-03 | Phase 9 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 19 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 19
+- Mapped to phases: 19
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
