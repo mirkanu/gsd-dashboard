@@ -51,7 +51,11 @@ Plans:
   2. The Plan tab resolves and renders the active phase's PLAN.md based on the current phase recorded in STATE.md
   3. Clicking a tab's content (or an expand control) transitions to a full-screen markdown view of that file with proper heading hierarchy, lists, and tables rendered
   4. The full-screen view has a visible close/back control that returns the user to the drawer without losing their tab selection
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 06-01-PLAN.md — Install react-markdown + remark-gfm; add api.gsd.file() text-mode fetch
+- [ ] 06-02-PLAN.md — Build GsdDrawer with four file tabs and inline markdown rendering
+- [ ] 06-03-PLAN.md — Add MarkdownViewer full-screen overlay and wire expand control
 
 ---
 
@@ -61,4 +65,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 4. Backend File API | 2/2 | Complete    | 2026-03-21 |
 | 5. Card Enhancements | 2/2 | Complete    | 2026-03-21 |
-| 6. Drawer and Full-Screen Viewer | 0/? | Not started | - |
+| 6. Drawer and Full-Screen Viewer | 0/3 | Not started | - |
