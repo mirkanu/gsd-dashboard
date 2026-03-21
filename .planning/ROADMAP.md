@@ -9,7 +9,7 @@
 
 ## v1.1 Phases
 
-- [ ] **Phase 4: Backend File API** — Parse version/URL from PROJECT.md and expose a file-content endpoint for planning files
+- [x] **Phase 4: Backend File API** — Parse version/URL from PROJECT.md and expose a file-content endpoint for planning files
 - [ ] **Phase 5: Card Enhancements** — Display version badge and live URL on cards; wire click to open drawer
 - [ ] **Phase 6: Drawer and Full-Screen Viewer** — Side drawer with file tabs rendering markdown; full-screen markdown view
 
@@ -27,7 +27,7 @@
 **Plans**: 2 plans
 Plans:
 - [x] 04-01-PLAN.md — Parse version + liveUrl from PROJECT.md and extend readProject()
-- [ ] 04-02-PLAN.md — Add GET /api/gsd/projects/:name/files/:fileId endpoint with server-side resolution
+- [x] 04-02-PLAN.md — Add GET /api/gsd/projects/:name/files/:fileId endpoint with server-side resolution
 
 ### Phase 5: Card Enhancements
 **Goal**: Each project card surfaces version and live URL, and a click anywhere on the card body opens the drawer
@@ -56,6 +56,6 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 4. Backend File API | 1/2 | In progress | - |
+| 4. Backend File API | 2/2 | Complete | 2026-03-21 |
 | 5. Card Enhancements | 0/? | Not started | - |
 | 6. Drawer and Full-Screen Viewer | 0/? | Not started | - |

@@ -22,8 +22,8 @@
 ### Backend
 
 - [x] **API-01**: The backend parses version and live URL from each project's PROJECT.md and includes them in the `/api/gsd/projects` response
-- [ ] **API-02**: A new endpoint `GET /api/gsd/projects/:name/files/:filename` serves raw markdown content for a given planning file
-- [ ] **API-03**: The file endpoint supports: `state`, `roadmap`, `requirements`, and `plan` as filename identifiers (resolved to actual file paths server-side)
+- [x] **API-02**: A new endpoint `GET /api/gsd/projects/:name/files/:filename` serves raw markdown content for a given planning file
+- [x] **API-03**: The file endpoint supports: `state`, `roadmap`, `requirements`, and `plan` as filename identifiers (resolved to actual file paths server-side)
 
 ## Future Requirements (deferred)
 
@@ -53,9 +53,9 @@
 | DRAW-03 | Phase 6 | Pending |
 | DRAW-04 | Phase 6 | Pending |
 | DRAW-05 | Phase 6 | Pending |
-| API-01 | Phase 4 | Pending |
-| API-02 | Phase 4 | Pending |
-| API-03 | Phase 4 | Pending |
+| API-01 | Phase 4 | Complete |
+| API-02 | Phase 4 | Complete |
+| API-03 | Phase 4 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 11 total
