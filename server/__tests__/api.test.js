@@ -959,3 +959,38 @@ describe("Database Integrity", () => {
     assert.equal(fk, 1);
   });
 });
+
+// ============================================================
+// readProjectMeta
+// ============================================================
+
+describe("readProjectMeta", () => {
+  const { readProjectMeta, readProject } = require("../gsd/readers");
+
+  it("returns version and liveUrl for a project with PROJECT.md (gsddashboard)", () => {
+    const GSDDASHBOARD_ROOT = path.join(__dirname, "../../..");
+    const result = readProjectMeta(GSDDASHBOARD_ROOT);
+    assert.ok(result !== null, "result should not be null");
+    assert.ok(typeof result.version === "string", `version should be a string, got: ${result.version}`);
+    assert.ok(result.version.startsWith("v"), `version should start with 'v', got: ${result.version}`);
+    assert.ok(typeof result.liveUrl === "string", `liveUrl should be a string, got: ${result.liveUrl}`);
+    assert.ok(result.liveUrl.startsWith("https://"), `liveUrl should start with 'https://', got: ${result.liveUrl}`);
+  });
+
+  it("returns null for both fields when PROJECT.md does not exist", () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "gsd-test-"));
+    try {
+      const result = readProjectMeta(tmpDir);
+      assert.deepEqual(result, { version: null, liveUrl: null });
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("readProject return value includes version and liveUrl keys", () => {
+    const GSDDASHBOARD_ROOT = path.join(__dirname, "../../..");
+    const project = readProject("gsddashboard", GSDDASHBOARD_ROOT);
+    assert.ok(Object.prototype.hasOwnProperty.call(project, "version"), "project should have version key");
+    assert.ok(Object.prototype.hasOwnProperty.call(project, "liveUrl"), "project should have liveUrl key");
+  });
+});
