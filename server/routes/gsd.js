@@ -45,8 +45,23 @@ router.get("/projects", async (_req, res) => {
 });
 
 // GET /api/gsd/projects/:name/files/:fileId — serve raw planning file content
-router.get('/projects/:name/files/:fileId', (req, res) => {
+router.get('/projects/:name/files/:fileId', async (req, res) => {
   const { name, fileId } = req.params;
+
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/files/${encodeURIComponent(fileId)}`, { signal: AbortSignal.timeout(10000) });
+      if (!upstream.ok) {
+        return res.status(upstream.status).json({ error: 'File not found' });
+      }
+      const text = await upstream.text();
+      res.set('Content-Type', 'text/plain; charset=utf-8');
+      return res.send(text);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
+
   const { projects } = loadConfig();
   const project = projects.find((p) => p.name === name);
   if (!project) {
