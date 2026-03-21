@@ -56,6 +56,6 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 4. Backend File API | 2/2 | Complete | 2026-03-21 |
+| 4. Backend File API | 2/2 | Complete    | 2026-03-21 |
 | 5. Card Enhancements | 0/? | Not started | - |
 | 6. Drawer and Full-Screen Viewer | 0/? | Not started | - |
