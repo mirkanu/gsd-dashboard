@@ -134,5 +134,10 @@ export const api = {
     totalCost: () => request<CostResult>("/pricing/cost"),
     sessionCost: (sessionId: string) =>
       request<CostResult>(`/pricing/cost/${encodeURIComponent(sessionId)}`),
+    window: () =>
+      request<{
+        daily: { cost: number; from: string; hours_until_reset: number };
+        weekly: { cost: number; from: string; hours_until_reset: number };
+      }>("/pricing/window"),
   },
 };

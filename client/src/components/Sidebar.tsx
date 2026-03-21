@@ -39,13 +39,22 @@ interface SidebarProps {
   wsConnected: boolean;
   collapsed: boolean;
   onToggle: () => void;
+  isMobile?: boolean;
+  mobileOpen?: boolean;
+  onNavClick?: () => void;
 }
 
-export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen, onNavClick }: SidebarProps) {
+  const mobileTransform = isMobile
+    ? mobileOpen
+      ? "translate-x-0"
+      : "-translate-x-full"
+    : "";
+
   return (
     <aside
-      className={`fixed left-0 top-0 bottom-0 bg-surface-1 border-r border-border flex flex-col z-30 overflow-y-auto overflow-x-hidden transition-[width] duration-200 ${
-        collapsed ? "w-[4.25rem]" : "w-60"
+      className={`fixed left-0 top-0 bottom-0 bg-surface-1 border-r border-border flex flex-col z-30 overflow-y-auto overflow-x-hidden transition-[width,transform] duration-200 ${
+        isMobile ? `w-60 ${mobileTransform}` : collapsed ? "w-[4.25rem]" : "w-60"
       }`}
     >
       {/* Brand */}
@@ -70,10 +79,11 @@ export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
             key={to}
             to={to}
             end={to === "/"}
-            title={collapsed ? label : undefined}
+            title={collapsed && !isMobile ? label : undefined}
+            onClick={onNavClick}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150 ${
-                collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2.5"
+                collapsed && !isMobile ? "justify-center px-2 py-2.5" : "px-3 py-2.5"
               } ${
                 isActive
                   ? "bg-accent/10 text-accent border border-accent/20"
@@ -82,28 +92,30 @@ export function Sidebar({ wsConnected, collapsed, onToggle }: SidebarProps) {
             }
           >
             <Icon className="w-4 h-4 flex-shrink-0" />
-            {!collapsed && <span>{label}</span>}
+            {(!collapsed || isMobile) && <span>{label}</span>}
           </NavLink>
         ))}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="px-2 py-2">
-        <button
-          onClick={onToggle}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-xs text-gray-500 hover:text-gray-300 hover:bg-surface-3 transition-colors"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? (
-            <PanelLeftOpen className="w-4 h-4 flex-shrink-0 mx-auto" />
-          ) : (
-            <>
-              <PanelLeftClose className="w-4 h-4 flex-shrink-0" />
-              <span>Collapse</span>
-            </>
-          )}
-        </button>
-      </div>
+      {/* Collapse toggle — desktop only */}
+      {!isMobile && (
+        <div className="px-2 py-2">
+          <button
+            onClick={onToggle}
+            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-xs text-gray-500 hover:text-gray-300 hover:bg-surface-3 transition-colors"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="w-4 h-4 flex-shrink-0 mx-auto" />
+            ) : (
+              <>
+                <PanelLeftClose className="w-4 h-4 flex-shrink-0" />
+                <span>Collapse</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Footer */}
       <div

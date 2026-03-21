@@ -115,4 +115,61 @@ router.get("/cost/:sessionId", (req, res) => {
   res.json(result);
 });
 
+// GET /api/pricing/window - Cost for today and this week (UTC boundaries)
+router.get("/window", (_req, res) => {
+  const rules = stmts.listPricing.all();
+  const now = new Date();
+
+  // Today midnight UTC
+  const todayMidnight = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  ).toISOString();
+
+  // This week's Monday midnight UTC
+  const dow = now.getUTCDay(); // 0=Sun
+  const daysFromMonday = (dow + 6) % 7;
+  const weekStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysFromMonday)
+  ).toISOString();
+
+  const tokensForWindow = (since) =>
+    db
+      .prepare(
+        `SELECT tu.model,
+          SUM(tu.input_tokens + tu.baseline_input) as input_tokens,
+          SUM(tu.output_tokens + tu.baseline_output) as output_tokens,
+          SUM(tu.cache_read_tokens + tu.baseline_cache_read) as cache_read_tokens,
+          SUM(tu.cache_write_tokens + tu.baseline_cache_write) as cache_write_tokens
+        FROM token_usage tu
+        JOIN sessions s ON tu.session_id = s.id
+        WHERE s.started_at >= ?
+        GROUP BY tu.model`
+      )
+      .all(since);
+
+  const dailyResult = calculateCost(tokensForWindow(todayMidnight), rules);
+  const weeklyResult = calculateCost(tokensForWindow(weekStart), rules);
+
+  const nextMidnight = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)
+  );
+  const daysToNextMonday = (7 - daysFromMonday) % 7 || 7;
+  const nextMonday = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysToNextMonday)
+  );
+
+  res.json({
+    daily: {
+      cost: dailyResult.total_cost,
+      from: todayMidnight,
+      hours_until_reset: Math.round(((nextMidnight - now) / 3600000) * 10) / 10,
+    },
+    weekly: {
+      cost: weeklyResult.total_cost,
+      from: weekStart,
+      hours_until_reset: Math.round(((nextMonday - now) / 3600000) * 10) / 10,
+    },
+  });
+});
+
 module.exports = router;

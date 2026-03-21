@@ -11,6 +11,7 @@ import {
   Layers,
   ClipboardList,
   ExternalLink,
+  SlidersHorizontal,
 } from "lucide-react";
 import { api } from "../lib/api";
 import type { GsdProject, GsdPhase } from "../lib/types";
@@ -91,6 +92,136 @@ function RoadmapPanel({ phases }: { phases: GsdPhase[] }) {
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+// ─── Usage limit bar ──────────────────────────────────────────────────────────
+
+const DAILY_LIMIT_KEY = "usage-limit-daily";
+const WEEKLY_LIMIT_KEY = "usage-limit-weekly";
+
+function loadLimit(key: string, def: number): number {
+  try {
+    const v = localStorage.getItem(key);
+    if (v) return Math.max(0.01, parseFloat(v));
+  } catch {}
+  return def;
+}
+
+function limitBarColor(pct: number): string {
+  const hue = Math.round(120 * (1 - Math.min(pct, 100) / 100));
+  return `hsl(${hue}, 60%, 42%)`;
+}
+
+function formatHours(h: number): string {
+  if (h < 1) return `${Math.round(h * 60)}m`;
+  if (h < 24) return `${Math.round(h)}h`;
+  return `${Math.round(h / 24)}d`;
+}
+
+function UsageLimitBar() {
+  const [data, setData] = useState<{
+    daily: { cost: number; hours_until_reset: number };
+    weekly: { cost: number; hours_until_reset: number };
+  } | null>(null);
+  const [dailyLimit, setDailyLimit] = useState(() => loadLimit(DAILY_LIMIT_KEY, 5));
+  const [weeklyLimit, setWeeklyLimit] = useState(() => loadLimit(WEEKLY_LIMIT_KEY, 25));
+  const [editing, setEditing] = useState(false);
+  const [editDaily, setEditDaily] = useState("");
+  const [editWeekly, setEditWeekly] = useState("");
+
+  useEffect(() => {
+    api.pricing.window().then(setData).catch(() => {});
+  }, []);
+
+  const saveEdits = () => {
+    const d = parseFloat(editDaily);
+    const w = parseFloat(editWeekly);
+    if (!isNaN(d) && d > 0) {
+      setDailyLimit(d);
+      try { localStorage.setItem(DAILY_LIMIT_KEY, String(d)); } catch {}
+    }
+    if (!isNaN(w) && w > 0) {
+      setWeeklyLimit(w);
+      try { localStorage.setItem(WEEKLY_LIMIT_KEY, String(w)); } catch {}
+    }
+    setEditing(false);
+  };
+
+  if (!data) return null;
+
+  const dailyPct = Math.min(100, (data.daily.cost / dailyLimit) * 100);
+  const weeklyPct = Math.min(100, (data.weekly.cost / weeklyLimit) * 100);
+
+  return (
+    <div className="card px-4 py-3 space-y-2.5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-gray-400">Claude usage</span>
+        <button
+          onClick={() => { setEditDaily(String(dailyLimit)); setEditWeekly(String(weeklyLimit)); setEditing((v) => !v); }}
+          className="flex items-center gap-1 text-[11px] text-gray-600 hover:text-gray-400 transition-colors"
+        >
+          <SlidersHorizontal className="w-3 h-3" />
+          <span>Limits</span>
+        </button>
+      </div>
+
+      {editing && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs pb-0.5">
+          <label className="text-gray-500">Daily $</label>
+          <input
+            value={editDaily}
+            onChange={(e) => setEditDaily(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && saveEdits()}
+            className="w-16 bg-surface-3 border border-border rounded px-2 py-0.5 text-gray-200 text-xs"
+          />
+          <label className="text-gray-500">Weekly $</label>
+          <input
+            value={editWeekly}
+            onChange={(e) => setEditWeekly(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && saveEdits()}
+            className="w-16 bg-surface-3 border border-border rounded px-2 py-0.5 text-gray-200 text-xs"
+          />
+          <button onClick={saveEdits} className="text-accent hover:text-accent/80 font-medium">
+            Save
+          </button>
+        </div>
+      )}
+
+      {/* Daily bar */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] text-gray-500">Today</span>
+          <span className="text-[11px] text-gray-500">
+            ${data.daily.cost.toFixed(2)} / ${dailyLimit}
+            <span className="text-gray-600 ml-1.5">· {formatHours(data.daily.hours_until_reset)} left</span>
+          </span>
+        </div>
+        <div className="h-1.5 rounded-full bg-surface-3 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${dailyPct}%`, backgroundColor: limitBarColor(dailyPct) }}
+          />
+        </div>
+      </div>
+
+      {/* Weekly bar */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] text-gray-500">This week</span>
+          <span className="text-[11px] text-gray-500">
+            ${data.weekly.cost.toFixed(2)} / ${weeklyLimit}
+            <span className="text-gray-600 ml-1.5">· {formatHours(data.weekly.hours_until_reset)} left</span>
+          </span>
+        </div>
+        <div className="h-1.5 rounded-full bg-surface-3 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${weeklyPct}%`, backgroundColor: limitBarColor(weeklyPct) }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -302,6 +433,9 @@ export function GSD() {
           ))}
         </div>
       )}
+
+      {/* Usage limit indicator */}
+      <UsageLimitBar />
 
       {/* States */}
       {loading && (
