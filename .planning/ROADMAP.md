@@ -24,7 +24,10 @@
   2. `GET /api/gsd/projects/:name/files/state` returns the raw markdown content of that project's STATE.md
   3. `GET /api/gsd/projects/:name/files/plan` returns the markdown content of the active phase's PLAN.md, resolved server-side from STATE.md's current phase
   4. `GET /api/gsd/projects/:name/files/roadmap` and `.../files/requirements` each return the correct file's markdown content
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 04-01-PLAN.md — Parse version + liveUrl from PROJECT.md and extend readProject()
+- [ ] 04-02-PLAN.md — Add GET /api/gsd/projects/:name/files/:fileId endpoint with server-side resolution
 
 ### Phase 5: Card Enhancements
 **Goal**: Each project card surfaces version and live URL, and a click anywhere on the card body opens the drawer
@@ -53,6 +56,6 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 4. Backend File API | 0/? | Not started | - |
+| 4. Backend File API | 0/2 | Not started | - |
 | 5. Card Enhancements | 0/? | Not started | - |
 | 6. Drawer and Full-Screen Viewer | 0/? | Not started | - |
