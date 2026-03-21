@@ -22,6 +22,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+async function requestText(path: string): Promise<string> {
+  const res = await fetch(`${BASE}${path}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error || `HTTP ${res.status}`);
+  }
+  return res.text();
+}
+
 export const api = {
   stats: {
     get: () => request<Stats>("/stats"),
@@ -107,6 +116,8 @@ export const api = {
 
   gsd: {
     projects: () => request<{ projects: import("./types").GsdProject[] }>("/gsd/projects"),
+    file: (projectName: string, fileId: "state" | "roadmap" | "requirements" | "plan") =>
+      requestText(`/gsd/projects/${encodeURIComponent(projectName)}/files/${fileId}`),
   },
 
   pricing: {
