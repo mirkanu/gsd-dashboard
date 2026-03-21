@@ -1,8 +1,39 @@
 const { Router } = require("express");
 const { v4: uuidv4 } = require("uuid");
 const fs = require("fs");
+const path = require("path");
 const { stmts, db } = require("../db");
 const { broadcast } = require("../websocket");
+
+const GSD_PROJECTS_PATH = path.resolve(__dirname, "../../gsd-projects.json");
+
+/**
+ * If a Write tool just created .planning/PROJECT.md in a new directory,
+ * auto-register it in gsd-projects.json and broadcast a refresh event.
+ * Safe to call on every PostToolUse — exits early if conditions aren't met.
+ */
+function autoRegisterGsdProject(data) {
+  try {
+    const filePath = data.tool_input?.file_path;
+    const cwd = data.cwd;
+    if (!filePath || !cwd) return;
+    if (!filePath.endsWith(".planning/PROJECT.md") && !filePath.endsWith(".planning\\PROJECT.md")) return;
+
+    const name = path.basename(cwd);
+    const root = cwd;
+
+    const raw = fs.readFileSync(GSD_PROJECTS_PATH, "utf8");
+    const config = JSON.parse(raw);
+    const already = config.projects.some((p) => p.root === root || p.name === name);
+    if (already) return;
+
+    config.projects.push({ name, root });
+    fs.writeFileSync(GSD_PROJECTS_PATH, JSON.stringify(config, null, 2) + "\n", "utf8");
+    broadcast("gsd_projects_updated", { added: { name, root } });
+  } catch {
+    // Never block Claude
+  }
+}
 
 const router = Router();
 
@@ -177,6 +208,11 @@ const processEvent = db.transaction((hookType, data) => {
       // NOTE: PostToolUse for "Agent" tool fires immediately when a subagent is
       // backgrounded — it does NOT mean the subagent finished its work.
       // Subagent completion is handled by SubagentStop, not here.
+
+      // Auto-register new GSD projects when .planning/PROJECT.md is written.
+      if (toolName === "Write") {
+        autoRegisterGsdProject(data);
+      }
 
       // Only clear current_tool on the main agent if it's actively working.
       // Skip if idle (waiting for subagents) or already completed.

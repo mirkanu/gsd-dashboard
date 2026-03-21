@@ -15,6 +15,10 @@
     {
       "name": "reforma",
       "root": "/data/home/reforma"
+    },
+    {
+      "name": "gsdTelegram",
+      "root": "/data/home/gsdTelegram"
     }
   ]
 }
