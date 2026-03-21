@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 4 — Backend File API
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-03-21 — Completed 04-01: readProjectMeta + version/liveUrl in readProject()
+Plan: 2 of 2 complete
+Status: Complete
+Last activity: 2026-03-21 — Completed 04-02: GET /api/gsd/projects/:name/files/:fileId endpoint
 
-Progress: [##        ] 17%
+Progress: [###       ] 33%
 
 ## Performance Metrics
 
@@ -33,6 +33,8 @@ Progress: [##        ] 17%
 - Railway deployment + cloudflared proxy — Working, self-healing tunnel handles URL changes
 - Version + URL parsed from PROJECT.md (not gsd-projects.json) — Avoids duplication, source of truth already in PROJECT.md
 - react-markdown for drawer/full-screen rendering — Already in ecosystem, handles GFM tables and checkboxes cleanly
+- File endpoints validate fileId against whitelist (400) before resolveFile (404) — clean error semantics
+- resolveFile returns null on any error — graceful, route maps to 404
 
 ### Pending Todos
 
@@ -45,6 +47,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Completed 04-01-PLAN.md — readProjectMeta, version + liveUrl in readProject()
+Stopped at: Completed 04-02-PLAN.md — GET /api/gsd/projects/:name/files/:fileId endpoint
 Resume file: None
-Next action: Execute 04-02-PLAN.md — Add GET /api/gsd/projects/:name/files/:fileId endpoint
+Next action: Plan and execute Phase 5 — Card Enhancements
