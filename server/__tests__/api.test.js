@@ -1082,3 +1082,74 @@ describe("GET /api/gsd/projects/:name/files/:fileId", () => {
     assert.equal(res.body.error, "Unknown file identifier");
   });
 });
+
+describe("Auto-registration of GSD projects via PostToolUse", () => {
+  const GSD_PROJECTS_PATH = path.resolve(__dirname, "../../gsd-projects.json");
+  let originalConfig;
+
+  before(() => {
+    originalConfig = fs.readFileSync(GSD_PROJECTS_PATH, "utf8");
+  });
+
+  after(() => {
+    fs.writeFileSync(GSD_PROJECTS_PATH, originalConfig, "utf8");
+  });
+
+  it("registers a new project when Write tool writes .planning/PROJECT.md", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "gsd-auto-reg-"));
+    const projectName = path.basename(tmpDir);
+
+    const res = await post("/api/hooks/event", {
+      hook_type: "PostToolUse",
+      data: {
+        session_id: "auto-reg-sess-1",
+        tool_name: "Write",
+        tool_input: { file_path: path.join(tmpDir, ".planning/PROJECT.md") },
+        cwd: tmpDir,
+      },
+    });
+    assert.equal(res.status, 200);
+
+    const config = JSON.parse(fs.readFileSync(GSD_PROJECTS_PATH, "utf8"));
+    const added = config.projects.find((p) => p.name === projectName);
+    assert.ok(added, "New project should be in gsd-projects.json");
+    assert.equal(added.root, tmpDir);
+  });
+
+  it("does not duplicate a project already in the config", async () => {
+    const configBefore = JSON.parse(fs.readFileSync(GSD_PROJECTS_PATH, "utf8"));
+    const existing = configBefore.projects[0];
+
+    await post("/api/hooks/event", {
+      hook_type: "PostToolUse",
+      data: {
+        session_id: "auto-reg-sess-2",
+        tool_name: "Write",
+        tool_input: { file_path: path.join(existing.root, ".planning/PROJECT.md") },
+        cwd: existing.root,
+      },
+    });
+
+    const configAfter = JSON.parse(fs.readFileSync(GSD_PROJECTS_PATH, "utf8"));
+    const matches = configAfter.projects.filter((p) => p.root === existing.root);
+    assert.equal(matches.length, 1, "Project should not be duplicated");
+  });
+
+  it("ignores Write events for non-PROJECT.md files", async () => {
+    const configBefore = JSON.parse(fs.readFileSync(GSD_PROJECTS_PATH, "utf8"));
+    const countBefore = configBefore.projects.length;
+
+    await post("/api/hooks/event", {
+      hook_type: "PostToolUse",
+      data: {
+        session_id: "auto-reg-sess-3",
+        tool_name: "Write",
+        tool_input: { file_path: "/some/project/.planning/STATE.md" },
+        cwd: "/some/project",
+      },
+    });
+
+    const configAfter = JSON.parse(fs.readFileSync(GSD_PROJECTS_PATH, "utf8"));
+    assert.equal(configAfter.projects.length, countBefore, "No project should be added for non-PROJECT.md writes");
+  });
+});
