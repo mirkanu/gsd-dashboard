@@ -53,7 +53,7 @@ Plans:
   4. The full-screen view has a visible close/back control that returns the user to the drawer without losing their tab selection
 **Plans**: 3 plans
 Plans:
-- [ ] 06-01-PLAN.md — Install react-markdown + remark-gfm; add api.gsd.file() text-mode fetch
+- [x] 06-01-PLAN.md — Install react-markdown + remark-gfm; add api.gsd.file() text-mode fetch
 - [ ] 06-02-PLAN.md — Build GsdDrawer with four file tabs and inline markdown rendering
 - [ ] 06-03-PLAN.md — Add MarkdownViewer full-screen overlay and wire expand control
 
@@ -65,4 +65,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 4. Backend File API | 2/2 | Complete    | 2026-03-21 |
 | 5. Card Enhancements | 2/2 | Complete    | 2026-03-21 |
-| 6. Drawer and Full-Screen Viewer | 0/3 | Not started | - |
+| 6. Drawer and Full-Screen Viewer | 1/3 | In progress | - |
