@@ -21,7 +21,7 @@
 
 ### Backend
 
-- [ ] **API-01**: The backend parses version and live URL from each project's PROJECT.md and includes them in the `/api/gsd/projects` response
+- [x] **API-01**: The backend parses version and live URL from each project's PROJECT.md and includes them in the `/api/gsd/projects` response
 - [ ] **API-02**: A new endpoint `GET /api/gsd/projects/:name/files/:filename` serves raw markdown content for a given planning file
 - [ ] **API-03**: The file endpoint supports: `state`, `roadmap`, `requirements`, and `plan` as filename identifiers (resolved to actual file paths server-side)
 

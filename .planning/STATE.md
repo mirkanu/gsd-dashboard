@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 4 — Backend File API
-Plan: —
-Status: Not started
-Last activity: 2026-03-18 — Roadmap created for v1.1
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-03-21 — Completed 04-01: readProjectMeta + version/liveUrl in readProject()
 
-Progress: [          ] 0%
+Progress: [##        ] 17%
 
 ## Performance Metrics
 
@@ -44,7 +44,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18
-Stopped at: v1.1 roadmap created (phases 4-6)
+Last session: 2026-03-21
+Stopped at: Completed 04-01-PLAN.md — readProjectMeta, version + liveUrl in readProject()
 Resume file: None
-Next action: `/gsd:plan-phase 4` to plan Phase 4: Backend File API
+Next action: Execute 04-02-PLAN.md — Add GET /api/gsd/projects/:name/files/:fileId endpoint

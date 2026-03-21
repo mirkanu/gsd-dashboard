@@ -26,7 +26,7 @@
   4. `GET /api/gsd/projects/:name/files/roadmap` and `.../files/requirements` each return the correct file's markdown content
 **Plans**: 2 plans
 Plans:
-- [ ] 04-01-PLAN.md — Parse version + liveUrl from PROJECT.md and extend readProject()
+- [x] 04-01-PLAN.md — Parse version + liveUrl from PROJECT.md and extend readProject()
 - [ ] 04-02-PLAN.md — Add GET /api/gsd/projects/:name/files/:fileId endpoint with server-side resolution
 
 ### Phase 5: Card Enhancements
@@ -56,6 +56,6 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 4. Backend File API | 0/2 | Not started | - |
+| 4. Backend File API | 1/2 | In progress | - |
 | 5. Card Enhancements | 0/? | Not started | - |
 | 6. Drawer and Full-Screen Viewer | 0/? | Not started | - |
