@@ -1034,3 +1034,51 @@ describe("resolveFile", () => {
     assert.equal(result, null);
   });
 });
+
+// ============================================================
+// GET /api/gsd/projects/:name/files/:fileId
+// ============================================================
+
+describe("GET /api/gsd/projects/:name/files/:fileId", () => {
+  it("returns 200 text/plain with STATE.md content for 'state'", async () => {
+    const res = await fetch("/api/gsd/projects/gsddashboard/files/state");
+    assert.equal(res.status, 200);
+    assert.ok(res.headers["content-type"].includes("text/plain"), `expected text/plain, got: ${res.headers["content-type"]}`);
+    assert.ok(typeof res.body === "string" && res.body.length > 0, "body should be non-empty string");
+    assert.ok(res.body.includes("Phase"), "STATE.md content should mention Phase");
+  });
+
+  it("returns 200 text/plain with ROADMAP.md content for 'roadmap'", async () => {
+    const res = await fetch("/api/gsd/projects/gsddashboard/files/roadmap");
+    assert.equal(res.status, 200);
+    assert.ok(res.headers["content-type"].includes("text/plain"), `expected text/plain, got: ${res.headers["content-type"]}`);
+    assert.ok(typeof res.body === "string" && res.body.length > 0, "body should be non-empty string");
+  });
+
+  it("returns 200 text/plain with REQUIREMENTS.md content for 'requirements'", async () => {
+    const res = await fetch("/api/gsd/projects/gsddashboard/files/requirements");
+    assert.equal(res.status, 200);
+    assert.ok(res.headers["content-type"].includes("text/plain"), `expected text/plain, got: ${res.headers["content-type"]}`);
+    assert.ok(typeof res.body === "string" && res.body.length > 0, "body should be non-empty string");
+  });
+
+  it("returns 200 text/plain with active PLAN.md content for 'plan'", async () => {
+    const res = await fetch("/api/gsd/projects/gsddashboard/files/plan");
+    assert.equal(res.status, 200);
+    assert.ok(res.headers["content-type"].includes("text/plain"), `expected text/plain, got: ${res.headers["content-type"]}`);
+    assert.ok(typeof res.body === "string" && res.body.length > 0, "body should be non-empty string");
+    assert.ok(res.body.includes("PLAN") || res.body.includes("phase") || res.body.includes("task"), "body should contain PLAN.md content");
+  });
+
+  it("returns 404 JSON for unknown project", async () => {
+    const res = await fetch("/api/gsd/projects/unknown-project-xyz/files/state");
+    assert.equal(res.status, 404);
+    assert.equal(res.body.error, "Project not found");
+  });
+
+  it("returns 400 JSON for unknown fileId", async () => {
+    const res = await fetch("/api/gsd/projects/gsddashboard/files/bogus");
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error, "Unknown file identifier");
+  });
+});
