@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phases
 status: in-progress
-stopped_at: "Completed 05-01-PLAN.md — Version badge and live URL on project cards"
-last_updated: "2026-03-21T10:33:00Z"
-last_activity: "2026-03-21 — Completed 05-01: Version badge and live URL on project cards"
+stopped_at: "Completed 05-02-PLAN.md — Wire card click to open GsdDrawer stub"
+last_updated: "2026-03-21T10:58:00Z"
+last_activity: "2026-03-21 — Completed 05-02: Wire card click to open GsdDrawer stub"
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 50
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 4
+  percent: 67
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 
 ## Current Position
 
-Phase: 5 — Card Enhancements
-Plan: 1 of 2 complete
+Phase: 5 — Card Enhancements (complete)
+Plan: 2 of 2 complete
 Status: In Progress
-Last activity: 2026-03-21 — Completed 05-01: Version badge and live URL on project cards
+Last activity: 2026-03-21 — Completed 05-02: Wire card click to open GsdDrawer stub
 
-Progress: [#####     ] 50%
+Progress: [######    ] 67%
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Progress: [#####     ] 50%
 - react-markdown for drawer/full-screen rendering — Already in ecosystem, handles GFM tables and checkboxes cleanly
 - File endpoints validate fileId against whitelist (400) before resolveFile (404) — clean error semantics
 - resolveFile returns null on any error — graceful, route maps to 404
+- GsdDrawer is a stub (Phase 6 adds file tabs) — overlay z-40 + panel z-50, roadmap button gets explicit stopPropagation
 
 ### Pending Todos
 
@@ -63,6 +64,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Completed 05-01-PLAN.md — Version badge and live URL on project cards
+Stopped at: Completed 05-02-PLAN.md — Wire card click to open GsdDrawer stub
 Resume file: None
-Next action: Execute Phase 5 Plan 02 — Wire card click to open drawer; create GsdDrawer stub
+Next action: Execute Phase 6 — Drawer and Full-Screen Viewer
