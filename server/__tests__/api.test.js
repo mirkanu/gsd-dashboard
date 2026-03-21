@@ -968,7 +968,7 @@ describe("readProjectMeta", () => {
   const { readProjectMeta, readProject } = require("../gsd/readers");
 
   it("returns version and liveUrl for a project with PROJECT.md (gsddashboard)", () => {
-    const GSDDASHBOARD_ROOT = path.join(__dirname, "../../..");
+    const GSDDASHBOARD_ROOT = path.join(__dirname, "../..");
     const result = readProjectMeta(GSDDASHBOARD_ROOT);
     assert.ok(result !== null, "result should not be null");
     assert.ok(typeof result.version === "string", `version should be a string, got: ${result.version}`);
@@ -988,9 +988,49 @@ describe("readProjectMeta", () => {
   });
 
   it("readProject return value includes version and liveUrl keys", () => {
-    const GSDDASHBOARD_ROOT = path.join(__dirname, "../../..");
+    const GSDDASHBOARD_ROOT = path.join(__dirname, "../..");
     const project = readProject("gsddashboard", GSDDASHBOARD_ROOT);
     assert.ok(Object.prototype.hasOwnProperty.call(project, "version"), "project should have version key");
     assert.ok(Object.prototype.hasOwnProperty.call(project, "liveUrl"), "project should have liveUrl key");
+  });
+});
+
+// ============================================================
+// resolveFile
+// ============================================================
+
+describe("resolveFile", () => {
+  const { resolveFile } = require("../gsd/fileResolver");
+  const GSDDASHBOARD_ROOT = path.join(__dirname, "../..");
+
+  it("maps 'state' to .planning/STATE.md", () => {
+    const result = resolveFile("gsddashboard", GSDDASHBOARD_ROOT, "state");
+    assert.equal(result, path.join(GSDDASHBOARD_ROOT, ".planning", "STATE.md"));
+  });
+
+  it("maps 'roadmap' to .planning/ROADMAP.md", () => {
+    const result = resolveFile("gsddashboard", GSDDASHBOARD_ROOT, "roadmap");
+    assert.equal(result, path.join(GSDDASHBOARD_ROOT, ".planning", "ROADMAP.md"));
+  });
+
+  it("maps 'requirements' to .planning/REQUIREMENTS.md", () => {
+    const result = resolveFile("gsddashboard", GSDDASHBOARD_ROOT, "requirements");
+    assert.equal(result, path.join(GSDDASHBOARD_ROOT, ".planning", "REQUIREMENTS.md"));
+  });
+
+  it("resolves 'plan' to a path ending in -PLAN.md", () => {
+    const result = resolveFile("gsddashboard", GSDDASHBOARD_ROOT, "plan");
+    assert.ok(result !== null, "plan resolution should not return null");
+    assert.ok(result.endsWith("-PLAN.md"), `expected path ending in -PLAN.md, got: ${result}`);
+  });
+
+  it("returns null for unknown fileId", () => {
+    const result = resolveFile("gsddashboard", GSDDASHBOARD_ROOT, "unknown");
+    assert.equal(result, null);
+  });
+
+  it("returns null for 'plan' when root has no STATE.md", () => {
+    const result = resolveFile("nonexistent", "/tmp/no-such-root-gsddashboard", "plan");
+    assert.equal(result, null);
   });
 });
