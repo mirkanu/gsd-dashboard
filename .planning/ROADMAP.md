@@ -37,7 +37,10 @@ Plans:
   1. Every project card shows a version badge (e.g. "v1") using the value returned by the API
   2. Every project card shows a clickable live URL link that opens the project's live site in a new tab without triggering the drawer
   3. Clicking the card body (outside the URL link and any other interactive elements) opens the side drawer scoped to that project
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 05-01-PLAN.md — Add version badge and live URL to project cards (type + ProjectCard component)
+- [ ] 05-02-PLAN.md — Wire card click to open drawer; create GsdDrawer stub component
 
 ### Phase 6: Drawer and Full-Screen Viewer
 **Goal**: Users can read any planning file — STATE.md, ROADMAP.md, REQUIREMENTS.md, active PLAN.md — rendered as formatted markdown, and expand any file to full-screen
@@ -57,5 +60,5 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 4. Backend File API | 2/2 | Complete    | 2026-03-21 |
-| 5. Card Enhancements | 0/? | Not started | - |
+| 5. Card Enhancements | 0/2 | Not started | - |
 | 6. Drawer and Full-Screen Viewer | 0/? | Not started | - |
