@@ -256,16 +256,50 @@ function readRequirements(root) {
   return { total, checked, percent };
 }
 
+// ─── PROJECT.md ───────────────────────────────────────────────────────────────
+
+/**
+ * Reads version and liveUrl from a project's .planning/PROJECT.md.
+ * Scans only the first 30 lines to avoid false positives.
+ * Returns { version: string|null, liveUrl: string|null }.
+ */
+function readProjectMeta(root) {
+  const raw = readFile(planningPath(root, "PROJECT.md"));
+  if (!raw) return { version: null, liveUrl: null };
+
+  const lines = raw.split("\n").slice(0, 30).join("\n");
+
+  // Version: try explicit "Version: vX.Y" first, then bare "**vX.Y"
+  let version = null;
+  const versionMatch1 = lines.match(/\*\*[Vv]ersion:\s*(v[\d.]+)/);
+  if (versionMatch1) {
+    version = versionMatch1[1];
+  } else {
+    const versionMatch2 = lines.match(/\*\*(v[\d.]+)\b/);
+    if (versionMatch2) version = versionMatch2[1];
+  }
+
+  // Live URL: first https:// URL in the scanned lines
+  let liveUrl = null;
+  const urlMatch = lines.match(/https?:\/\/[^\s)>]+/);
+  if (urlMatch) liveUrl = urlMatch[0];
+
+  return { version, liveUrl };
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 function readProject(name, root) {
+  const { version, liveUrl } = readProjectMeta(root);
   return {
     name,
     root,
+    version,
+    liveUrl,
     state: readState(root),
     roadmap: readRoadmap(root),
     requirements: readRequirements(root),
   };
 }
 
-module.exports = { readProject, readState, readRoadmap, readRequirements };
+module.exports = { readProject, readProjectMeta, readState, readRoadmap, readRequirements };
