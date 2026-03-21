@@ -15,8 +15,8 @@
 
 - [x] **DRAW-01**: The drawer shows tabs for STATE.md, ROADMAP.md, REQUIREMENTS.md, and the active phase's PLAN.md
 - [x] **DRAW-02**: Each tab renders the file's content as formatted markdown (not raw text)
-- [ ] **DRAW-03**: Clicking a tab/file within the drawer opens it full-screen with beautiful rendered markdown formatting
-- [ ] **DRAW-04**: The full-screen view has a close/back control to return to the drawer
+- [x] **DRAW-03**: Clicking a tab/file within the drawer opens it full-screen with beautiful rendered markdown formatting
+- [x] **DRAW-04**: The full-screen view has a close/back control to return to the drawer
 - [x] **DRAW-05**: The active PLAN.md tab resolves the correct plan file based on the current phase from STATE.md
 
 ### Backend
@@ -50,8 +50,8 @@
 | CARD-03 | Phase 5 | Complete |
 | DRAW-01 | Phase 6 | Complete |
 | DRAW-02 | Phase 6 | Complete |
-| DRAW-03 | Phase 6 | Pending |
-| DRAW-04 | Phase 6 | Pending |
+| DRAW-03 | Phase 6 | Complete |
+| DRAW-04 | Phase 6 | Complete |
 | DRAW-05 | Phase 6 | Complete |
 | API-01 | Phase 4 | Complete |
 | API-02 | Phase 4 | Complete |

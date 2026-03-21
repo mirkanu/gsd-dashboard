@@ -3,7 +3,7 @@
 ## Milestones
 
 - [x] **v1** — Foundation, backend data pipeline, frontend dashboard UI, Railway deployment (2026-03-18) → [archive](.planning/milestones/v1-ROADMAP.md)
-- [ ] **v1.1** — File Viewer & Card Enhancements (started 2026-03-18)
+- [x] **v1.1** — File Viewer & Card Enhancements (completed 2026-03-21)
 
 ---
 
@@ -11,7 +11,7 @@
 
 - [x] **Phase 4: Backend File API** — Parse version/URL from PROJECT.md and expose a file-content endpoint for planning files
 - [x] **Phase 5: Card Enhancements** — Display version badge and live URL on cards; wire click to open drawer
-- [ ] **Phase 6: Drawer and Full-Screen Viewer** — Side drawer with file tabs rendering markdown; full-screen markdown view
+- [x] **Phase 6: Drawer and Full-Screen Viewer** — Side drawer with file tabs rendering markdown; full-screen markdown view
 
 ## Phase Details
 
@@ -54,8 +54,8 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 06-01-PLAN.md — Install react-markdown + remark-gfm; add api.gsd.file() text-mode fetch
-- [ ] 06-02-PLAN.md — Build GsdDrawer with four file tabs and inline markdown rendering
-- [ ] 06-03-PLAN.md — Add MarkdownViewer full-screen overlay and wire expand control
+- [x] 06-02-PLAN.md — Build GsdDrawer with four file tabs and inline markdown rendering
+- [x] 06-03-PLAN.md — Add MarkdownViewer full-screen overlay and wire expand control
 
 ---
 
@@ -65,4 +65,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 4. Backend File API | 2/2 | Complete    | 2026-03-21 |
 | 5. Card Enhancements | 2/2 | Complete    | 2026-03-21 |
-| 6. Drawer and Full-Screen Viewer | 2/3 | In Progress|  |
+| 6. Drawer and Full-Screen Viewer | 3/3 | Complete    | 2026-03-21 |

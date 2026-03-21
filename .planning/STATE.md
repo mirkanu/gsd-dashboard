@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phases
-status: executing
-stopped_at: Completed 06-02 — GsdDrawer tabbed markdown viewer
-last_updated: "2026-03-21T14:19:35.032Z"
-last_activity: "2026-03-21 — Executed 06-02: GsdDrawer tabbed markdown viewer"
+status: complete
+stopped_at: Completed 06-03 — Full-screen markdown viewer
+last_updated: "2026-03-21T14:26:00Z"
+last_activity: "2026-03-21 — Executed 06-03: Full-screen markdown viewer (MarkdownViewer component)"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
-  percent: 50
+  completed_plans: 7
+  percent: 100
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** At a glance, see where every GSD project stands — which phase is active, what's done, what's blocked
-**Current focus:** Milestone v1.1 — File Viewer & Card Enhancements
+**Current focus:** Milestone v1.1 — File Viewer & Card Enhancements (complete)
 
 ## Current Position
 
-Phase: 6 — Drawer and Full-Screen Viewer (executing)
-Plans: 2 of 3 complete
-Status: Executing — 06-01 and 06-02 complete, 06-03 pending
-Last activity: 2026-03-21 — Executed 06-02: GsdDrawer tabbed markdown viewer
+Phase: 6 — Drawer and Full-Screen Viewer (complete)
+Plans: 3 of 3 complete
+Status: Complete — all phases and plans finished
+Last activity: 2026-03-21 — Executed 06-03: Full-screen markdown viewer (MarkdownViewer component)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **v1 velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Total phases: 3
-- Total execution time: 1 day (2026-03-18)
+- Total execution time: 1 day (2026-03-18) + enhancements 2026-03-21
 
 ## Accumulated Context
 
@@ -56,6 +56,8 @@ Progress: [██████████] 100%
 - api.gsd.file() fileId typed as union literal matching server whitelist
 - [Phase 06-drawer-and-full-screen-viewer]: onExpand prop accepted but unused in GsdDrawer (wired in Plan 03) — avoids breaking change
 - [Phase 06-drawer-and-full-screen-viewer]: @tailwindcss/typography added for prose-invert styled markdown rendering
+- [06-03]: style={{ zIndex: 60 }} used in MarkdownViewer instead of Tailwind z-[60] for reliable stacking above drawer
+- [06-03]: TAB_TITLES inline Record in GSD.tsx maps FileTabId to human-readable header without coupling to GsdDrawer internals
 
 ### Pending Todos
 
@@ -67,7 +69,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T14:19:35.028Z
-Stopped at: Completed 06-02 — GsdDrawer tabbed markdown viewer
+Last session: 2026-03-21T14:26:00Z
+Stopped at: Completed 06-03 — Full-screen markdown viewer
 Resume file: None
-Next action: Execute 06-03 — Full-screen viewer (expand from drawer)
+Next action: Milestone v1.1 complete — no further planned phases
