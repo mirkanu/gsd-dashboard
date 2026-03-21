@@ -65,4 +65,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 4. Backend File API | 2/2 | Complete    | 2026-03-21 |
 | 5. Card Enhancements | 2/2 | Complete    | 2026-03-21 |
-| 6. Drawer and Full-Screen Viewer | 1/3 | In progress | - |
+| 6. Drawer and Full-Screen Viewer | 2/3 | In Progress|  |

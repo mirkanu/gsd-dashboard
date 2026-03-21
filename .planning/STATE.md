@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phases
 status: executing
-stopped_at: "Completed 06-01 — Markdown infrastructure (react-markdown, api.gsd.file)"
-last_updated: "2026-03-21T14:10:08Z"
-last_activity: "2026-03-21 — Executed 06-01: react-markdown install + api.gsd.file()"
+stopped_at: Completed 06-02 — GsdDrawer tabbed markdown viewer
+last_updated: "2026-03-21T14:19:35.032Z"
+last_activity: "2026-03-21 — Executed 06-02: GsdDrawer tabbed markdown viewer"
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 10
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
   percent: 50
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 6 — Drawer and Full-Screen Viewer (executing)
-Plans: 1 of 3 complete
-Status: Executing — 06-01 complete, 06-02 and 06-03 pending
-Last activity: 2026-03-21 — Executed 06-01: react-markdown + api.gsd.file()
+Plans: 2 of 3 complete
+Status: Executing — 06-01 and 06-02 complete, 06-03 pending
+Last activity: 2026-03-21 — Executed 06-02: GsdDrawer tabbed markdown viewer
 
-Progress: [#####     ] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -54,6 +54,8 @@ Progress: [#####     ] 50%
 - GsdDrawer is a stub (Phase 6 adds file tabs) — overlay z-40 + panel z-50, roadmap button gets explicit stopPropagation
 - requestText() helper added alongside request<T>() — keeps text/plain vs JSON fetch paths explicit
 - api.gsd.file() fileId typed as union literal matching server whitelist
+- [Phase 06-drawer-and-full-screen-viewer]: onExpand prop accepted but unused in GsdDrawer (wired in Plan 03) — avoids breaking change
+- [Phase 06-drawer-and-full-screen-viewer]: @tailwindcss/typography added for prose-invert styled markdown rendering
 
 ### Pending Todos
 
@@ -65,7 +67,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21
-Stopped at: Completed 06-01 — Markdown infrastructure (react-markdown, api.gsd.file)
+Last session: 2026-03-21T14:19:35.028Z
+Stopped at: Completed 06-02 — GsdDrawer tabbed markdown viewer
 Resume file: None
-Next action: Execute 06-02 — GsdDrawer with file tabs
+Next action: Execute 06-03 — Full-screen viewer (expand from drawer)
