@@ -7,8 +7,8 @@
 
 ### Card Enhancements
 
-- [ ] **CARD-01**: Each project card displays the current version (e.g. "v1") parsed from the project's PROJECT.md
-- [ ] **CARD-02**: Each project card displays a clickable link to the project's live URL parsed from the project's PROJECT.md
+- [x] **CARD-01**: Each project card displays the current version (e.g. "v1") parsed from the project's PROJECT.md
+- [x] **CARD-02**: Each project card displays a clickable link to the project's live URL parsed from the project's PROJECT.md
 - [ ] **CARD-03**: Clicking a project card (outside of existing interactive elements) opens a side drawer for that project
 
 ### File Drawer
@@ -45,8 +45,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CARD-01 | Phase 5 | Pending |
-| CARD-02 | Phase 5 | Pending |
+| CARD-01 | Phase 5 | Complete |
+| CARD-02 | Phase 5 | Complete |
 | CARD-03 | Phase 5 | Pending |
 | DRAW-01 | Phase 6 | Pending |
 | DRAW-02 | Phase 6 | Pending |

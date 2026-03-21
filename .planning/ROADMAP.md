@@ -39,7 +39,7 @@ Plans:
   3. Clicking the card body (outside the URL link and any other interactive elements) opens the side drawer scoped to that project
 **Plans**: 2 plans
 Plans:
-- [ ] 05-01-PLAN.md — Add version badge and live URL to project cards (type + ProjectCard component)
+- [x] 05-01-PLAN.md — Add version badge and live URL to project cards (type + ProjectCard component)
 - [ ] 05-02-PLAN.md — Wire card click to open drawer; create GsdDrawer stub component
 
 ### Phase 6: Drawer and Full-Screen Viewer
@@ -60,5 +60,5 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 4. Backend File API | 2/2 | Complete    | 2026-03-21 |
-| 5. Card Enhancements | 0/2 | Not started | - |
+| 5. Card Enhancements | 1/2 | In progress | - |
 | 6. Drawer and Full-Screen Viewer | 0/? | Not started | - |

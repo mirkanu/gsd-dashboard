@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phases
-status: completed
-stopped_at: "Completed 04-02-PLAN.md — GET /api/gsd/projects/:name/files/:fileId endpoint"
-last_updated: "2026-03-21T09:48:11.032Z"
-last_activity: "2026-03-21 — Completed 04-02: GET /api/gsd/projects/:name/files/:fileId endpoint"
+status: in-progress
+stopped_at: "Completed 05-01-PLAN.md — Version badge and live URL on project cards"
+last_updated: "2026-03-21T10:33:00Z"
+last_activity: "2026-03-21 — Completed 05-01: Version badge and live URL on project cards"
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 33
+  total_plans: 3
+  completed_plans: 3
+  percent: 50
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 
 ## Current Position
 
-Phase: 4 — Backend File API
-Plan: 2 of 2 complete
-Status: Complete
-Last activity: 2026-03-21 — Completed 04-02: GET /api/gsd/projects/:name/files/:fileId endpoint
+Phase: 5 — Card Enhancements
+Plan: 1 of 2 complete
+Status: In Progress
+Last activity: 2026-03-21 — Completed 05-01: Version badge and live URL on project cards
 
-Progress: [###       ] 33%
+Progress: [#####     ] 50%
 
 ## Performance Metrics
 
@@ -63,6 +63,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Completed 04-02-PLAN.md — GET /api/gsd/projects/:name/files/:fileId endpoint
+Stopped at: Completed 05-01-PLAN.md — Version badge and live URL on project cards
 Resume file: None
-Next action: Plan and execute Phase 5 — Card Enhancements
+Next action: Execute Phase 5 Plan 02 — Wire card click to open drawer; create GsdDrawer stub
