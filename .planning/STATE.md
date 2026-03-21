@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: GSD Stats & Live Data Pipeline
-status: defining_requirements
-stopped_at: Milestone v1.2 started — defining requirements
+status: roadmap_ready
+stopped_at: Roadmap created — ready to plan Phase 7
 last_updated: "2026-03-21T00:00:00.000Z"
-last_activity: "2026-03-21 — Milestone v1.2 started"
+last_activity: "2026-03-21 — v1.2 roadmap created (Phases 7-9)"
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Phase 7 (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-21 — Milestone v1.2 started
+Status: Roadmap ready — awaiting phase planning
+Last activity: 2026-03-21 — v1.2 roadmap created (Phases 7-9)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 - [06-03]: TAB_TITLES inline Record in GSD.tsx maps FileTabId to human-readable header without coupling to GsdDrawer internals
 - User is on Claude Pro subscription — cost-per-token features irrelevant; focus on usage volume not spend
 - Agent dashboard is empty on Railway because hooks POST to localhost, not Railway — must fix data pipeline for v1.2
+- [v1.2 roadmap]: Phase 7 is backend-only (proxy); Phase 8 is backend+frontend stats; Phase 9 is WebSocket pulse — natural delivery order with clear verifiable boundaries
 
 ### Pending Todos
 
@@ -76,6 +77,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Milestone v1.2 started — defining requirements
+Stopped at: Roadmap created — ready to plan Phase 7
 Resume file: None
-Next action: Define requirements for v1.2
+Next action: Run /gsd:plan-phase 7
