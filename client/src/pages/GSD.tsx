@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { api } from "../lib/api";
 import type { GsdProject, GsdPhase } from "../lib/types";
+import { GsdDrawer } from "../components/GsdDrawer";
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -95,7 +96,7 @@ function RoadmapPanel({ phases }: { phases: GsdPhase[] }) {
 
 // ─── Project card ─────────────────────────────────────────────────────────────
 
-function ProjectCard({ project }: { project: GsdProject }) {
+function ProjectCard({ project, onSelect }: { project: GsdProject; onSelect: (project: GsdProject) => void }) {
   const [expanded, setExpanded] = useState(false);
   const { state, roadmap, requirements } = project;
   const progress = state?.progress;
@@ -106,7 +107,7 @@ function ProjectCard({ project }: { project: GsdProject }) {
       : null;
 
   return (
-    <div className="card flex flex-col gap-0 overflow-hidden">
+    <div className="card flex flex-col gap-0 overflow-hidden cursor-pointer" onClick={() => onSelect(project)}>
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-border/50">
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -182,7 +183,7 @@ function ProjectCard({ project }: { project: GsdProject }) {
       {roadmap && roadmap.phases.length > 0 && (
         <>
           <button
-            onClick={() => setExpanded((v) => !v)}
+            onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
             className="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-500 hover:text-gray-300 hover:bg-surface-3 transition-colors w-full text-left"
           >
             {expanded ? (
@@ -228,6 +229,7 @@ export function GSD() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<GsdProject | null>(null);
 
   const load = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
@@ -309,9 +311,13 @@ export function GSD() {
       {!loading && !error && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {projects.map((project) => (
-            <ProjectCard key={project.name} project={project} />
+            <ProjectCard key={project.name} project={project} onSelect={setSelectedProject} />
           ))}
         </div>
+      )}
+
+      {selectedProject && (
+        <GsdDrawer project={selectedProject} onClose={() => setSelectedProject(null)} />
       )}
     </div>
   );
