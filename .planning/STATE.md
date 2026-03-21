@@ -1,43 +1,48 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Phases
-status: completed
-stopped_at: Completed 06-03 — Full-screen markdown viewer
-last_updated: "2026-03-21T14:36:14.901Z"
-last_activity: "2026-03-21 — Executed 06-03: Full-screen markdown viewer (MarkdownViewer component)"
+milestone: v1.2
+milestone_name: GSD Stats & Live Data Pipeline
+status: defining_requirements
+stopped_at: Milestone v1.2 started — defining requirements
+last_updated: "2026-03-21T00:00:00.000Z"
+last_activity: "2026-03-21 — Milestone v1.2 started"
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-18)
+See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** At a glance, see where every GSD project stands — which phase is active, what's done, what's blocked
-**Current focus:** Milestone v1.1 — File Viewer & Card Enhancements (complete)
+**Current focus:** Milestone v1.2 — GSD Stats & Live Data Pipeline
 
 ## Current Position
 
-Phase: 6 — Drawer and Full-Screen Viewer (complete)
-Plans: 3 of 3 complete
-Status: Complete — all phases and plans finished
-Last activity: 2026-03-21 — Executed 06-03: Full-screen markdown viewer (MarkdownViewer component)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-21 — Milestone v1.2 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **v1 velocity:**
 - Total plans completed: 9
 - Total phases: 3
-- Total execution time: 1 day (2026-03-18) + enhancements 2026-03-21
+- Total execution time: 1 day (2026-03-18)
+
+**v1.1 velocity:**
+- Total plans completed: 7
+- Total phases: 3
+- Total execution time: 1 day (2026-03-21)
 
 ## Accumulated Context
 
@@ -54,10 +59,11 @@ Progress: [██████████] 100%
 - GsdDrawer is a stub (Phase 6 adds file tabs) — overlay z-40 + panel z-50, roadmap button gets explicit stopPropagation
 - requestText() helper added alongside request<T>() — keeps text/plain vs JSON fetch paths explicit
 - api.gsd.file() fileId typed as union literal matching server whitelist
-- [Phase 06-drawer-and-full-screen-viewer]: onExpand prop accepted but unused in GsdDrawer (wired in Plan 03) — avoids breaking change
-- [Phase 06-drawer-and-full-screen-viewer]: @tailwindcss/typography added for prose-invert styled markdown rendering
+- [Phase 06]: @tailwindcss/typography added for prose-invert styled markdown rendering
 - [06-03]: style={{ zIndex: 60 }} used in MarkdownViewer instead of Tailwind z-[60] for reliable stacking above drawer
 - [06-03]: TAB_TITLES inline Record in GSD.tsx maps FileTabId to human-readable header without coupling to GsdDrawer internals
+- User is on Claude Pro subscription — cost-per-token features irrelevant; focus on usage volume not spend
+- Agent dashboard is empty on Railway because hooks POST to localhost, not Railway — must fix data pipeline for v1.2
 
 ### Pending Todos
 
@@ -69,7 +75,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T14:26:00Z
-Stopped at: Completed 06-03 — Full-screen markdown viewer
+Last session: 2026-03-21
+Stopped at: Milestone v1.2 started — defining requirements
 Resume file: None
-Next action: Milestone v1.1 complete — no further planned phases
+Next action: Define requirements for v1.2
