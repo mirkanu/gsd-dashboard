@@ -1,29 +1,46 @@
-# Requirements: GSD Dashboard v1.1
+# Requirements: GSD Dashboard v1.2
 
-**Defined:** 2026-03-18
-**Core Value:** Drill into any project's planning files directly from the dashboard — no more opening files manually.
+**Defined:** 2026-03-21
+**Core Value:** See live project momentum and agent activity from anywhere — no localhost required.
 
-## v1.1 Requirements
+## v1.2 Requirements
 
-### Card Enhancements
+### Agent Data Pipeline
 
-- [x] **CARD-01**: Each project card displays the current version (e.g. "v1") parsed from the project's PROJECT.md
-- [x] **CARD-02**: Each project card displays a clickable link to the project's live URL parsed from the project's PROJECT.md
-- [x] **CARD-03**: Clicking a project card (outside of existing interactive elements) opens a side drawer for that project
+- [ ] **PIPE-01**: When accessed via the Railway URL, the agent dashboard (sessions, events, stats) shows real data from the local machine's SQLite database — not an empty database
+- [ ] **PIPE-02**: The Railway server proxies agent data API requests through `GSD_DATA_URL` to the local server, using the same tunnel pattern already working for GSD files
+- [ ] **PIPE-03**: The local server exposes agent data endpoints that the Railway proxy can forward to (sessions, agents, events, stats, analytics)
+- [ ] **PIPE-04**: If `GSD_DATA_URL` is not set (local dev), the server serves its own local data directly with no proxy involved
 
-### File Drawer
+### GSD Card — Next Action
 
-- [x] **DRAW-01**: The drawer shows tabs for STATE.md, ROADMAP.md, REQUIREMENTS.md, and the active phase's PLAN.md
-- [x] **DRAW-02**: Each tab renders the file's content as formatted markdown (not raw text)
-- [x] **DRAW-03**: Clicking a tab/file within the drawer opens it full-screen with beautiful rendered markdown formatting
-- [x] **DRAW-04**: The full-screen view has a close/back control to return to the drawer
-- [x] **DRAW-05**: The active PLAN.md tab resolves the correct plan file based on the current phase from STATE.md
+- [ ] **NEXT-01**: Each project card displays the "Next action" line parsed from that project's STATE.md
+- [ ] **NEXT-02**: If STATE.md has no next action recorded, the card shows nothing in that slot (no placeholder text)
 
-### Backend
+### GSD Card — Blocked Indicator
 
-- [x] **API-01**: The backend parses version and live URL from each project's PROJECT.md and includes them in the `/api/gsd/projects` response
-- [x] **API-02**: A new endpoint `GET /api/gsd/projects/:name/files/:filename` serves raw markdown content for a given planning file
-- [x] **API-03**: The file endpoint supports: `state`, `roadmap`, `requirements`, and `plan` as filename identifiers (resolved to actual file paths server-side)
+- [ ] **BLOCK-01**: Any project with one or more blockers recorded in STATE.md shows a visible "Blocked" badge on its card
+- [ ] **BLOCK-02**: Blocked projects are automatically sorted to the top of the project grid
+- [ ] **BLOCK-03**: The `/api/gsd/projects` response includes a `blockers` array so the frontend can determine blocked state without re-parsing STATE.md
+
+### GSD Card — Active Session Pulse
+
+- [ ] **SESS-01**: A project card shows a live green pulse indicator when a Claude Code session is currently active in that project's working directory
+- [ ] **SESS-02**: The active session state is derived from the agent dashboard's `sessions` data (status = "active", cwd matches project root)
+- [ ] **SESS-03**: The pulse indicator updates in real time via WebSocket (no manual refresh needed)
+
+### GSD Card — Velocity & Streak
+
+- [ ] **VEL-01**: Each project card shows how many plans were completed in the last 7 days (velocity)
+- [ ] **VEL-02**: Each project card shows the current streak: number of consecutive days with at least one plan completed (derived from SUMMARY.md timestamps in `.planning/phases/`)
+- [ ] **VEL-03**: The `/api/gsd/projects` response includes `velocity` (int) and `streak` (int) fields computed server-side
+
+### GSD Card — Time-to-Completion Estimate
+
+- [ ] **TTL-01**: Each project card shows an estimated time to completion based on remaining plans × average plan duration
+- [ ] **TTL-02**: Average plan duration is computed from completed SUMMARY.md files (using last_updated timestamps where available, falling back to file modification time)
+- [ ] **TTL-03**: If there are no completed plans to average from, or no remaining plans, no estimate is shown
+- [ ] **TTL-04**: The estimate is displayed as a human-readable string (e.g. "~2 days", "~1 week")
 
 ## Future Requirements (deferred)
 
@@ -32,35 +49,46 @@
 - Named Cloudflare Tunnel for stable permanent URL
 - Browser notification when a phase completes
 - Trend graph showing requirements coverage over time
+- Tool call heatmap on GSD stats panel
+- Model mix breakdown (% Opus vs Sonnet vs Haiku) per project
 
-## Out of Scope (v1.1)
+## Out of Scope (v1.2)
 
 | Feature | Reason |
 |---------|--------|
-| Editing planning files from the drawer | Read-only tool — edits belong in the editor |
-| Syntax highlighting for markdown code blocks | Nice-to-have, defer to later |
-| Search/filter across planning file content | Scope creep for this milestone |
+| Cost per phase / token cost tracking | User is on Claude Pro subscription — cost-per-token not applicable |
+| Editing planning files from dashboard | Read-only tool — edits belong in the editor |
+| Per-user analytics (Admin API) | Requires Admin API key, not standard API key |
+| Push notifications | Scope creep — defer to later milestone |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CARD-01 | Phase 5 | Complete |
-| CARD-02 | Phase 5 | Complete |
-| CARD-03 | Phase 5 | Complete |
-| DRAW-01 | Phase 6 | Complete |
-| DRAW-02 | Phase 6 | Complete |
-| DRAW-03 | Phase 6 | Complete |
-| DRAW-04 | Phase 6 | Complete |
-| DRAW-05 | Phase 6 | Complete |
-| API-01 | Phase 4 | Complete |
-| API-02 | Phase 4 | Complete |
-| API-03 | Phase 4 | Complete |
+| PIPE-01 | TBD | Pending |
+| PIPE-02 | TBD | Pending |
+| PIPE-03 | TBD | Pending |
+| PIPE-04 | TBD | Pending |
+| NEXT-01 | TBD | Pending |
+| NEXT-02 | TBD | Pending |
+| BLOCK-01 | TBD | Pending |
+| BLOCK-02 | TBD | Pending |
+| BLOCK-03 | TBD | Pending |
+| SESS-01 | TBD | Pending |
+| SESS-02 | TBD | Pending |
+| SESS-03 | TBD | Pending |
+| VEL-01 | TBD | Pending |
+| VEL-02 | TBD | Pending |
+| VEL-03 | TBD | Pending |
+| TTL-01 | TBD | Pending |
+| TTL-02 | TBD | Pending |
+| TTL-03 | TBD | Pending |
+| TTL-04 | TBD | Pending |
 
 **Coverage:**
-- v1.1 requirements: 11 total
-- Mapped to phases: 11
-- Unmapped: 0
+- v1.2 requirements: 19 total
+- Mapped to phases: 0 (roadmap pending)
+- Unmapped: 19
 
 ---
-*Requirements defined: 2026-03-18*
+*Requirements defined: 2026-03-21*
