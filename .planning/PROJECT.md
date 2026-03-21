@@ -20,14 +20,16 @@ What's working:
 - Self-healing tunnel script (`scripts/tunnel.sh`) runs under s6-supervise — auto-restarts, updates Railway env var on each restart
 - Existing agent monitoring features (sessions, Kanban, cost tracking) fully preserved
 
-## Current Milestone: v1.1 — File Viewer & Card Enhancements
+## Current Milestone: v1.2 — GSD Stats & Live Data Pipeline
 
-**Goal:** Make each project card richer (version, live URL) and let users drill into raw planning files via a drawer + full-screen markdown viewer.
+**Goal:** Surface meaningful GSD project stats on every card and fix the agent dashboard so it shows real data when accessed via Railway.
 
 **Target features:**
-- Project cards show current version and live URL (parsed from PROJECT.md)
-- Clicking a card opens a side drawer with tabs for STATE.md, ROADMAP.md, REQUIREMENTS.md, active PLAN.md
-- Each tab renders markdown; clicking opens full-screen beautiful markdown view
+- Fix hook → Railway data pipeline so agent dashboard shows live session/event data remotely
+- GSD card stats: velocity trend, blocked projects surfaced to top, next action line per card
+- Active session indicator on GSD cards (pulse when Claude Code is running)
+- Streak counter (days in a row with at least one commit)
+- Time-to-completion estimate per project (remaining plans × avg plan duration)
 
 ## Context
 
@@ -53,4 +55,4 @@ What's working:
 | Railway deployment + cloudflared proxy | Keep GSD readers local (filesystem access), expose via tunnel to Railway-hosted UI | ✅ Working — self-healing tunnel handles URL changes |
 
 ---
-*Last updated: 2026-03-18 — v1.1 started*
+*Last updated: 2026-03-21 — v1.2 started*
