@@ -15,6 +15,9 @@ const analyticsRouter = require("./routes/analytics");
 const pricingRouter = require("./routes/pricing");
 const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
+const { createAgentProxy } = require("./routes/proxy");
+
+const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
 
 function basicAuth(req, res, next) {
   // Skip auth for localhost and internal hook events
@@ -22,6 +25,11 @@ function basicAuth(req, res, next) {
   if (host === "localhost" || host === "127.0.0.1") return next();
   if (req.path.startsWith("/api/hooks")) return next();
   if (req.path.startsWith("/api/gsd")) return next();
+  if (req.path.startsWith("/api/sessions")) return next();
+  if (req.path.startsWith("/api/agents")) return next();
+  if (req.path.startsWith("/api/events")) return next();
+  if (req.path.startsWith("/api/stats")) return next();
+  if (req.path.startsWith("/api/analytics")) return next();
   if (req.path === "/api/health") return next();
 
   const user = process.env.DASHBOARD_USER || "admin";
@@ -43,6 +51,7 @@ function createApp() {
   app.use(basicAuth);
   app.use(cors());
   app.use(express.json({ limit: "1mb" }));
+  app.use(createAgentProxy(GSD_DATA_URL));
 
   app.use("/api/sessions", sessionsRouter);
   app.use("/api/agents", agentsRouter);
