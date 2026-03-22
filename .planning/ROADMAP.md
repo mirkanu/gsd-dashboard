@@ -75,7 +75,10 @@ Plans:
   2. Agent data API routes on Railway transparently forward to the local server through the same GSD_DATA_URL tunnel already used for planning files
   3. The local server exposes sessions, agents, events, stats, and analytics endpoints reachable by the Railway proxy
   4. When running locally without GSD_DATA_URL set, all agent data routes are served directly from the local SQLite database with no proxy involved
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [x] 07-01-PLAN.md — Create createAgentProxy middleware in server/routes/proxy.js; mount in index.js before agent routers; update basicAuth to skip agent GET routes
+- [ ] 07-02-PLAN.md — Add proxy behavior tests: proxied GET, non-proxied POST, local fallthrough without GSD_DATA_URL
 
 ### Phase 8: GSD Card Stats
 **Goal**: Every project card shows next action, blocked status, velocity, streak, and time-to-completion — all computed server-side and rendered without any manual file parsing in the browser
@@ -108,6 +111,6 @@ Plans:
 | 4. Backend File API | 2/2 | Complete | 2026-03-21 |
 | 5. Card Enhancements | 2/2 | Complete | 2026-03-21 |
 | 6. Drawer and Full-Screen Viewer | 3/3 | Complete | 2026-03-21 |
-| 7. Agent Data Proxy | 0/? | Not started | - |
+| 7. Agent Data Proxy | 1/2 | In Progress | - |
 | 8. GSD Card Stats | 0/? | Not started | - |
 | 9. Active Session Pulse | 0/? | Not started | - |

@@ -8,9 +8,9 @@
 ### Agent Data Pipeline
 
 - [ ] **PIPE-01**: When accessed via the Railway URL, the agent dashboard (sessions, events, stats) shows real data from the local machine's SQLite database — not an empty database
-- [ ] **PIPE-02**: The Railway server proxies agent data API requests through `GSD_DATA_URL` to the local server, using the same tunnel pattern already working for GSD files
-- [ ] **PIPE-03**: The local server exposes agent data endpoints that the Railway proxy can forward to (sessions, agents, events, stats, analytics)
-- [ ] **PIPE-04**: If `GSD_DATA_URL` is not set (local dev), the server serves its own local data directly with no proxy involved
+- [ ] **PIPE-02**: The Railway server proxies agent data API requests through `GSD_DATA_URL` to the local server, using the same tunnel pattern already working for GSD files — [x] implemented (07-01)
+- [ ] **PIPE-03**: The local server exposes agent data endpoints that the Railway proxy can forward to (sessions, agents, events, stats, analytics) — [x] implemented (07-01)
+- [ ] **PIPE-04**: If `GSD_DATA_URL` is not set (local dev), the server serves its own local data directly with no proxy involved — [x] implemented (07-01)
 
 ### GSD Card — Next Action
 
@@ -66,9 +66,9 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | PIPE-01 | Phase 7 | Pending |
-| PIPE-02 | Phase 7 | Pending |
-| PIPE-03 | Phase 7 | Pending |
-| PIPE-04 | Phase 7 | Pending |
+| PIPE-02 | Phase 7 | Complete (07-01) |
+| PIPE-03 | Phase 7 | Complete (07-01) |
+| PIPE-04 | Phase 7 | Complete (07-01) |
 | NEXT-01 | Phase 8 | Pending |
 | NEXT-02 | Phase 8 | Pending |
 | BLOCK-01 | Phase 8 | Pending |
