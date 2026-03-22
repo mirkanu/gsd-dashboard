@@ -17,8 +17,6 @@ const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
 const { createAgentProxy } = require("./routes/proxy");
 
-const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
-
 function basicAuth(req, res, next) {
   // Skip auth for localhost and internal hook events
   const host = req.hostname || "";
@@ -47,11 +45,12 @@ function basicAuth(req, res, next) {
 
 function createApp() {
   const app = express();
+  const gsdDataUrl = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
 
   app.use(basicAuth);
   app.use(cors());
   app.use(express.json({ limit: "1mb" }));
-  app.use(createAgentProxy(GSD_DATA_URL));
+  app.use(createAgentProxy(gsdDataUrl));
 
   app.use("/api/sessions", sessionsRouter);
   app.use("/api/agents", agentsRouter);

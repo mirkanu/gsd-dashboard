@@ -1153,3 +1153,85 @@ describe("Auto-registration of GSD projects via PostToolUse", () => {
     assert.equal(configAfter.projects.length, countBefore, "No project should be added for non-PROJECT.md writes");
   });
 });
+
+// ============================================================
+// Agent data proxy
+// ============================================================
+describe("agent data proxy", () => {
+  let mockUpstream;
+  let proxyServer;
+  let PROXY_BASE;
+
+  function pfetch(urlPath, options = {}) {
+    return new Promise((resolve, reject) => {
+      const url = new URL(urlPath, PROXY_BASE);
+      const opts = {
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname + url.search,
+        method: options.method || "GET",
+        headers: { "Content-Type": "application/json", ...options.headers },
+      };
+
+      const req = http.request(opts, (res) => {
+        let body = "";
+        res.on("data", (chunk) => (body += chunk));
+        res.on("end", () => {
+          let parsed;
+          try {
+            parsed = JSON.parse(body);
+          } catch {
+            parsed = body;
+          }
+          resolve({ status: res.statusCode, body: parsed, headers: res.headers });
+        });
+      });
+
+      req.on("error", reject);
+      if (options.body) req.write(options.body);
+      req.end();
+    });
+  }
+
+  before(async () => {
+    mockUpstream = http.createServer((req, res) => {
+      if (req.method === "GET" && req.url === "/api/sessions") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ sessions: ["proxied"], limit: 50, offset: 0 }));
+      } else {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({}));
+      }
+    });
+
+    await new Promise((resolve) => mockUpstream.listen(0, "127.0.0.1", resolve));
+    const mockPort = mockUpstream.address().port;
+    process.env.GSD_DATA_URL = `http://127.0.0.1:${mockPort}`;
+
+    proxyServer = await startServer(createApp(), 0);
+    PROXY_BASE = `http://127.0.0.1:${proxyServer.address().port}`;
+  });
+
+  after(() => {
+    proxyServer?.close();
+    mockUpstream?.close();
+    delete process.env.GSD_DATA_URL;
+  });
+
+  it("GET /api/sessions is proxied to upstream when GSD_DATA_URL is set", async () => {
+    const res = await pfetch("/api/sessions");
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.sessions, ["proxied"]);
+  });
+
+  it("POST /api/sessions is not proxied even when GSD_DATA_URL is set", async () => {
+    const res = await pfetch("/api/sessions", { method: "POST", body: JSON.stringify({}) });
+    assert.equal(res.status, 400);
+  });
+
+  it("GET /api/sessions uses local SQLite when GSD_DATA_URL is not set", async () => {
+    const res = await fetch("/api/sessions");
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.body.sessions));
+  });
+});
