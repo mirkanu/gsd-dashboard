@@ -78,7 +78,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 07-01-PLAN.md — Create createAgentProxy middleware in server/routes/proxy.js; mount in index.js before agent routers; update basicAuth to skip agent GET routes
-- [ ] 07-02-PLAN.md — Add proxy behavior tests: proxied GET, non-proxied POST, local fallthrough without GSD_DATA_URL
+- [x] 07-02-PLAN.md — Add proxy behavior tests: proxied GET, non-proxied POST, local fallthrough without GSD_DATA_URL
 
 ### Phase 8: GSD Card Stats
 **Goal**: Every project card shows next action, blocked status, velocity, streak, and time-to-completion — all computed server-side and rendered without any manual file parsing in the browser
@@ -111,6 +111,6 @@ Plans:
 | 4. Backend File API | 2/2 | Complete | 2026-03-21 |
 | 5. Card Enhancements | 2/2 | Complete | 2026-03-21 |
 | 6. Drawer and Full-Screen Viewer | 3/3 | Complete | 2026-03-21 |
-| 7. Agent Data Proxy | 1/2 | In Progress | - |
+| 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
 | 8. GSD Card Stats | 0/? | Not started | - |
 | 9. Active Session Pulse | 0/? | Not started | - |
