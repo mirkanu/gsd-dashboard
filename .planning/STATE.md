@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: GSD Stats & Live Data Pipeline
-status: in_progress
-stopped_at: "Completed 07-01-PLAN.md"
+status: phase_complete
+stopped_at: "Phase 7 complete"
 last_updated: "2026-03-22T00:00:00.000Z"
-last_activity: "2026-03-22 — Executed 07-01: agent data proxy middleware"
+last_activity: "2026-03-22 — Phase 7 complete: agent data proxy"
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: Phase 7 (in progress)
-Plan: 07-02-PLAN.md (next)
-Status: 07-01 complete — 07-02 awaiting execution
-Last activity: 2026-03-22 — 07-01 executed: agent data proxy middleware
+Phase: Phase 7 (complete)
+Plan: —
+Status: Phase 7 complete — ready for Phase 8
+Last activity: 2026-03-22 — Phase 7 complete: agent data proxy
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [█████░░░░░] 50%
 - Agent dashboard is empty on Railway because hooks POST to localhost, not Railway — must fix data pipeline for v1.2
 - [v1.2 roadmap]: Phase 7 is backend-only (proxy); Phase 8 is backend+frontend stats; Phase 9 is WebSocket pulse — natural delivery order with clear verifiable boundaries
 - [07-01]: createAgentProxy mounted as middleware before agent routers; GSD_DATA_URL at module level; basicAuth skips 5 agent prefixes so Railway proxy can reach local server without credentials
+- [07-02]: GSD_DATA_URL moved from module-level constant to inside createApp() so fresh app instances in tests pick up the env var correctly
 
 ### Pending Todos
 
@@ -78,6 +79,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 07-01-PLAN.md
+Stopped at: Phase 7 complete
 Resume file: None
-Next action: Run /gsd:execute-phase 7 (continues with 07-02)
+Next action: Run /gsd:plan-phase 8
