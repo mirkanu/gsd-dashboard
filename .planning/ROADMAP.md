@@ -90,7 +90,10 @@ Plans:
   3. Each project card displays plans completed in the last 7 days (velocity) and consecutive days with at least one completed plan (streak)
   4. Each project card shows a human-readable time-to-completion estimate (e.g. "~2 days") when enough data exists, and shows nothing when it cannot be computed
   5. The `/api/gsd/projects` response includes `nextAction`, `blockers`, `velocity`, `streak`, `estimatedCompletion` fields so the frontend renders stats without re-parsing files
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [x] 08-01-PLAN.md — Extend readers.js: next_action in readState(), velocity/streak/estimatedCompletion in readProject(); 4 new tests
+- [ ] 08-02-PLAN.md — Frontend: update GsdState/GsdProject types, render Blocked badge + next action + stats row in ProjectCard, sort blocked projects first
 
 ### Phase 9: Active Session Pulse
 **Goal**: Users see at a glance whether Claude Code is actively running in a project's directory, with the indicator updating live without a page refresh
@@ -112,5 +115,5 @@ Plans:
 | 5. Card Enhancements | 2/2 | Complete | 2026-03-21 |
 | 6. Drawer and Full-Screen Viewer | 3/3 | Complete | 2026-03-21 |
 | 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
-| 8. GSD Card Stats | 0/? | Not started | - |
+| 8. GSD Card Stats | 1/2 | In Progress | - |
 | 9. Active Session Pulse | 0/? | Not started | - |
