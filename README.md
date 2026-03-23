@@ -1,5 +1,7 @@
 # GSD Dashboard
 
+> **Note:** This project was written entirely using [Claude Code](https://claude.ai/claude-code) and the [GSD workflow](https://github.com/pablof7z/gsd). No code was written by hand.
+
 A personal developer dashboard for tracking Claude Code projects. Built on top of [Claude Code Agent Monitor](https://github.com/hoangsonww/Claude-Code-Agent-Monitor) with a GSD (Get Shit Done) layer added.
 
 ![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white)
