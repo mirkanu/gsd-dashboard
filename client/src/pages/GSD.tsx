@@ -121,7 +121,14 @@ function ProjectCard({ project, onSelect }: { project: GsdProject; onSelect: (pr
               </span>
             )}
           </div>
-          <StatusBadge status={state?.status ?? null} />
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {state?.blockers && state.blockers.length > 0 && (
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/20">
+                Blocked
+              </span>
+            )}
+            <StatusBadge status={state?.status ?? null} />
+          </div>
         </div>
 
         {state?.current_phase && (
@@ -168,6 +175,15 @@ function ProjectCard({ project, onSelect }: { project: GsdProject; onSelect: (pr
         </div>
       )}
 
+      {/* Next action */}
+      {state?.next_action && (
+        <div className="px-4 py-2.5 border-b border-border/50">
+          <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">
+            <span className="text-gray-600">Next: </span>{state.next_action}
+          </p>
+        </div>
+      )}
+
       {/* Blockers */}
       {state?.blockers && state.blockers.length > 0 && (
         <div className="px-4 py-2.5 border-b border-border/50">
@@ -177,6 +193,25 @@ function ProjectCard({ project, onSelect }: { project: GsdProject; onSelect: (pr
               <p className="text-[11px] text-amber-400/80 leading-relaxed">{b}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Stats row */}
+      {(project.velocity > 0 || project.streak > 0 || project.estimatedCompletion) && (
+        <div className="px-4 py-2.5 border-b border-border/50 flex items-center gap-2 flex-wrap text-[11px] text-gray-500">
+          {project.velocity > 0 && (
+            <span>{project.velocity} plan{project.velocity !== 1 ? 's' : ''} this week</span>
+          )}
+          {project.velocity > 0 && project.streak > 0 && <span className="text-gray-700">·</span>}
+          {project.streak > 0 && (
+            <span>{project.streak} day streak</span>
+          )}
+          {project.estimatedCompletion && (project.velocity > 0 || project.streak > 0) && (
+            <span className="text-gray-700">·</span>
+          )}
+          {project.estimatedCompletion && (
+            <span>{project.estimatedCompletion} est.</span>
+          )}
         </div>
       )}
 
@@ -321,9 +356,9 @@ export function GSD() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {[...projects]
             .sort((a, b) => {
-              const da = a.state?.last_activity?.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? '';
-              const db = b.state?.last_activity?.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? '';
-              return db.localeCompare(da);
+              const aBlocked = (a.state?.blockers?.length ?? 0) > 0 ? 0 : 1;
+              const bBlocked = (b.state?.blockers?.length ?? 0) > 0 ? 0 : 1;
+              return aBlocked - bBlocked;
             })
             .map((project) => (
             <ProjectCard key={project.name} project={project} onSelect={setSelectedProject} />
