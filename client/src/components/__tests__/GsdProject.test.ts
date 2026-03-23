@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { GsdProject } from "../../lib/types";
+import type { GsdProject, GsdState } from "../../lib/types";
 
 describe("GsdProject type shape", () => {
   it("should accept version as string", () => {
@@ -11,6 +11,9 @@ describe("GsdProject type shape", () => {
       requirements: null,
       version: "v1",
       liveUrl: null,
+      velocity: 0,
+      streak: 0,
+      estimatedCompletion: null,
     };
     expect(project.version).toBe("v1");
   });
@@ -24,6 +27,9 @@ describe("GsdProject type shape", () => {
       requirements: null,
       version: null,
       liveUrl: null,
+      velocity: 0,
+      streak: 0,
+      estimatedCompletion: null,
     };
     expect(project.version).toBeNull();
   });
@@ -37,6 +43,9 @@ describe("GsdProject type shape", () => {
       requirements: null,
       version: null,
       liveUrl: "https://example.com",
+      velocity: 0,
+      streak: 0,
+      estimatedCompletion: null,
     };
     expect(project.liveUrl).toBe("https://example.com");
   });
@@ -50,7 +59,88 @@ describe("GsdProject type shape", () => {
       requirements: null,
       version: null,
       liveUrl: null,
+      velocity: 0,
+      streak: 0,
+      estimatedCompletion: null,
     };
     expect(project.liveUrl).toBeNull();
+  });
+
+  it("should accept velocity, streak, and estimatedCompletion with non-zero values", () => {
+    const project: GsdProject = {
+      name: "test",
+      root: "/path/to/test",
+      state: null,
+      roadmap: null,
+      requirements: null,
+      version: null,
+      liveUrl: null,
+      velocity: 3,
+      streak: 2,
+      estimatedCompletion: "~2 days",
+    };
+    expect(project.velocity).toBe(3);
+    expect(project.streak).toBe(2);
+    expect(project.estimatedCompletion).toBe("~2 days");
+  });
+
+  it("should accept velocity, streak, and estimatedCompletion as zero/null", () => {
+    const project: GsdProject = {
+      name: "test",
+      root: "/path/to/test",
+      state: null,
+      roadmap: null,
+      requirements: null,
+      version: null,
+      liveUrl: null,
+      velocity: 0,
+      streak: 0,
+      estimatedCompletion: null,
+    };
+    expect(project.velocity).toBe(0);
+    expect(project.streak).toBe(0);
+    expect(project.estimatedCompletion).toBeNull();
+  });
+});
+
+describe("GsdState type shape", () => {
+  it("should accept next_action as a string", () => {
+    const state: GsdState = {
+      milestone: null,
+      milestone_name: null,
+      status: "in-progress",
+      current_phase: "08",
+      last_activity: "2026-03-23 ran tests",
+      next_action: "Run /gsd:plan-phase 8",
+      progress: {
+        percent: 50,
+        completed_phases: 4,
+        total_phases: 8,
+        completed_plans: 10,
+        total_plans: 20,
+      },
+      blockers: [],
+    };
+    expect(state.next_action).toBe("Run /gsd:plan-phase 8");
+  });
+
+  it("should accept next_action as null", () => {
+    const state: GsdState = {
+      milestone: null,
+      milestone_name: null,
+      status: null,
+      current_phase: null,
+      last_activity: null,
+      next_action: null,
+      progress: {
+        percent: null,
+        completed_phases: null,
+        total_phases: null,
+        completed_plans: null,
+        total_plans: null,
+      },
+      blockers: [],
+    };
+    expect(state.next_action).toBeNull();
   });
 });
