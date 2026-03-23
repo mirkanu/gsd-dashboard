@@ -93,7 +93,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 08-01-PLAN.md — Extend readers.js: next_action in readState(), velocity/streak/estimatedCompletion in readProject(); 4 new tests
-- [ ] 08-02-PLAN.md — Frontend: update GsdState/GsdProject types, render Blocked badge + next action + stats row in ProjectCard, sort blocked projects first
+- [x] 08-02-PLAN.md — Frontend: update GsdState/GsdProject types, render Blocked badge + next action + stats row in ProjectCard, sort blocked projects first
 
 ### Phase 9: Active Session Pulse
 **Goal**: Users see at a glance whether Claude Code is actively running in a project's directory, with the indicator updating live without a page refresh
@@ -115,5 +115,5 @@ Plans:
 | 5. Card Enhancements | 2/2 | Complete | 2026-03-21 |
 | 6. Drawer and Full-Screen Viewer | 3/3 | Complete | 2026-03-21 |
 | 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
-| 8. GSD Card Stats | 1/2 | In Progress | - |
+| 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
 | 9. Active Session Pulse | 0/? | Not started | - |

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: GSD Stats & Live Data Pipeline
 status: in_progress
-stopped_at: "Completed 08-01-PLAN.md — 08-02 next"
-last_updated: "2026-03-23T00:00:00.000Z"
-last_activity: "2026-03-23 — Phase 8 plan 01 complete (readers extension)"
+stopped_at: "Completed 08-02-PLAN.md — Phase 8 complete"
+last_updated: "2026-03-23T18:45:00.000Z"
+last_activity: "2026-03-23 — Phase 8 plan 02 complete (frontend stats UI)"
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
-  percent: 40
+  completed_plans: 4
+  percent: 67
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: Phase 8 (in progress)
-Plan: 08-02-PLAN.md (next)
-Status: In progress — 08-01 complete
-Last activity: 2026-03-23 — 08-01 complete (readers: next_action, velocity, streak, estimatedCompletion)
+Phase: Phase 8 (complete) — Phase 9 next
+Plan: 08-02-PLAN.md (complete)
+Status: In progress — 08-02 complete, Phase 9 not started
+Last activity: 2026-03-23 — 08-02 complete (Blocked badge, next action, stats row, blocked-first sort)
 
-Progress: [███░░░░░░░] 33%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Progress: [███░░░░░░░] 33%
 - [v1.2 roadmap]: Phase 7 is backend-only (proxy); Phase 8 is backend+frontend stats; Phase 9 is WebSocket pulse — natural delivery order with clear verifiable boundaries
 - [07-01]: createAgentProxy mounted as middleware before agent routers; GSD_DATA_URL at module level; basicAuth skips 5 agent prefixes so Railway proxy can reach local server without credentials
 - [07-02]: GSD_DATA_URL moved from module-level constant to inside createApp() so fresh app instances in tests pick up the env var correctly
+- [08-02]: Blocked-first sort replaces last_activity date sort; stable secondary ordering preserved by JS engine's stable Array.prototype.sort
 
 ### Pending Todos
 
@@ -79,6 +80,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-23
-Stopped at: Completed 08-01-PLAN.md
+Stopped at: Completed 08-02-PLAN.md (Phase 8 complete)
 Resume file: None
-Next action: Execute 08-02-PLAN.md (frontend stats rendering)
+Next action: Plan and execute Phase 9 (Active Session Pulse)
