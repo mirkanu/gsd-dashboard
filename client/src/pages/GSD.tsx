@@ -319,7 +319,13 @@ export function GSD() {
       {/* Project cards grid */}
       {!loading && !error && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {projects.map((project) => (
+          {[...projects]
+            .sort((a, b) => {
+              const da = a.state?.last_activity?.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? '';
+              const db = b.state?.last_activity?.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? '';
+              return db.localeCompare(da);
+            })
+            .map((project) => (
             <ProjectCard key={project.name} project={project} onSelect={setSelectedProject} />
           ))}
         </div>
