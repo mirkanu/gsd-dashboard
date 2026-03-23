@@ -21,6 +21,7 @@ export interface GsdState {
   status: string | null;
   current_phase: string | null;
   last_activity: string | null;
+  next_action: string | null;
   progress: GsdProgress;
   blockers: string[];
 }
@@ -39,6 +40,9 @@ export interface GsdProject {
   requirements: GsdRequirements | null;
   version: string | null;
   liveUrl: string | null;
+  velocity: number;
+  streak: number;
+  estimatedCompletion: string | null;
 }
 
 // ─── Agent/Session Types ──────────────────────────────────────────────────────
