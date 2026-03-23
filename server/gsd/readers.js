@@ -84,6 +84,7 @@ function parseStateWithFrontmatter(raw) {
     last_activity: lastActivity,
     progress,
     blockers,
+    next_action: extractNextAction(body),
   };
 }
 
@@ -113,6 +114,7 @@ function parseStateMarkdown(raw) {
       total_plans: totalPlansMatch ? parseInt(totalPlansMatch[2], 10) : null,
     },
     blockers,
+    next_action: extractNextAction(raw),
   };
 }
 
@@ -134,6 +136,11 @@ function extractBlockers(text) {
   return lines
     .map((l) => l.replace(/^[-*]\s*/, "").trim())
     .filter((l) => l && !l.match(/^-+$/) && !l.match(/^none/i) && !l.startsWith("#"));
+}
+
+function extractNextAction(text) {
+  const m = text.match(/^Next action:\s*(.+)$/m);
+  return m ? m[1].trim() : null;
 }
 
 // ─── ROADMAP.md ───────────────────────────────────────────────────────────────
@@ -287,18 +294,114 @@ function readProjectMeta(root) {
   return { version, liveUrl };
 }
 
+// ─── SUMMARY.md stats ─────────────────────────────────────────────────────────
+
+function readSummaryDates(root) {
+  const phasesDir = planningPath(root, 'phases');
+  try {
+    const entries = fs.readdirSync(phasesDir, { withFileTypes: true });
+    const dates = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const phaseDir = path.join(phasesDir, entry.name);
+      let files;
+      try { files = fs.readdirSync(phaseDir); } catch { continue; }
+      for (const file of files) {
+        if (!file.endsWith('-SUMMARY.md')) continue;
+        const filePath = path.join(phaseDir, file);
+        const raw = readFile(filePath);
+        if (!raw) continue;
+        const date = extractSummaryDate(raw, filePath);
+        if (date) dates.push(date);
+      }
+    }
+    return dates;
+  } catch {
+    return [];
+  }
+}
+
+function extractSummaryDate(raw, filePath) {
+  const fmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
+  if (fmMatch) {
+    const fm = fmMatch[1];
+    let m = fm.match(/^completed:\s*["']?(\d{4}-\d{2}-\d{2})["']?/m);
+    if (m) return new Date(m[1]);
+    m = fm.match(/completed_date:\s*["']?(\d{4}-\d{2}-\d{2})["']?/m);
+    if (m) return new Date(m[1]);
+  }
+  try { return new Date(fs.statSync(filePath).mtime); } catch { return null; }
+}
+
+function computeVelocity(dates) {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  return dates.filter((d) => d >= sevenDaysAgo).length;
+}
+
+function computeStreak(dates) {
+  if (dates.length === 0) return 0;
+  const daySet = new Set(dates.map((d) => d.toISOString().slice(0, 10)));
+  let streak = 0;
+  const now = Date.now();
+  for (let i = 0; i <= 365; i++) {
+    const day = new Date(now - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    if (daySet.has(day)) {
+      streak++;
+    } else if (i > 0) {
+      break;
+    }
+  }
+  return streak;
+}
+
+function computeEstimatedCompletion(dates, phases) {
+  if (dates.length < 2) return null;
+  let remainingPlans = 0;
+  for (const phase of phases) {
+    if (
+      phase.status !== 'complete' &&
+      phase.plans_total != null &&
+      phase.plans_done != null
+    ) {
+      remainingPlans += Math.max(0, phase.plans_total - phase.plans_done);
+    }
+  }
+  if (remainingPlans === 0) return null;
+  const sorted = [...dates].sort((a, b) => a - b);
+  const totalSpanDays = (sorted[sorted.length - 1] - sorted[0]) / (1000 * 60 * 60 * 24);
+  const avgDaysPerPlan = totalSpanDays / (sorted.length - 1);
+  if (avgDaysPerPlan <= 0) return null;
+  return formatDaysEstimate(avgDaysPerPlan * remainingPlans);
+}
+
+function formatDaysEstimate(days) {
+  if (days < 1) return '< 1 day';
+  if (days < 1.5) return '~1 day';
+  if (days < 7) return `~${Math.round(days)} days`;
+  if (days < 14) return '~1 week';
+  if (days < 21) return '~2 weeks';
+  if (days < 35) return '~3 weeks';
+  return `~${Math.round(days / 30)} month${Math.round(days / 30) === 1 ? '' : 's'}`;
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 function readProject(name, root) {
   const { version, liveUrl } = readProjectMeta(root);
+  const state = readState(root);
+  const roadmap = readRoadmap(root);
+  const summaryDates = readSummaryDates(root);
   return {
     name,
     root,
     version,
     liveUrl,
-    state: readState(root),
-    roadmap: readRoadmap(root),
+    state,
+    roadmap,
     requirements: readRequirements(root),
+    velocity: computeVelocity(summaryDates),
+    streak: computeStreak(summaryDates),
+    estimatedCompletion: computeEstimatedCompletion(summaryDates, roadmap?.phases ?? []),
   };
 }
 

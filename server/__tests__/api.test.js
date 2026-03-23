@@ -1235,3 +1235,33 @@ describe("agent data proxy", () => {
     assert.ok(Array.isArray(res.body.sessions));
   });
 });
+
+// ============================================================
+// readProject stats
+// ============================================================
+
+describe('readProject stats', () => {
+  const { readProject, readState } = require('../gsd/readers');
+  const PROJECT_ROOT = path.join(__dirname, '../..');
+
+  it('returns velocity as a non-negative integer', () => {
+    const p = readProject('gsddashboard', PROJECT_ROOT);
+    assert.ok(typeof p.velocity === 'number' && p.velocity >= 0);
+  });
+
+  it('returns streak as a non-negative integer', () => {
+    const p = readProject('gsddashboard', PROJECT_ROOT);
+    assert.ok(typeof p.streak === 'number' && p.streak >= 0);
+  });
+
+  it('returns estimatedCompletion as null or non-empty string', () => {
+    const p = readProject('gsddashboard', PROJECT_ROOT);
+    assert.ok(p.estimatedCompletion === null || (typeof p.estimatedCompletion === 'string' && p.estimatedCompletion.length > 0));
+  });
+
+  it('readState returns next_action as string or null', () => {
+    const state = readState(PROJECT_ROOT);
+    assert.ok(state !== null);
+    assert.ok(state.next_action === null || typeof state.next_action === 'string');
+  });
+});
