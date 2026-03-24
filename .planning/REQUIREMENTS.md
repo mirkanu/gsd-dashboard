@@ -20,9 +20,9 @@
 ### Live Terminal (TERM)
 
 - [ ] **TERM-01**: Each project card shows an "Open terminal" button only when `tmuxActive` is true
-- [ ] **TERM-02**: Clicking opens a full-screen xterm.js overlay that attaches to the project's tmux session via a WebSocket connection backed by node-pty
-- [ ] **TERM-03**: The terminal is fully interactive — bidirectional I/O, terminal resize events are forwarded
-- [ ] **TERM-04**: Closing the overlay detaches from the tmux session without killing it; the session persists
+- [x] **TERM-02**: Clicking opens a full-screen xterm.js overlay that attaches to the project's tmux session via a WebSocket connection backed by node-pty
+- [x] **TERM-03**: The terminal is fully interactive — bidirectional I/O, terminal resize events are forwarded
+- [x] **TERM-04**: Closing the overlay detaches from the tmux session without killing it; the session persists
 
 ### New Project (CREATE)
 
@@ -68,9 +68,9 @@
 | SEND-02 | Phase 10 — Smart Send UI | Complete |
 | SEND-03 | Phase 10 — Smart Send UI | Complete |
 | TERM-01 | Phase 11 — Live Terminal Overlay | Pending |
-| TERM-02 | Phase 11 — Live Terminal Overlay | Pending |
-| TERM-03 | Phase 11 — Live Terminal Overlay | Pending |
-| TERM-04 | Phase 11 — Live Terminal Overlay | Pending |
+| TERM-02 | Phase 11 — Live Terminal Overlay | Complete |
+| TERM-03 | Phase 11 — Live Terminal Overlay | Complete |
+| TERM-04 | Phase 11 — Live Terminal Overlay | Complete |
 | CREATE-01 | Phase 12 — New Project Creation | Pending |
 | CREATE-02 | Phase 12 — New Project Creation | Pending |
 | CREATE-03 | Phase 12 — New Project Creation | Pending |
