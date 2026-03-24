@@ -5,6 +5,7 @@ const cors = require("cors");
 const path = require("path");
 const http = require("http");
 const { initWebSocket } = require("./websocket");
+const { attachTerminalWS } = require("./routes/terminal");
 
 const sessionsRouter = require("./routes/sessions");
 const agentsRouter = require("./routes/agents");
@@ -72,6 +73,7 @@ function createApp() {
 function startServer(app, port) {
   const server = http.createServer(app);
   initWebSocket(server);
+  attachTerminalWS(server);
 
   const isProduction = process.env.NODE_ENV === "production";
   if (isProduction) {

@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const os = require("os");
 const http = require("http");
+const WebSocket = require("ws");
 
 // Set up test database BEFORE requiring any server modules
 const TEST_DB = path.join(os.tmpdir(), `dashboard-test-${Date.now()}-${process.pid}.db`);
@@ -1303,8 +1304,8 @@ describe('Phase 9: POST /api/gsd/projects/:name/send', () => {
   });
 
   it('returns 422 when project has no tmux_session configured', async () => {
-    // gsddashboard has no tmux_session in gsd-projects.json
-    const res = await post('/api/gsd/projects/gsddashboard/send', { text: 'hello' });
+    // josie has no tmux_session in gsd-projects.json
+    const res = await post('/api/gsd/projects/josie/send', { text: 'hello' });
     assert.equal(res.status, 422);
     assert.ok(res.body.error, 'Expected error message in body');
   });
@@ -1341,5 +1342,78 @@ describe('Phase 9: POST /api/gsd/projects/:name/send', () => {
       else process.env.GSD_PROJECTS_PATH = prev;
       try { fs.unlinkSync(tempConfig); } catch { /* ignore */ }
     }
+  });
+});
+
+// ============================================================
+// Phase 11: Terminal WebSocket
+// ============================================================
+describe("Phase 11: Terminal WebSocket", () => {
+  it("GET /api/gsd/projects still returns 200 after terminal module is loaded (regression guard)", async () => {
+    const res = await fetch("/api/gsd/projects");
+    assert.equal(res.status, 200);
+  });
+
+  it("unknown project WebSocket is closed quickly (socket destroyed)", (done) => {
+    const addr = server.address();
+    const ws = new WebSocket(`ws://127.0.0.1:${addr.port}/ws/terminal/nonexistent-project-xyz`);
+    const timeout = setTimeout(() => {
+      ws.terminate();
+      done(new Error("Connection was not closed within 2 seconds"));
+    }, 2000);
+    ws.on("close", () => {
+      clearTimeout(timeout);
+      assert.ok(
+        ws.readyState === WebSocket.CLOSING || ws.readyState === WebSocket.CLOSED,
+        "WebSocket should be closing or closed"
+      );
+      done();
+    });
+    ws.on("error", () => {
+      // Socket destroyed manifests as an error event — that's expected
+      clearTimeout(timeout);
+      done();
+    });
+  });
+
+  it("inactive tmux session closes WebSocket with code 4004", (done) => {
+    const tempConfig = path.join(os.tmpdir(), `gsd-test-terminal-${Date.now()}.json`);
+    fs.writeFileSync(tempConfig, JSON.stringify({
+      projects: [{
+        name: "testproject",
+        root: "/tmp/testproject",
+        tmux_session: "definitely-not-running-session-xyz",
+      }],
+    }));
+    const prev = process.env.GSD_PROJECTS_PATH;
+    process.env.GSD_PROJECTS_PATH = tempConfig;
+
+    const addr = server.address();
+    const ws = new WebSocket(`ws://127.0.0.1:${addr.port}/ws/terminal/testproject`);
+
+    const timeout = setTimeout(() => {
+      ws.terminate();
+      process.env.GSD_PROJECTS_PATH = prev === undefined ? undefined : prev;
+      if (prev === undefined) delete process.env.GSD_PROJECTS_PATH;
+      try { fs.unlinkSync(tempConfig); } catch {}
+      done(new Error("Connection was not closed within 3 seconds"));
+    }, 3000);
+
+    ws.on("close", (code) => {
+      clearTimeout(timeout);
+      if (prev === undefined) delete process.env.GSD_PROJECTS_PATH;
+      else process.env.GSD_PROJECTS_PATH = prev;
+      try { fs.unlinkSync(tempConfig); } catch {}
+      assert.equal(code, 4004, `Expected close code 4004, got ${code}`);
+      done();
+    });
+
+    ws.on("error", (err) => {
+      clearTimeout(timeout);
+      if (prev === undefined) delete process.env.GSD_PROJECTS_PATH;
+      else process.env.GSD_PROJECTS_PATH = prev;
+      try { fs.unlinkSync(tempConfig); } catch {}
+      done(err);
+    });
   });
 });
