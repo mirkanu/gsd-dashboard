@@ -111,7 +111,10 @@ Plans:
   2. `POST /api/gsd/projects/:name/send` with a `text` body sends the text into the project's tmux session; the request succeeds only when the session is active
   3. `GET /api/gsd/projects` includes a `tmuxActive: boolean` field for every project — true when the named session exists and has at least one window, false otherwise
   4. Projects without a `tmux_session` field return `tmuxActive: false` and a 4xx error on send attempts without crashing the server
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 09-01-PLAN.md — Create server/gsd/tmux.js with isTmuxSessionActive; extend GET /api/gsd/projects to include tmuxActive per project
+- [ ] 09-02-PLAN.md — Add POST /api/gsd/projects/:name/send with validation (404/422/409/400) and proxy support
 
 ### Phase 10: Smart Send UI
 **Goal**: Users can send any text — or a suggested next action — into a project's tmux session directly from the project card
@@ -122,7 +125,10 @@ Plans:
   2. User can clear or edit the pre-fill and submit any text; the text arrives in the project's tmux session within one second
   3. Four GSD command chips are visible below the input; clicking a chip replaces the current input value and does not immediately submit
   4. The send input and chips are hidden for projects where `tmuxActive` is false
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 10-01-PLAN.md — Add tmuxActive to GsdProject type and api.gsd.send() to api client
+- [ ] 10-02-PLAN.md — Add SendBox section to ProjectCard with pre-fill, submit, and GSD command chips
 
 ### Phase 11: Live Terminal Overlay
 **Goal**: Users can open a fully interactive terminal for any active project's tmux session without leaving the dashboard
@@ -157,7 +163,7 @@ Plans:
 | 6. Drawer and Full-Screen Viewer | 3/3 | Complete | 2026-03-21 |
 | 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
 | 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
-| 9. Tmux Backend Wiring | 0/TBD | Not started | - |
-| 10. Smart Send UI | 0/TBD | Not started | - |
+| 9. Tmux Backend Wiring | 0/2 | Not started | - |
+| 10. Smart Send UI | 0/2 | Not started | - |
 | 11. Live Terminal Overlay | 0/TBD | Not started | - |
 | 12. New Project Creation | 0/TBD | Not started | - |
