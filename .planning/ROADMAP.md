@@ -139,7 +139,10 @@ Plans:
   2. Clicking the button opens a full-screen xterm.js overlay that immediately renders the live content of the project's tmux session
   3. Keystrokes typed in the overlay reach the tmux session and output from the session appears in the overlay in real time; terminal resize events are forwarded so line-wrapping is correct
   4. Closing the overlay (via Escape or a visible close button) disconnects the WebSocket and detaches from the tmux session without killing it; reopening attaches again cleanly
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Backend WebSocket terminal bridge (node-pty + /ws/terminal/:name endpoint)
+- [ ] 11-02-PLAN.md — Frontend xterm.js TerminalOverlay component and Open terminal button
 
 ### Phase 12: New Project Creation
 **Goal**: Users can create a new GSD project — directory, tmux session, and Claude Code launch — from a single button in the dashboard
@@ -165,5 +168,5 @@ Plans:
 | 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
 | 9. Tmux Backend Wiring | 2/2 | Complete | 2026-03-24 |
 | 10. Smart Send UI | 2/2 | Complete    | 2026-03-24 |
-| 11. Live Terminal Overlay | 0/TBD | Not started | - |
+| 11. Live Terminal Overlay | 0/2 | Not started | - |
 | 12. New Project Creation | 0/TBD | Not started | - |
