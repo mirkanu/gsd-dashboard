@@ -56,3 +56,22 @@
 - Multi-user auth or per-user session isolation (single developer tool)
 - Session recording / playback
 - tmux session creation for pre-existing projects (user creates sessions manually, registers name in config)
+
+## Traceability (v2.0)
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| TMX-01 | Phase 9 — Tmux Backend Wiring | Pending |
+| TMX-02 | Phase 9 — Tmux Backend Wiring | Pending |
+| TMX-03 | Phase 9 — Tmux Backend Wiring | Pending |
+| SEND-01 | Phase 10 — Smart Send UI | Pending |
+| SEND-02 | Phase 10 — Smart Send UI | Pending |
+| SEND-03 | Phase 10 — Smart Send UI | Pending |
+| TERM-01 | Phase 11 — Live Terminal Overlay | Pending |
+| TERM-02 | Phase 11 — Live Terminal Overlay | Pending |
+| TERM-03 | Phase 11 — Live Terminal Overlay | Pending |
+| TERM-04 | Phase 11 — Live Terminal Overlay | Pending |
+| CREATE-01 | Phase 12 — New Project Creation | Pending |
+| CREATE-02 | Phase 12 — New Project Creation | Pending |
+| CREATE-03 | Phase 12 — New Project Creation | Pending |
+| CREATE-04 | Phase 12 — New Project Creation | Pending |

@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Project Control Plane
 status: in_progress
-stopped_at: "Milestone v2.0 defined — roadmap pending"
+stopped_at: "v2.0 roadmap created — ready to plan Phase 9"
 last_updated: "2026-03-24T00:00:00.000Z"
-last_activity: "2026-03-24 — Milestone v2.0 started, requirements defined"
+last_activity: "2026-03-24 — v2.0 roadmap defined (4 phases, 14 requirements)"
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -18,17 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-21)
+See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** At a glance, see where every GSD project stands — which phase is active, what's done, what's blocked
-**Current focus:** Milestone v1.2 — GSD Stats & Live Data Pipeline
+**Current focus:** Milestone v2.0 — Project Control Plane
 
 ## Current Position
 
-Phase: Not started — defining roadmap
+Phase: Phase 9 — Tmux Backend Wiring (not started)
 Plan: —
-Status: Milestone v2.0 defined, roadmap being created
-Last activity: 2026-03-24 — Milestone v2.0 started (Project Control Plane)
+Status: Roadmap created, ready to plan Phase 9
+Last activity: 2026-03-24 — v2.0 roadmap created
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -43,6 +43,11 @@ Progress: [░░░░░░░░░░] 0%
 - Total plans completed: 7
 - Total phases: 3
 - Total execution time: 1 day (2026-03-21)
+
+**v1.2 velocity:**
+- Total plans completed: 4
+- Total phases: 2
+- Total execution time: 2 days (2026-03-22 – 2026-03-23)
 
 ## Accumulated Context
 
@@ -64,10 +69,11 @@ Progress: [░░░░░░░░░░] 0%
 - [06-03]: TAB_TITLES inline Record in GSD.tsx maps FileTabId to human-readable header without coupling to GsdDrawer internals
 - User is on Claude Pro subscription — cost-per-token features irrelevant; focus on usage volume not spend
 - Agent dashboard is empty on Railway because hooks POST to localhost, not Railway — must fix data pipeline for v1.2
-- [v1.2 roadmap]: Phase 7 is backend-only (proxy); Phase 8 is backend+frontend stats; Phase 9 is WebSocket pulse — natural delivery order with clear verifiable boundaries
+- [v1.2 roadmap]: Phase 7 is backend-only (proxy); Phase 8 is backend+frontend stats; natural delivery order with clear verifiable boundaries
 - [07-01]: createAgentProxy mounted as middleware before agent routers; GSD_DATA_URL at module level; basicAuth skips 5 agent prefixes so Railway proxy can reach local server without credentials
 - [07-02]: GSD_DATA_URL moved from module-level constant to inside createApp() so fresh app instances in tests pick up the env var correctly
 - [08-02]: Blocked-first sort replaces last_activity date sort; stable secondary ordering preserved by JS engine's stable Array.prototype.sort
+- [v2.0 roadmap]: Phase 9 (TMX backend) is foundation; Phase 10 (Send UI) layers on top; Phase 11 (terminal overlay) is most complex (node-pty + xterm.js + new WS message type); Phase 12 (new project) is independent of overlay but reuses tmux wiring
 
 ### Pending Todos
 
@@ -79,7 +85,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23
-Stopped at: Completed 08-02-PLAN.md (Phase 8 complete)
+Last session: 2026-03-24
+Stopped at: v2.0 roadmap created
 Resume file: None
 Next action: Run /gsd:plan-phase 9
