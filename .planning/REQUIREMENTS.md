@@ -1,94 +1,58 @@
-# Requirements: GSD Dashboard v1.2
+# Requirements: GSD Dashboard v2.0
 
-**Defined:** 2026-03-21
-**Core Value:** See live project momentum and agent activity from anywhere — no localhost required.
+**Defined:** 2026-03-24
+**Core Value:** Control all GSD projects from the dashboard — send commands, open terminals, create new projects — without touching a separate shell.
 
-## v1.2 Requirements
+## v2.0 Requirements
 
-### Agent Data Pipeline
+### Tmux Wiring (TMX)
 
-- [ ] **PIPE-01**: When accessed via the Railway URL, the agent dashboard (sessions, events, stats) shows real data from the local machine's SQLite database — not an empty database
-- [ ] **PIPE-02**: The Railway server proxies agent data API requests through `GSD_DATA_URL` to the local server, using the same tunnel pattern already working for GSD files — [x] implemented (07-01)
-- [ ] **PIPE-03**: The local server exposes agent data endpoints that the Railway proxy can forward to (sessions, agents, events, stats, analytics) — [x] implemented (07-01)
-- [ ] **PIPE-04**: If `GSD_DATA_URL` is not set (local dev), the server serves its own local data directly with no proxy involved — [x] implemented (07-01)
+- [ ] **TMX-01**: Each project in `gsd-projects.json` can specify a `tmux_session` name; backend validates the session exists before any tmux operation
+- [ ] **TMX-02**: Backend exposes `POST /api/gsd/projects/:name/send` — sends arbitrary text to the project's tmux session via `tmux send-keys`
+- [ ] **TMX-03**: `GET /api/gsd/projects` response includes `tmuxActive: boolean` — true when the named session exists and has at least one window
 
-### GSD Card — Next Action
+### Smart Send (SEND)
 
-- [ ] **NEXT-01**: Each project card displays the "Next action" line parsed from that project's STATE.md
-- [ ] **NEXT-02**: If STATE.md has no next action recorded, the card shows nothing in that slot (no placeholder text)
+- [ ] **SEND-01**: Each project card shows a send input; it pre-fills with the project's `state.next_action` as a suggested command when one is available
+- [ ] **SEND-02**: User can edit the pre-fill or type freely; submitting dispatches the text to the project's tmux session via the backend endpoint
+- [ ] **SEND-03**: Send box shows quick-action chips for common GSD commands: `/gsd:resume-work`, `/gsd:progress`, `/gsd:pause-work`, `/gsd:plan-phase`
 
-### GSD Card — Blocked Indicator
+### Live Terminal (TERM)
 
-- [ ] **BLOCK-01**: Any project with one or more blockers recorded in STATE.md shows a visible "Blocked" badge on its card
-- [ ] **BLOCK-02**: Blocked projects are automatically sorted to the top of the project grid
-- [ ] **BLOCK-03**: The `/api/gsd/projects` response includes a `blockers` array so the frontend can determine blocked state without re-parsing STATE.md
+- [ ] **TERM-01**: Each project card shows an "Open terminal" button only when `tmuxActive` is true
+- [ ] **TERM-02**: Clicking opens a full-screen xterm.js overlay that attaches to the project's tmux session via a WebSocket connection backed by node-pty
+- [ ] **TERM-03**: The terminal is fully interactive — bidirectional I/O, terminal resize events are forwarded
+- [ ] **TERM-04**: Closing the overlay detaches from the tmux session without killing it; the session persists
 
-### GSD Card — Active Session Pulse
+### New Project (CREATE)
 
-- [ ] **SESS-01**: A project card shows a live green pulse indicator when a Claude Code session is currently active in that project's working directory
-- [ ] **SESS-02**: The active session state is derived from the agent dashboard's `sessions` data (status = "active", cwd matches project root)
-- [ ] **SESS-03**: The pulse indicator updates in real time via WebSocket (no manual refresh needed)
+- [ ] **CREATE-01**: Dashboard has a "New project" button visible in the GSD tab header
+- [ ] **CREATE-02**: User provides a project name; backend creates a directory at `{base_path}/{name}` (base path configurable, default `/data/home/`)
+- [ ] **CREATE-03**: Backend creates a new tmux session named after the project and runs `claude` in it with `/gsd:new-project` sent as the first input
+- [ ] **CREATE-04**: The new project is added to `gsd-projects.json` and its card appears in the grid immediately without a page refresh
 
-### GSD Card — Velocity & Streak
+## Previously Delivered
 
-- [ ] **VEL-01**: Each project card shows how many plans were completed in the last 7 days (velocity)
-- [ ] **VEL-02**: Each project card shows the current streak: number of consecutive days with at least one plan completed (derived from SUMMARY.md timestamps in `.planning/phases/`)
-- [ ] **VEL-03**: The `/api/gsd/projects` response includes `velocity` (int) and `streak` (int) fields computed server-side
+### v1.2 — GSD Stats & Live Data Pipeline (completed 2026-03-23)
 
-### GSD Card — Time-to-Completion Estimate
+- [x] **PIPE-01–04**: Agent data proxied through GSD_DATA_URL tunnel to Railway
+- [x] **NEXT-01–02**: Next action line on each card from STATE.md
+- [x] **BLOCK-01–03**: Blocked badge, blocked-first sort, blockers in API response
+- [x] **VEL-01–03**: Velocity (plans/week), streak (consecutive days), TTL estimate
+- [x] **TTL-01–04**: estimatedCompletion computed server-side, rendered on card
 
-- [ ] **TTL-01**: Each project card shows an estimated time to completion based on remaining plans × average plan duration
-- [ ] **TTL-02**: Average plan duration is computed from completed SUMMARY.md files (using last_updated timestamps where available, falling back to file modification time)
-- [ ] **TTL-03**: If there are no completed plans to average from, or no remaining plans, no estimate is shown
-- [ ] **TTL-04**: The estimate is displayed as a human-readable string (e.g. "~2 days", "~1 week")
+### v1.1 — File Viewer & Card Enhancements (completed 2026-03-21)
 
-## Future Requirements (deferred)
+- [x] **API-01–03**: Version + liveUrl from PROJECT.md; file content endpoints
+- [x] **CARD-01–03**: Version badge, live URL link, card click opens drawer
+- [x] **DRAW-01–05**: Side drawer with 4 file tabs; full-screen markdown viewer
 
-- Auto-refresh GSD data every N minutes (configurable interval)
-- Phase timeline / Gantt-style view across projects
-- Named Cloudflare Tunnel for stable permanent URL
-- Browser notification when a phase completes
-- Trend graph showing requirements coverage over time
-- Tool call heatmap on GSD stats panel
-- Model mix breakdown (% Opus vs Sonnet vs Haiku) per project
+### v1.0 — Foundation (completed 2026-03-18)
 
-## Out of Scope (v1.2)
+- [x] **SETUP-01–03**, **CONF-01–03**, **DATA-01–06**, **UI-01–06**, **DEPLOY-01–04**
 
-| Feature | Reason |
-|---------|--------|
-| Cost per phase / token cost tracking | User is on Claude Pro subscription — cost-per-token not applicable |
-| Editing planning files from dashboard | Read-only tool — edits belong in the editor |
-| Per-user analytics (Admin API) | Requires Admin API key, not standard API key |
-| Push notifications | Scope creep — defer to later milestone |
+## Out of Scope (v2.0)
 
-## Traceability
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| PIPE-01 | Phase 7 | Pending |
-| PIPE-02 | Phase 7 | Complete (07-01) |
-| PIPE-03 | Phase 7 | Complete (07-01) |
-| PIPE-04 | Phase 7 | Complete (07-01) |
-| NEXT-01 | Phase 8 | Pending |
-| NEXT-02 | Phase 8 | Pending |
-| BLOCK-01 | Phase 8 | Pending |
-| BLOCK-02 | Phase 8 | Pending |
-| BLOCK-03 | Phase 8 | Pending |
-| VEL-01 | Phase 8 | Pending |
-| VEL-02 | Phase 8 | Pending |
-| VEL-03 | Phase 8 | Pending |
-| TTL-01 | Phase 8 | Pending |
-| TTL-02 | Phase 8 | Pending |
-| TTL-03 | Phase 8 | Pending |
-| TTL-04 | Phase 8 | Pending |
-| SESS-01 | Phase 9 | Pending |
-| SESS-02 | Phase 9 | Pending |
-| SESS-03 | Phase 9 | Pending |
-
-**Coverage:**
-- v1.2 requirements: 19 total
-- Mapped to phases: 19
-- Unmapped: 0
-
----
-*Requirements defined: 2026-03-21*
+- Multi-user auth or per-user session isolation (single developer tool)
+- Session recording / playback
+- tmux session creation for pre-existing projects (user creates sessions manually, registers name in config)

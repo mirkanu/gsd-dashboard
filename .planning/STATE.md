@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: GSD Stats & Live Data Pipeline
+milestone: v2.0
+milestone_name: Project Control Plane
 status: in_progress
-stopped_at: "Completed 08-02-PLAN.md — Phase 8 complete"
-last_updated: "2026-03-23T18:45:00.000Z"
-last_activity: "2026-03-23 — Phase 8 plan 02 complete (frontend stats UI)"
+stopped_at: "Milestone v2.0 defined — roadmap pending"
+last_updated: "2026-03-24T00:00:00.000Z"
+last_activity: "2026-03-24 — Milestone v2.0 started, requirements defined"
 progress:
-  total_phases: 3
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
-  percent: 67
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: Phase 8 (complete) — Phase 9 next
-Plan: 08-02-PLAN.md (complete)
-Status: In progress — 08-02 complete, Phase 9 not started
-Last activity: 2026-03-23 — 08-02 complete (Blocked badge, next action, stats row, blocked-first sort)
+Phase: Not started — defining roadmap
+Plan: —
+Status: Milestone v2.0 defined, roadmap being created
+Last activity: 2026-03-24 — Milestone v2.0 started (Project Control Plane)
 
-Progress: [███████░░░] 67%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -82,4 +82,4 @@ None.
 Last session: 2026-03-23
 Stopped at: Completed 08-02-PLAN.md (Phase 8 complete)
 Resume file: None
-Next action: Start new milestone
+Next action: Run /gsd:plan-phase 9
