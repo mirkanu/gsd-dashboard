@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phases
 status: executing
-stopped_at: Completed 10-01-PLAN.md
-last_updated: "2026-03-24T16:36:05.819Z"
-last_activity: "2026-03-24 — POST /projects/:name/send endpoint added with tmux validation"
+stopped_at: Completed 10-02-PLAN.md
+last_updated: "2026-03-24T17:00:00.000Z"
+last_activity: "2026-03-24 — SendBox component added to ProjectCard in GSD.tsx; Phase 10 complete"
 progress:
   total_phases: 9
-  completed_phases: 6
-  total_plans: 15
-  completed_plans: 14
-  percent: 14
+  completed_phases: 7
+  total_plans: 16
+  completed_plans: 16
+  percent: 18
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: Phase 9 — Tmux Backend Wiring
-Plan: 09-02 complete
-Status: Phase 9 in progress (2/2 plans done)
-Last activity: 2026-03-24 — POST /projects/:name/send endpoint added with tmux validation
+Phase: Phase 10 — Smart Send UI
+Plan: 10-02 complete
+Status: Phase 10 complete (2/2 plans done)
+Last activity: 2026-03-24 — SendBox component added to ProjectCard; Phase 10 complete
 
-Progress: [█░░░░░░░░░] 14%
+Progress: [██░░░░░░░░] 18%
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Progress: [█░░░░░░░░░] 14%
 - [v2.0 roadmap]: Phase 9 (TMX backend) is foundation; Phase 10 (Send UI) layers on top; Phase 11 (terminal overlay) is most complex (node-pty + xterm.js + new WS message type); Phase 12 (new project) is independent of overlay but reuses tmux wiring
 - [09-02]: loadConfig reads GSD_PROJECTS_PATH at call time (not module-level const) to allow per-request config override in tests without server restart
 - [Phase 10-smart-send-ui]: tmuxActive added as required boolean (not optional) to force callers to handle the field; api.gsd.send uses existing request<T> helper inheriting error handling
+- [10-02]: GSD_CHIPS const defined outside SendBox to avoid re-creation on render; status state machine (idle/sending/sent/error) with auto-reset after 2s/3s; chips update input value only — do not call api.gsd.send
 
 ### Pending Todos
 
@@ -87,7 +88,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T16:36:05.814Z
-Stopped at: Completed 10-01-PLAN.md
+Last session: 2026-03-24T17:00:00.000Z
+Stopped at: Completed 10-02-PLAN.md
 Resume file: None
-Next action: Continue Phase 9 or plan Phase 10
+Next action: Continue with Phase 11 (terminal overlay) or Phase 12 (new project)
