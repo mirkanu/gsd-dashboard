@@ -163,7 +163,7 @@ Plans:
 | 6. Drawer and Full-Screen Viewer | 3/3 | Complete | 2026-03-21 |
 | 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
 | 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
-| 9. Tmux Backend Wiring | 0/2 | Not started | - |
+| 9. Tmux Backend Wiring | 2/2 | Complete | 2026-03-24 |
 | 10. Smart Send UI | 0/2 | Not started | - |
 | 11. Live Terminal Overlay | 0/TBD | Not started | - |
 | 12. New Project Creation | 0/TBD | Not started | - |
