@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
+const { isTmuxSessionActive } = require('../gsd/tmux');
 
 const router = express.Router();
 
@@ -37,7 +38,10 @@ router.get("/projects", async (_req, res) => {
   }
   try {
     const { projects } = loadConfig();
-    const data = projects.map(({ name, root }) => readProject(name, root));
+    const data = projects.map(({ name, root, tmux_session }) => ({
+      ...readProject(name, root),
+      tmuxActive: isTmuxSessionActive(tmux_session),
+    }));
     res.json({ projects: data });
   } catch (err) {
     res.status(500).json({ error: "Failed to read project data", detail: err.message });
