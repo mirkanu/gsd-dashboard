@@ -95,6 +95,76 @@ function RoadmapPanel({ phases }: { phases: GsdPhase[] }) {
   );
 }
 
+// ─── Send box ─────────────────────────────────────────────────────────────────
+
+const GSD_CHIPS = [
+  "/gsd:resume-work",
+  "/gsd:progress",
+  "/gsd:pause-work",
+  "/gsd:plan-phase",
+] as const;
+
+function SendBox({ projectName, initialValue }: { projectName: string; initialValue: string }) {
+  const [value, setValue] = useState(initialValue);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  // Reset input value when the project changes (different card)
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  const handleSubmit = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const text = value.trim();
+    if (!text || status === "sending") return;
+    setStatus("sending");
+    try {
+      await api.gsd.send(projectName, text);
+      setStatus("sent");
+      setTimeout(() => setStatus("idle"), 2000);
+    } catch {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 3000);
+    }
+  };
+
+  return (
+    <div
+      className="px-4 py-3 border-b border-border/50"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="flex gap-2 mb-2">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(e as unknown as React.MouseEvent); }}
+          placeholder="Send to tmux session…"
+          className="flex-1 text-xs bg-surface-3 border border-border rounded px-2 py-1.5 text-gray-200 placeholder:text-gray-600 focus:outline-none focus:border-accent/50"
+        />
+        <button
+          onClick={handleSubmit}
+          disabled={!value.trim() || status === "sending"}
+          className="text-xs px-3 py-1.5 rounded bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+        >
+          {status === "sending" ? "…" : status === "sent" ? "Sent!" : status === "error" ? "Error" : "Send"}
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {GSD_CHIPS.map((chip) => (
+          <button
+            key={chip}
+            onClick={(e) => { e.stopPropagation(); setValue(chip); }}
+            className="text-[10px] px-2 py-0.5 rounded-full border border-border bg-surface-3 text-gray-500 hover:text-gray-300 hover:border-border/80 transition-colors"
+          >
+            {chip}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Project card ─────────────────────────────────────────────────────────────
 
 function ProjectCard({ project, onSelect }: { project: GsdProject; onSelect: (project: GsdProject) => void }) {
@@ -213,6 +283,14 @@ function ProjectCard({ project, onSelect }: { project: GsdProject; onSelect: (pr
             <span>{project.estimatedCompletion} est.</span>
           )}
         </div>
+      )}
+
+      {/* Send box — only when tmux session is active */}
+      {project.tmuxActive && (
+        <SendBox
+          projectName={project.name}
+          initialValue={state?.next_action ?? ""}
+        />
       )}
 
       {/* Expandable roadmap */}
