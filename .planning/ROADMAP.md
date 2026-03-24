@@ -23,7 +23,7 @@
 ## v2.0 Phases
 
 - [ ] **Phase 9: Tmux Backend Wiring** — Add tmux_session to project config, validate session existence, and expose a send-keys endpoint
-- [ ] **Phase 10: Smart Send UI** — Add a send input to each project card with next_action pre-fill and GSD command chips
+- [x] **Phase 10: Smart Send UI** — Add a send input to each project card with next_action pre-fill and GSD command chips (completed 2026-03-24)
 - [ ] **Phase 11: Live Terminal Overlay** — Full-screen xterm.js terminal attached to a project's tmux session via node-pty WebSocket
 - [ ] **Phase 12: New Project Creation** — One-click new project flow: create directory, tmux session, launch Claude with /gsd:new-project, add to config
 
@@ -164,6 +164,6 @@ Plans:
 | 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
 | 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
 | 9. Tmux Backend Wiring | 2/2 | Complete | 2026-03-24 |
-| 10. Smart Send UI | 1/2 | In Progress|  |
+| 10. Smart Send UI | 2/2 | Complete   | 2026-03-24 |
 | 11. Live Terminal Overlay | 0/TBD | Not started | - |
 | 12. New Project Creation | 0/TBD | Not started | - |

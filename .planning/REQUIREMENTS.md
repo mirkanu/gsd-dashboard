@@ -13,9 +13,9 @@
 
 ### Smart Send (SEND)
 
-- [ ] **SEND-01**: Each project card shows a send input; it pre-fills with the project's `state.next_action` as a suggested command when one is available
-- [ ] **SEND-02**: User can edit the pre-fill or type freely; submitting dispatches the text to the project's tmux session via the backend endpoint
-- [ ] **SEND-03**: Send box shows quick-action chips for common GSD commands: `/gsd:resume-work`, `/gsd:progress`, `/gsd:pause-work`, `/gsd:plan-phase`
+- [x] **SEND-01**: Each project card shows a send input; it pre-fills with the project's `state.next_action` as a suggested command when one is available
+- [x] **SEND-02**: User can edit the pre-fill or type freely; submitting dispatches the text to the project's tmux session via the backend endpoint
+- [x] **SEND-03**: Send box shows quick-action chips for common GSD commands: `/gsd:resume-work`, `/gsd:progress`, `/gsd:pause-work`, `/gsd:plan-phase`
 
 ### Live Terminal (TERM)
 
@@ -64,9 +64,9 @@
 | TMX-01 | Phase 9 — Tmux Backend Wiring | Pending |
 | TMX-02 | Phase 9 — Tmux Backend Wiring | Pending |
 | TMX-03 | Phase 9 — Tmux Backend Wiring | Pending |
-| SEND-01 | Phase 10 — Smart Send UI | Pending |
-| SEND-02 | Phase 10 — Smart Send UI | Pending |
-| SEND-03 | Phase 10 — Smart Send UI | Pending |
+| SEND-01 | Phase 10 — Smart Send UI | Complete |
+| SEND-02 | Phase 10 — Smart Send UI | Complete |
+| SEND-03 | Phase 10 — Smart Send UI | Complete |
 | TERM-01 | Phase 11 — Live Terminal Overlay | Pending |
 | TERM-02 | Phase 11 — Live Terminal Overlay | Pending |
 | TERM-03 | Phase 11 — Live Terminal Overlay | Pending |
