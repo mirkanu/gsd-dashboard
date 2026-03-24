@@ -18,7 +18,6 @@
 
 - [ ] **Phase 7: Agent Data Proxy** — Proxy agent API requests through GSD_DATA_URL so Railway shows live session data from the local machine
 - [ ] **Phase 8: GSD Card Stats** — Enrich /api/gsd/projects with blockers/velocity/streak/TTL/nextAction and render all stats on project cards
-- [ ] **Phase 9: Active Session Pulse** — Show a live green pulse on a project card when a Claude Code session is active in that project's directory
 
 ---
 
@@ -95,16 +94,6 @@ Plans:
 - [x] 08-01-PLAN.md — Extend readers.js: next_action in readState(), velocity/streak/estimatedCompletion in readProject(); 4 new tests
 - [x] 08-02-PLAN.md — Frontend: update GsdState/GsdProject types, render Blocked badge + next action + stats row in ProjectCard, sort blocked projects first
 
-### Phase 9: Active Session Pulse
-**Goal**: Users see at a glance whether Claude Code is actively running in a project's directory, with the indicator updating live without a page refresh
-**Depends on**: Phase 8
-**Requirements**: SESS-01, SESS-02, SESS-03
-**Success Criteria** (what must be TRUE):
-  1. A project card shows a green pulse indicator when at least one agent session has status "active" and a working directory matching that project's root
-  2. The pulse indicator disappears in real time when the active session ends — no manual refresh required
-  3. When no session is active for a project, the card shows no pulse and no empty placeholder
-**Plans**: TBD
-
 ---
 
 ## Progress Table
@@ -116,4 +105,3 @@ Plans:
 | 6. Drawer and Full-Screen Viewer | 3/3 | Complete | 2026-03-21 |
 | 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
 | 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
-| 9. Active Session Pulse | 0/? | Not started | - |
