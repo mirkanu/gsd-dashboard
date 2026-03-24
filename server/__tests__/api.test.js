@@ -1294,3 +1294,52 @@ describe('Phase 9: tmuxActive', () => {
     assert.equal(isTmuxSessionActive('nonexistent-tmux-session-xyz-99999'), false);
   });
 });
+
+describe('Phase 9: POST /api/gsd/projects/:name/send', () => {
+  it('returns 404 for unknown project', async () => {
+    const res = await post('/api/gsd/projects/nonexistent-project-xyz/send', { text: 'hello' });
+    assert.equal(res.status, 404);
+    assert.ok(res.body.error, 'Expected error message in body');
+  });
+
+  it('returns 422 when project has no tmux_session configured', async () => {
+    // gsddashboard has no tmux_session in gsd-projects.json
+    const res = await post('/api/gsd/projects/gsddashboard/send', { text: 'hello' });
+    assert.equal(res.status, 422);
+    assert.ok(res.body.error, 'Expected error message in body');
+  });
+
+  it('returns 400 when text body is missing', async () => {
+    const res = await post('/api/gsd/projects/gsddashboard/send', {});
+    assert.equal(res.status, 400);
+    assert.ok(res.body.error, 'Expected error message in body');
+  });
+
+  it('returns 400 when text is an empty string', async () => {
+    const res = await post('/api/gsd/projects/gsddashboard/send', { text: '' });
+    assert.equal(res.status, 400);
+    assert.ok(res.body.error, 'Expected error message in body');
+  });
+
+  it('returns 409 when tmux_session is configured but session is not running', async () => {
+    const tempConfig = path.join(os.tmpdir(), `gsd-projects-test-${Date.now()}.json`);
+    fs.writeFileSync(tempConfig, JSON.stringify({
+      projects: [{
+        name: 'tmux-test-probe',
+        root: '/tmp',
+        tmux_session: 'nonexistent-tmux-session-xyz-99999',
+      }],
+    }));
+    const prev = process.env.GSD_PROJECTS_PATH;
+    try {
+      process.env.GSD_PROJECTS_PATH = tempConfig;
+      const res = await post('/api/gsd/projects/tmux-test-probe/send', { text: 'hello' });
+      assert.equal(res.status, 409);
+      assert.ok(res.body.error, 'Expected error message in body');
+    } finally {
+      if (prev === undefined) delete process.env.GSD_PROJECTS_PATH;
+      else process.env.GSD_PROJECTS_PATH = prev;
+      try { fs.unlinkSync(tempConfig); } catch { /* ignore */ }
+    }
+  });
+});
