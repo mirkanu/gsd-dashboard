@@ -7,11 +7,11 @@ const { isTmuxSessionActive } = require('../gsd/tmux');
 
 const router = express.Router();
 
-const CONFIG_PATH = path.resolve(__dirname, "../../gsd-projects.json");
 const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
 
 function loadConfig() {
-  const raw = fs.readFileSync(CONFIG_PATH, "utf8");
+  const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, "../../gsd-projects.json");
+  const raw = fs.readFileSync(configPath, "utf8");
   return JSON.parse(raw);
 }
 
@@ -85,6 +85,57 @@ router.get('/projects/:name/files/:fileId', async (req, res) => {
     res.send(content);
   } catch {
     res.status(404).json({ error: 'File not found' });
+  }
+});
+
+// POST /api/gsd/projects/:name/send — send text to the project's tmux session
+router.post('/projects/:name/send', async (req, res) => {
+  const { name } = req.params;
+
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/send`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req.body),
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
+
+  const text = req.body?.text;
+  if (!text || typeof text !== 'string' || text.trim() === '') {
+    return res.status(400).json({ error: 'text field is required' });
+  }
+
+  const { projects } = loadConfig();
+  const project = projects.find((p) => p.name === name);
+  if (!project) {
+    return res.status(404).json({ error: 'Project not found' });
+  }
+
+  const { tmux_session } = project;
+  if (!tmux_session) {
+    return res.status(422).json({ error: 'No tmux session configured for this project' });
+  }
+
+  if (!isTmuxSessionActive(tmux_session)) {
+    return res.status(409).json({ error: 'Tmux session is not active', session: tmux_session });
+  }
+
+  try {
+    const { execFileSync } = require('child_process');
+    execFileSync('tmux', ['send-keys', '-t', tmux_session, text, 'Enter'], { stdio: 'ignore' });
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to send keys to tmux session', detail: err.message });
   }
 });
 
