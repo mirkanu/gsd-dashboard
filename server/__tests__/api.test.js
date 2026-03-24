@@ -1265,3 +1265,32 @@ describe('readProject stats', () => {
     assert.ok(state.next_action === null || typeof state.next_action === 'string');
   });
 });
+
+describe('Phase 9: tmuxActive', () => {
+  const { isTmuxSessionActive } = require('../gsd/tmux');
+
+  it('GET /api/gsd/projects — every project has a boolean tmuxActive field', async () => {
+    const res = await fetch('/api/gsd/projects');
+    assert.equal(res.status, 200);
+    const { projects } = res.body;
+    assert.ok(Array.isArray(projects) && projects.length > 0);
+    for (const p of projects) {
+      assert.ok(
+        typeof p.tmuxActive === 'boolean',
+        `Expected tmuxActive to be boolean for project "${p.name}", got ${typeof p.tmuxActive}`
+      );
+    }
+  });
+
+  it('isTmuxSessionActive(null) returns false', () => {
+    assert.equal(isTmuxSessionActive(null), false);
+  });
+
+  it('isTmuxSessionActive("") returns false', () => {
+    assert.equal(isTmuxSessionActive(''), false);
+  });
+
+  it('isTmuxSessionActive returns false for a session that does not exist', () => {
+    assert.equal(isTmuxSessionActive('nonexistent-tmux-session-xyz-99999'), false);
+  });
+});
