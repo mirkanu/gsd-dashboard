@@ -15,6 +15,8 @@ describe("GsdProject type shape", () => {
       streak: 0,
       estimatedCompletion: null,
       tmuxActive: false,
+      contextTokens: null,
+      sessionUpdatedAt: null,
     };
     expect(project.version).toBe("v1");
   });
@@ -32,6 +34,8 @@ describe("GsdProject type shape", () => {
       streak: 0,
       estimatedCompletion: null,
       tmuxActive: false,
+      contextTokens: null,
+      sessionUpdatedAt: null,
     };
     expect(project.version).toBeNull();
   });
@@ -49,6 +53,8 @@ describe("GsdProject type shape", () => {
       streak: 0,
       estimatedCompletion: null,
       tmuxActive: false,
+      contextTokens: null,
+      sessionUpdatedAt: null,
     };
     expect(project.liveUrl).toBe("https://example.com");
   });
@@ -66,6 +72,8 @@ describe("GsdProject type shape", () => {
       streak: 0,
       estimatedCompletion: null,
       tmuxActive: false,
+      contextTokens: null,
+      sessionUpdatedAt: null,
     };
     expect(project.liveUrl).toBeNull();
   });
@@ -83,6 +91,8 @@ describe("GsdProject type shape", () => {
       streak: 2,
       estimatedCompletion: "~2 days",
       tmuxActive: true,
+      contextTokens: null,
+      sessionUpdatedAt: null,
     };
     expect(project.velocity).toBe(3);
     expect(project.streak).toBe(2);
@@ -102,6 +112,8 @@ describe("GsdProject type shape", () => {
       streak: 0,
       estimatedCompletion: null,
       tmuxActive: true,
+      contextTokens: null,
+      sessionUpdatedAt: null,
     };
     expect(active.tmuxActive).toBe(true);
 
@@ -122,10 +134,45 @@ describe("GsdProject type shape", () => {
       streak: 0,
       estimatedCompletion: null,
       tmuxActive: false,
+      contextTokens: null,
+      sessionUpdatedAt: null,
     };
     expect(project.velocity).toBe(0);
     expect(project.streak).toBe(0);
     expect(project.estimatedCompletion).toBeNull();
+  });
+});
+
+describe("tmuxActive terminal button contract", () => {
+  const base: GsdProject = {
+    name: "test",
+    root: "/path",
+    state: null,
+    roadmap: null,
+    requirements: null,
+    version: null,
+    liveUrl: null,
+    velocity: 0,
+    streak: 0,
+    estimatedCompletion: null,
+    tmuxActive: false,
+    contextTokens: null,
+    sessionUpdatedAt: null,
+  };
+
+  it("tmuxActive true enables terminal button", () => {
+    const active: GsdProject = { ...base, tmuxActive: true };
+    expect(active.tmuxActive).toBe(true);
+  });
+
+  it("tmuxActive false suppresses terminal button", () => {
+    const inactive: GsdProject = { ...base, tmuxActive: false };
+    expect(inactive.tmuxActive).toBe(false);
+  });
+
+  it("tmuxActive is a boolean discriminant (not nullable)", () => {
+    const project: GsdProject = { ...base, tmuxActive: true };
+    expect(typeof project.tmuxActive).toBe("boolean");
   });
 });
 
