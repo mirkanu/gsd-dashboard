@@ -43,6 +43,7 @@ export interface GsdProject {
   velocity: number;
   streak: number;
   estimatedCompletion: string | null;
+  tmuxActive: boolean;
 }
 
 // ─── Agent/Session Types ──────────────────────────────────────────────────────

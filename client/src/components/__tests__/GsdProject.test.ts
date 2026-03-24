@@ -14,6 +14,7 @@ describe("GsdProject type shape", () => {
       velocity: 0,
       streak: 0,
       estimatedCompletion: null,
+      tmuxActive: false,
     };
     expect(project.version).toBe("v1");
   });
@@ -30,6 +31,7 @@ describe("GsdProject type shape", () => {
       velocity: 0,
       streak: 0,
       estimatedCompletion: null,
+      tmuxActive: false,
     };
     expect(project.version).toBeNull();
   });
@@ -46,6 +48,7 @@ describe("GsdProject type shape", () => {
       velocity: 0,
       streak: 0,
       estimatedCompletion: null,
+      tmuxActive: false,
     };
     expect(project.liveUrl).toBe("https://example.com");
   });
@@ -62,6 +65,7 @@ describe("GsdProject type shape", () => {
       velocity: 0,
       streak: 0,
       estimatedCompletion: null,
+      tmuxActive: false,
     };
     expect(project.liveUrl).toBeNull();
   });
@@ -78,10 +82,31 @@ describe("GsdProject type shape", () => {
       velocity: 3,
       streak: 2,
       estimatedCompletion: "~2 days",
+      tmuxActive: true,
     };
     expect(project.velocity).toBe(3);
     expect(project.streak).toBe(2);
     expect(project.estimatedCompletion).toBe("~2 days");
+  });
+
+  it("should accept tmuxActive as boolean", () => {
+    const active: GsdProject = {
+      name: "test",
+      root: "/path/to/test",
+      state: null,
+      roadmap: null,
+      requirements: null,
+      version: null,
+      liveUrl: null,
+      velocity: 0,
+      streak: 0,
+      estimatedCompletion: null,
+      tmuxActive: true,
+    };
+    expect(active.tmuxActive).toBe(true);
+
+    const inactive: GsdProject = { ...active, tmuxActive: false };
+    expect(inactive.tmuxActive).toBe(false);
   });
 
   it("should accept velocity, streak, and estimatedCompletion as zero/null", () => {
@@ -96,6 +121,7 @@ describe("GsdProject type shape", () => {
       velocity: 0,
       streak: 0,
       estimatedCompletion: null,
+      tmuxActive: false,
     };
     expect(project.velocity).toBe(0);
     expect(project.streak).toBe(0);

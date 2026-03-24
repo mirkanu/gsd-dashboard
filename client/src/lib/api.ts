@@ -118,6 +118,11 @@ export const api = {
     projects: () => request<{ projects: import("./types").GsdProject[] }>("/gsd/projects"),
     file: (projectName: string, fileId: "state" | "roadmap" | "requirements" | "plan") =>
       requestText(`/gsd/projects/${encodeURIComponent(projectName)}/files/${fileId}`),
+    send: (projectName: string, text: string) =>
+      request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/send`, {
+        method: "POST",
+        body: JSON.stringify({ text }),
+      }),
   },
 
   pricing: {
