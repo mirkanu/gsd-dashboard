@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Project Control Plane
 status: in_progress
-stopped_at: "v2.0 roadmap created — ready to plan Phase 9"
+stopped_at: "Completed 09-02-PLAN.md"
 last_updated: "2026-03-24T00:00:00.000Z"
-last_activity: "2026-03-24 — v2.0 roadmap defined (4 phases, 14 requirements)"
+last_activity: "2026-03-24 — Phase 9 Plan 02 complete: POST /projects/:name/send endpoint"
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 2
+  percent: 14
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: Phase 9 — Tmux Backend Wiring (not started)
-Plan: —
-Status: Roadmap created, ready to plan Phase 9
-Last activity: 2026-03-24 — v2.0 roadmap created
+Phase: Phase 9 — Tmux Backend Wiring
+Plan: 09-02 complete
+Status: Phase 9 in progress (2/2 plans done)
+Last activity: 2026-03-24 — POST /projects/:name/send endpoint added with tmux validation
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 14%
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ Progress: [░░░░░░░░░░] 0%
 - [07-02]: GSD_DATA_URL moved from module-level constant to inside createApp() so fresh app instances in tests pick up the env var correctly
 - [08-02]: Blocked-first sort replaces last_activity date sort; stable secondary ordering preserved by JS engine's stable Array.prototype.sort
 - [v2.0 roadmap]: Phase 9 (TMX backend) is foundation; Phase 10 (Send UI) layers on top; Phase 11 (terminal overlay) is most complex (node-pty + xterm.js + new WS message type); Phase 12 (new project) is independent of overlay but reuses tmux wiring
+- [09-02]: loadConfig reads GSD_PROJECTS_PATH at call time (not module-level const) to allow per-request config override in tests without server restart
 
 ### Pending Todos
 
@@ -86,6 +87,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: v2.0 roadmap created
+Stopped at: Completed 09-02-PLAN.md
 Resume file: None
-Next action: Run /gsd:plan-phase 9
+Next action: Continue Phase 9 or plan Phase 10
