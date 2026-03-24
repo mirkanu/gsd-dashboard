@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Project Control Plane
-status: in_progress
-stopped_at: "Completed 09-02-PLAN.md"
-last_updated: "2026-03-24T00:00:00.000Z"
-last_activity: "2026-03-24 — Phase 9 Plan 02 complete: POST /projects/:name/send endpoint"
+milestone: v1.1
+milestone_name: Phases
+status: executing
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-03-24T16:36:05.819Z"
+last_activity: "2026-03-24 — POST /projects/:name/send endpoint added with tmux validation"
 progress:
-  total_phases: 4
-  completed_phases: 0
-  total_plans: 2
-  completed_plans: 2
+  total_phases: 9
+  completed_phases: 6
+  total_plans: 15
+  completed_plans: 14
   percent: 14
 ---
 
@@ -75,6 +75,7 @@ Progress: [█░░░░░░░░░] 14%
 - [08-02]: Blocked-first sort replaces last_activity date sort; stable secondary ordering preserved by JS engine's stable Array.prototype.sort
 - [v2.0 roadmap]: Phase 9 (TMX backend) is foundation; Phase 10 (Send UI) layers on top; Phase 11 (terminal overlay) is most complex (node-pty + xterm.js + new WS message type); Phase 12 (new project) is independent of overlay but reuses tmux wiring
 - [09-02]: loadConfig reads GSD_PROJECTS_PATH at call time (not module-level const) to allow per-request config override in tests without server restart
+- [Phase 10-smart-send-ui]: tmuxActive added as required boolean (not optional) to force callers to handle the field; api.gsd.send uses existing request<T> helper inheriting error handling
 
 ### Pending Todos
 
@@ -86,7 +87,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24
-Stopped at: Completed 09-02-PLAN.md
+Last session: 2026-03-24T16:36:05.814Z
+Stopped at: Completed 10-01-PLAN.md
 Resume file: None
 Next action: Continue Phase 9 or plan Phase 10
