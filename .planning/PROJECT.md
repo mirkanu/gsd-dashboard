@@ -20,16 +20,14 @@ What's working:
 - Self-healing tunnel script (`scripts/tunnel.sh`) runs under s6-supervise — auto-restarts, updates Railway env var on each restart
 - Existing agent monitoring features (sessions, Kanban, cost tracking) fully preserved
 
-## Current Milestone: v1.2 — GSD Stats & Live Data Pipeline
+## Current Milestone: v2.0 — Project Control Plane
 
-**Goal:** Surface meaningful GSD project stats on every card and fix the agent dashboard so it shows real data when accessed via Railway.
+**Goal:** Turn the dashboard into a full control surface for all GSD projects — send commands, open live terminals, and create new projects without touching a separate terminal.
 
 **Target features:**
-- Fix hook → Railway data pipeline so agent dashboard shows live session/event data remotely
-- GSD card stats: velocity trend, blocked projects surfaced to top, next action line per card
-- Active session indicator on GSD cards (pulse when Claude Code is running)
-- Streak counter (days in a row with at least one commit)
-- Time-to-completion estimate per project (remaining plans × avg plan duration)
+- Send messages into each project's tmux session directly from the card (smart pre-fill from STATE.md next_action)
+- Full-screen live terminal overlay (xterm.js + WebSocket) attached to the project's tmux session
+- One-click new project creation: create directory + tmux session + launch Claude Code with /gsd:new-project
 
 ## Context
 
@@ -55,4 +53,4 @@ What's working:
 | Railway deployment + cloudflared proxy | Keep GSD readers local (filesystem access), expose via tunnel to Railway-hosted UI | ✅ Working — self-healing tunnel handles URL changes |
 
 ---
-*Last updated: 2026-03-21 — v1.2 started*
+*Last updated: 2026-03-24 — v2.0 started*
