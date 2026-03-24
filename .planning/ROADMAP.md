@@ -168,5 +168,5 @@ Plans:
 | 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
 | 9. Tmux Backend Wiring | 2/2 | Complete | 2026-03-24 |
 | 10. Smart Send UI | 2/2 | Complete    | 2026-03-24 |
-| 11. Live Terminal Overlay | 0/2 | Not started | - |
+| 11. Live Terminal Overlay | 1/2 | In Progress|  |
 | 12. New Project Creation | 0/TBD | Not started | - |
