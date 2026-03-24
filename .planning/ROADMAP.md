@@ -4,7 +4,8 @@
 
 - [x] **v1** — Foundation, backend data pipeline, frontend dashboard UI, Railway deployment (2026-03-18) → [archive](.planning/milestones/v1-ROADMAP.md)
 - [x] **v1.1** — File Viewer & Card Enhancements (completed 2026-03-21)
-- [ ] **v1.2** — GSD Stats & Live Data Pipeline (in progress)
+- [x] **v1.2** — GSD Stats & Live Data Pipeline (completed 2026-03-23)
+- [ ] **v2.0** — Project Control Plane (in progress)
 
 ---
 
@@ -16,8 +17,15 @@
 
 ## v1.2 Phases
 
-- [ ] **Phase 7: Agent Data Proxy** — Proxy agent API requests through GSD_DATA_URL so Railway shows live session data from the local machine
-- [ ] **Phase 8: GSD Card Stats** — Enrich /api/gsd/projects with blockers/velocity/streak/TTL/nextAction and render all stats on project cards
+- [x] **Phase 7: Agent Data Proxy** — Proxy agent API requests through GSD_DATA_URL so Railway shows live session data from the local machine
+- [x] **Phase 8: GSD Card Stats** — Enrich /api/gsd/projects with blockers/velocity/streak/TTL/nextAction and render all stats on project cards
+
+## v2.0 Phases
+
+- [ ] **Phase 9: Tmux Backend Wiring** — Add tmux_session to project config, validate session existence, and expose a send-keys endpoint
+- [ ] **Phase 10: Smart Send UI** — Add a send input to each project card with next_action pre-fill and GSD command chips
+- [ ] **Phase 11: Live Terminal Overlay** — Full-screen xterm.js terminal attached to a project's tmux session via node-pty WebSocket
+- [ ] **Phase 12: New Project Creation** — One-click new project flow: create directory, tmux session, launch Claude with /gsd:new-project, add to config
 
 ---
 
@@ -94,6 +102,50 @@ Plans:
 - [x] 08-01-PLAN.md — Extend readers.js: next_action in readState(), velocity/streak/estimatedCompletion in readProject(); 4 new tests
 - [x] 08-02-PLAN.md — Frontend: update GsdState/GsdProject types, render Blocked badge + next action + stats row in ProjectCard, sort blocked projects first
 
+### Phase 9: Tmux Backend Wiring
+**Goal**: The backend can verify tmux session liveness for any project and send arbitrary text into that session on demand
+**Depends on**: Phase 8
+**Requirements**: TMX-01, TMX-02, TMX-03
+**Success Criteria** (what must be TRUE):
+  1. Adding a `tmux_session` name to a project entry in `gsd-projects.json` causes the API to validate whether that session is running before any tmux operation
+  2. `POST /api/gsd/projects/:name/send` with a `text` body sends the text into the project's tmux session; the request succeeds only when the session is active
+  3. `GET /api/gsd/projects` includes a `tmuxActive: boolean` field for every project — true when the named session exists and has at least one window, false otherwise
+  4. Projects without a `tmux_session` field return `tmuxActive: false` and a 4xx error on send attempts without crashing the server
+**Plans**: TBD
+
+### Phase 10: Smart Send UI
+**Goal**: Users can send any text — or a suggested next action — into a project's tmux session directly from the project card
+**Depends on**: Phase 9
+**Requirements**: SEND-01, SEND-02, SEND-03
+**Success Criteria** (what must be TRUE):
+  1. Each project card shows a send input pre-filled with the project's `next_action` from STATE.md when one is available, and blank when it is not
+  2. User can clear or edit the pre-fill and submit any text; the text arrives in the project's tmux session within one second
+  3. Four GSD command chips are visible below the input; clicking a chip replaces the current input value and does not immediately submit
+  4. The send input and chips are hidden for projects where `tmuxActive` is false
+**Plans**: TBD
+
+### Phase 11: Live Terminal Overlay
+**Goal**: Users can open a fully interactive terminal for any active project's tmux session without leaving the dashboard
+**Depends on**: Phase 9
+**Requirements**: TERM-01, TERM-02, TERM-03, TERM-04
+**Success Criteria** (what must be TRUE):
+  1. An "Open terminal" button appears on a project card only when `tmuxActive` is true; it is absent or disabled for inactive sessions
+  2. Clicking the button opens a full-screen xterm.js overlay that immediately renders the live content of the project's tmux session
+  3. Keystrokes typed in the overlay reach the tmux session and output from the session appears in the overlay in real time; terminal resize events are forwarded so line-wrapping is correct
+  4. Closing the overlay (via Escape or a visible close button) disconnects the WebSocket and detaches from the tmux session without killing it; reopening attaches again cleanly
+**Plans**: TBD
+
+### Phase 12: New Project Creation
+**Goal**: Users can create a new GSD project — directory, tmux session, and Claude Code launch — from a single button in the dashboard
+**Depends on**: Phase 9
+**Requirements**: CREATE-01, CREATE-02, CREATE-03, CREATE-04
+**Success Criteria** (what must be TRUE):
+  1. A "New project" button is visible in the GSD tab header at all times
+  2. Clicking the button prompts for a project name; submitting creates the directory at `{base_path}/{name}` and a new tmux session named after the project
+  3. The backend sends `claude` followed by `/gsd:new-project` as the first input into the new tmux session so the project scaffold starts automatically
+  4. The new project's card appears in the dashboard grid immediately after creation without requiring a page refresh or manual config edit
+**Plans**: TBD
+
 ---
 
 ## Progress Table
@@ -105,3 +157,7 @@ Plans:
 | 6. Drawer and Full-Screen Viewer | 3/3 | Complete | 2026-03-21 |
 | 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
 | 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
+| 9. Tmux Backend Wiring | 0/TBD | Not started | - |
+| 10. Smart Send UI | 0/TBD | Not started | - |
+| 11. Live Terminal Overlay | 0/TBD | Not started | - |
+| 12. New Project Creation | 0/TBD | Not started | - |
