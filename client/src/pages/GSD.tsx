@@ -197,10 +197,11 @@ function SendBox({ projectName, initialValue, contextTokens }: { projectName: st
 
 interface TerminalOverlayProps {
   projectName: string;
+  wsBase: string | null;
   onClose: () => void;
 }
 
-function TerminalOverlay({ projectName, onClose }: TerminalOverlayProps) {
+function TerminalOverlay({ projectName, wsBase, onClose }: TerminalOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -209,9 +210,10 @@ function TerminalOverlay({ projectName, onClose }: TerminalOverlayProps) {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Build WebSocket URL — same host, same port, ws(s):// scheme
+    // Build WebSocket URL — use tunnel base when in Railway proxy mode
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${proto}//${window.location.host}/ws/terminal/${encodeURIComponent(projectName)}`;
+    const base = wsBase ?? `${proto}//${window.location.host}`;
+    const wsUrl = `${base}/ws/terminal/${encodeURIComponent(projectName)}`;
 
     // Create terminal
     const terminal = new Terminal({
@@ -496,6 +498,7 @@ export function GSD() {
   const [selectedProject, setSelectedProject] = useState<GsdProject | null>(null);
   const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
+  const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
 
   const TAB_TITLES: Record<string, string> = {
     state: "State",
@@ -516,6 +519,11 @@ export function GSD() {
       setLoading(false);
       if (manual) setRefreshing(false);
     }
+  }, []);
+
+  // Fetch terminal WS base URL once on mount (null = use relative URL)
+  useEffect(() => {
+    api.gsd.wsBase().then(({ wsBase }) => setTerminalWsBase(wsBase ?? null)).catch(() => {});
   }, []);
 
   // Auto-load on mount (VIEW-06)
@@ -615,6 +623,7 @@ export function GSD() {
       {terminalProject && (
         <TerminalOverlay
           projectName={terminalProject}
+          wsBase={terminalWsBase}
           onClose={() => setTerminalProject(null)}
         />
       )}

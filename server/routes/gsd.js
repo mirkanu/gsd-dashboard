@@ -16,6 +16,18 @@ function loadConfig() {
   return JSON.parse(raw);
 }
 
+// GET /api/gsd/ws-base — returns the WebSocket base URL for terminal connections
+// When GSD_DATA_URL is set (Railway proxy mode), terminal WebSocket must connect
+// to the tunnel directly since Railway has no tmux/node-pty.
+router.get("/ws-base", (_req, res) => {
+  if (GSD_DATA_URL) {
+    const wsBase = GSD_DATA_URL.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:');
+    res.json({ wsBase });
+  } else {
+    res.json({ wsBase: null });
+  }
+});
+
 // GET /api/gsd/config — return raw project list from config file
 router.get("/config", (_req, res) => {
   try {
