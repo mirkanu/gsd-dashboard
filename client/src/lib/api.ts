@@ -123,6 +123,7 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ text }),
       }),
+    wsBase: () => request<{ wsBase: string | null }>("/gsd/ws-base"),
   },
 
   pricing: {
