@@ -247,7 +247,13 @@ function TerminalOverlay({ projectName, wsBase, onClose }: TerminalOverlayProps)
         terminal.write('\r\n\x1b[31mSession is not active.\x1b[0m\r\n');
       } else if (event.code === 4005) {
         terminal.write('\r\n\x1b[31mTerminal backend unavailable (node-pty not installed).\x1b[0m\r\n');
+      } else if (event.code !== 1000) {
+        terminal.write(`\r\n\x1b[31mConnection closed (${event.code}).\x1b[0m\r\n`);
       }
+    };
+
+    ws.onerror = () => {
+      terminal.write('\r\n\x1b[31mFailed to connect to terminal backend.\x1b[0m\r\n');
     };
 
     // Forward keystrokes to WS

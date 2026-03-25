@@ -3,7 +3,16 @@ const { WebSocketServer } = require("ws");
 let wss = null;
 
 function initWebSocket(server) {
-  wss = new WebSocketServer({ server, path: "/ws" });
+  wss = new WebSocketServer({ noServer: true });
+
+  // Manually handle upgrades so non-/ws paths aren't aborted by the ws library
+  server.on("upgrade", (req, socket, head) => {
+    const pathname = req.url.split("?")[0];
+    if (pathname !== "/ws") return; // let attachTerminalWS handle other paths
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit("connection", ws, req);
+    });
+  });
 
   wss.on("connection", (ws) => {
     ws.isAlive = true;
