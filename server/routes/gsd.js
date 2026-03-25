@@ -31,17 +31,6 @@ router.get("/projects", async (_req, res) => {
     try {
       const upstream = await fetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) });
       const data = await upstream.json();
-      // Enrich tmuxActive locally — upstream (Railway) has no tmux access
-      if (data && Array.isArray(data.projects)) {
-        const { projects: configProjects } = loadConfig();
-        const tmuxMap = Object.fromEntries(
-          configProjects.map(({ name, tmux_session }) => [name, isTmuxSessionActive(tmux_session)])
-        );
-        data.projects = data.projects.map((p) => ({
-          ...p,
-          tmuxActive: tmuxMap[p.name] ?? false,
-        }));
-      }
       res.json(data);
     } catch (err) {
       res.status(502).json({ error: "Failed to reach GSD data source", detail: err.message });
