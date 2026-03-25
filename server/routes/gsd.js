@@ -4,6 +4,7 @@ const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
 const { isTmuxSessionActive } = require('../gsd/tmux');
+const { db } = require('../db');
 
 const router = express.Router();
 
@@ -30,6 +31,17 @@ router.get("/projects", async (_req, res) => {
     try {
       const upstream = await fetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) });
       const data = await upstream.json();
+      // Enrich tmuxActive locally — upstream (Railway) has no tmux access
+      if (data && Array.isArray(data.projects)) {
+        const { projects: configProjects } = loadConfig();
+        const tmuxMap = Object.fromEntries(
+          configProjects.map(({ name, tmux_session }) => [name, isTmuxSessionActive(tmux_session)])
+        );
+        data.projects = data.projects.map((p) => ({
+          ...p,
+          tmuxActive: tmuxMap[p.name] ?? false,
+        }));
+      }
       res.json(data);
     } catch (err) {
       res.status(502).json({ error: "Failed to reach GSD data source", detail: err.message });
@@ -38,10 +50,23 @@ router.get("/projects", async (_req, res) => {
   }
   try {
     const { projects } = loadConfig();
-    const data = projects.map(({ name, root, tmux_session }) => ({
-      ...readProject(name, root),
-      tmuxActive: isTmuxSessionActive(tmux_session),
-    }));
+    const sessionQuery = db.prepare(`
+      SELECT s.updated_at, tu.input_tokens
+      FROM sessions s
+      LEFT JOIN token_usage tu ON tu.session_id = s.id
+      WHERE s.cwd = ?
+      ORDER BY s.updated_at DESC
+      LIMIT 1
+    `);
+    const data = projects.map(({ name, root, tmux_session }) => {
+      const row = sessionQuery.get(root);
+      return {
+        ...readProject(name, root),
+        tmuxActive: isTmuxSessionActive(tmux_session),
+        contextTokens: row?.input_tokens ?? null,
+        sessionUpdatedAt: row?.updated_at ?? null,
+      };
+    });
     res.json({ projects: data });
   } catch (err) {
     res.status(500).json({ error: "Failed to read project data", detail: err.message });
