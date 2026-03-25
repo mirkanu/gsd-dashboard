@@ -203,6 +203,18 @@ try {
   ).run();
 }
 
+// Migrate: add last_input_tokens to token_usage.
+// input_tokens is the cumulative sum across all turns in the transcript — not the
+// current context window size. last_input_tokens stores only the most recent turn's
+// input_tokens, which is the actual current prompt size.
+try {
+  db.prepare("SELECT last_input_tokens FROM token_usage LIMIT 1").get();
+} catch {
+  db.prepare(
+    "ALTER TABLE token_usage ADD COLUMN last_input_tokens INTEGER NOT NULL DEFAULT 0"
+  ).run();
+}
+
 // Startup cleanup: mark stale active sessions as completed.
 // Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
 // so they stay "active" forever. Complete any active session whose last event is older than
@@ -317,8 +329,9 @@ const stmts = {
   `),
   replaceTokenUsage: db.prepare(`
     INSERT INTO token_usage (session_id, model, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens,
-                             baseline_input, baseline_output, baseline_cache_read, baseline_cache_write)
-    VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0)
+                             baseline_input, baseline_output, baseline_cache_read, baseline_cache_write,
+                             last_input_tokens)
+    VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, 0, ?)
     ON CONFLICT(session_id, model) DO UPDATE SET
       baseline_input = CASE WHEN excluded.input_tokens < input_tokens
         THEN baseline_input + input_tokens ELSE baseline_input END,
@@ -331,7 +344,8 @@ const stmts = {
       input_tokens = excluded.input_tokens,
       output_tokens = excluded.output_tokens,
       cache_read_tokens = excluded.cache_read_tokens,
-      cache_write_tokens = excluded.cache_write_tokens
+      cache_write_tokens = excluded.cache_write_tokens,
+      last_input_tokens = excluded.last_input_tokens
   `),
   getTokenTotals: db.prepare(`
     SELECT

@@ -49,6 +49,7 @@ function extractTokensFromTranscript(transcriptPath) {
     if (!fs.existsSync(transcriptPath)) return null;
     const content = fs.readFileSync(transcriptPath, "utf8");
     const tokensByModel = {};
+    const lastInputByModel = {};
     let compaction = null;
     for (const line of content.split("\n")) {
       if (!line) continue;
@@ -77,6 +78,11 @@ function extractTokensFromTranscript(transcriptPath) {
         tokensByModel[model].output += msg.usage.output_tokens || 0;
         tokensByModel[model].cacheRead += msg.usage.cache_read_input_tokens || 0;
         tokensByModel[model].cacheWrite += msg.usage.cache_creation_input_tokens || 0;
+        // Track the most recent turn's input_tokens per model — this is the actual
+        // current context window size, not the cumulative sum across all turns.
+        if (msg.usage.input_tokens) {
+          lastInputByModel[model] = msg.usage.input_tokens;
+        }
       } catch {
         continue;
       }
@@ -85,6 +91,7 @@ function extractTokensFromTranscript(transcriptPath) {
     if (!hasTokens && !compaction) return null;
     return {
       tokensByModel: hasTokens ? tokensByModel : null,
+      lastInputByModel: hasTokens ? lastInputByModel : null,
       compaction,
     };
   } catch {
@@ -389,7 +396,7 @@ const processEvent = db.transaction((hookType, data) => {
   if (data.transcript_path) {
     const result = extractTokensFromTranscript(data.transcript_path);
     if (result) {
-      const { tokensByModel, compaction } = result;
+      const { tokensByModel, lastInputByModel, compaction } = result;
 
       // Register compaction agents and events.
       // Each isCompactSummary entry in the JSONL = one compaction that occurred.
@@ -447,7 +454,8 @@ const processEvent = db.transaction((hookType, data) => {
             tokens.input,
             tokens.output,
             tokens.cacheRead,
-            tokens.cacheWrite
+            tokens.cacheWrite,
+            lastInputByModel?.[model] ?? 0
           );
         }
       }
