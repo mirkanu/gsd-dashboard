@@ -52,9 +52,9 @@ router.get("/projects", async (_req, res) => {
   try {
     const { projects } = loadConfig();
     const sessionQuery = db.prepare(`
-      SELECT s.updated_at, tu.input_tokens
+      SELECT s.updated_at,
+        (SELECT MAX(tu.last_input_tokens) FROM token_usage tu WHERE tu.session_id = s.id) as context_tokens
       FROM sessions s
-      LEFT JOIN token_usage tu ON tu.session_id = s.id
       WHERE s.cwd = ?
       ORDER BY s.updated_at DESC
       LIMIT 1
@@ -64,7 +64,7 @@ router.get("/projects", async (_req, res) => {
       return {
         ...readProject(name, root),
         tmuxActive: isTmuxSessionActive(tmux_session),
-        contextTokens: row?.input_tokens ?? null,
+        contextTokens: row?.context_tokens ?? null,
         sessionUpdatedAt: row?.updated_at ?? null,
       };
     });

@@ -160,7 +160,7 @@ function SendBox({ projectName, initialValue, contextTokens }: { projectName: st
       className="px-4 py-3 border-b border-border/50"
       onClick={(e) => e.stopPropagation()}
     >
-      {contextTokens != null && <ContextBar tokens={contextTokens} />}
+      {/* ContextBar hidden — token data inaccurate (cumulative vs current prompt); TODO: fix data source */}
       <div className="flex gap-2 mb-2">
         <input
           type="text"
