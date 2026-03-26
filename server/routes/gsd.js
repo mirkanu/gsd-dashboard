@@ -64,11 +64,18 @@ router.get("/projects", async (_req, res) => {
       ORDER BY s.updated_at DESC
       LIMIT 1
     `);
+    const IDLE_PAUSED_MS = 48 * 60 * 60 * 1000;
+    const now = Date.now();
     const data = projects.map(({ name, root, tmux_session, archived }) => {
       const row = sessionQuery.get(root);
-      const sessionState = archived
+      let sessionState = archived
         ? 'archived'
         : detectSessionState(tmux_session ?? null);
+      // Promote waiting → paused if last activity was >48h ago
+      if (sessionState === 'waiting' && row?.updated_at) {
+        const idleMs = now - new Date(row.updated_at).getTime();
+        if (idleMs > IDLE_PAUSED_MS) sessionState = 'paused';
+      }
       return {
         ...readProject(name, root),
         tmuxActive: isTmuxSessionActive(tmux_session),
