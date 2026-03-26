@@ -13,7 +13,7 @@
 - [x] **STAT-04**: A user can mark any project as Archived from its card; the `archived: true` flag is written to that project's entry in `gsd-projects.json` and persists across server restarts
 - [x] **STAT-05**: Archived projects are excluded from the main grid; a collapsible "View archived (N)" section appears below all cards whenever N ≥ 1
 - [x] **STAT-06**: Archived projects can be unarchived from within the archived section, restoring them to the main grid immediately
-- [ ] **STAT-07**: The summary stats row above the grid shows Working / Waiting / Paused / Archived counts with matching colors, replacing the previous Projects / Active / Complete stats
+- [x] **STAT-07**: The summary stats row above the grid shows Working / Waiting / Paused / Archived counts with matching colors, replacing the previous Projects / Active / Complete stats
 
 ### Terminal UX (TUIX)
 
@@ -80,7 +80,7 @@
 | STAT-04 | Phase 12 — Session State Indicators | Complete |
 | STAT-05 | Phase 12 — Session State Indicators | Complete |
 | STAT-06 | Phase 12 — Session State Indicators | Complete |
-| STAT-07 | Phase 12 — Session State Indicators | Pending |
+| STAT-07 | Phase 12 — Session State Indicators | Complete |
 | TUIX-01 | Phase 13 — Terminal UX | Pending |
 | TUIX-02 | Phase 13 — Terminal UX | Pending |
 | TUIX-03 | Phase 13 — Terminal UX | Pending |
