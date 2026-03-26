@@ -22,9 +22,9 @@
 
 ## v2.0 Phases
 
-- [ ] **Phase 9: Tmux Backend Wiring** — Add tmux_session to project config, validate session existence, and expose a send-keys endpoint
+- [x] **Phase 9: Tmux Backend Wiring** — Add tmux_session to project config, validate session existence, and expose a send-keys endpoint (completed 2026-03-24)
 - [x] **Phase 10: Smart Send UI** — Add a send input to each project card with next_action pre-fill and GSD command chips (completed 2026-03-24)
-- [ ] **Phase 11: Live Terminal Overlay** — Full-screen xterm.js terminal attached to a project's tmux session via node-pty WebSocket
+- [x] **Phase 11: Live Terminal Overlay** — Full-screen xterm.js terminal attached to a project's tmux session via node-pty WebSocket (completed 2026-03-25)
 - [ ] **Phase 12: New Project Creation** — One-click new project flow: create directory, tmux session, launch Claude with /gsd:new-project, add to config
 
 ---
@@ -113,8 +113,8 @@ Plans:
   4. Projects without a `tmux_session` field return `tmuxActive: false` and a 4xx error on send attempts without crashing the server
 **Plans**: 2 plans
 Plans:
-- [ ] 09-01-PLAN.md — Create server/gsd/tmux.js with isTmuxSessionActive; extend GET /api/gsd/projects to include tmuxActive per project
-- [ ] 09-02-PLAN.md — Add POST /api/gsd/projects/:name/send with validation (404/422/409/400) and proxy support
+- [x] 09-01-PLAN.md — Create server/gsd/tmux.js with isTmuxSessionActive; extend GET /api/gsd/projects to include tmuxActive per project
+- [x] 09-02-PLAN.md — Add POST /api/gsd/projects/:name/send with validation (404/422/409/400) and proxy support
 
 ### Phase 10: Smart Send UI
 **Goal**: Users can send any text — or a suggested next action — into a project's tmux session directly from the project card
@@ -127,8 +127,8 @@ Plans:
   4. The send input and chips are hidden for projects where `tmuxActive` is false
 **Plans**: 2 plans
 Plans:
-- [ ] 10-01-PLAN.md — Add tmuxActive to GsdProject type and api.gsd.send() to api client
-- [ ] 10-02-PLAN.md — Add SendBox section to ProjectCard with pre-fill, submit, and GSD command chips
+- [x] 10-01-PLAN.md — Add tmuxActive to GsdProject type and api.gsd.send() to api client
+- [x] 10-02-PLAN.md — Add SendBox section to ProjectCard with pre-fill, submit, and GSD command chips
 
 ### Phase 11: Live Terminal Overlay
 **Goal**: Users can open a fully interactive terminal for any active project's tmux session without leaving the dashboard
@@ -141,8 +141,8 @@ Plans:
   4. Closing the overlay (via Escape or a visible close button) disconnects the WebSocket and detaches from the tmux session without killing it; reopening attaches again cleanly
 **Plans**: 2 plans
 Plans:
-- [ ] 11-01-PLAN.md — Backend WebSocket terminal bridge (node-pty + /ws/terminal/:name endpoint)
-- [ ] 11-02-PLAN.md — Frontend xterm.js TerminalOverlay component and Open terminal button
+- [x] 11-01-PLAN.md — Backend WebSocket terminal bridge (node-pty + /ws/terminal/:name endpoint)
+- [x] 11-02-PLAN.md — Frontend xterm.js TerminalOverlay component and Open terminal button
 
 ### Phase 12: New Project Creation
 **Goal**: Users can create a new GSD project — directory, tmux session, and Claude Code launch — from a single button in the dashboard
@@ -153,7 +153,10 @@ Plans:
   2. Clicking the button prompts for a project name; submitting creates the directory at `{base_path}/{name}` and a new tmux session named after the project
   3. The backend sends `claude` followed by `/gsd:new-project` as the first input into the new tmux session so the project scaffold starts automatically
   4. The new project's card appears in the dashboard grid immediately after creation without requiring a page refresh or manual config edit
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 12-01-PLAN.md — Backend POST /api/gsd/projects/create: directory, tmux session, claude launch, config write
+- [ ] 12-02-PLAN.md — Frontend: New project button + NewProjectDialog + optimistic card prepend
 
 ---
 
@@ -168,5 +171,5 @@ Plans:
 | 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
 | 9. Tmux Backend Wiring | 2/2 | Complete | 2026-03-24 |
 | 10. Smart Send UI | 2/2 | Complete    | 2026-03-24 |
-| 11. Live Terminal Overlay | 1/2 | In Progress|  |
-| 12. New Project Creation | 0/TBD | Not started | - |
+| 11. Live Terminal Overlay | 2/2 | Complete | 2026-03-25 |
+| 12. New Project Creation | 0/2 | Not started | - |
