@@ -323,14 +323,23 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
         if (ws.readyState === WebSocket.OPEN) ws.send(seq);
       }
     };
+    // Tap to focus: xterm.js's hidden textarea doesn't auto-focus on mobile tap,
+    // so the keyboard never opens. Call terminal.focus() on touchend when the
+    // gesture was a tap (no scroll intent), inside the user-gesture callback so
+    // the browser allows it to open the soft keyboard.
+    const handleTouchEnd = () => {
+      if (!scrollIntent) terminal.focus();
+    };
     container.addEventListener('touchstart', handleTouchStart, { passive: true });
     container.addEventListener('touchmove', handleTouchMove, { passive: true });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('keydown', handleKeyDown);
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
       ws.close();
       terminal.dispose();
     };
