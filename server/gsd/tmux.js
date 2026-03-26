@@ -31,7 +31,7 @@ function detectSessionState(sessionName) {
 
   let output;
   try {
-    output = execFileSync('tmux', ['capture-pane', '-p', '-l', '50', '-t', sessionName], { encoding: 'utf8' });
+    output = execFileSync('tmux', ['capture-pane', '-p', '-t', sessionName], { encoding: 'utf8' });
   } catch {
     return 'paused';
   }
