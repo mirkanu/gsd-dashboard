@@ -17,4 +17,45 @@ function isTmuxSessionActive(sessionName) {
   }
 }
 
-module.exports = { isTmuxSessionActive };
+/**
+ * Detect the current state of a tmux session by capturing its output.
+ * Returns one of: 'archived' | 'waiting' | 'paused' | 'working'.
+ * Never throws.
+ *
+ * @param {string|null|undefined} sessionName
+ * @returns {'archived'|'waiting'|'paused'|'working'}
+ */
+function detectSessionState(sessionName) {
+  if (!sessionName) return 'archived';
+  if (!isTmuxSessionActive(sessionName)) return 'paused';
+
+  let output;
+  try {
+    output = execFileSync('tmux', ['capture-pane', '-p', '-l', '50', '-t', sessionName], { encoding: 'utf8' });
+  } catch {
+    return 'paused';
+  }
+
+  const waitingPatterns = [
+    />\s+\d+\./,
+    /\?\s/,
+    /Press Enter/i,
+    /Select an option/i,
+  ];
+  for (const pattern of waitingPatterns) {
+    if (pattern.test(output)) return 'waiting';
+  }
+
+  const pausedPatterns = [
+    /out of credit/i,
+    /insufficient credits/i,
+    /rate limit/i,
+  ];
+  for (const pattern of pausedPatterns) {
+    if (pattern.test(output)) return 'paused';
+  }
+
+  return 'working';
+}
+
+module.exports = { isTmuxSessionActive, detectSessionState };
