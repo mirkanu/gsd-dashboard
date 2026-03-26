@@ -293,8 +293,11 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    // Manual touch scroll — use capture phase so we intercept before xterm.js
-    // internal handlers; touch-action:none on the container lets us preventDefault.
+    // Touch scroll: synthesise valid SGR mouse scroll sequences and send directly
+    // to the pty so tmux scrolls its buffer. We bypass onData (which filters the
+    // NaN-coordinate sequences the beta generates) by calling ws.send() ourselves.
+    // Both listeners are passive so xterm.js tap handling (keyboard focus) is
+    // completely unaffected.
     const container = containerRef.current;
     let touchStartY = 0;
     let touchStartX = 0;
@@ -312,19 +315,22 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
         scrollIntent = Math.abs(dy) >= Math.abs(dx);
       }
       if (!scrollIntent) return;
-      e.preventDefault();
       touchStartY = e.touches[0].clientY;
-      const lines = Math.round(dy / ((terminal.options.fontSize as number) ?? 14));
-      if (lines !== 0) terminal.scrollLines(lines);
+      const lines = Math.max(1, Math.abs(Math.round(dy / ((terminal.options.fontSize as number) ?? 14))));
+      // SGR scroll up = button 64, scroll down = button 65
+      const seq = dy > 0 ? '\x1b[<64;1;1M' : '\x1b[<65;1;1M';
+      for (let i = 0; i < lines; i++) {
+        if (ws.readyState === WebSocket.OPEN) ws.send(seq);
+      }
     };
-    container.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
-    container.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('keydown', handleKeyDown);
-      container.removeEventListener('touchstart', handleTouchStart, { capture: true });
-      container.removeEventListener('touchmove', handleTouchMove, { capture: true });
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
       ws.close();
       terminal.dispose();
     };
@@ -368,7 +374,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
         </button>
       </div>
       {/* Terminal container — fills remaining height */}
-      <div ref={containerRef} className="flex-1 overflow-hidden p-2" style={{ touchAction: 'none' }} />
+      <div ref={containerRef} className="flex-1 overflow-hidden p-2" />
       {/* Send box — pinned below terminal */}
       <div className="flex-shrink-0">
         <SendBox
