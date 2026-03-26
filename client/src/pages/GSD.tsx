@@ -217,6 +217,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
   // Stable ref so onClose never causes the effect to re-run (parent re-renders every 30s)
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const [bottomOffset, setBottomOffset] = useState(0);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -298,10 +299,30 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     };
   }, [projectName]);
 
+  // Shift overlay up when the mobile software keyboard reduces the visual viewport
+  useEffect(() => {
+    if (!window.visualViewport) return;
+
+    const handleViewportResize = () => {
+      const offset = window.innerHeight - (window.visualViewport?.height ?? window.innerHeight);
+      setBottomOffset(Math.max(0, offset));
+      // Re-fit terminal columns to new available height
+      if (fitAddonRef.current) {
+        // Small delay so the DOM has reflowed before measuring
+        setTimeout(() => fitAddonRef.current?.fit(), 50);
+      }
+    };
+
+    window.visualViewport.addEventListener('resize', handleViewportResize);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleViewportResize);
+    };
+  }, []); // empty deps — mount/unmount only
+
   return (
     <div
       className="fixed inset-0 bg-black/90 flex flex-col"
-      style={{ zIndex: 70 }}
+      style={{ zIndex: 70, bottom: bottomOffset > 0 ? bottomOffset : undefined, overscrollBehavior: 'contain' }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header bar */}
@@ -316,7 +337,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
         </button>
       </div>
       {/* Terminal container — fills remaining height */}
-      <div ref={containerRef} className="flex-1 overflow-hidden p-2" />
+      <div ref={containerRef} className="flex-1 overflow-hidden p-2" style={{ touchAction: 'pan-y' }} />
       {/* Send box — pinned below terminal */}
       <div className="flex-shrink-0">
         <SendBox
