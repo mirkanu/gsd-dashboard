@@ -5,7 +5,9 @@
 - [x] **v1** — Foundation, backend data pipeline, frontend dashboard UI, Railway deployment (2026-03-18) → [archive](.planning/milestones/v1-ROADMAP.md)
 - [x] **v1.1** — File Viewer & Card Enhancements (completed 2026-03-21)
 - [x] **v1.2** — GSD Stats & Live Data Pipeline (completed 2026-03-23)
-- [ ] **v2.0** — Project Control Plane (in progress)
+- [x] **v2.0** — Project Control Plane (completed 2026-03-25)
+- [ ] **v2.1** — Session Intelligence & Terminal UX (in progress)
+- [ ] **v2.2** — New Project Creation
 
 ---
 
@@ -25,7 +27,16 @@
 - [x] **Phase 9: Tmux Backend Wiring** — Add tmux_session to project config, validate session existence, and expose a send-keys endpoint (completed 2026-03-24)
 - [x] **Phase 10: Smart Send UI** — Add a send input to each project card with next_action pre-fill and GSD command chips (completed 2026-03-24)
 - [x] **Phase 11: Live Terminal Overlay** — Full-screen xterm.js terminal attached to a project's tmux session via node-pty WebSocket (completed 2026-03-25)
-- [ ] **Phase 12: New Project Creation** — One-click new project flow: create directory, tmux session, launch Claude with /gsd:new-project, add to config
+
+## v2.1 Phases
+
+- [ ] **Phase 12: Session State Indicators** — Detect Claude/tmux session state (working/waiting/paused/archived); card border color + label; archive/unarchive in-app; summary stats row overhaul
+- [ ] **Phase 13: Terminal UX** — Move send box + chips into terminal overlay; remove from card; mobile keyboard-push fix; touch scroll in terminal
+- [ ] **Phase 14: Telegram Integration** — Merge GSDTelegram into this repo; detect scroll-to-select prompts; send Telegram notification when input is needed
+
+## v2.2 Phases
+
+- [ ] **Phase 15: New Project Creation** — One-click new project flow: create directory, tmux session, launch Claude with /gsd:new-project, add to config
 
 ---
 
@@ -144,7 +155,47 @@ Plans:
 - [x] 11-01-PLAN.md — Backend WebSocket terminal bridge (node-pty + /ws/terminal/:name endpoint)
 - [x] 11-02-PLAN.md — Frontend xterm.js TerminalOverlay component and Open terminal button
 
-### Phase 12: New Project Creation
+### Phase 12: Session State Indicators
+**Goal**: Every project card shows the real-time state of its Claude/tmux session with a colored border and label; archived projects are hidden and manageable in-app; summary stats reflect session states
+**Depends on**: Phase 11
+**Requirements**: STAT-01, STAT-02, STAT-03, STAT-04, STAT-05, STAT-06, STAT-07
+**Success Criteria** (what must be TRUE):
+  1. The backend captures the last N lines of each project's tmux pane and classifies state as `working`, `waiting`, `paused`, or `archived`
+  2. `GET /api/gsd/projects` includes a `sessionState` field per project with one of those four values
+  3. Each project card has a colored left border and a single-word label: Working (green), Waiting (amber), Paused (red), Archived (gray)
+  4. A user can mark any project as Archived from its card; the flag persists in `gsd-projects.json` and survives server restart
+  5. Archived projects are hidden from the main grid; a collapsible "View archived (N)" section appears below all cards when any archived projects exist
+  6. Archived projects can be unarchived from within the archived section, returning them to the main grid
+  7. The summary stats row above the grid shows Working / Waiting / Paused / Archived counts with matching colors, replacing the old Projects / Active / Complete stats
+**Plans**: 3 plans
+Plans:
+- [ ] 12-01-PLAN.md — Backend: detectSessionState() + sessionState in GET /projects + archive/unarchive endpoints
+- [ ] 12-02-PLAN.md — Frontend: SessionState type + api methods + card border/label + archive UI + archived section
+- [ ] 12-03-PLAN.md — Frontend: Replace summary stats row with Working/Waiting/Paused/Archived counts
+
+### Phase 13: Terminal UX
+**Goal**: The send box lives inside the terminal overlay for focused interaction; mobile users can scroll the terminal and see their input when the keyboard is open
+**Depends on**: Phase 12
+**Requirements**: TUIX-01, TUIX-02, TUIX-03, TUIX-04
+**Success Criteria** (what must be TRUE):
+  1. The send input and GSD command chips are shown at the bottom of the terminal overlay and removed from the project card
+  2. Typing in the send box within the overlay sends text to the tmux session; the GSD chips function identically to their previous behavior on the card
+  3. On mobile, opening the software keyboard causes the terminal overlay to shift up so the send box remains visible above the keyboard
+  4. The terminal content is scrollable by touch (swipe up/down) on mobile devices
+**Plans**: TBD
+
+### Phase 14: Telegram Integration
+**Goal**: Telegram notifications reach the user when their Claude session needs input, including when GSD presents a formatted scroll-to-select prompt
+**Depends on**: Phase 12
+**Requirements**: TG-01, TG-02, TG-03, TG-04
+**Success Criteria** (what must be TRUE):
+  1. The GSDTelegram bot is merged into this repo and runs as part of the server process — no separate repo or process required
+  2. Session state transitions (e.g. working → waiting) trigger a Telegram message identifying the project
+  3. The server detects when a tmux pane contains a GSD scroll-to-select prompt (formatted numbered list with cursor) and sends a "needs your input" Telegram notification
+  4. Bot token and chat ID are configured via environment variables; the bot is a no-op when vars are unset (no crash)
+**Plans**: TBD
+
+### Phase 15: New Project Creation
 **Goal**: Users can create a new GSD project — directory, tmux session, and Claude Code launch — from a single button in the dashboard
 **Depends on**: Phase 9
 **Requirements**: CREATE-01, CREATE-02, CREATE-03, CREATE-04
@@ -155,8 +206,8 @@ Plans:
   4. The new project's card appears in the dashboard grid immediately after creation without requiring a page refresh or manual config edit
 **Plans**: 2 plans
 Plans:
-- [ ] 12-01-PLAN.md — Backend POST /api/gsd/projects/create: directory, tmux session, claude launch, config write
-- [ ] 12-02-PLAN.md — Frontend: New project button + NewProjectDialog + optimistic card prepend
+- [ ] 15-01-PLAN.md — Backend POST /api/gsd/projects/create: directory, tmux session, claude launch, config write
+- [ ] 15-02-PLAN.md — Frontend: New project button + NewProjectDialog + optimistic card prepend
 
 ---
 
@@ -170,6 +221,9 @@ Plans:
 | 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
 | 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
 | 9. Tmux Backend Wiring | 2/2 | Complete | 2026-03-24 |
-| 10. Smart Send UI | 2/2 | Complete    | 2026-03-24 |
+| 10. Smart Send UI | 2/2 | Complete | 2026-03-24 |
 | 11. Live Terminal Overlay | 2/2 | Complete | 2026-03-25 |
-| 12. New Project Creation | 0/2 | Not started | - |
+| 12. Session State Indicators | 0/3 | Not started | - |
+| 13. Terminal UX | 0/TBD | Not started | - |
+| 14. Telegram Integration | 0/TBD | Not started | - |
+| 15. New Project Creation | 0/2 | Planned (deferred to v2.2) | - |
