@@ -587,9 +587,11 @@ export function GSD() {
     api.gsd.wsBase().then(({ wsBase }) => setTerminalWsBase(wsBase ?? null)).catch(() => {});
   }, []);
 
-  // Auto-load on mount (VIEW-06)
+  // Auto-load on mount + poll every 30s for real-time session state (VIEW-06)
   useEffect(() => {
     load();
+    const interval = setInterval(() => load(), 30_000);
+    return () => clearInterval(interval);
   }, [load]);
 
   const activeProjects = projects.filter(p => p.sessionState !== "archived");
