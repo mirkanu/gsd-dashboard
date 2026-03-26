@@ -1417,3 +1417,100 @@ describe("Phase 11: Terminal WebSocket", () => {
     });
   });
 });
+
+// ============================================================
+// Phase 12: detectSessionState
+// ============================================================
+describe("Phase 12: detectSessionState", () => {
+  const { detectSessionState } = require('../gsd/tmux');
+
+  it("returns 'archived' when sessionName is null", () => {
+    assert.equal(detectSessionState(null), 'archived');
+  });
+
+  it("returns 'archived' when sessionName is undefined", () => {
+    assert.equal(detectSessionState(undefined), 'archived');
+  });
+
+  it("returns 'paused' for a session that does not exist", () => {
+    assert.equal(detectSessionState('nonexistent-tmux-session-xyz-99999'), 'paused');
+  });
+});
+
+// ============================================================
+// Phase 12: GET /api/gsd/projects sessionState field
+// ============================================================
+describe("Phase 12: sessionState in GET /api/gsd/projects", () => {
+  it("every project in GET /api/gsd/projects has a sessionState field", async () => {
+    const res = await fetch('/api/gsd/projects');
+    assert.equal(res.status, 200);
+    const { projects } = res.body;
+    assert.ok(Array.isArray(projects) && projects.length > 0);
+    const validStates = ['working', 'waiting', 'paused', 'archived'];
+    for (const p of projects) {
+      assert.ok(
+        validStates.includes(p.sessionState),
+        `Expected sessionState to be one of ${validStates.join('|')} for project "${p.name}", got ${p.sessionState}`
+      );
+    }
+  });
+});
+
+// ============================================================
+// Phase 12: archive/unarchive endpoints
+// ============================================================
+describe("Phase 12: archive/unarchive endpoints", () => {
+  let tempConfig;
+  let prevPath;
+
+  before(() => {
+    tempConfig = path.join(os.tmpdir(), `gsd-archive-test-${Date.now()}.json`);
+    fs.writeFileSync(tempConfig, JSON.stringify({
+      projects: [
+        { name: 'archive-test-proj', root: '/tmp/archive-test', tmux_session: 'nonexistent-session-arch' },
+      ],
+    }));
+    prevPath = process.env.GSD_PROJECTS_PATH;
+    process.env.GSD_PROJECTS_PATH = tempConfig;
+  });
+
+  after(() => {
+    if (prevPath === undefined) delete process.env.GSD_PROJECTS_PATH;
+    else process.env.GSD_PROJECTS_PATH = prevPath;
+    try { fs.unlinkSync(tempConfig); } catch { /* ignore */ }
+  });
+
+  it("POST /archive returns 200 ok:true for a known project", async () => {
+    const res = await post('/api/gsd/projects/archive-test-proj/archive', {});
+    assert.equal(res.status, 200);
+    assert.equal(res.body.ok, true);
+  });
+
+  it("archived flag is written to disk after archive", () => {
+    const config = JSON.parse(fs.readFileSync(tempConfig, 'utf8'));
+    const proj = config.projects.find(p => p.name === 'archive-test-proj');
+    assert.equal(proj.archived, true, 'Expected archived:true written to disk');
+  });
+
+  it("POST /unarchive returns 200 ok:true for a known project", async () => {
+    const res = await post('/api/gsd/projects/archive-test-proj/unarchive', {});
+    assert.equal(res.status, 200);
+    assert.equal(res.body.ok, true);
+  });
+
+  it("archived flag is removed from disk after unarchive", () => {
+    const config = JSON.parse(fs.readFileSync(tempConfig, 'utf8'));
+    const proj = config.projects.find(p => p.name === 'archive-test-proj');
+    assert.ok(!proj.archived, 'Expected archived flag to be removed after unarchive');
+  });
+
+  it("POST /archive returns 404 for unknown project", async () => {
+    const res = await post('/api/gsd/projects/totally-unknown-xyz/archive', {});
+    assert.equal(res.status, 404);
+  });
+
+  it("POST /unarchive returns 404 for unknown project", async () => {
+    const res = await post('/api/gsd/projects/totally-unknown-xyz/unarchive', {});
+    assert.equal(res.status, 404);
+  });
+});
