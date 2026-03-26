@@ -595,15 +595,10 @@ export function GSD() {
   const activeProjects = projects.filter(p => p.sessionState !== "archived");
   const archivedProjects = projects.filter(p => p.sessionState === "archived");
 
-  const totalProjects = projects.length;
-  const activeCount = projects.filter((p) => {
-    const s = p.state?.status?.toLowerCase() ?? "";
-    return s.includes("progress") || s.includes("planning") || s.includes("verif");
-  }).length;
-  const completeCount = projects.filter((p) => {
-    const pct = p.state?.progress?.percent;
-    return pct === 100;
-  }).length;
+  const workingCount  = projects.filter(p => p.sessionState === "working").length;
+  const waitingCount  = projects.filter(p => p.sessionState === "waiting").length;
+  const pausedCount   = projects.filter(p => p.sessionState === "paused").length;
+  const archivedCount = projects.filter(p => p.sessionState === "archived").length;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -625,17 +620,23 @@ export function GSD() {
 
       {/* Summary stats */}
       {!loading && !error && projects.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: "Projects", value: totalProjects },
-            { label: "Active", value: activeCount },
-            { label: "Complete", value: completeCount },
-          ].map(({ label, value }) => (
-            <div key={label} className="card py-3 px-4 text-center">
-              <div className="text-2xl font-bold text-gray-100">{value}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{label}</div>
-            </div>
-          ))}
+        <div className="grid grid-cols-4 gap-3">
+          <div className="card py-3 px-4 text-center">
+            <div className="text-2xl font-bold text-emerald-400">{workingCount}</div>
+            <div className="text-xs text-gray-500 mt-0.5">Working</div>
+          </div>
+          <div className="card py-3 px-4 text-center">
+            <div className="text-2xl font-bold text-amber-400">{waitingCount}</div>
+            <div className="text-xs text-gray-500 mt-0.5">Waiting</div>
+          </div>
+          <div className="card py-3 px-4 text-center">
+            <div className="text-2xl font-bold text-red-400">{pausedCount}</div>
+            <div className="text-xs text-gray-500 mt-0.5">Paused</div>
+          </div>
+          <div className="card py-3 px-4 text-center">
+            <div className="text-2xl font-bold text-gray-500">{archivedCount}</div>
+            <div className="text-xs text-gray-500 mt-0.5">Archived</div>
+          </div>
         </div>
       )}
 
