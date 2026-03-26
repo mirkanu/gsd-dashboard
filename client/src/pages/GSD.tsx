@@ -34,6 +34,13 @@ function classifyStatus(status: string | null): StatusLevel {
   return "muted";
 }
 
+const SESSION_STATE_CONFIG: Record<import("../lib/types").SessionState, { border: string; label: string; labelCls: string }> = {
+  working:  { border: "border-l-4 border-l-emerald-500",  label: "Working",  labelCls: "text-emerald-400" },
+  waiting:  { border: "border-l-4 border-l-amber-400",    label: "Waiting",  labelCls: "text-amber-400"   },
+  paused:   { border: "border-l-4 border-l-red-500",      label: "Paused",   labelCls: "text-red-400"     },
+  archived: { border: "border-l-4 border-l-gray-600",     label: "Archived", labelCls: "text-gray-500"    },
+};
+
 const STATUS_STYLES: Record<StatusLevel, string> = {
   success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   info: "bg-accent/10 text-accent border-accent/20",
@@ -311,10 +318,19 @@ function TerminalOverlay({ projectName, wsBase, onClose }: TerminalOverlayProps)
 
 // ─── Project card ─────────────────────────────────────────────────────────────
 
-function ProjectCard({ project, onSelect, onOpenTerminal }: { project: GsdProject; onSelect: (project: GsdProject) => void; onOpenTerminal: () => void }) {
+function ProjectCard({
+  project, onSelect, onOpenTerminal, onArchive, onUnarchive
+}: {
+  project: GsdProject;
+  onSelect: (project: GsdProject) => void;
+  onOpenTerminal: () => void;
+  onArchive: () => void;
+  onUnarchive: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const { state, roadmap, requirements } = project;
   const progress = state?.progress;
+  const stateConf = SESSION_STATE_CONFIG[project.sessionState ?? "paused"];
 
   const phaseSummary =
     progress?.completed_phases != null && progress?.total_phases != null
@@ -322,7 +338,7 @@ function ProjectCard({ project, onSelect, onOpenTerminal }: { project: GsdProjec
       : null;
 
   return (
-    <div className="card flex flex-col gap-0 overflow-hidden cursor-pointer" onClick={() => onSelect(project)}>
+    <div className={`card flex flex-col gap-0 overflow-hidden cursor-pointer ${stateConf.border}`} onClick={() => onSelect(project)}>
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-border/50">
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -336,6 +352,9 @@ function ProjectCard({ project, onSelect, onOpenTerminal }: { project: GsdProjec
             )}
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className={`text-[11px] font-medium flex-shrink-0 ${stateConf.labelCls}`}>
+              {stateConf.label}
+            </span>
             {state?.blockers && state.blockers.length > 0 && (
               <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/20">
                 Blocked
@@ -451,6 +470,27 @@ function ProjectCard({ project, onSelect, onOpenTerminal }: { project: GsdProjec
         </div>
       )}
 
+      {/* Archive / Unarchive button */}
+      {project.sessionState !== "archived" ? (
+        <div className="px-4 pb-3 pt-1" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={(e) => { e.stopPropagation(); onArchive(); }}
+            className="text-[10px] text-gray-600 hover:text-gray-400 transition-colors"
+          >
+            Archive
+          </button>
+        </div>
+      ) : (
+        <div className="px-4 pb-3 pt-1" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={(e) => { e.stopPropagation(); onUnarchive(); }}
+            className="text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+          >
+            Unarchive
+          </button>
+        </div>
+      )}
+
       {/* Expandable roadmap */}
       {roadmap && roadmap.phases.length > 0 && (
         <>
@@ -505,6 +545,7 @@ export function GSD() {
   const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
+  const [archivedOpen, setArchivedOpen] = useState(false);
 
   const TAB_TITLES: Record<string, string> = {
     state: "State",
@@ -527,6 +568,20 @@ export function GSD() {
     }
   }, []);
 
+  const archiveProject = useCallback(async (name: string) => {
+    try {
+      await api.gsd.archive(name);
+      load();
+    } catch { /* silent fail */ }
+  }, [load]);
+
+  const unarchiveProject = useCallback(async (name: string) => {
+    try {
+      await api.gsd.unarchive(name);
+      load();
+    } catch { /* silent fail */ }
+  }, [load]);
+
   // Fetch terminal WS base URL once on mount (null = use relative URL)
   useEffect(() => {
     api.gsd.wsBase().then(({ wsBase }) => setTerminalWsBase(wsBase ?? null)).catch(() => {});
@@ -536,6 +591,9 @@ export function GSD() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const activeProjects = projects.filter(p => p.sessionState !== "archived");
+  const archivedProjects = projects.filter(p => p.sessionState === "archived");
 
   const totalProjects = projects.length;
   const activeCount = projects.filter((p) => {
@@ -596,20 +654,57 @@ export function GSD() {
 
       {/* Project cards grid */}
       {!loading && !error && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {[...projects]
-            .sort((a, b) => {
-              const aBlocked = (a.state?.blockers?.length ?? 0) > 0 ? 0 : 1;
-              const bBlocked = (b.state?.blockers?.length ?? 0) > 0 ? 0 : 1;
-              if (aBlocked !== bBlocked) return aBlocked - bBlocked;
-              const aTime = a.sessionUpdatedAt ? new Date(a.sessionUpdatedAt).getTime() : 0;
-              const bTime = b.sessionUpdatedAt ? new Date(b.sessionUpdatedAt).getTime() : 0;
-              return bTime - aTime;
-            })
-            .map((project) => (
-            <ProjectCard key={project.name} project={project} onSelect={setSelectedProject} onOpenTerminal={() => setTerminalProject(project.name)} />
-          ))}
-        </div>
+        <>
+          {/* Active project cards grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {[...activeProjects]
+              .sort((a, b) => {
+                const aBlocked = (a.state?.blockers?.length ?? 0) > 0 ? 0 : 1;
+                const bBlocked = (b.state?.blockers?.length ?? 0) > 0 ? 0 : 1;
+                if (aBlocked !== bBlocked) return aBlocked - bBlocked;
+                const aTime = a.sessionUpdatedAt ? new Date(a.sessionUpdatedAt).getTime() : 0;
+                const bTime = b.sessionUpdatedAt ? new Date(b.sessionUpdatedAt).getTime() : 0;
+                return bTime - aTime;
+              })
+              .map((project) => (
+              <ProjectCard
+                key={project.name}
+                project={project}
+                onSelect={setSelectedProject}
+                onOpenTerminal={() => setTerminalProject(project.name)}
+                onArchive={() => archiveProject(project.name)}
+                onUnarchive={() => unarchiveProject(project.name)}
+              />
+            ))}
+          </div>
+
+          {/* Archived section */}
+          {archivedProjects.length > 0 && (
+            <div className="mt-2">
+              <button
+                onClick={() => setArchivedOpen(v => !v)}
+                className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-300 transition-colors mb-3"
+              >
+                {archivedOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                View archived ({archivedProjects.length})
+              </button>
+              {archivedOpen && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {archivedProjects.map((project) => (
+                    <ProjectCard
+                      key={project.name}
+                      project={project}
+                      onSelect={setSelectedProject}
+                      onOpenTerminal={() => setTerminalProject(project.name)}
+                      onArchive={() => archiveProject(project.name)}
+                      onUnarchive={() => unarchiveProject(project.name)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {selectedProject && (
