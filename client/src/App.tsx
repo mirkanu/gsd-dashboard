@@ -7,7 +7,7 @@ import { SessionDetail } from "./pages/SessionDetail";
 import { ActivityFeed } from "./pages/ActivityFeed";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
-import { GSD } from "./pages/GSD";
+import { GSD, TerminalPage } from "./pages/GSD";
 import { NotFound } from "./pages/NotFound";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { useNotifications } from "./hooks/useNotifications";
@@ -25,6 +25,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Standalone terminal page — no layout chrome, opens in new tab on mobile */}
+        <Route path="terminal/:name" element={<TerminalPage />} />
         <Route element={<Layout wsConnected={connected} />}>
           <Route index element={<Navigate to="/gsd" replace />} />
           <Route path="kanban" element={<KanbanBoard />} />
