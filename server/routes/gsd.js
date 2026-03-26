@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
-const { isTmuxSessionActive } = require('../gsd/tmux');
+const { isTmuxSessionActive, detectSessionState } = require('../gsd/tmux');
 const { db } = require('../db');
 
 const router = express.Router();
@@ -14,6 +14,11 @@ function loadConfig() {
   const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, "../../gsd-projects.json");
   const raw = fs.readFileSync(configPath, "utf8");
   return JSON.parse(raw);
+}
+
+function saveConfig(config) {
+  const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../../gsd-projects.json');
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', 'utf8');
 }
 
 // GET /api/gsd/ws-base — returns the WebSocket base URL for terminal connections
@@ -59,11 +64,15 @@ router.get("/projects", async (_req, res) => {
       ORDER BY s.updated_at DESC
       LIMIT 1
     `);
-    const data = projects.map(({ name, root, tmux_session }) => {
+    const data = projects.map(({ name, root, tmux_session, archived }) => {
       const row = sessionQuery.get(root);
+      const sessionState = archived
+        ? 'archived'
+        : detectSessionState(tmux_session ?? null);
       return {
         ...readProject(name, root),
         tmuxActive: isTmuxSessionActive(tmux_session),
+        sessionState,
         contextTokens: row?.context_tokens ?? null,
         sessionUpdatedAt: row?.updated_at ?? null,
       };
@@ -162,6 +171,48 @@ router.post('/projects/:name/send', async (req, res) => {
     return res.json({ ok: true });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to send keys to tmux session', detail: err.message });
+  }
+});
+
+// POST /api/gsd/projects/:name/archive
+router.post('/projects/:name/archive', (req, res) => {
+  if (GSD_DATA_URL) {
+    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/archive`,
+      { method: 'POST', signal: AbortSignal.timeout(10000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+  try {
+    const config = loadConfig();
+    const project = config.projects.find(p => p.name === req.params.name);
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    project.archived = true;
+    saveConfig(config);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update config', detail: err.message });
+  }
+});
+
+// POST /api/gsd/projects/:name/unarchive
+router.post('/projects/:name/unarchive', (req, res) => {
+  if (GSD_DATA_URL) {
+    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/unarchive`,
+      { method: 'POST', signal: AbortSignal.timeout(10000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+  try {
+    const config = loadConfig();
+    const project = config.projects.find(p => p.name === req.params.name);
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    delete project.archived;
+    saveConfig(config);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update config', detail: err.message });
   }
 });
 

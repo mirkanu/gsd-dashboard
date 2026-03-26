@@ -1460,57 +1460,61 @@ describe("Phase 12: sessionState in GET /api/gsd/projects", () => {
 // Phase 12: archive/unarchive endpoints
 // ============================================================
 describe("Phase 12: archive/unarchive endpoints", () => {
-  let tempConfig;
-  let prevPath;
+  const GSD_PROJECTS_FILE = path.resolve(__dirname, "../../gsd-projects.json");
+  const ARCHIVE_TEST_PROJECT = {
+    name: 'arch-test-proj-p12',
+    root: '/tmp/arch-test-p12',
+    tmux_session: 'nonexistent-arch-session-p12',
+  };
+  let originalConfig;
+  let prevGsdProjectsPath;
 
   before(() => {
-    tempConfig = path.join(os.tmpdir(), `gsd-archive-test-${Date.now()}.json`);
-    fs.writeFileSync(tempConfig, JSON.stringify({
-      projects: [
-        { name: 'archive-test-proj', root: '/tmp/archive-test', tmux_session: 'nonexistent-session-arch' },
-      ],
-    }));
-    prevPath = process.env.GSD_PROJECTS_PATH;
-    process.env.GSD_PROJECTS_PATH = tempConfig;
+    // Capture and unset GSD_PROJECTS_PATH so all routes use the real gsd-projects.json
+    prevGsdProjectsPath = process.env.GSD_PROJECTS_PATH;
+    delete process.env.GSD_PROJECTS_PATH;
+
+    originalConfig = fs.readFileSync(GSD_PROJECTS_FILE, "utf8");
+    const config = JSON.parse(originalConfig);
+    // Remove any stale entry before adding fresh
+    config.projects = config.projects.filter(p => p.name !== ARCHIVE_TEST_PROJECT.name);
+    config.projects.push(ARCHIVE_TEST_PROJECT);
+    fs.writeFileSync(GSD_PROJECTS_FILE, JSON.stringify(config, null, 2) + "\n", "utf8");
   });
 
   after(() => {
-    if (prevPath === undefined) delete process.env.GSD_PROJECTS_PATH;
-    else process.env.GSD_PROJECTS_PATH = prevPath;
-    try { fs.unlinkSync(tempConfig); } catch { /* ignore */ }
+    fs.writeFileSync(GSD_PROJECTS_FILE, originalConfig, "utf8");
+    if (prevGsdProjectsPath === undefined) delete process.env.GSD_PROJECTS_PATH;
+    else process.env.GSD_PROJECTS_PATH = prevGsdProjectsPath;
   });
 
-  it("POST /archive returns 200 ok:true for a known project", async () => {
-    const res = await post('/api/gsd/projects/archive-test-proj/archive', {});
+  it("POST /archive writes archived:true to gsd-projects.json", async () => {
+    const res = await post(`/api/gsd/projects/${ARCHIVE_TEST_PROJECT.name}/archive`, {});
     assert.equal(res.status, 200);
     assert.equal(res.body.ok, true);
-  });
-
-  it("archived flag is written to disk after archive", () => {
-    const config = JSON.parse(fs.readFileSync(tempConfig, 'utf8'));
-    const proj = config.projects.find(p => p.name === 'archive-test-proj');
+    const config = JSON.parse(fs.readFileSync(GSD_PROJECTS_FILE, 'utf8'));
+    const proj = config.projects.find(p => p.name === ARCHIVE_TEST_PROJECT.name);
     assert.equal(proj.archived, true, 'Expected archived:true written to disk');
   });
 
-  it("POST /unarchive returns 200 ok:true for a known project", async () => {
-    const res = await post('/api/gsd/projects/archive-test-proj/unarchive', {});
+  it("POST /unarchive removes archived flag from gsd-projects.json", async () => {
+    // Ensure it is archived first
+    await post(`/api/gsd/projects/${ARCHIVE_TEST_PROJECT.name}/archive`, {});
+    const res = await post(`/api/gsd/projects/${ARCHIVE_TEST_PROJECT.name}/unarchive`, {});
     assert.equal(res.status, 200);
     assert.equal(res.body.ok, true);
-  });
-
-  it("archived flag is removed from disk after unarchive", () => {
-    const config = JSON.parse(fs.readFileSync(tempConfig, 'utf8'));
-    const proj = config.projects.find(p => p.name === 'archive-test-proj');
+    const config = JSON.parse(fs.readFileSync(GSD_PROJECTS_FILE, 'utf8'));
+    const proj = config.projects.find(p => p.name === ARCHIVE_TEST_PROJECT.name);
     assert.ok(!proj.archived, 'Expected archived flag to be removed after unarchive');
   });
 
   it("POST /archive returns 404 for unknown project", async () => {
-    const res = await post('/api/gsd/projects/totally-unknown-xyz/archive', {});
+    const res = await post('/api/gsd/projects/totally-unknown-xyz-p12/archive', {});
     assert.equal(res.status, 404);
   });
 
   it("POST /unarchive returns 404 for unknown project", async () => {
-    const res = await post('/api/gsd/projects/totally-unknown-xyz/unarchive', {});
+    const res = await post('/api/gsd/projects/totally-unknown-xyz-p12/unarchive', {});
     assert.equal(res.status, 404);
   });
 });
