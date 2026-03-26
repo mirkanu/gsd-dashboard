@@ -75,4 +75,5 @@
 /* Hide native iOS caret on xterm.js hidden textarea */
 .xterm-helper-textarea {
   caret-color: transparent !important;
+  font-size: 16px !important;
 }

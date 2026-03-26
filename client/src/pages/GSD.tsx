@@ -231,7 +231,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     // Create terminal
     const terminal = new Terminal({
       cursorBlink: true,
-      fontSize: window.matchMedia('(pointer: coarse)').matches ? 11 : 14,
+      fontSize: window.matchMedia('(pointer: coarse)').matches ? 10 : 14,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
       theme: { background: '#0d1117', foreground: '#c9d1d9' },
     });
