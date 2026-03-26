@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import {
   RefreshCw,
   CheckCircle2,
@@ -291,29 +292,9 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    // Touch scroll — xterm.js renders to canvas so native pan doesn't work;
-    // manually map swipe delta to terminal.scrollLines()
-    const container = containerRef.current;
-    let touchStartY = 0;
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY = e.touches[0].clientY;
-    };
-    const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-      const deltaY = touchStartY - e.touches[0].clientY;
-      touchStartY = e.touches[0].clientY;
-      const lineHeight = (terminal.options.fontSize as number) ?? 14;
-      const lines = Math.round(deltaY / lineHeight);
-      if (lines !== 0) terminal.scrollLines(lines);
-    };
-    container.addEventListener('touchstart', handleTouchStart, { passive: true });
-    container.addEventListener('touchmove', handleTouchMove, { passive: false });
-
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('keydown', handleKeyDown);
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
       ws.close();
       terminal.dispose();
     };
@@ -506,7 +487,14 @@ function ProjectCard({
       {project.tmuxActive && (
         <div className="mt-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={(e) => { e.stopPropagation(); onOpenTerminal(state?.next_action ?? ""); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.matchMedia('(pointer: coarse)').matches) {
+                window.open(`/terminal/${encodeURIComponent(project.name)}`, '_blank');
+              } else {
+                onOpenTerminal(state?.next_action ?? "");
+              }
+            }}
             className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-accent transition-colors px-2 py-1 rounded hover:bg-surface-3"
           >
             <span className="text-[11px]">⌨</span>
@@ -820,5 +808,27 @@ export function GSD() {
         />
       )}
     </div>
+  );
+}
+
+// Standalone full-screen terminal page — used on mobile where the overlay
+// approach is awkward; opens in a new browser tab via /terminal/:name
+export function TerminalPage() {
+  const { name } = useParams<{ name: string }>();
+  const [wsBase, setWsBase] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.gsd.wsBase().then(({ wsBase }) => setWsBase(wsBase ?? null)).catch(() => {});
+  }, []);
+
+  if (!name) return null;
+
+  return (
+    <TerminalOverlay
+      projectName={decodeURIComponent(name)}
+      wsBase={wsBase}
+      onClose={() => window.close()}
+      initialSendValue=""
+    />
   );
 }
