@@ -352,11 +352,19 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     const handleViewportResize = () => {
       const offset = window.innerHeight - (window.visualViewport?.height ?? window.innerHeight);
       setBottomOffset(Math.max(0, offset));
-      // Re-fit terminal columns to new available height
-      if (fitAddonRef.current) {
-        // Small delay so the DOM has reflowed before measuring
-        setTimeout(() => fitAddonRef.current?.fit(), 50);
-      }
+      // After DOM reflow: refit terminal to new height, scroll cursor into view,
+      // and tell the pty about the new dimensions so line-wrap is correct.
+      setTimeout(() => {
+        fitAddonRef.current?.fit();
+        const t = termRef.current;
+        const ws = wsRef.current;
+        if (t) {
+          t.scrollToBottom();
+          if (ws?.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'resize', cols: t.cols, rows: t.rows }));
+          }
+        }
+      }, 100);
     };
 
     window.visualViewport.addEventListener('resize', handleViewportResize);
