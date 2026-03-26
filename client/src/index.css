@@ -71,3 +71,8 @@
 .animate-pulse-dot {
   animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Hide native iOS caret on xterm.js hidden textarea */
+.xterm-helper-textarea {
+  caret-color: transparent !important;
+}
