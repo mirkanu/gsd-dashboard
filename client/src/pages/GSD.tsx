@@ -291,9 +291,29 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     };
     window.addEventListener('keydown', handleKeyDown);
 
+    // Touch scroll — xterm.js renders to canvas so native pan doesn't work;
+    // manually map swipe delta to terminal.scrollLines()
+    const container = containerRef.current;
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const deltaY = touchStartY - e.touches[0].clientY;
+      touchStartY = e.touches[0].clientY;
+      const lineHeight = (terminal.options.fontSize as number) ?? 14;
+      const lines = Math.round(deltaY / lineHeight);
+      if (lines !== 0) terminal.scrollLines(lines);
+    };
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('keydown', handleKeyDown);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
       ws.close();
       terminal.dispose();
     };
@@ -337,7 +357,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
         </button>
       </div>
       {/* Terminal container — fills remaining height */}
-      <div ref={containerRef} className="flex-1 overflow-hidden p-2" style={{ touchAction: 'pan-y' }} />
+      <div ref={containerRef} className="flex-1 overflow-hidden p-2" />
       {/* Send box — pinned below terminal */}
       <div className="flex-shrink-0">
         <SendBox
