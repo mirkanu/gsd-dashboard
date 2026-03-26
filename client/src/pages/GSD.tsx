@@ -662,9 +662,10 @@ export function GSD() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {[...activeProjects]
               .sort((a, b) => {
-                const aBlocked = (a.state?.blockers?.length ?? 0) > 0 ? 0 : 1;
-                const bBlocked = (b.state?.blockers?.length ?? 0) > 0 ? 0 : 1;
-                if (aBlocked !== bBlocked) return aBlocked - bBlocked;
+                const stateOrder: Record<string, number> = { waiting: 0, working: 1, paused: 2 };
+                const aOrder = stateOrder[a.sessionState ?? "paused"] ?? 2;
+                const bOrder = stateOrder[b.sessionState ?? "paused"] ?? 2;
+                if (aOrder !== bOrder) return aOrder - bOrder;
                 const aTime = a.sessionUpdatedAt ? new Date(a.sessionUpdatedAt).getTime() : 0;
                 const bTime = b.sessionUpdatedAt ? new Date(b.sessionUpdatedAt).getTime() : 0;
                 return bTime - aTime;
