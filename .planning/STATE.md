@@ -4,8 +4,8 @@ milestone: v1.1
 milestone_name: Phases
 status: completed
 stopped_at: Completed 12-03-PLAN.md (session state stats row)
-last_updated: "2026-03-26T10:15:00Z"
-last_activity: 2026-03-26 — Phase 12 (Session State Indicators) complete; stats row now shows Working/Waiting/Paused/Archived counts
+last_updated: "2026-03-26T10:23:26.920Z"
+last_activity: "2026-03-26 — Phase 12 complete: session state detection, archive/unarchive, stats row with colored counts"
 progress:
   total_phases: 12
   completed_phases: 9
