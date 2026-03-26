@@ -73,13 +73,17 @@ function parseResetTime(text) {
   return null;
 }
 
+// Patterns must match actual error messages from Claude/Anthropic, not prose.
+// Require explicit error context words to avoid matching commit messages, docs, etc.
 const RATE_LIMIT_PATTERNS = [
-  /rate.?limit/i,
+  /rate.?limit(?:ed| exceeded| reached)/i,  // "rate limited", "rate limit exceeded"
+  /(?:hit|reached|exceeded).*(?:rate.?limit|usage.?limit)/i,
   /out of credit/i,
   /insufficient credits?/i,
-  /usage.?limit/i,
-  /overloaded/i,
+  /usage.?limit(?:\s+(?:hit|reached|exceeded))/i,
+  /too many requests/i,
   /quota exceeded/i,
+  /please try again in \d/i,               // "please try again in X hours"
 ];
 
 /**
@@ -94,9 +98,12 @@ function detectRateLimit(sessionNames) {
     if (!name || !isTmuxSessionActive(name)) continue;
     const text = capturePaneText(name);
     if (!text) continue;
+    // Only scan the last 10 lines — rate limit notices appear in recent output,
+    // not buried in scrollback that may contain code/docs with matching words.
+    const recent = text.split('\n').slice(-10).join('\n');
     for (const pattern of RATE_LIMIT_PATTERNS) {
-      if (pattern.test(text)) {
-        const resetAt = parseResetTime(text);
+      if (pattern.test(recent)) {
+        const resetAt = parseResetTime(recent);
         return { active: true, resetAt: resetAt ? resetAt.toISOString() : null };
       }
     }

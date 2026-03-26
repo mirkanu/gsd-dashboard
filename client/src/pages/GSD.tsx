@@ -213,6 +213,9 @@ function TerminalOverlay({ projectName, wsBase, onClose }: TerminalOverlayProps)
   const termRef = useRef<Terminal | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
+  // Stable ref so onClose never causes the effect to re-run (parent re-renders every 30s)
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -281,7 +284,7 @@ function TerminalOverlay({ projectName, wsBase, onClose }: TerminalOverlayProps)
 
     // Handle Escape key to close
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     window.addEventListener('keydown', handleKeyDown);
 
@@ -291,7 +294,7 @@ function TerminalOverlay({ projectName, wsBase, onClose }: TerminalOverlayProps)
       ws.close();
       terminal.dispose();
     };
-  }, [projectName, onClose]);
+  }, [projectName]);
 
   return (
     <div
