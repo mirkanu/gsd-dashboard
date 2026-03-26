@@ -30,7 +30,7 @@
 
 ## v2.1 Phases
 
-- [ ] **Phase 12: Session State Indicators** — Detect Claude/tmux session state (working/waiting/paused/archived); card border color + label; archive/unarchive in-app; summary stats row overhaul
+- [x] **Phase 12: Session State Indicators** — Detect Claude/tmux session state (working/waiting/paused/archived); card border color + label; archive/unarchive in-app; summary stats row overhaul (completed 2026-03-26)
 - [ ] **Phase 13: Terminal UX** — Move send box + chips into terminal overlay; remove from card; mobile keyboard-push fix; touch scroll in terminal
 - [ ] **Phase 14: Telegram Integration** — Merge GSDTelegram into this repo; detect scroll-to-select prompts; send Telegram notification when input is needed
 
@@ -223,7 +223,7 @@ Plans:
 | 9. Tmux Backend Wiring | 2/2 | Complete | 2026-03-24 |
 | 10. Smart Send UI | 2/2 | Complete | 2026-03-24 |
 | 11. Live Terminal Overlay | 2/2 | Complete | 2026-03-25 |
-| 12. Session State Indicators | 2/3 | In Progress|  |
+| 12. Session State Indicators | 3/3 | Complete   | 2026-03-26 |
 | 13. Terminal UX | 0/TBD | Not started | - |
 | 14. Telegram Integration | 0/TBD | Not started | - |
 | 15. New Project Creation | 0/2 | Planned (deferred to v2.2) | - |
