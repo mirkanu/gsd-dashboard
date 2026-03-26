@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phases
 status: completed
-stopped_at: Completed 12-03-PLAN.md (session state stats row)
-last_updated: "2026-03-26T10:23:26.920Z"
-last_activity: "2026-03-26 — Phase 12 complete: session state detection, archive/unarchive, stats row with colored counts"
+stopped_at: Completed 13-02-PLAN.md (mobile keyboard-push fix and touch scroll)
+last_updated: "2026-03-26T00:00:00Z"
+last_activity: "2026-03-26 — Phase 13 Plan 02: visualViewport keyboard-push fix, touch-action pan-y, overscroll containment in TerminalOverlay"
 progress:
   total_phases: 12
   completed_phases: 9
   total_plans: 22
-  completed_plans: 20
-  percent: 91
+  completed_plans: 21
+  percent: 95
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: Phase 12 — Session State Indicators — COMPLETE
-Plan: 12-03 (final plan)
-Status: Phase 12 complete; v2.1 foundation done; Phase 13/14 ready to execute
-Last activity: 2026-03-26 — Phase 12 complete: session state detection, archive/unarchive, stats row with colored counts
+Phase: Phase 13 — Terminal UX
+Plan: 13-02 (final plan)
+Status: Phase 13 Plan 02 complete; mobile keyboard-push fix and touch scroll shipped
+Last activity: 2026-03-26 — Phase 13 Plan 02: visualViewport keyboard-push fix, touch-action pan-y, overscroll containment in TerminalOverlay
 
-Progress: [█████████░] 91%
+Progress: [█████████▌] 95%
 
 ## Performance Metrics
 
@@ -89,6 +89,7 @@ Progress: [█████████░] 91%
 - [Phase 12-session-state-indicators]: SESSION_STATE_CONFIG lookup pattern for border/label/color replaces conditional chains
 - [Phase 12-session-state-indicators]: sessionState field is required (not optional) on GsdProject — backend always returns it
 - [12-03]: Stats row uses grid-cols-4 with Working/Waiting/Paused/Archived counts; colors match SESSION_STATE_CONFIG (emerald/amber/red/gray)
+- [13-02]: visualViewport offset = window.innerHeight - visualViewport.height; bottom: undefined when 0 so inset-0 Tailwind class retains control on desktop; 50ms delay before fitAddon.fit() allows DOM reflow after viewport change
 
 ### Pending Todos
 
@@ -100,7 +101,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T10:15:00Z
-Stopped at: Completed 12-03-PLAN.md (session state stats row)
+Last session: 2026-03-26T00:00:00Z
+Stopped at: Completed 13-02-PLAN.md (mobile keyboard-push fix and touch scroll)
 Resume file: None
-Next action: Execute Phase 13 (Terminal UX) or Phase 14 (Telegram)
+Next action: Execute Phase 14 (Telegram) or Phase 15 (New Project Creation)
