@@ -206,9 +206,10 @@ interface TerminalOverlayProps {
   projectName: string;
   wsBase: string | null;
   onClose: () => void;
+  initialSendValue: string;
 }
 
-function TerminalOverlay({ projectName, wsBase, onClose }: TerminalOverlayProps) {
+function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: TerminalOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -236,6 +237,7 @@ function TerminalOverlay({ projectName, wsBase, onClose }: TerminalOverlayProps)
     terminal.loadAddon(fitAddon);
     terminal.open(containerRef.current);
     fitAddon.fit();
+    terminal.focus(); // give keyboard focus to terminal on open
     termRef.current = terminal;
     fitAddonRef.current = fitAddon;
 
@@ -315,6 +317,14 @@ function TerminalOverlay({ projectName, wsBase, onClose }: TerminalOverlayProps)
       </div>
       {/* Terminal container — fills remaining height */}
       <div ref={containerRef} className="flex-1 overflow-hidden p-2" />
+      {/* Send box — pinned below terminal */}
+      <div className="flex-shrink-0">
+        <SendBox
+          projectName={projectName}
+          initialValue={initialSendValue}
+          contextTokens={null}
+        />
+      </div>
     </div>
   );
 }
@@ -326,7 +336,7 @@ function ProjectCard({
 }: {
   project: GsdProject;
   onSelect: (project: GsdProject) => void;
-  onOpenTerminal: () => void;
+  onOpenTerminal: (initialValue: string) => void;
   onArchive: () => void;
   onUnarchive: () => void;
 }) {
@@ -451,20 +461,11 @@ function ProjectCard({
         </div>
       )}
 
-      {/* Send box — only when tmux session is active */}
-      {project.tmuxActive && (
-        <SendBox
-          projectName={project.name}
-          initialValue={state?.next_action ?? ""}
-          contextTokens={project.contextTokens ?? null}
-        />
-      )}
-
       {/* Open terminal button — only when tmux session is active */}
       {project.tmuxActive && (
         <div className="mt-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={(e) => { e.stopPropagation(); onOpenTerminal(); }}
+            onClick={(e) => { e.stopPropagation(); onOpenTerminal(state?.next_action ?? ""); }}
             className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-accent transition-colors px-2 py-1 rounded hover:bg-surface-3"
           >
             <span className="text-[11px]">⌨</span>
@@ -549,6 +550,7 @@ export function GSD() {
   const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
+  const [terminalInitialValue, setTerminalInitialValue] = useState<string>("");
   const [archivedOpen, setArchivedOpen] = useState(false);
 
   const TAB_TITLES: Record<string, string> = {
@@ -712,7 +714,10 @@ export function GSD() {
                 key={project.name}
                 project={project}
                 onSelect={setSelectedProject}
-                onOpenTerminal={() => setTerminalProject(project.name)}
+                onOpenTerminal={(initialValue) => {
+                  setTerminalProject(project.name);
+                  setTerminalInitialValue(initialValue);
+                }}
                 onArchive={() => archiveProject(project.name)}
                 onUnarchive={() => unarchiveProject(project.name)}
               />
@@ -736,7 +741,10 @@ export function GSD() {
                       key={project.name}
                       project={project}
                       onSelect={setSelectedProject}
-                      onOpenTerminal={() => setTerminalProject(project.name)}
+                      onOpenTerminal={(initialValue) => {
+                  setTerminalProject(project.name);
+                  setTerminalInitialValue(initialValue);
+                }}
                       onArchive={() => archiveProject(project.name)}
                       onUnarchive={() => unarchiveProject(project.name)}
                     />
@@ -766,7 +774,8 @@ export function GSD() {
         <TerminalOverlay
           projectName={terminalProject}
           wsBase={terminalWsBase}
-          onClose={() => setTerminalProject(null)}
+          onClose={() => { setTerminalProject(null); setTerminalInitialValue(""); }}
+          initialSendValue={terminalInitialValue}
         />
       )}
     </div>
