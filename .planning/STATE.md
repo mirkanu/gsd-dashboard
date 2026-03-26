@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phases
 status: completed
-stopped_at: Completed 12-01-PLAN.md (session state backend)
-last_updated: "2026-03-26T09:53:08.546Z"
+stopped_at: Completed 12-02-PLAN.md (session state frontend)
+last_updated: "2026-03-26T10:10:00.549Z"
 last_activity: 2026-03-26 — Roadmap restructured; v2.1 phases 12/13/14 defined; New Project Creation moved to Phase 15 (v2.2)
 progress:
   total_phases: 12
   completed_phases: 8
   total_plans: 22
-  completed_plans: 18
+  completed_plans: 19
   percent: 89
 ---
 
@@ -86,6 +86,8 @@ Progress: [████████░░] 89%
 - [v2.1 roadmap]: Telegram bot merges into this server process (Phase 14); GSDTelegram is a separate repo on same machine; scroll-to-select detection is the key new feature (existing notifications likely missing this pattern)
 - [Phase 12-session-state-indicators]: detectSessionState() uses tmux capture-pane -p -l 50 with regex pattern matching; waiting/paused/working/archived; fail-safe returns paused
 - [Phase 12-session-state-indicators]: archive/unarchive endpoints write to gsd-projects.json via saveConfig(); archived flag short-circuits detectSessionState call in GET /projects
+- [Phase 12-session-state-indicators]: SESSION_STATE_CONFIG lookup pattern for border/label/color replaces conditional chains
+- [Phase 12-session-state-indicators]: sessionState field is required (not optional) on GsdProject — backend always returns it
 
 ### Pending Todos
 
@@ -97,7 +99,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T09:53:08.541Z
-Stopped at: Completed 12-01-PLAN.md (session state backend)
+Last session: 2026-03-26T10:09:46.062Z
+Stopped at: Completed 12-02-PLAN.md (session state frontend)
 Resume file: None
 Next action: Plan and execute Phase 12 (Session State Indicators)
