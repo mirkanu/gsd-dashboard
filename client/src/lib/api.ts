@@ -124,6 +124,10 @@ export const api = {
         body: JSON.stringify({ text }),
       }),
     wsBase: () => request<{ wsBase: string | null }>("/gsd/ws-base"),
+    archive: (projectName: string) =>
+      request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/archive`, { method: 'POST' }),
+    unarchive: (projectName: string) =>
+      request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/unarchive`, { method: 'POST' }),
   },
 
   pricing: {

@@ -17,6 +17,7 @@ describe("GsdProject type shape", () => {
       tmuxActive: false,
       contextTokens: null,
       sessionUpdatedAt: null,
+      sessionState: "working",
     };
     expect(project.version).toBe("v1");
   });
@@ -36,6 +37,7 @@ describe("GsdProject type shape", () => {
       tmuxActive: false,
       contextTokens: null,
       sessionUpdatedAt: null,
+      sessionState: "working",
     };
     expect(project.version).toBeNull();
   });
@@ -55,6 +57,7 @@ describe("GsdProject type shape", () => {
       tmuxActive: false,
       contextTokens: null,
       sessionUpdatedAt: null,
+      sessionState: "working",
     };
     expect(project.liveUrl).toBe("https://example.com");
   });
@@ -74,6 +77,7 @@ describe("GsdProject type shape", () => {
       tmuxActive: false,
       contextTokens: null,
       sessionUpdatedAt: null,
+      sessionState: "working",
     };
     expect(project.liveUrl).toBeNull();
   });
@@ -93,6 +97,7 @@ describe("GsdProject type shape", () => {
       tmuxActive: true,
       contextTokens: null,
       sessionUpdatedAt: null,
+      sessionState: "working",
     };
     expect(project.velocity).toBe(3);
     expect(project.streak).toBe(2);
@@ -114,6 +119,7 @@ describe("GsdProject type shape", () => {
       tmuxActive: true,
       contextTokens: null,
       sessionUpdatedAt: null,
+      sessionState: "working",
     };
     expect(active.tmuxActive).toBe(true);
 
@@ -136,6 +142,7 @@ describe("GsdProject type shape", () => {
       tmuxActive: false,
       contextTokens: null,
       sessionUpdatedAt: null,
+      sessionState: "working",
     };
     expect(project.velocity).toBe(0);
     expect(project.streak).toBe(0);
@@ -158,6 +165,7 @@ describe("tmuxActive terminal button contract", () => {
     tmuxActive: false,
     contextTokens: null,
     sessionUpdatedAt: null,
+    sessionState: "working",
   };
 
   it("tmuxActive true enables terminal button", () => {

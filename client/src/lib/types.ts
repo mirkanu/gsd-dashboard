@@ -1,5 +1,7 @@
 // ─── GSD Types ────────────────────────────────────────────────────────────────
 
+export type SessionState = "working" | "waiting" | "paused" | "archived";
+
 export interface GsdPhase {
   name: string;
   plans_done: number | null;
@@ -46,6 +48,7 @@ export interface GsdProject {
   tmuxActive: boolean;
   contextTokens: number | null;
   sessionUpdatedAt: string | null;
+  sessionState: SessionState;
 }
 
 // ─── Agent/Session Types ──────────────────────────────────────────────────────
