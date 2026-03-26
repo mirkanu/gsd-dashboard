@@ -223,7 +223,7 @@ Plans:
 | 9. Tmux Backend Wiring | 2/2 | Complete | 2026-03-24 |
 | 10. Smart Send UI | 2/2 | Complete | 2026-03-24 |
 | 11. Live Terminal Overlay | 2/2 | Complete | 2026-03-25 |
-| 12. Session State Indicators | 3/3 | Complete   | 2026-03-26 |
+| 12. Session State Indicators | 3/3 | Complete    | 2026-03-26 |
 | 13. Terminal UX | 0/TBD | Not started | - |
 | 14. Telegram Integration | 0/TBD | Not started | - |
 | 15. New Project Creation | 0/2 | Planned (deferred to v2.2) | - |
