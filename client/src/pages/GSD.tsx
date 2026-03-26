@@ -815,13 +815,20 @@ export function GSD() {
 // approach is awkward; opens in a new browser tab via /terminal/:name
 export function TerminalPage() {
   const { name } = useParams<{ name: string }>();
-  const [wsBase, setWsBase] = useState<string | null>(null);
+  const [wsBase, setWsBase] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
-    api.gsd.wsBase().then(({ wsBase }) => setWsBase(wsBase ?? null)).catch(() => {});
+    api.gsd.wsBase().then(({ wsBase }) => setWsBase(wsBase ?? null)).catch(() => setWsBase(null));
   }, []);
 
   if (!name) return null;
+  // Wait for wsBase fetch before mounting the terminal — connecting with the
+  // wrong host causes an immediate 4004 "Session not active" error on Railway.
+  if (wsBase === undefined) return (
+    <div className="fixed inset-0 bg-black flex items-center justify-center">
+      <span className="text-gray-500 font-mono text-sm">Connecting…</span>
+    </div>
+  );
 
   return (
     <TerminalOverlay
