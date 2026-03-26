@@ -115,7 +115,7 @@ export const api = {
   },
 
   gsd: {
-    projects: () => request<{ projects: import("./types").GsdProject[] }>("/gsd/projects"),
+    projects: () => request<{ projects: import("./types").GsdProject[]; rateLimit: { active: boolean; resetAt: string | null } }>("/gsd/projects"),
     file: (projectName: string, fileId: "state" | "roadmap" | "requirements" | "plan") =>
       requestText(`/gsd/projects/${encodeURIComponent(projectName)}/files/${fileId}`),
     send: (projectName: string, text: string) =>

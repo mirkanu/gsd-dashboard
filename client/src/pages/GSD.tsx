@@ -538,6 +538,7 @@ function ProjectCard({
 
 export function GSD() {
   const [projects, setProjects] = useState<GsdProject[]>([]);
+  const [rateLimit, setRateLimit] = useState<{ active: boolean; resetAt: string | null }>({ active: false, resetAt: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -559,6 +560,7 @@ export function GSD() {
     try {
       const data = await api.gsd.projects();
       setProjects(data.projects);
+      setRateLimit(data.rateLimit ?? { active: false, resetAt: null });
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load GSD data");
@@ -594,6 +596,26 @@ export function GSD() {
     return () => clearInterval(interval);
   }, [load]);
 
+  // Live countdown for rate-limit reset
+  const [rateLimitCountdown, setRateLimitCountdown] = useState<string | null>(null);
+  useEffect(() => {
+    if (!rateLimit.active || !rateLimit.resetAt) {
+      setRateLimitCountdown(null);
+      return;
+    }
+    const tick = () => {
+      const diff = new Date(rateLimit.resetAt!).getTime() - Date.now();
+      if (diff <= 0) { setRateLimitCountdown("resetting…"); return; }
+      const h = Math.floor(diff / 3_600_000);
+      const m = Math.floor((diff % 3_600_000) / 60_000);
+      const s = Math.floor((diff % 60_000) / 1_000);
+      setRateLimitCountdown(h > 0 ? `${h}h ${m}m ${s}s` : m > 0 ? `${m}m ${s}s` : `${s}s`);
+    };
+    tick();
+    const t = setInterval(tick, 1_000);
+    return () => clearInterval(t);
+  }, [rateLimit]);
+
   const activeProjects = projects.filter(p => p.sessionState !== "archived");
   const archivedProjects = projects.filter(p => p.sessionState === "archived");
 
@@ -619,6 +641,18 @@ export function GSD() {
           Refresh
         </button>
       </div>
+
+      {/* Rate-limit banner */}
+      {rateLimit.active && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-orange-500/30 bg-orange-500/10 text-orange-300 text-sm">
+          <span className="text-orange-400 text-base">⚠</span>
+          <span className="font-medium">Rate limit active across all sessions.</span>
+          {rateLimitCountdown
+            ? <span className="ml-1 text-orange-400 font-mono">Resets in {rateLimitCountdown}</span>
+            : <span className="ml-1 text-orange-400/70">Reset time unknown — check your Anthropic plan.</span>
+          }
+        </div>
+      )}
 
       {/* Summary stats */}
       {!loading && !error && projects.length > 0 && (
