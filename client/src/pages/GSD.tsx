@@ -142,6 +142,8 @@ function ContextBar({ tokens }: { tokens: number }) {
 function SendBox({ projectName, initialValue, contextTokens }: { projectName: string; initialValue: string; contextTokens: number | null }) {
   const [value, setValue] = useState(initialValue);
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [focused, setFocused] = useState(false);
+  const isMobile = window.matchMedia('(pointer: coarse)').matches;
 
   // Reset input value when the project changes (different card)
   useEffect(() => {
@@ -165,7 +167,10 @@ function SendBox({ projectName, initialValue, contextTokens }: { projectName: st
 
   return (
     <div
-      className="px-4 py-3 border-b border-border/50"
+      className={`px-4 py-3 border-b border-border/50 ${
+        focused && isMobile ? "fixed left-0 right-0 bg-[#0d1117] border-t border-border z-[80]" : ""
+      }`}
+      style={focused && isMobile ? { bottom: 0 } : undefined}
       onClick={(e) => e.stopPropagation()}
     >
       {/* ContextBar hidden — token data inaccurate (cumulative vs current prompt); TODO: fix data source */}
@@ -175,6 +180,8 @@ function SendBox({ projectName, initialValue, contextTokens }: { projectName: st
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(e as unknown as React.MouseEvent); }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           placeholder="Send to tmux session…"
           className="flex-1 text-xs bg-surface-3 border border-border rounded px-2 py-1.5 text-gray-200 placeholder:text-gray-600 focus:outline-none focus:border-accent/50"
         />
@@ -201,6 +208,40 @@ function SendBox({ projectName, initialValue, contextTokens }: { projectName: st
   );
 }
 
+// ─── Special key bar (mobile) ─────────────────────────────────────────────────
+
+const SPECIAL_KEYS = [
+  { label: "\u2190", seq: "\x1b[D" },
+  { label: "\u2192", seq: "\x1b[C" },
+  { label: "\u2191", seq: "\x1b[A" },
+  { label: "\u2193", seq: "\x1b[B" },
+  { label: "Tab", seq: "\t" },
+  { label: "Esc", seq: "\x1b" },
+  { label: "Ctrl+C", seq: "\x03" },
+  { label: "Enter", seq: "\r" },
+] as const;
+
+function SpecialKeyBar({ wsRef }: { wsRef: React.RefObject<WebSocket | null> }) {
+  const send = (seq: string) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(seq);
+    }
+  };
+  return (
+    <div className="flex flex-wrap gap-1.5 px-4 py-2 border-t border-border/50">
+      {SPECIAL_KEYS.map((key) => (
+        <button
+          key={key.label}
+          onTouchStart={(e) => { e.preventDefault(); send(key.seq); }}
+          className="text-[11px] px-2.5 py-1.5 rounded border border-border bg-surface-3 text-gray-400 active:bg-accent/20 active:text-accent active:border-accent/30 transition-colors select-none"
+        >
+          {key.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ─── Terminal overlay ─────────────────────────────────────────────────────────
 
 interface TerminalOverlayProps {
@@ -218,6 +259,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
   // Stable ref so onClose never causes the effect to re-run (parent re-renders every 30s)
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const [isMobile] = useState(() => window.matchMedia('(pointer: coarse)').matches);
   const [bottomOffset, setBottomOffset] = useState(0);
 
   useEffect(() => {
@@ -392,14 +434,17 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
       </div>
       {/* Terminal container — fills remaining height */}
       <div ref={containerRef} className="flex-1 overflow-hidden p-2" />
-      {/* Send box — pinned below terminal */}
-      <div className="flex-shrink-0">
-        <SendBox
-          projectName={projectName}
-          initialValue={initialSendValue}
-          contextTokens={null}
-        />
-      </div>
+      {/* Send box + special keys — mobile only (desktop has physical keyboard) */}
+      {isMobile && (
+        <div className="flex-shrink-0">
+          <SendBox
+            projectName={projectName}
+            initialValue={initialSendValue}
+            contextTokens={null}
+          />
+          <SpecialKeyBar wsRef={wsRef} />
+        </div>
+      )}
     </div>
   );
 }
@@ -407,15 +452,17 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
 // ─── Project card ─────────────────────────────────────────────────────────────
 
 function ProjectCard({
-  project, onSelect, onOpenTerminal, onArchive, onUnarchive
+  project, onSelect, onOpenTerminal, onArchive, onUnarchive, onReopenTmux
 }: {
   project: GsdProject;
   onSelect: (project: GsdProject) => void;
   onOpenTerminal: (initialValue: string) => void;
   onArchive: () => void;
   onUnarchive: () => void;
+  onReopenTmux: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [reopening, setReopening] = useState(false);
   const { state, roadmap, requirements } = project;
   const progress = state?.progress;
   const stateConf = SESSION_STATE_CONFIG[project.sessionState ?? "paused"];
@@ -536,8 +583,8 @@ function ProjectCard({
         </div>
       )}
 
-      {/* Open terminal button — only when tmux session is active */}
-      {project.tmuxActive && (
+      {/* Terminal button — open when active, re-open when configured but dead */}
+      {project.tmuxActive ? (
         <div className="mt-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={(e) => {
@@ -553,6 +600,28 @@ function ProjectCard({
             <span className="text-[11px]">⌨</span>
             Open terminal
           </button>
+        </div>
+      ) : project.tmuxSession && (
+        <div className="mt-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-2 px-2 py-1">
+            <span className="text-[11px] text-gray-600">Tmux closed.</span>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                if (reopening) return;
+                setReopening(true);
+                try {
+                  await api.gsd.reopenTmux(project.name);
+                } catch { /* silent */ }
+                setReopening(false);
+                onReopenTmux();
+              }}
+              disabled={reopening}
+              className="text-xs text-accent hover:text-accent/80 transition-colors disabled:opacity-50"
+            >
+              {reopening ? "Starting…" : "Re-open"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -802,6 +871,7 @@ export function GSD() {
                 }}
                 onArchive={() => archiveProject(project.name)}
                 onUnarchive={() => unarchiveProject(project.name)}
+                onReopenTmux={() => load()}
               />
             ))}
           </div>
@@ -829,6 +899,7 @@ export function GSD() {
                 }}
                       onArchive={() => archiveProject(project.name)}
                       onUnarchive={() => unarchiveProject(project.name)}
+                      onReopenTmux={() => load()}
                     />
                   ))}
                 </div>
