@@ -4,7 +4,7 @@ const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
 const { isTmuxSessionActive, detectSessionState, detectRateLimit } = require('../gsd/tmux');
-const { db } = require('../db');
+const { db, stmts } = require('../db');
 
 const router = express.Router();
 
@@ -79,6 +79,7 @@ router.get("/projects", async (_req, res) => {
       return {
         ...readProject(name, root),
         tmuxActive: isTmuxSessionActive(tmux_session),
+        tmuxSession: tmux_session ?? null,
         sessionState,
         contextTokens: row?.context_tokens ?? null,
         sessionUpdatedAt: row?.updated_at ?? null,
@@ -179,9 +180,68 @@ router.post('/projects/:name/send', async (req, res) => {
   try {
     const { execFileSync } = require('child_process');
     execFileSync('tmux', ['send-keys', '-t', tmux_session, text, 'Enter'], { stdio: 'ignore' });
+    try { stmts.insertGsdMessage.run(name, 'outbound', text); } catch { /* non-blocking */ }
     return res.json({ ok: true });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to send keys to tmux session', detail: err.message });
+  }
+});
+
+// GET /api/gsd/projects/:name/messages — paginated message history
+router.get('/projects/:name/messages', (req, res) => {
+  const { name } = req.params;
+  if (GSD_DATA_URL) {
+    const qs = new URLSearchParams();
+    if (req.query.limit) qs.set('limit', req.query.limit);
+    if (req.query.offset) qs.set('offset', req.query.offset);
+    const q = qs.toString();
+    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/messages${q ? `?${q}` : ''}`,
+      { signal: AbortSignal.timeout(10000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+  const offset = parseInt(req.query.offset) || 0;
+  try {
+    const messages = stmts.listGsdMessages.all(name, limit, offset);
+    const { count: total } = stmts.countGsdMessages.get(name);
+    res.json({ messages, total });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read messages', detail: err.message });
+  }
+});
+
+// POST /api/gsd/projects/:name/reopen-tmux — restart a dead tmux session in the project's directory
+router.post('/projects/:name/reopen-tmux', (req, res) => {
+  const { name } = req.params;
+
+  if (GSD_DATA_URL) {
+    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/reopen-tmux`,
+      { method: 'POST', signal: AbortSignal.timeout(10000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+
+  const { projects } = loadConfig();
+  const project = projects.find(p => p.name === name);
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+
+  const { tmux_session, root } = project;
+  if (!tmux_session) return res.status(422).json({ error: 'No tmux session configured for this project' });
+
+  if (isTmuxSessionActive(tmux_session)) {
+    return res.json({ ok: true, message: 'Session already active' });
+  }
+
+  try {
+    const { execFileSync } = require('child_process');
+    // Create a new detached tmux session with the project's root as the working directory
+    execFileSync('tmux', ['new-session', '-d', '-s', tmux_session, '-c', root], { stdio: 'ignore', timeout: 5000 });
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to create tmux session', detail: err.message });
   }
 });
 

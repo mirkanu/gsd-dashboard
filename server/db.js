@@ -106,6 +106,16 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_events_created ON events(created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
   CREATE INDEX IF NOT EXISTS idx_sessions_started ON sessions(started_at DESC);
+
+  CREATE TABLE IF NOT EXISTS gsd_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project TEXT NOT NULL,
+    direction TEXT NOT NULL CHECK(direction IN ('outbound','inbound')),
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_gsd_messages_project ON gsd_messages(project, created_at DESC);
 `);
 
 // Seed default model pricing if table is empty
@@ -412,6 +422,17 @@ const stmts = {
     ORDER BY count DESC
   `),
   totalSubagentCount: db.prepare("SELECT COUNT(*) as count FROM agents WHERE type = 'subagent'"),
+
+  // GSD message log
+  insertGsdMessage: db.prepare(
+    `INSERT INTO gsd_messages (project, direction, content) VALUES (?, ?, ?)`
+  ),
+  listGsdMessages: db.prepare(
+    `SELECT id, project, direction, content, created_at FROM gsd_messages WHERE project = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`
+  ),
+  countGsdMessages: db.prepare(
+    `SELECT COUNT(*) as count FROM gsd_messages WHERE project = ?`
+  ),
   eventTypeCounts: db.prepare(`
     SELECT event_type, COUNT(*) as count
     FROM events
