@@ -128,6 +128,12 @@ export const api = {
       request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/archive`, { method: 'POST' }),
     unarchive: (projectName: string) =>
       request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/unarchive`, { method: 'POST' }),
+    reopenTmux: (projectName: string) =>
+      request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/reopen-tmux`, { method: 'POST' }),
+    messages: (projectName: string, limit = 50, offset = 0) =>
+      request<{ messages: import("./types").GsdMessage[]; total: number }>(
+        `/gsd/projects/${encodeURIComponent(projectName)}/messages?limit=${limit}&offset=${offset}`
+      ),
   },
 
   pricing: {

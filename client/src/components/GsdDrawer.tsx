@@ -3,30 +3,71 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { X, Maximize2 } from "lucide-react";
 import { api } from "../lib/api";
-import type { GsdProject } from "../lib/types";
+import type { GsdProject, GsdMessage } from "../lib/types";
 
-type FileTabId = "state" | "roadmap" | "requirements" | "plan";
+type TabId = "messages" | "state" | "roadmap" | "requirements" | "plan";
 
-const FILE_TABS: { id: FileTabId; label: string }[] = [
+const TABS: { id: TabId; label: string }[] = [
+  { id: "messages",     label: "Messages" },
   { id: "state",        label: "State"    },
   { id: "roadmap",      label: "Roadmap"  },
   { id: "requirements", label: "Reqs"     },
   { id: "plan",         label: "Plan"     },
 ];
 
+function MessageLog({ projectName }: { projectName: string }) {
+  const [messages, setMessages] = useState<GsdMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    api.gsd.messages(projectName)
+      .then(({ messages }) => { if (!cancelled) { setMessages(messages); setLoading(false); } })
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [projectName]);
+
+  if (loading) return <p className="text-sm text-gray-500 py-4">Loading messages...</p>;
+  if (messages.length === 0) return <p className="text-sm text-gray-600 py-4">No messages yet. Send a command from the terminal to see it here.</p>;
+
+  // Reverse to show oldest first (API returns newest first)
+  const sorted = [...messages].reverse();
+
+  return (
+    <div className="space-y-2">
+      {sorted.map((msg) => (
+        <div key={msg.id} className={`flex ${msg.direction === "outbound" ? "justify-end" : "justify-start"}`}>
+          <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${
+            msg.direction === "outbound"
+              ? "bg-accent/10 text-accent border border-accent/20"
+              : "bg-surface-3 text-gray-300 border border-border"
+          }`}>
+            <p className="font-mono whitespace-pre-wrap break-all">{msg.content}</p>
+            <p className={`text-[10px] mt-1 ${msg.direction === "outbound" ? "text-accent/50" : "text-gray-600"}`}>
+              {msg.direction === "outbound" ? "Sent" : "Received"} · {new Date(msg.created_at).toLocaleString()}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 interface GsdDrawerProps {
   project: GsdProject;
   onClose: () => void;
-  onExpand?: (content: string, tabId: FileTabId) => void;
+  onExpand?: (content: string, tabId: TabId) => void;
 }
 
 export function GsdDrawer({ project, onClose, onExpand }: GsdDrawerProps) {
-  const [activeTab, setActiveTab] = useState<FileTabId>("state");
+  const [activeTab, setActiveTab] = useState<TabId>("messages");
   const [content, setContent]     = useState<string | null>(null);
   const [loading, setLoading]     = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (activeTab === "messages") return;
     let cancelled = false;
     setContent(null);
     setFetchError(null);
@@ -69,7 +110,7 @@ export function GsdDrawer({ project, onClose, onExpand }: GsdDrawerProps) {
         <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col">
           {/* Tab strip */}
           <div className="flex gap-1 border-b border-border mb-4 -mx-5 px-5 flex-shrink-0">
-            {FILE_TABS.map((tab) => (
+            {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -82,8 +123,8 @@ export function GsdDrawer({ project, onClose, onExpand }: GsdDrawerProps) {
                 {tab.label}
               </button>
             ))}
-            {/* Expand button — only shown when content is loaded */}
-            {content !== null && onExpand && (
+            {/* Expand button -- only shown when content is loaded and not on messages tab */}
+            {content !== null && onExpand && activeTab !== "messages" && (
               <button
                 onClick={() => onExpand(content, activeTab)}
                 className="ml-auto px-2 py-2 text-gray-500 hover:text-gray-300 transition-colors"
@@ -97,16 +138,22 @@ export function GsdDrawer({ project, onClose, onExpand }: GsdDrawerProps) {
 
           {/* Content area */}
           <div className="flex-1 overflow-y-auto">
-            {loading && (
-              <p className="text-sm text-gray-500 py-4">Loading…</p>
-            )}
-            {fetchError && !loading && (
-              <p className="text-sm text-red-400 py-4">{fetchError}</p>
-            )}
-            {!loading && !fetchError && content !== null && (
-              <div className="prose prose-sm prose-invert max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-              </div>
+            {activeTab === "messages" ? (
+              <MessageLog projectName={project.name} />
+            ) : (
+              <>
+                {loading && (
+                  <p className="text-sm text-gray-500 py-4">Loading...</p>
+                )}
+                {fetchError && !loading && (
+                  <p className="text-sm text-red-400 py-4">{fetchError}</p>
+                )}
+                {!loading && !fetchError && content !== null && (
+                  <div className="prose prose-sm prose-invert max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

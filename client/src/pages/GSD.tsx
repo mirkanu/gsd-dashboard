@@ -705,6 +705,7 @@ export function GSD() {
   const [archivedOpen, setArchivedOpen] = useState(false);
 
   const TAB_TITLES: Record<string, string> = {
+    messages: "Messages",
     state: "State",
     roadmap: "Roadmap",
     requirements: "Requirements",

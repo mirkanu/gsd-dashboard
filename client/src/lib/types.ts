@@ -46,9 +46,18 @@ export interface GsdProject {
   streak: number;
   estimatedCompletion: string | null;
   tmuxActive: boolean;
+  tmuxSession: string | null;
   contextTokens: number | null;
   sessionUpdatedAt: string | null;
   sessionState: SessionState;
+}
+
+export interface GsdMessage {
+  id: number;
+  project: string;
+  direction: "outbound" | "inbound";
+  content: string;
+  created_at: string;
 }
 
 // ─── Agent/Session Types ──────────────────────────────────────────────────────
