@@ -17,6 +17,7 @@ const pricingRouter = require("./routes/pricing");
 const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
 const { createAgentProxy } = require("./routes/proxy");
+const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
 
 function basicAuth(req, res, next) {
   // Skip auth for localhost and internal hook events
@@ -99,7 +100,14 @@ function startServer(app, port) {
 if (require.main === module) {
   const PORT = parseInt(process.env.PORT || process.env.DASHBOARD_PORT || "4820", 10);
   const app = createApp();
-  startServer(app, PORT);
+  startServer(app, PORT).then(() => {
+    if (telegramEnabled) startReplyPoller();
+  });
+
+  process.on('SIGTERM', () => {
+    stopReplyPoller();
+    process.exit(0);
+  });
 
   // Auto-install Claude Code hooks on every startup so users don't have to
   try {
