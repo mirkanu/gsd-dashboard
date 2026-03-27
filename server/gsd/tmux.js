@@ -10,7 +10,7 @@ const { execFileSync } = require('child_process');
 function isTmuxSessionActive(sessionName) {
   if (!sessionName) return false;
   try {
-    execFileSync('tmux', ['has-session', '-t', sessionName], { stdio: 'ignore' });
+    execFileSync('tmux', ['has-session', '-t', sessionName], { stdio: 'ignore', timeout: 2000 });
     return true;
   } catch {
     return false;
@@ -24,7 +24,7 @@ function isTmuxSessionActive(sessionName) {
  */
 function capturePaneText(sessionName) {
   try {
-    return execFileSync('tmux', ['capture-pane', '-p', '-t', sessionName], { encoding: 'utf8' });
+    return execFileSync('tmux', ['capture-pane', '-p', '-t', sessionName], { encoding: 'utf8', timeout: 2000 });
   } catch {
     return null;
   }
@@ -149,4 +149,4 @@ function detectSessionState(sessionName) {
   return 'waiting';
 }
 
-module.exports = { isTmuxSessionActive, detectSessionState, detectRateLimit };
+module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit };

@@ -11,6 +11,48 @@ const API_BASE = BOT_TOKEN ? `https://api.telegram.org/bot${BOT_TOKEN}` : '';
 let pollerAbort = null; // AbortController for stopping the poller
 let stmts = null; // lazy-loaded from db.js to avoid circular deps
 
+const notifyCooldowns = new Map(); // project → timestamp
+const COOLDOWN_MS = 60_000; // 1 minute between notifications per project
+
+/**
+ * Check whether a notification should be sent for this project (cooldown gate).
+ * Returns true if allowed, false if within cooldown window.
+ */
+function shouldNotify(projectName) {
+  const last = notifyCooldowns.get(projectName) || 0;
+  if (Date.now() - last < COOLDOWN_MS) return false;
+  notifyCooldowns.set(projectName, Date.now());
+  return true;
+}
+
+/**
+ * Parse options from terminal output text.
+ * Pattern 1: "select: A / B / C" → ['A', 'B', 'C']
+ * Pattern 2: trailing numbered list "1. Option" or "1) Option" → ['Option', ...]
+ */
+function parseOptions(text) {
+  if (!text) return [];
+
+  // Pattern 1: "select: A / B / C"
+  const selectMatch = text.match(/\bselect:\s*(.+)/i);
+  if (selectMatch) {
+    const parts = selectMatch[1].split('/').map(s => s.trim()).filter(Boolean);
+    if (parts.length >= 2 && parts.every(p => p.length <= 40)) return parts;
+  }
+
+  // Pattern 2: trailing numbered list
+  const lines = text.trim().split('\n');
+  const numbered = [];
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const m = lines[i].match(/^\s*\d+[.)]\s+(.+)/);
+    if (m) numbered.unshift(m[1].trim());
+    else break;
+  }
+  if (numbered.length >= 2) return numbered.slice(0, 8);
+
+  return [];
+}
+
 function getStmts() {
   if (!stmts) {
     try { stmts = require('../db').stmts; } catch { /* not available */ }
@@ -54,6 +96,7 @@ async function sendNotification(projectName, text, options) {
     };
   }
   await apiCall('sendMessage', payload);
+  try { getStmts()?.insertGsdMessage?.run(projectName, 'outbound', `[Telegram] ${text}`); } catch { /* non-blocking */ }
 }
 
 /**
@@ -144,4 +187,4 @@ function stopReplyPoller() {
   }
 }
 
-module.exports = { sendNotification, startReplyPoller, stopReplyPoller, ENABLED };
+module.exports = { sendNotification, parseOptions, shouldNotify, startReplyPoller, stopReplyPoller, ENABLED };
