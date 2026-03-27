@@ -3,10 +3,13 @@ const path = require("path");
 const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
-const { isTmuxSessionActive, detectSessionState, detectRateLimit } = require('../gsd/tmux');
+const { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit } = require('../gsd/tmux');
+const { sendNotification, parseOptions, shouldNotify, ENABLED: telegramEnabled } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
 
 const router = express.Router();
+
+const previousStates = new Map(); // project name → previous sessionState
 
 const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
 
@@ -76,6 +79,29 @@ router.get("/projects", async (_req, res) => {
         const idleMs = now - new Date(row.updated_at).getTime();
         if (idleMs > IDLE_PAUSED_MS) sessionState = 'paused';
       }
+      // Detect state transitions and send Telegram notifications
+      if (telegramEnabled && tmux_session) {
+        const prevState = previousStates.get(name);
+        previousStates.set(name, sessionState);
+
+        if (prevState && prevState !== sessionState) {
+          // working → waiting/paused: Claude stopped, user input may be needed
+          if (prevState === 'working' && (sessionState === 'waiting' || sessionState === 'paused')) {
+            if (shouldNotify(name)) {
+              const paneText = capturePaneText(tmux_session);
+              const options = paneText ? parseOptions(paneText) : [];
+              const label = sessionState === 'waiting' ? 'is waiting for your input' : 'has paused';
+              // Include last few lines of terminal output for context
+              const lastLines = paneText ? paneText.trim().split('\n').slice(-5).join('\n') : '';
+              const body = lastLines
+                ? `${label}:\n\n${lastLines.length > 500 ? '...' + lastLines.slice(-500) : lastLines}`
+                : label;
+              sendNotification(name, body, options).catch(() => {});
+            }
+          }
+        }
+      }
+
       return {
         ...readProject(name, root),
         tmuxActive: isTmuxSessionActive(tmux_session),
