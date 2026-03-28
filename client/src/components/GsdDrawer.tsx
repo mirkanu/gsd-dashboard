@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { X, Maximize2 } from "lucide-react";
@@ -18,6 +18,7 @@ const TABS: { id: TabId; label: string }[] = [
 function MessageLog({ projectName }: { projectName: string }) {
   const [messages, setMessages] = useState<GsdMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -27,6 +28,13 @@ function MessageLog({ projectName }: { projectName: string }) {
       .catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [projectName]);
+
+  // Scroll to newest message after load
+  useEffect(() => {
+    if (!loading && messages.length > 0) {
+      endRef.current?.scrollIntoView({ behavior: 'instant' as ScrollBehavior });
+    }
+  }, [loading, messages.length]);
 
   if (loading) return <p className="text-sm text-gray-500 py-4">Loading messages...</p>;
   if (messages.length === 0) return <p className="text-sm text-gray-600 py-4">No messages yet. Send a command from the terminal to see it here.</p>;
@@ -50,6 +58,7 @@ function MessageLog({ projectName }: { projectName: string }) {
           </div>
         </div>
       ))}
+      <div ref={endRef} />
     </div>
   );
 }

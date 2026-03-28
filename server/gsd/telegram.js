@@ -1,7 +1,20 @@
 'use strict';
 
 const { execFileSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const { isTmuxSessionActive } = require('./tmux');
+
+// Load .env file if present (server doesn't use dotenv)
+try {
+  const envPath = path.resolve(__dirname, '../../.env');
+  for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
+    const [k, ...rest] = trimmed.split('=');
+    if (!process.env[k.trim()]) process.env[k.trim()] = rest.join('=').trim().replace(/^["']|["']$/g, '');
+  }
+} catch { /* no .env file — rely on real env vars */ }
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -13,6 +26,21 @@ let stmts = null; // lazy-loaded from db.js to avoid circular deps
 
 const notifyCooldowns = new Map(); // project → timestamp
 const COOLDOWN_MS = 60_000; // 1 minute between notifications per project
+const pendingRoutes = new Map(); // routeId → { text, expires }
+let nextRouteId = 1;
+
+/**
+ * Safely load project config. Returns { projects: [] } on error.
+ */
+function loadConfigSafe() {
+  try {
+    const path = require('path');
+    const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../../gsd-projects.json');
+    return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  } catch {
+    return { projects: [] };
+  }
+}
 
 /**
  * Check whether a notification should be sent for this project (cooldown gate).
@@ -140,6 +168,7 @@ function startReplyPoller() {
         const res = await fetch(url, { signal: abort.signal });
         const data = await res.json();
         const updates = data.result || [];
+        if (updates.length > 0) console.log(`[telegram] Received ${updates.length} update(s)`);
 
         for (const update of updates) {
           offset = update.update_id + 1;
@@ -149,10 +178,29 @@ function startReplyPoller() {
               const cq = update.callback_query;
               const chatId = cq.message?.chat?.id;
               if (String(chatId) !== String(CHAT_ID)) continue;
-
-              const project = extractProject(cq.message?.text || '');
               if (cq.id) await apiCall('answerCallbackQuery', { callback_query_id: cq.id });
-              if (project) injectTmux(project, cq.data || '');
+
+              const cbData = cq.data || '';
+              if (cbData.startsWith('route:')) {
+                // Clarification routing: "route:projectName:routeId"
+                const parts = cbData.split(':');
+                const targetProject = parts[1];
+                const routeId = parts[2];
+                const pending = pendingRoutes.get(routeId);
+                const origText = pending?.text;
+                if (pending) pendingRoutes.delete(routeId);
+                if (targetProject && origText) {
+                  console.log(`[telegram] Clarification route "${origText.slice(0, 40)}" → ${targetProject}`);
+                  injectTmux(targetProject, origText);
+                }
+              } else {
+                // Normal notification button press
+                const project = extractProject(cq.message?.text || '');
+                if (project) {
+                  console.log(`[telegram] Button "${cbData.slice(0, 40)}" → ${project}`);
+                  injectTmux(project, cbData);
+                }
+              }
             } else if (update.message) {
               // Free-text reply
               const msg = update.message;
@@ -161,7 +209,27 @@ function startReplyPoller() {
               const replyText = msg.reply_to_message?.text || '';
               let project = extractProject(replyText);
               if (!project) project = extractProject(msg.text || '');
-              if (project) injectTmux(project, msg.text || '');
+              if (project) {
+                console.log(`[telegram] Routing "${(msg.text || '').slice(0, 40)}" → ${project}`);
+                injectTmux(project, msg.text || '');
+              } else {
+                // Can't determine project — ask user to clarify with project buttons
+                console.log(`[telegram] No project found for: "${(msg.text || '').slice(0, 40)}"`);
+                const { projects } = loadConfigSafe();
+                const active = projects.filter(p => p.tmux_session && isTmuxSessionActive(p.tmux_session));
+                if (active.length > 0) {
+                  const routeId = String(nextRouteId++);
+                  pendingRoutes.set(routeId, { text: msg.text || '', expires: Date.now() + 300_000 });
+                  // Clean up expired entries
+                  for (const [k, v] of pendingRoutes) { if (v.expires < Date.now()) pendingRoutes.delete(k); }
+                  const keyboard = active.map(p => [{ text: p.name, callback_data: `route:${p.name}:${routeId}` }]);
+                  apiCall('sendMessage', {
+                    chat_id: CHAT_ID,
+                    text: `Which project should I send this to?\n\n"${(msg.text || '').slice(0, 100)}"`,
+                    reply_markup: { inline_keyboard: keyboard },
+                  }).catch(() => {});
+                }
+              }
             }
           } catch (e) {
             console.error('[telegram] Error handling update:', e.message);
@@ -187,4 +255,43 @@ function stopReplyPoller() {
   }
 }
 
-module.exports = { sendNotification, parseOptions, shouldNotify, startReplyPoller, stopReplyPoller, ENABLED };
+/**
+ * Clean raw terminal pane text for Telegram display.
+ * Strips ANSI codes, box-drawing lines, spinner chars, collapses blank lines.
+ * Returns last ~20 meaningful lines capped at 1500 chars.
+ */
+function formatForTelegram(paneText) {
+  if (!paneText) return '';
+  let text = paneText;
+  // Strip ANSI escape codes
+  text = text.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+  text = text.replace(/\x1b\][^\x07]*\x07/g, ''); // OSC sequences
+  text = text.replace(/\x1b[()][0-9A-B]/g, ''); // charset sequences
+  // Split into lines and filter
+  const BOX_CHARS = /^[\s─═│┌└┐┘├┤┬┴┼╔╗╚╝╠╣╦╩╬━┃┄┅┆┇┈┉┊┋╌╍╎╏]*$/;
+  const SPINNER_CHARS = /[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏⣾⣽⣻⢿⡿⣟⣯⣷◐◓◑◒⠁⠂⠄⡀⢀⠠⠐⠈]/;
+  let lines = text.split('\n')
+    .map(l => l.trimEnd())
+    .filter(l => !BOX_CHARS.test(l))        // remove box-drawing-only lines
+    .filter(l => !SPINNER_CHARS.test(l))    // remove lines with spinner chars
+    .filter(l => l.trim() !== '');           // remove blank lines
+  // Collapse consecutive blank lines (after filtering, shouldn't be many)
+  const collapsed = [];
+  let lastBlank = false;
+  for (const line of lines) {
+    if (line.trim() === '') {
+      if (!lastBlank) collapsed.push('');
+      lastBlank = true;
+    } else {
+      collapsed.push(line);
+      lastBlank = false;
+    }
+  }
+  // Take last 20 meaningful lines, cap at 1500 chars
+  const tail = collapsed.slice(-20);
+  let result = tail.join('\n');
+  if (result.length > 1500) result = '...' + result.slice(-1500);
+  return result;
+}
+
+module.exports = { sendNotification, parseOptions, shouldNotify, startReplyPoller, stopReplyPoller, formatForTelegram, ENABLED };
