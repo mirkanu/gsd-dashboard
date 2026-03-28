@@ -130,7 +130,7 @@ Plans:
 | 14. Telegram Integration | v2.1 | 2/2 | Complete | 2026-03-28 |
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
 | 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
-| 18. Task UI | 2/2 | Complete   | 2026-03-28 | - |
+| 18. Task UI | 2/2 | Complete    | 2026-03-28 | - |
 | 19. Clipboard Export | v2.2 | 0/? | Not started | - |
 
 ### Phase 20: Fix Railway deployment
