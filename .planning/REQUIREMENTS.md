@@ -9,10 +9,10 @@ Requirements for milestone v2.2 — Project Tasks. Each maps to roadmap phases.
 
 ### Data Storage
 
-- [ ] **STORE-01**: SQLite table `project_tasks` stores tasks with id, project_key, title, description, archived flag, and created_at timestamp
-- [ ] **STORE-02**: API endpoint creates a task for a given project (POST /api/gsd/projects/:key/tasks)
-- [ ] **STORE-03**: API endpoint lists tasks for a project with archived filter (GET /api/gsd/projects/:key/tasks)
-- [ ] **STORE-04**: API endpoint updates a task's title, description, or archived status (PATCH /api/gsd/projects/:key/tasks/:id)
+- [x] **STORE-01**: SQLite table `project_tasks` stores tasks with id, project_key, title, description, archived flag, and created_at timestamp
+- [x] **STORE-02**: API endpoint creates a task for a given project (POST /api/gsd/projects/:key/tasks)
+- [x] **STORE-03**: API endpoint lists tasks for a project with archived filter (GET /api/gsd/projects/:key/tasks)
+- [x] **STORE-04**: API endpoint updates a task's title, description, or archived status (PATCH /api/gsd/projects/:key/tasks/:id)
 
 ### Task UI
 
@@ -54,10 +54,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STORE-01 | Phase 17 | Pending |
-| STORE-02 | Phase 17 | Pending |
-| STORE-03 | Phase 17 | Pending |
-| STORE-04 | Phase 17 | Pending |
+| STORE-01 | Phase 17 | Complete |
+| STORE-02 | Phase 17 | Complete |
+| STORE-03 | Phase 17 | Complete |
+| STORE-04 | Phase 17 | Complete |
 | UI-01 | Phase 18 | Pending |
 | UI-02 | Phase 18 | Pending |
 | UI-03 | Phase 18 | Pending |
