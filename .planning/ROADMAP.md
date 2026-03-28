@@ -130,7 +130,7 @@ Plans:
 | 14. Telegram Integration | v2.1 | 2/2 | Complete | 2026-03-28 |
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
 | 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
-| 18. Task UI | v2.2 | 0/2 | Not started | - |
+| 18. Task UI | 1/2 | In Progress|  | - |
 | 19. Clipboard Export | v2.2 | 0/? | Not started | - |
 
 ### Phase 20: Fix Railway deployment
@@ -138,7 +138,7 @@ Plans:
 **Goal:** Deploy the dequal-patch fix and add a post-build dist assertion so the live dashboard reflects recent client changes and future deploys cannot silently ship stale builds
 **Requirements**: none
 **Depends on:** none (hotfix, runs independently)
-**Plans:** 2/2 plans complete
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 20-01-PLAN.md — add verify-build.sh safeguard, deploy to Railway, verify live dashboard

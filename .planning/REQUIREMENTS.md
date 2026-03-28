@@ -16,11 +16,11 @@ Requirements for milestone v2.2 — Project Tasks. Each maps to roadmap phases.
 
 ### Task UI
 
-- [ ] **UI-01**: Tasks tab appears as the first tab in the project drawer (before Message and GSD file tabs)
-- [ ] **UI-02**: User can add a task with a required title and optional description
-- [ ] **UI-03**: User can view list of open tasks for a project
-- [ ] **UI-04**: User can archive a task from the task list
-- [ ] **UI-05**: User can toggle to view archived tasks and unarchive them
+- [x] **UI-01**: Tasks tab appears as the first tab in the project drawer (before Message and GSD file tabs)
+- [x] **UI-02**: User can add a task with a required title and optional description
+- [x] **UI-03**: User can view list of open tasks for a project
+- [x] **UI-04**: User can archive a task from the task list
+- [x] **UI-05**: User can toggle to view archived tasks and unarchive them
 
 ### Clipboard Export
 
@@ -58,11 +58,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STORE-02 | Phase 17 | Complete |
 | STORE-03 | Phase 17 | Complete |
 | STORE-04 | Phase 17 | Complete |
-| UI-01 | Phase 18 | Pending |
-| UI-02 | Phase 18 | Pending |
-| UI-03 | Phase 18 | Pending |
-| UI-04 | Phase 18 | Pending |
-| UI-05 | Phase 18 | Pending |
+| UI-01 | Phase 18 | Complete |
+| UI-02 | Phase 18 | Complete |
+| UI-03 | Phase 18 | Complete |
+| UI-04 | Phase 18 | Complete |
+| UI-05 | Phase 18 | Complete |
 | CLIP-01 | Phase 19 | Pending |
 | CLIP-02 | Phase 19 | Pending |
 
