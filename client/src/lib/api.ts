@@ -3,6 +3,7 @@ import type {
   Analytics,
   CostResult,
   DashboardEvent,
+  GsdTask,
   ModelPricing,
   Session,
   Stats,
@@ -134,6 +135,26 @@ export const api = {
       request<{ messages: import("./types").GsdMessage[]; total: number }>(
         `/gsd/projects/${encodeURIComponent(projectName)}/messages?limit=${limit}&offset=${offset}`
       ),
+    tasks: {
+      list: (projectKey: string, archived = false) =>
+        request<{ tasks: GsdTask[] }>(
+          `/gsd/projects/${encodeURIComponent(projectKey)}/tasks${archived ? "?archived=true" : ""}`
+        ),
+      create: (projectKey: string, title: string, description?: string) =>
+        request<GsdTask>(`/gsd/projects/${encodeURIComponent(projectKey)}/tasks`, {
+          method: "POST",
+          body: JSON.stringify({ title, description }),
+        }),
+      update: (
+        projectKey: string,
+        taskId: number,
+        patch: { title?: string; description?: string; archived?: 0 | 1 }
+      ) =>
+        request<GsdTask>(`/gsd/projects/${encodeURIComponent(projectKey)}/tasks/${taskId}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+        }),
+    },
   },
 
   pricing: {

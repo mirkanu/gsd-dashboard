@@ -16,6 +16,7 @@
     "@xterm/addon-fit": "^0.12.0-beta.195",
     "@xterm/xterm": "^6.1.0-beta.195",
     "lucide-react": "^0.474.0",
+    "magic-string": "0.30.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",

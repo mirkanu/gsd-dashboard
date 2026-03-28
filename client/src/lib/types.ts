@@ -60,6 +60,15 @@ export interface GsdMessage {
   created_at: string;
 }
 
+export interface GsdTask {
+  id: number;
+  project_key: string;
+  title: string;
+  description: string | null;
+  archived: 0 | 1;
+  created_at: string;
+}
+
 // ─── Agent/Session Types ──────────────────────────────────────────────────────
 
 export type SessionStatus = "active" | "completed" | "error" | "abandoned";
