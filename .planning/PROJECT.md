@@ -23,7 +23,11 @@ At a glance, see where every GSD project stands and interact with any session â€
 
 ### Active
 
-- [ ] New project creation: one-click directory + tmux + Claude launch from dashboard (Phase 15)
+- [ ] Project tasks: per-project task list with title, description, archive, and clipboard export for GSD (v2.2)
+
+### Future
+
+- [ ] New project creation: one-click directory + tmux + Claude launch from dashboard (deferred to v3.0)
 
 ### Out of Scope
 
@@ -60,5 +64,15 @@ Deployed on Railway with cloudflared tunnel to local machine.
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
+## Current Milestone: v2.2 Project Tasks
+
+**Goal:** Add per-project task/note management with clipboard export for GSD execution
+
+**Target features:**
+- SQLite-backed task storage (title, description, archived flag, project key)
+- Tasks tab as first tab in project drawer
+- Add/view/archive tasks on each project card
+- "Copy all open tasks" button for pasting into GSD commands
+
 ---
-*Last updated: 2026-03-28 after v2.1 milestone*
+*Last updated: 2026-03-28 after v2.2 milestone start*

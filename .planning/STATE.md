@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.2
-milestone_name: New Project Creation
+milestone_name: Project Tasks
 status: planning
-stopped_at: Completed v2.1 milestone archival
-last_updated: "2026-03-28T13:35:00Z"
-last_activity: "2026-03-28 — Archived milestones v1.1 through v2.1"
+stopped_at: Defining requirements
+last_updated: "2026-03-28T14:00:00Z"
+last_activity: "2026-03-28 — Milestone v2.2 started (Project Tasks)"
 progress:
-  total_phases: 1
+  total_phases: 0
   completed_phases: 0
-  total_plans: 2
+  total_plans: 0
   completed_plans: 0
   percent: 0
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** Milestone v2.2 — New Project Creation
+**Current focus:** Milestone v2.2 — Project Tasks
 
 ## Current Position
 
-Phase: Phase 15 — New Project Creation
-Plan: Not started (needs planning)
-Status: Milestone v2.1 archived; v2.2 started
-Last activity: 2026-03-28 — Archived milestones v1.1 through v2.1
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-28 — Milestone v2.2 started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -57,6 +57,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Archived milestones v1.1 through v2.1
+Stopped at: Defining requirements for v2.2 Project Tasks
 Resume file: None
-Next action: Plan Phase 15 (New Project Creation) or start /gsd:new-milestone for v2.2
+Next action: Complete requirements definition and roadmap creation
