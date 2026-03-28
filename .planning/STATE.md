@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Project Tasks
 status: planning
-stopped_at: Completed 18-task-ui/18-01-PLAN.md
-last_updated: "2026-03-28T22:13:38.099Z"
+stopped_at: Completed 18-task-ui/18-02-PLAN.md
+last_updated: "2026-03-28T22:23:22.176Z"
 last_activity: 2026-03-28 - Roadmap created for v2.2 (Phases 17-19)
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -54,6 +54,8 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 17-task-data-layer]: Used project key 'task-test-proj' to avoid test collisions
 - [Phase 18-task-ui]: GsdTask.archived typed as 0 | 1 (not boolean) matching SQLite INTEGER storage and server response shape
 - [Phase 18-task-ui]: api.gsd.tasks.list defaults archived=false so callers get active tasks without specifying the flag
+- [Phase 18-task-ui]: Tasks tab inserted first in TABS array and set as default active tab in GsdDrawer
+- [Phase 18-task-ui]: Optimistic removal on archive/unarchive with revert-on-error for perceived performance
 
 ### Roadmap Evolution
 
@@ -78,10 +80,11 @@ None.
 | Phase 17-task-data-layer P01 | 10 | 2 tasks | 2 files |
 | Phase 17-task-data-layer P02 | 5 | 1 tasks | 1 files |
 | Phase 18-task-ui P01 | 9min | 1 tasks | 4 files |
+| Phase 18-task-ui P02 | 4min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-03-28T22:13:38.096Z
-Stopped at: Completed 18-task-ui/18-01-PLAN.md
+Last session: 2026-03-28T22:23:22.174Z
+Stopped at: Completed 18-task-ui/18-02-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 17
