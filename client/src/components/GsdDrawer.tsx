@@ -4,10 +4,12 @@ import remarkGfm from "remark-gfm";
 import { X, Maximize2 } from "lucide-react";
 import { api } from "../lib/api";
 import type { GsdProject, GsdMessage } from "../lib/types";
+import { TasksTab } from "./TasksTab";
 
-type TabId = "messages" | "state" | "roadmap" | "requirements" | "plan";
+type TabId = "tasks" | "messages" | "state" | "roadmap" | "requirements" | "plan";
 
 const TABS: { id: TabId; label: string }[] = [
+  { id: "tasks",        label: "Tasks"    },
   { id: "messages",     label: "Messages" },
   { id: "state",        label: "State"    },
   { id: "roadmap",      label: "Roadmap"  },
@@ -70,13 +72,13 @@ interface GsdDrawerProps {
 }
 
 export function GsdDrawer({ project, onClose, onExpand }: GsdDrawerProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("messages");
+  const [activeTab, setActiveTab] = useState<TabId>("tasks");
   const [content, setContent]     = useState<string | null>(null);
   const [loading, setLoading]     = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (activeTab === "messages") return;
+    if (activeTab === "messages" || activeTab === "tasks") return;
     let cancelled = false;
     setContent(null);
     setFetchError(null);
@@ -132,8 +134,8 @@ export function GsdDrawer({ project, onClose, onExpand }: GsdDrawerProps) {
                 {tab.label}
               </button>
             ))}
-            {/* Expand button -- only shown when content is loaded and not on messages tab */}
-            {content !== null && onExpand && activeTab !== "messages" && (
+            {/* Expand button -- only shown when content is loaded and not on messages or tasks tab */}
+            {content !== null && onExpand && activeTab !== "messages" && activeTab !== "tasks" && (
               <button
                 onClick={() => onExpand(content, activeTab)}
                 className="ml-auto px-2 py-2 text-gray-500 hover:text-gray-300 transition-colors"
@@ -147,7 +149,9 @@ export function GsdDrawer({ project, onClose, onExpand }: GsdDrawerProps) {
 
           {/* Content area */}
           <div className="flex-1 overflow-y-auto">
-            {activeTab === "messages" ? (
+            {activeTab === "tasks" ? (
+              <TasksTab projectKey={project.name} />
+            ) : activeTab === "messages" ? (
               <MessageLog projectName={project.name} />
             ) : (
               <>
