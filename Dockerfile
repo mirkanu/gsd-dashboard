@@ -12,6 +12,8 @@ WORKDIR /app/client
 COPY client/package.json client/package-lock.json ./
 RUN npm ci
 COPY client/ ./
+# Fail fast if critical files are missing (catches uncommitted file bugs)
+RUN test -f scripts/patch-dequal.cjs || (echo "ERROR: client/scripts/patch-dequal.cjs missing — did you forget to commit?" && exit 1)
 RUN npm run build
 
 # ── Stage 3: Production runtime ───────────────────────────────────────
