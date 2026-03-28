@@ -125,7 +125,7 @@ Plans:
 | 13.1 Mobile Terminal Polish & Message Log | v2.1 | 3/3 | Complete | 2026-03-27 |
 | 14. Telegram Integration | v2.1 | 2/2 | Complete | 2026-03-28 |
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
-| 17. Task Data Layer | 2/2 | Complete   | 2026-03-28 | - |
+| 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
 | 18. Task UI | v2.2 | 0/? | Not started | - |
 | 19. Clipboard Export | v2.2 | 0/? | Not started | - |
 
