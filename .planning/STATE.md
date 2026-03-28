@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Project Tasks
 status: planning
-stopped_at: Completed 17-task-data-layer/17-02-PLAN.md
-last_updated: "2026-03-28T21:19:30.761Z"
+stopped_at: Completed 18-task-ui/18-01-PLAN.md
+last_updated: "2026-03-28T22:13:38.099Z"
 last_activity: 2026-03-28 - Roadmap created for v2.2 (Phases 17-19)
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 3
+  total_plans: 7
+  completed_plans: 4
   percent: 0
 ---
 
@@ -52,6 +52,8 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 17-task-data-layer]: COALESCE(?, column) pattern in updateTask allows partial patches by passing null to keep existing value
 - [Phase 17-task-data-layer]: archived stored as INTEGER (0/1) in SQLite — consistent with SQLite's typeless conventions
 - [Phase 17-task-data-layer]: Used project key 'task-test-proj' to avoid test collisions
+- [Phase 18-task-ui]: GsdTask.archived typed as 0 | 1 (not boolean) matching SQLite INTEGER storage and server response shape
+- [Phase 18-task-ui]: api.gsd.tasks.list defaults archived=false so callers get active tasks without specifying the flag
 
 ### Roadmap Evolution
 
@@ -75,10 +77,11 @@ None.
 | Phase 20-fix-railway-deployment P01 | 20 | 2 tasks | 2 files |
 | Phase 17-task-data-layer P01 | 10 | 2 tasks | 2 files |
 | Phase 17-task-data-layer P02 | 5 | 1 tasks | 1 files |
+| Phase 18-task-ui P01 | 9min | 1 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-03-28T21:07:46.494Z
-Stopped at: Completed 17-task-data-layer/17-02-PLAN.md
+Last session: 2026-03-28T22:13:38.096Z
+Stopped at: Completed 18-task-ui/18-01-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 17
