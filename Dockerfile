@@ -14,7 +14,7 @@ COPY client/scripts/ ./scripts/
 RUN npm ci
 COPY client/ ./
 RUN npm run build
-RUN bash scripts/verify-build.sh
+RUN sh scripts/verify-build.sh
 
 # ── Stage 3: Production runtime ───────────────────────────────────────
 FROM node:22-alpine
