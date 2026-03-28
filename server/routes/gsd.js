@@ -312,4 +312,48 @@ router.post('/projects/:name/unarchive', (req, res) => {
   }
 });
 
+// POST /api/gsd/projects/:key/tasks — create a task
+router.post('/projects/:key/tasks', (req, res) => {
+  const { key } = req.params;
+  const { title, description } = req.body || {};
+  if (!title || typeof title !== 'string' || title.trim() === '') {
+    return res.status(400).json({ error: 'title is required' });
+  }
+  try {
+    const task = stmts.insertTask.get(key, title.trim(), description?.trim() || null);
+    res.status(201).json(task);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create task', detail: err.message });
+  }
+});
+
+// GET /api/gsd/projects/:key/tasks — list tasks (?archived=true for archived)
+router.get('/projects/:key/tasks', (req, res) => {
+  const { key } = req.params;
+  const archived = req.query.archived === 'true' ? 1 : 0;
+  try {
+    const tasks = stmts.listTasks.all(key, archived);
+    res.json({ tasks });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to list tasks', detail: err.message });
+  }
+});
+
+// PATCH /api/gsd/projects/:key/tasks/:id — update a task
+router.patch('/projects/:key/tasks/:id', (req, res) => {
+  const { id } = req.params;
+  const { title, description, archived } = req.body || {};
+  // Convert archived boolean to 0/1; undefined stays null (COALESCE keeps existing)
+  const archivedInt = archived === true ? 1 : archived === false ? 0 : null;
+  const titleVal = typeof title === 'string' ? title.trim() : null;
+  const descVal = typeof description === 'string' ? description.trim() : null;
+  try {
+    const task = stmts.updateTask.get(titleVal || null, descVal, archivedInt, parseInt(id, 10));
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update task', detail: err.message });
+  }
+});
+
 module.exports = router;
