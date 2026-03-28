@@ -10,10 +10,9 @@ FROM node:22-alpine AS client-build
 # cache-bust: 2026-03-28T18
 WORKDIR /app/client
 COPY client/package.json client/package-lock.json ./
+COPY client/scripts/ ./scripts/
 RUN npm ci
 COPY client/ ./
-# Fail fast if critical files are missing (catches uncommitted file bugs)
-RUN test -f scripts/patch-dequal.cjs || (echo "ERROR: client/scripts/patch-dequal.cjs missing — did you forget to commit?" && exit 1)
 RUN npm run build
 RUN bash scripts/verify-build.sh
 
