@@ -85,7 +85,14 @@ function startServer(app, port) {
     });
   }
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`Port ${port} is already in use. Exiting.`);
+        process.exit(1);
+      }
+      reject(err);
+    });
     server.listen(port, () => {
       const mode = isProduction ? "production" : "development";
       console.log(`Agent Dashboard server running on http://localhost:${port} (${mode})`);
@@ -128,6 +135,11 @@ if (require.main === module) {
   const { importCompactions, findCompactionsInFile } = require("../scripts/import-history");
   setInterval(
     () => {
+      // 0. Log memory usage for trend monitoring
+      const mem = process.memoryUsage();
+      const fmt = (b) => (b / 1024 / 1024).toFixed(1);
+      console.log(`[maintenance] heap: ${fmt(mem.heapUsed)}/${fmt(mem.heapTotal)}MB rss: ${fmt(mem.rss)}MB external: ${fmt(mem.external)}MB`);
+
       // 1. Stale session cleanup
       const stale = cleanupDb.stmts.findStaleSessions.all("__periodic__", 5);
       const now = new Date().toISOString();
@@ -171,6 +183,20 @@ if (require.main === module) {
     },
     2 * 60 * 1000
   );
+
+  // Event loop liveness watchdog — exit if event loop is blocked for >30s
+  // Node --watch will auto-restart the process on exit
+  let lastTick = Date.now();
+  const WATCHDOG_INTERVAL = 10_000;  // check every 10s
+  const WATCHDOG_THRESHOLD = 30_000; // 30s without a tick = hung
+  setInterval(() => { lastTick = Date.now(); }, WATCHDOG_INTERVAL).unref();
+  setInterval(() => {
+    const lag = Date.now() - lastTick;
+    if (lag > WATCHDOG_THRESHOLD) {
+      console.error(`[watchdog] Event loop blocked for ${(lag / 1000).toFixed(0)}s — exiting for restart`);
+      process.exit(1);
+    }
+  }, WATCHDOG_INTERVAL).unref();
 
   // Auto-import legacy sessions and backfill compaction tracking on startup
   const { importAllSessions, backfillCompactions } = require("../scripts/import-history");
