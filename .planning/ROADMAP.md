@@ -129,6 +129,16 @@ Plans:
 | 18. Task UI | v2.2 | 0/? | Not started | - |
 | 19. Clipboard Export | v2.2 | 0/? | Not started | - |
 
+### Phase 20: Fix Railway deployment
+
+**Goal:** Deploy the dequal-patch fix and add a post-build dist assertion so the live dashboard reflects recent client changes and future deploys cannot silently ship stale builds
+**Requirements**: none
+**Depends on:** none (hotfix, runs independently)
+**Plans:** 1 plan
+
+Plans:
+- [ ] 20-01-PLAN.md — add verify-build.sh safeguard, deploy to Railway, verify live dashboard
+
 ---
 
 ## v3.0 Future
