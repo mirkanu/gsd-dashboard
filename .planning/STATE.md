@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Project Tasks
 status: planning
-stopped_at: Completed 17-task-data-layer/17-01-PLAN.md
-last_updated: "2026-03-28T21:01:02.040Z"
+stopped_at: Completed 17-task-data-layer/17-02-PLAN.md
+last_updated: "2026-03-28T21:07:46.498Z"
 last_activity: 2026-03-28 - Roadmap created for v2.2 (Phases 17-19)
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 17-task-data-layer]: Tasks are local-only (no GSD_DATA_URL proxy) — stored in local SQLite, Phase 18 UI calls endpoints directly
 - [Phase 17-task-data-layer]: COALESCE(?, column) pattern in updateTask allows partial patches by passing null to keep existing value
 - [Phase 17-task-data-layer]: archived stored as INTEGER (0/1) in SQLite — consistent with SQLite's typeless conventions
+- [Phase 17-task-data-layer]: Used project key 'task-test-proj' to avoid test collisions
 
 ### Roadmap Evolution
 
@@ -73,10 +74,11 @@ None.
 | 3 | Force Railway rebuild by bumping Dockerfile cache-bust timestamps (both Stage 1 and Stage 2) | 2026-03-28 | f20ea97 | [3-fix-railway-deploy-clear-build-cache-fro](./quick/3-fix-railway-deploy-clear-build-cache-fro/) |
 | Phase 20-fix-railway-deployment P01 | 20 | 2 tasks | 2 files |
 | Phase 17-task-data-layer P01 | 10 | 2 tasks | 2 files |
+| Phase 17-task-data-layer P02 | 5 | 1 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-03-28T21:00:31.822Z
-Stopped at: Completed 17-task-data-layer/17-01-PLAN.md
+Last session: 2026-03-28T21:07:46.494Z
+Stopped at: Completed 17-task-data-layer/17-02-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 17

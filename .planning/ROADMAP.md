@@ -61,7 +61,7 @@
 
 ### 🚧 v2.2 Project Tasks
 
-- [ ] **Phase 17: Task Data Layer** — SQLite table and CRUD API endpoints for per-project tasks
+- [x] **Phase 17: Task Data Layer** — SQLite table and CRUD API endpoints for per-project tasks (completed 2026-03-28)
 - [ ] **Phase 18: Task UI** — Tasks tab in project drawer with add, view, archive, and unarchive interactions
 - [ ] **Phase 19: Clipboard Export** — Copy all open tasks as formatted markdown for GSD consumption
 
@@ -125,7 +125,7 @@ Plans:
 | 13.1 Mobile Terminal Polish & Message Log | v2.1 | 3/3 | Complete | 2026-03-27 |
 | 14. Telegram Integration | v2.1 | 2/2 | Complete | 2026-03-28 |
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
-| 17. Task Data Layer | 1/2 | In Progress|  | - |
+| 17. Task Data Layer | 2/2 | Complete   | 2026-03-28 | - |
 | 18. Task UI | v2.2 | 0/? | Not started | - |
 | 19. Clipboard Export | v2.2 | 0/? | Not started | - |
 
@@ -134,7 +134,7 @@ Plans:
 **Goal:** Deploy the dequal-patch fix and add a post-build dist assertion so the live dashboard reflects recent client changes and future deploys cannot silently ship stale builds
 **Requirements**: none
 **Depends on:** none (hotfix, runs independently)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 20-01-PLAN.md — add verify-build.sh safeguard, deploy to Railway, verify live dashboard
