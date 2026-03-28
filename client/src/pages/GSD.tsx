@@ -741,6 +741,7 @@ export function GSD() {
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
   const [terminalInitialValue, setTerminalInitialValue] = useState<string>("");
   const [archivedOpen, setArchivedOpen] = useState(false);
+  const [pausedOpen, setPausedOpen] = useState(false);
 
   const TAB_TITLES: Record<string, string> = {
     messages: "Messages",
@@ -811,7 +812,8 @@ export function GSD() {
     return () => clearInterval(t);
   }, [rateLimit]);
 
-  const activeProjects = projects.filter(p => p.sessionState !== "archived");
+  const visibleProjects = projects.filter(p => p.sessionState !== "archived" && p.sessionState !== "paused");
+  const pausedProjects  = projects.filter(p => p.sessionState === "paused");
   const archivedProjects = projects.filter(p => p.sessionState === "archived");
 
   const workingCount  = projects.filter(p => p.sessionState === "working").length;
@@ -889,16 +891,8 @@ export function GSD() {
         <>
           {/* Active project cards grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {[...activeProjects]
-              .sort((a, b) => {
-                const stateOrder: Record<string, number> = { waiting: 0, working: 1, paused: 2 };
-                const aOrder = stateOrder[a.sessionState ?? "paused"] ?? 2;
-                const bOrder = stateOrder[b.sessionState ?? "paused"] ?? 2;
-                if (aOrder !== bOrder) return aOrder - bOrder;
-                const aTime = a.sessionUpdatedAt ? new Date(a.sessionUpdatedAt).getTime() : 0;
-                const bTime = b.sessionUpdatedAt ? new Date(b.sessionUpdatedAt).getTime() : 0;
-                return bTime - aTime;
-              })
+            {[...visibleProjects]
+              .sort((a, b) => a.name.localeCompare(b.name))
               .map((project) => (
               <ProjectCard
                 key={project.name}
@@ -914,6 +908,37 @@ export function GSD() {
               />
             ))}
           </div>
+
+          {/* Paused section */}
+          {pausedProjects.length > 0 && (
+            <div className="mt-2">
+              <button
+                onClick={() => setPausedOpen(v => !v)}
+                className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-300 transition-colors mb-3"
+              >
+                {pausedOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                View paused ({pausedProjects.length})
+              </button>
+              {pausedOpen && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {pausedProjects.map((project) => (
+                    <ProjectCard
+                      key={project.name}
+                      project={project}
+                      onSelect={setSelectedProject}
+                      onOpenTerminal={(initialValue) => {
+                        setTerminalProject(project.name);
+                        setTerminalInitialValue(initialValue);
+                      }}
+                      onArchive={() => archiveProject(project.name)}
+                      onUnarchive={() => unarchiveProject(project.name)}
+                      onReopenTmux={() => load()}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Archived section */}
           {archivedProjects.length > 0 && (
