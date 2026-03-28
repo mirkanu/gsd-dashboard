@@ -92,7 +92,11 @@ Plans:
   3. Open tasks are listed under the Tasks tab with their title and description visible
   4. Each task row has an archive action; clicking it removes the task from the open list
   5. A toggle switches the view to archived tasks, where each task has an unarchive action that moves it back to open
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — GsdTask type + api.gsd.tasks methods (list/create/update)
+- [ ] 18-02-PLAN.md — TasksTab component + wire into GsdDrawer as first tab
 
 ### Phase 19: Clipboard Export
 **Goal**: Users can copy all open tasks as formatted markdown for pasting into GSD commands
@@ -126,7 +130,7 @@ Plans:
 | 14. Telegram Integration | v2.1 | 2/2 | Complete | 2026-03-28 |
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
 | 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
-| 18. Task UI | v2.2 | 0/? | Not started | - |
+| 18. Task UI | v2.2 | 0/2 | Not started | - |
 | 19. Clipboard Export | v2.2 | 0/? | Not started | - |
 
 ### Phase 20: Fix Railway deployment
