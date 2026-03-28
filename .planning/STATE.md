@@ -60,10 +60,11 @@ None.
 |---|-------------|------|--------|-----------|
 | 1 | HTTP 502 error fix — watchdog + EADDRINUSE handler | 2026-03-28 | e569d9b | [1-http-502-error](./quick/1-http-502-error-in-the-dashboard-again/) |
 | 2 | Alphabetical sort + paused collapsible section in GSD project grid | 2026-03-28 | 4fc84c5 | [2-order-cards-alphabetically-and-hide-paus](./quick/2-order-cards-alphabetically-and-hide-paus/) |
+| 3 | Force Railway rebuild by bumping Dockerfile cache-bust timestamps (both Stage 1 and Stage 2) | 2026-03-28 | f20ea97 | [3-fix-railway-deploy-clear-build-cache-fro](./quick/3-fix-railway-deploy-clear-build-cache-fro/) |
 
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed quick task 2 — alphabetical sort + paused section
+Stopped at: Completed quick task 3 — Railway cache-bust and redeploy
 Resume file: None
 Next action: /gsd:plan-phase 17
