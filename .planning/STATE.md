@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 Phase: Not started (defining requirements)
 Plan: —
 Status: Defining requirements
-Last activity: 2026-03-28 — Milestone v2.2 started
+Last activity: 2026-03-28 - Completed quick task 1: HTTP 502 error fix
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -53,6 +53,12 @@ None.
 ### Blockers/Concerns
 
 None.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | HTTP 502 error fix — watchdog + EADDRINUSE handler | 2026-03-28 | e569d9b | [1-http-502-error](./quick/1-http-502-error-in-the-dashboard-again/) |
 
 ## Session Continuity
 
