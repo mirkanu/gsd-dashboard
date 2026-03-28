@@ -116,6 +116,16 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_gsd_messages_project ON gsd_messages(project, created_at DESC);
+
+  CREATE TABLE IF NOT EXISTS project_tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_key TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_project_tasks_key ON project_tasks(project_key, archived);
 `);
 
 // Seed default model pricing if table is empty
@@ -443,6 +453,25 @@ const stmts = {
     SELECT ROUND(CAST(COUNT(*) AS REAL) / MAX(1, (SELECT COUNT(*) FROM sessions)), 1) as avg
     FROM events
   `),
+
+  // Project tasks
+  insertTask: db.prepare(
+    `INSERT INTO project_tasks (project_key, title, description) VALUES (?, ?, ?) RETURNING *`
+  ),
+  getTask: db.prepare(
+    `SELECT * FROM project_tasks WHERE id = ?`
+  ),
+  listTasks: db.prepare(
+    `SELECT * FROM project_tasks WHERE project_key = ? AND archived = ? ORDER BY created_at ASC`
+  ),
+  updateTask: db.prepare(
+    `UPDATE project_tasks SET
+       title = COALESCE(?, title),
+       description = COALESCE(?, description),
+       archived = COALESCE(?, archived)
+     WHERE id = ?
+     RETURNING *`
+  ),
 };
 
 module.exports = { db, stmts, DB_PATH };
