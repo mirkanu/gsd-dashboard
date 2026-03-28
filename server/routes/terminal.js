@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { WebSocketServer } = require('ws');
 const { isTmuxSessionActive } = require('../gsd/tmux');
+const { stmts } = require('../db');
 
 function loadConfig() {
   const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../../gsd-projects.json');
@@ -68,12 +69,35 @@ function attachTerminalWS(server) {
         if (ws.readyState === 1) ws.send(data);
       });
 
+      // Line buffer to capture typed commands for message log
+      let lineBuffer = '';
+
       ws.on('message', (msg) => {
         const str = msg.toString();
         let parsed;
         try {
           parsed = JSON.parse(str);
         } catch {
+          // Track typed input: accumulate printable chars, flush on Enter
+          if (str === '\r') {
+            // Enter pressed — flush buffer as a terminal-typed message
+            const trimmed = lineBuffer.trim();
+            if (trimmed.length >= 2) {
+              try { stmts?.insertGsdMessage?.run(projectName, 'outbound', `[terminal] ${trimmed}`); } catch { /* non-blocking */ }
+            }
+            lineBuffer = '';
+          } else if (str === '\x7f' || str === '\b') {
+            // Backspace — remove last char
+            lineBuffer = lineBuffer.slice(0, -1);
+          } else if (str.length === 1 && str.charCodeAt(0) >= 32) {
+            // Printable character
+            lineBuffer += str;
+          } else if (str.startsWith('\x1b')) {
+            // Escape sequence (arrows, etc.) — ignore for buffer
+          } else if (str.length > 1 && !str.startsWith('\x1b')) {
+            // Pasted text — append to buffer
+            lineBuffer += str;
+          }
           pty.write(str);
           return;
         }

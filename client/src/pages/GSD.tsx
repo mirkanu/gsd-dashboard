@@ -188,7 +188,9 @@ function SendBox({ projectName, initialValue, contextTokens }: { projectName: st
           style={{ fontSize: isMobile ? 16 : undefined }}
         />
         <button
+          onMouseDown={(e) => e.preventDefault()}
           onClick={handleSubmit}
+          onTouchEnd={(e) => { e.preventDefault(); handleSubmit(e as unknown as React.MouseEvent); }}
           disabled={!value.trim() || status === "sending"}
           className="text-xs px-3 py-1.5 rounded bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
         >
@@ -224,6 +226,8 @@ function SpecialKeyBar({ wsRef }: { wsRef: React.RefObject<WebSocket | null> }) 
         <button
           key={key.label}
           onTouchStart={(e) => { e.preventDefault(); send(key.seq); }}
+          onTouchEnd={(e) => e.preventDefault()}
+          onMouseDown={(e) => e.preventDefault()}
           className="text-[11px] px-2.5 py-1.5 rounded border border-border bg-surface-3 text-gray-400 active:bg-accent/20 active:text-accent active:border-accent/30 transition-colors select-none"
         >
           {key.label}

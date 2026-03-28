@@ -4,7 +4,7 @@ const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
 const { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit } = require('../gsd/tmux');
-const { sendNotification, parseOptions, shouldNotify, ENABLED: telegramEnabled } = require('../gsd/telegram');
+const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED: telegramEnabled } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
 
 const router = express.Router();
@@ -91,10 +91,9 @@ router.get("/projects", async (_req, res) => {
               const paneText = capturePaneText(tmux_session);
               const options = paneText ? parseOptions(paneText) : [];
               const label = sessionState === 'waiting' ? 'is waiting for your input' : 'has paused';
-              // Include last few lines of terminal output for context
-              const lastLines = paneText ? paneText.trim().split('\n').slice(-5).join('\n') : '';
-              const body = lastLines
-                ? `${label}:\n\n${lastLines.length > 500 ? '...' + lastLines.slice(-500) : lastLines}`
+              const cleanText = paneText ? formatForTelegram(paneText) : '';
+              const body = cleanText
+                ? `${label}:\n\n${cleanText}`
                 : label;
               sendNotification(name, body, options).catch(() => {});
             }
