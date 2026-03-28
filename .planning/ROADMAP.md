@@ -76,7 +76,11 @@
   2. POST /api/gsd/projects/:key/tasks creates a task and returns it with a generated id and timestamp
   3. GET /api/gsd/projects/:key/tasks returns open tasks by default and archived tasks when the filter is set
   4. PATCH /api/gsd/projects/:key/tasks/:id updates title, description, or archived status and returns the updated task
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — project_tasks schema + stmts + POST/GET/PATCH routes
+- [ ] 17-02-PLAN.md — task endpoint tests in api.test.js
 
 ### Phase 18: Task UI
 **Goal**: Users can manage tasks for each project from the project drawer
@@ -121,7 +125,7 @@
 | 13.1 Mobile Terminal Polish & Message Log | v2.1 | 3/3 | Complete | 2026-03-27 |
 | 14. Telegram Integration | v2.1 | 2/2 | Complete | 2026-03-28 |
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
-| 17. Task Data Layer | v2.2 | 0/? | Not started | - |
+| 17. Task Data Layer | v2.2 | 0/2 | Not started | - |
 | 18. Task UI | v2.2 | 0/? | Not started | - |
 | 19. Clipboard Export | v2.2 | 0/? | Not started | - |
 
