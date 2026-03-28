@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Asserts that the Vite build produced a non-empty dist/index.html.
 # Run after `npm run build` in the Dockerfile to catch silent build failures.
 set -e
