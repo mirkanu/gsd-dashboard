@@ -134,7 +134,7 @@ Plans:
 **Goal:** Deploy the dequal-patch fix and add a post-build dist assertion so the live dashboard reflects recent client changes and future deploys cannot silently ship stale builds
 **Requirements**: none
 **Depends on:** none (hotfix, runs independently)
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 20-01-PLAN.md — add verify-build.sh safeguard, deploy to Railway, verify live dashboard

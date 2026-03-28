@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Project Tasks
 status: planning
-stopped_at: Roadmap created — ready to plan Phase 17
-last_updated: "2026-03-28T14:00:00Z"
-last_activity: "2026-03-28 — Roadmap created for v2.2 Project Tasks (Phases 17-19)"
+stopped_at: Completed 20-fix-railway-deployment/20-01-PLAN.md
+last_updated: "2026-03-28T20:10:00.825Z"
+last_activity: 2026-03-28 - Roadmap created for v2.2 (Phases 17-19)
 progress:
-  total_phases: 3
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 5
+  completed_phases: 1
+  total_plans: 5
+  completed_plans: 1
   percent: 0
 ---
 
@@ -45,6 +45,13 @@ Progress: [░░░░░░░░░░] 0% (0/3 phases)
 ### Decisions
 
 See .planning/PROJECT.md Key Decisions table for full history.
+- [Phase 20-fix-railway-deployment]: Use sh (POSIX) not bash in verify-build.sh — Alpine Docker base has no bash
+- [Phase 20-fix-railway-deployment]: Copy client/scripts before npm ci so postinstall hook finds patch-dequal.cjs
+- [Phase 20-fix-railway-deployment]: 500-byte threshold in verify-build.sh catches empty dist/index.html without false positives
+
+### Roadmap Evolution
+
+- Phase 20 added: Fix Railway deployment
 
 ### Pending Todos
 
@@ -61,10 +68,11 @@ None.
 | 1 | HTTP 502 error fix — watchdog + EADDRINUSE handler | 2026-03-28 | e569d9b | [1-http-502-error](./quick/1-http-502-error-in-the-dashboard-again/) |
 | 2 | Alphabetical sort + paused collapsible section in GSD project grid | 2026-03-28 | 4fc84c5 | [2-order-cards-alphabetically-and-hide-paus](./quick/2-order-cards-alphabetically-and-hide-paus/) |
 | 3 | Force Railway rebuild by bumping Dockerfile cache-bust timestamps (both Stage 1 and Stage 2) | 2026-03-28 | f20ea97 | [3-fix-railway-deploy-clear-build-cache-fro](./quick/3-fix-railway-deploy-clear-build-cache-fro/) |
+| Phase 20-fix-railway-deployment P01 | 20 | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-03-28
-Stopped at: Completed quick task 3 — Railway cache-bust and redeploy
+Last session: 2026-03-28T20:09:31.062Z
+Stopped at: Completed 20-fix-railway-deployment/20-01-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 17
