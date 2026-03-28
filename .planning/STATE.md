@@ -59,10 +59,11 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | HTTP 502 error fix — watchdog + EADDRINUSE handler | 2026-03-28 | e569d9b | [1-http-502-error](./quick/1-http-502-error-in-the-dashboard-again/) |
+| 2 | Alphabetical sort + paused collapsible section in GSD project grid | 2026-03-28 | 4fc84c5 | [2-order-cards-alphabetically-and-hide-paus](./quick/2-order-cards-alphabetically-and-hide-paus/) |
 
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Roadmap created for v2.2 Project Tasks
+Stopped at: Completed quick task 2 — alphabetical sort + paused section
 Resume file: None
 Next action: /gsd:plan-phase 17
