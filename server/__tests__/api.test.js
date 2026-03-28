@@ -1518,3 +1518,76 @@ describe("Phase 12: archive/unarchive endpoints", () => {
     assert.equal(res.status, 404);
   });
 });
+
+// ============================================================
+// Phase 17: task endpoints
+// ============================================================
+describe("task endpoints", () => {
+  const PROJECT_KEY = "task-test-proj";
+
+  it("POST creates a task with valid title", async () => {
+    const r = await post(`/api/gsd/projects/${PROJECT_KEY}/tasks`, { title: "My task" });
+    assert.equal(r.status, 201);
+    assert.ok(r.body.id > 0);
+    assert.equal(r.body.project_key, PROJECT_KEY);
+    assert.equal(r.body.title, "My task");
+    assert.ok("description" in r.body);
+    assert.equal(r.body.archived, 0);
+    assert.ok(r.body.created_at);
+  });
+
+  it("POST returns 400 when title is missing", async () => {
+    const r = await post(`/api/gsd/projects/${PROJECT_KEY}/tasks`, {});
+    assert.equal(r.status, 400);
+  });
+
+  it("POST returns 400 when title is whitespace only", async () => {
+    const r = await post(`/api/gsd/projects/${PROJECT_KEY}/tasks`, { title: "   " });
+    assert.equal(r.status, 400);
+  });
+
+  it("GET returns open tasks after creation", async () => {
+    const createRes = await post(`/api/gsd/projects/${PROJECT_KEY}/tasks`, { title: "Open task" });
+    assert.equal(createRes.status, 201);
+    const r = await fetch(`/api/gsd/projects/${PROJECT_KEY}/tasks`);
+    assert.equal(r.status, 200);
+    assert.ok(Array.isArray(r.body.tasks));
+    const found = r.body.tasks.find((t) => t.id === createRes.body.id);
+    assert.ok(found, "Newly created task should appear in open task list");
+  });
+
+  it("GET ?archived=true returns empty list when no archived tasks exist", async () => {
+    const r = await fetch(`/api/gsd/projects/task-test-proj-archived-empty/tasks?archived=true`);
+    assert.equal(r.status, 200);
+    assert.ok(Array.isArray(r.body.tasks));
+    assert.equal(r.body.tasks.length, 0);
+  });
+
+  it("PATCH archives a task and GET confirms it moves to archived list", async () => {
+    const createRes = await post(`/api/gsd/projects/${PROJECT_KEY}/tasks`, { title: "To archive" });
+    assert.equal(createRes.status, 201);
+    const taskId = createRes.body.id;
+
+    // Archive the task
+    const patchRes = await patch(`/api/gsd/projects/${PROJECT_KEY}/tasks/${taskId}`, { archived: true });
+    assert.equal(patchRes.status, 200);
+    assert.equal(patchRes.body.archived, 1);
+
+    // Should not appear in open list
+    const openRes = await fetch(`/api/gsd/projects/${PROJECT_KEY}/tasks`);
+    assert.equal(openRes.status, 200);
+    const inOpen = openRes.body.tasks.find((t) => t.id === taskId);
+    assert.ok(!inOpen, "Archived task should not appear in open task list");
+
+    // Should appear in archived list
+    const archivedRes = await fetch(`/api/gsd/projects/${PROJECT_KEY}/tasks?archived=true`);
+    assert.equal(archivedRes.status, 200);
+    const inArchived = archivedRes.body.tasks.find((t) => t.id === taskId);
+    assert.ok(inArchived, "Archived task should appear in archived task list");
+  });
+
+  it("PATCH returns 404 for unknown task id", async () => {
+    const r = await patch(`/api/gsd/projects/${PROJECT_KEY}/tasks/999999`, { archived: true });
+    assert.equal(r.status, 404);
+  });
+});
