@@ -2,200 +2,68 @@
 
 ## Milestones
 
-- [x] **v1** — Foundation, backend data pipeline, frontend dashboard UI, Railway deployment (2026-03-18) → [archive](.planning/milestones/v1-ROADMAP.md)
-- [x] **v1.1** — File Viewer & Card Enhancements (completed 2026-03-21)
-- [x] **v1.2** — GSD Stats & Live Data Pipeline (completed 2026-03-23)
-- [x] **v2.0** — Project Control Plane (completed 2026-03-25)
-- [ ] **v2.1** — Session Intelligence & Terminal UX (in progress)
-- [ ] **v2.2** — New Project Creation
+- ✅ **v1.0 Foundation** — Phases 1-3 (shipped 2026-03-18) → [archive](milestones/v1-ROADMAP.md)
+- ✅ **v1.1 File Viewer & Card Enhancements** — Phases 4-6 (shipped 2026-03-21) → [archive](milestones/v1.1-ROADMAP.md)
+- ✅ **v1.2 GSD Stats & Live Data Pipeline** — Phases 7-8 (shipped 2026-03-23) → [archive](milestones/v1.2-ROADMAP.md)
+- ✅ **v2.0 Project Control Plane** — Phases 9-11 (shipped 2026-03-25) → [archive](milestones/v2.0-ROADMAP.md)
+- ✅ **v2.1 Session Intelligence & Terminal UX** — Phases 12-14, 16 (shipped 2026-03-28) → [archive](milestones/v2.1-ROADMAP.md)
+- 🚧 **v2.2 New Project Creation** — Phase 15 (in progress)
 
 ---
 
-## v1.1 Phases
+## Phases
 
-- [x] **Phase 4: Backend File API** — Parse version/URL from PROJECT.md and expose a file-content endpoint for planning files
-- [x] **Phase 5: Card Enhancements** — Display version badge and live URL on cards; wire click to open drawer
-- [x] **Phase 6: Drawer and Full-Screen Viewer** — Side drawer with file tabs rendering markdown; full-screen markdown view
+<details>
+<summary>✅ v1.0 Foundation (Phases 1-3) — SHIPPED 2026-03-18</summary>
 
-## v1.2 Phases
+- [x] Phase 1: Foundation & Configuration (3/3 plans) — completed 2026-03-18
+- [x] Phase 2: Backend Data Pipeline (2/2 plans) — completed 2026-03-18
+- [x] Phase 3: Frontend Dashboard (3/3 plans) — completed 2026-03-18
 
-- [x] **Phase 7: Agent Data Proxy** — Proxy agent API requests through GSD_DATA_URL so Railway shows live session data from the local machine
-- [x] **Phase 8: GSD Card Stats** — Enrich /api/gsd/projects with blockers/velocity/streak/TTL/nextAction and render all stats on project cards
+</details>
 
-## v2.0 Phases
+<details>
+<summary>✅ v1.1 File Viewer & Card Enhancements (Phases 4-6) — SHIPPED 2026-03-21</summary>
 
-- [x] **Phase 9: Tmux Backend Wiring** — Add tmux_session to project config, validate session existence, and expose a send-keys endpoint (completed 2026-03-24)
-- [x] **Phase 10: Smart Send UI** — Add a send input to each project card with next_action pre-fill and GSD command chips (completed 2026-03-24)
-- [x] **Phase 11: Live Terminal Overlay** — Full-screen xterm.js terminal attached to a project's tmux session via node-pty WebSocket (completed 2026-03-25)
+- [x] Phase 4: Backend File API (2/2 plans) — completed 2026-03-21
+- [x] Phase 5: Card Enhancements (2/2 plans) — completed 2026-03-21
+- [x] Phase 6: Drawer and Full-Screen Viewer (3/3 plans) — completed 2026-03-21
 
-## v2.1 Phases
+</details>
 
-- [x] **Phase 12: Session State Indicators** — Detect Claude/tmux session state (working/waiting/paused/archived); card border color + label; archive/unarchive in-app; summary stats row overhaul (completed 2026-03-26)
-- [ ] **Phase 13: Terminal UX** — Move send box + chips into terminal overlay; remove from card; mobile keyboard-push fix; touch scroll in terminal
-- [ ] **Phase 14: Telegram Integration** — Merge GSDTelegram into this repo; detect scroll-to-select prompts; send Telegram notification when input is needed
+<details>
+<summary>✅ v1.2 GSD Stats & Live Data Pipeline (Phases 7-8) — SHIPPED 2026-03-23</summary>
 
-## v2.2 Phases
+- [x] Phase 7: Agent Data Proxy (2/2 plans) — completed 2026-03-22
+- [x] Phase 8: GSD Card Stats (2/2 plans) — completed 2026-03-23
+
+</details>
+
+<details>
+<summary>✅ v2.0 Project Control Plane (Phases 9-11) — SHIPPED 2026-03-25</summary>
+
+- [x] Phase 9: Tmux Backend Wiring (2/2 plans) — completed 2026-03-24
+- [x] Phase 10: Smart Send UI (2/2 plans) — completed 2026-03-24
+- [x] Phase 11: Live Terminal Overlay (2/2 plans) — completed 2026-03-25
+
+</details>
+
+<details>
+<summary>✅ v2.1 Session Intelligence & Terminal UX (Phases 12-14, 16) — SHIPPED 2026-03-28</summary>
+
+- [x] Phase 12: Session State Indicators (3/3 plans) — completed 2026-03-26
+- [x] Phase 13: Terminal UX (2/2 plans) — completed 2026-03-26
+- [x] Phase 13.1: Mobile Terminal Polish & Message Log (3/3 plans) — completed 2026-03-27
+- [x] Phase 14: Telegram Integration (2/2 plans) — completed 2026-03-28
+- [x] Phase 16: OOM Prevention (1/1 plan) — completed 2026-03-28
+
+</details>
+
+### 🚧 v2.2 New Project Creation
 
 - [ ] **Phase 15: New Project Creation** — One-click new project flow: create directory, tmux session, launch Claude with /gsd:new-project, add to config
 
----
-
-## Phase Details
-
-### Phase 4: Backend File API
-**Goal**: The API delivers richer project metadata and serves raw planning file content on demand
-**Depends on**: Nothing (first v1.1 phase — builds on existing v1 server)
-**Requirements**: API-01, API-02, API-03
-**Success Criteria** (what must be TRUE):
-  1. `/api/gsd/projects` response includes `version` and `liveUrl` fields for each project, parsed from that project's PROJECT.md
-  2. `GET /api/gsd/projects/:name/files/state` returns the raw markdown content of that project's STATE.md
-  3. `GET /api/gsd/projects/:name/files/plan` returns the markdown content of the active phase's PLAN.md, resolved server-side from STATE.md's current phase
-  4. `GET /api/gsd/projects/:name/files/roadmap` and `.../files/requirements` each return the correct file's markdown content
-**Plans**: 2 plans
-Plans:
-- [x] 04-01-PLAN.md — Parse version + liveUrl from PROJECT.md and extend readProject()
-- [x] 04-02-PLAN.md — Add GET /api/gsd/projects/:name/files/:fileId endpoint with server-side resolution
-
-### Phase 5: Card Enhancements
-**Goal**: Each project card surfaces version and live URL, and a click anywhere on the card body opens the drawer
-**Depends on**: Phase 4
-**Requirements**: CARD-01, CARD-02, CARD-03
-**Success Criteria** (what must be TRUE):
-  1. Every project card shows a version badge (e.g. "v1") using the value returned by the API
-  2. Every project card shows a clickable live URL link that opens the project's live site in a new tab without triggering the drawer
-  3. Clicking the card body (outside the URL link and any other interactive elements) opens the side drawer scoped to that project
-**Plans**: 2 plans
-Plans:
-- [x] 05-01-PLAN.md — Add version badge and live URL to project cards (type + ProjectCard component)
-- [x] 05-02-PLAN.md — Wire card click to open drawer; create GsdDrawer stub component
-
-### Phase 6: Drawer and Full-Screen Viewer
-**Goal**: Users can read any planning file — STATE.md, ROADMAP.md, REQUIREMENTS.md, active PLAN.md — rendered as formatted markdown, and expand any file to full-screen
-**Depends on**: Phase 5
-**Requirements**: DRAW-01, DRAW-02, DRAW-03, DRAW-04, DRAW-05
-**Success Criteria** (what must be TRUE):
-  1. The drawer opens with four tabs (State, Roadmap, Requirements, Plan); each tab fetches and displays the file's content as rendered markdown, not raw text
-  2. The Plan tab resolves and renders the active phase's PLAN.md based on the current phase recorded in STATE.md
-  3. Clicking a tab's content (or an expand control) transitions to a full-screen markdown view of that file with proper heading hierarchy, lists, and tables rendered
-  4. The full-screen view has a visible close/back control that returns the user to the drawer without losing their tab selection
-**Plans**: 3 plans
-Plans:
-- [x] 06-01-PLAN.md — Install react-markdown + remark-gfm; add api.gsd.file() text-mode fetch
-- [x] 06-02-PLAN.md — Build GsdDrawer with four file tabs and inline markdown rendering
-- [x] 06-03-PLAN.md — Add MarkdownViewer full-screen overlay and wire expand control
-
-### Phase 7: Agent Data Proxy
-**Goal**: Users can see real agent session and event data on the Railway-hosted dashboard, not an empty database
-**Depends on**: Phase 6
-**Requirements**: PIPE-01, PIPE-02, PIPE-03, PIPE-04
-**Success Criteria** (what must be TRUE):
-  1. Opening the agent dashboard at the Railway URL shows the same sessions, events, and stats that exist on the local machine
-  2. Agent data API routes on Railway transparently forward to the local server through the same GSD_DATA_URL tunnel already used for planning files
-  3. The local server exposes sessions, agents, events, stats, and analytics endpoints reachable by the Railway proxy
-  4. When running locally without GSD_DATA_URL set, all agent data routes are served directly from the local SQLite database with no proxy involved
-**Plans**: 2 plans
-Plans:
-- [x] 07-01-PLAN.md — Create createAgentProxy middleware in server/routes/proxy.js; mount in index.js before agent routers; update basicAuth to skip agent GET routes
-- [x] 07-02-PLAN.md — Add proxy behavior tests: proxied GET, non-proxied POST, local fallthrough without GSD_DATA_URL
-
-### Phase 8: GSD Card Stats
-**Goal**: Every project card shows next action, blocked status, velocity, streak, and time-to-completion — all computed server-side and rendered without any manual file parsing in the browser
-**Depends on**: Phase 7
-**Requirements**: NEXT-01, NEXT-02, BLOCK-01, BLOCK-02, BLOCK-03, VEL-01, VEL-02, VEL-03, TTL-01, TTL-02, TTL-03, TTL-04
-**Success Criteria** (what must be TRUE):
-  1. A project card shows the next action line from STATE.md, or nothing at all if STATE.md has no next action recorded
-  2. A project with one or more blockers shows a visible "Blocked" badge and sorts to the top of the project grid; unblocked projects are unaffected
-  3. Each project card displays plans completed in the last 7 days (velocity) and consecutive days with at least one completed plan (streak)
-  4. Each project card shows a human-readable time-to-completion estimate (e.g. "~2 days") when enough data exists, and shows nothing when it cannot be computed
-  5. The `/api/gsd/projects` response includes `nextAction`, `blockers`, `velocity`, `streak`, `estimatedCompletion` fields so the frontend renders stats without re-parsing files
-**Plans**: 2 plans
-Plans:
-- [x] 08-01-PLAN.md — Extend readers.js: next_action in readState(), velocity/streak/estimatedCompletion in readProject(); 4 new tests
-- [x] 08-02-PLAN.md — Frontend: update GsdState/GsdProject types, render Blocked badge + next action + stats row in ProjectCard, sort blocked projects first
-
-### Phase 9: Tmux Backend Wiring
-**Goal**: The backend can verify tmux session liveness for any project and send arbitrary text into that session on demand
-**Depends on**: Phase 8
-**Requirements**: TMX-01, TMX-02, TMX-03
-**Success Criteria** (what must be TRUE):
-  1. Adding a `tmux_session` name to a project entry in `gsd-projects.json` causes the API to validate whether that session is running before any tmux operation
-  2. `POST /api/gsd/projects/:name/send` with a `text` body sends the text into the project's tmux session; the request succeeds only when the session is active
-  3. `GET /api/gsd/projects` includes a `tmuxActive: boolean` field for every project — true when the named session exists and has at least one window, false otherwise
-  4. Projects without a `tmux_session` field return `tmuxActive: false` and a 4xx error on send attempts without crashing the server
-**Plans**: 2 plans
-Plans:
-- [x] 09-01-PLAN.md — Create server/gsd/tmux.js with isTmuxSessionActive; extend GET /api/gsd/projects to include tmuxActive per project
-- [x] 09-02-PLAN.md — Add POST /api/gsd/projects/:name/send with validation (404/422/409/400) and proxy support
-
-### Phase 10: Smart Send UI
-**Goal**: Users can send any text — or a suggested next action — into a project's tmux session directly from the project card
-**Depends on**: Phase 9
-**Requirements**: SEND-01, SEND-02, SEND-03
-**Success Criteria** (what must be TRUE):
-  1. Each project card shows a send input pre-filled with the project's `next_action` from STATE.md when one is available, and blank when it is not
-  2. User can clear or edit the pre-fill and submit any text; the text arrives in the project's tmux session within one second
-  3. Four GSD command chips are visible below the input; clicking a chip replaces the current input value and does not immediately submit
-  4. The send input and chips are hidden for projects where `tmuxActive` is false
-**Plans**: 2 plans
-Plans:
-- [x] 10-01-PLAN.md — Add tmuxActive to GsdProject type and api.gsd.send() to api client
-- [x] 10-02-PLAN.md — Add SendBox section to ProjectCard with pre-fill, submit, and GSD command chips
-
-### Phase 11: Live Terminal Overlay
-**Goal**: Users can open a fully interactive terminal for any active project's tmux session without leaving the dashboard
-**Depends on**: Phase 9
-**Requirements**: TERM-01, TERM-02, TERM-03, TERM-04
-**Success Criteria** (what must be TRUE):
-  1. An "Open terminal" button appears on a project card only when `tmuxActive` is true; it is absent or disabled for inactive sessions
-  2. Clicking the button opens a full-screen xterm.js overlay that immediately renders the live content of the project's tmux session
-  3. Keystrokes typed in the overlay reach the tmux session and output from the session appears in the overlay in real time; terminal resize events are forwarded so line-wrapping is correct
-  4. Closing the overlay (via Escape or a visible close button) disconnects the WebSocket and detaches from the tmux session without killing it; reopening attaches again cleanly
-**Plans**: 2 plans
-Plans:
-- [x] 11-01-PLAN.md — Backend WebSocket terminal bridge (node-pty + /ws/terminal/:name endpoint)
-- [x] 11-02-PLAN.md — Frontend xterm.js TerminalOverlay component and Open terminal button
-
-### Phase 12: Session State Indicators
-**Goal**: Every project card shows the real-time state of its Claude/tmux session with a colored border and label; archived projects are hidden and manageable in-app; summary stats reflect session states
-**Depends on**: Phase 11
-**Requirements**: STAT-01, STAT-02, STAT-03, STAT-04, STAT-05, STAT-06, STAT-07
-**Success Criteria** (what must be TRUE):
-  1. The backend captures the last N lines of each project's tmux pane and classifies state as `working`, `waiting`, `paused`, or `archived`
-  2. `GET /api/gsd/projects` includes a `sessionState` field per project with one of those four values
-  3. Each project card has a colored left border and a single-word label: Working (green), Waiting (amber), Paused (red), Archived (gray)
-  4. A user can mark any project as Archived from its card; the flag persists in `gsd-projects.json` and survives server restart
-  5. Archived projects are hidden from the main grid; a collapsible "View archived (N)" section appears below all cards when any archived projects exist
-  6. Archived projects can be unarchived from within the archived section, returning them to the main grid
-  7. The summary stats row above the grid shows Working / Waiting / Paused / Archived counts with matching colors, replacing the old Projects / Active / Complete stats
-**Plans**: 3 plans
-Plans:
-- [ ] 12-01-PLAN.md — Backend: detectSessionState() + sessionState in GET /projects + archive/unarchive endpoints
-- [ ] 12-02-PLAN.md — Frontend: SessionState type + api methods + card border/label + archive UI + archived section
-- [ ] 12-03-PLAN.md — Frontend: Replace summary stats row with Working/Waiting/Paused/Archived counts
-
-### Phase 13: Terminal UX
-**Goal**: The send box lives inside the terminal overlay for focused interaction; mobile users can scroll the terminal and see their input when the keyboard is open
-**Depends on**: Phase 12
-**Requirements**: TUIX-01, TUIX-02, TUIX-03, TUIX-04
-**Success Criteria** (what must be TRUE):
-  1. The send input and GSD command chips are shown at the bottom of the terminal overlay and removed from the project card
-  2. Typing in the send box within the overlay sends text to the tmux session; the GSD chips function identically to their previous behavior on the card
-  3. On mobile, opening the software keyboard causes the terminal overlay to shift up so the send box remains visible above the keyboard
-  4. The terminal content is scrollable by touch (swipe up/down) on mobile devices
-**Plans**: TBD
-
-### Phase 14: Telegram Integration
-**Goal**: Telegram notifications reach the user when their Claude session needs input, including when GSD presents a formatted scroll-to-select prompt
-**Depends on**: Phase 12
-**Requirements**: TG-01, TG-02, TG-03, TG-04
-**Success Criteria** (what must be TRUE):
-  1. The GSDTelegram bot is merged into this repo and runs as part of the server process — no separate repo or process required
-  2. Session state transitions (e.g. working → waiting) trigger a Telegram message identifying the project
-  3. The server detects when a tmux pane contains a GSD scroll-to-select prompt (formatted numbered list with cursor) and sends a "needs your input" Telegram notification
-  4. Bot token and chat ID are configured via environment variables; the bot is a no-op when vars are unset (no crash)
-**Plans**: TBD
-
-### Phase 15: New Project Creation
+#### Phase 15: New Project Creation
 **Goal**: Users can create a new GSD project — directory, tmux session, and Claude Code launch — from a single button in the dashboard
 **Depends on**: Phase 9
 **Requirements**: CREATE-01, CREATE-02, CREATE-03, CREATE-04
@@ -213,17 +81,22 @@ Plans:
 
 ## Progress Table
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 4. Backend File API | 2/2 | Complete | 2026-03-21 |
-| 5. Card Enhancements | 2/2 | Complete | 2026-03-21 |
-| 6. Drawer and Full-Screen Viewer | 3/3 | Complete | 2026-03-21 |
-| 7. Agent Data Proxy | 2/2 | Complete | 2026-03-22 |
-| 8. GSD Card Stats | 2/2 | Complete | 2026-03-23 |
-| 9. Tmux Backend Wiring | 2/2 | Complete | 2026-03-24 |
-| 10. Smart Send UI | 2/2 | Complete | 2026-03-24 |
-| 11. Live Terminal Overlay | 2/2 | Complete | 2026-03-25 |
-| 12. Session State Indicators | 3/3 | Complete    | 2026-03-26 |
-| 13. Terminal UX | 0/TBD | Not started | - |
-| 14. Telegram Integration | 0/TBD | Not started | - |
-| 15. New Project Creation | 0/2 | Planned (deferred to v2.2) | - |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Foundation & Configuration | v1.0 | 3/3 | Complete | 2026-03-18 |
+| 2. Backend Data Pipeline | v1.0 | 2/2 | Complete | 2026-03-18 |
+| 3. Frontend Dashboard | v1.0 | 3/3 | Complete | 2026-03-18 |
+| 4. Backend File API | v1.1 | 2/2 | Complete | 2026-03-21 |
+| 5. Card Enhancements | v1.1 | 2/2 | Complete | 2026-03-21 |
+| 6. Drawer and Full-Screen Viewer | v1.1 | 3/3 | Complete | 2026-03-21 |
+| 7. Agent Data Proxy | v1.2 | 2/2 | Complete | 2026-03-22 |
+| 8. GSD Card Stats | v1.2 | 2/2 | Complete | 2026-03-23 |
+| 9. Tmux Backend Wiring | v2.0 | 2/2 | Complete | 2026-03-24 |
+| 10. Smart Send UI | v2.0 | 2/2 | Complete | 2026-03-24 |
+| 11. Live Terminal Overlay | v2.0 | 2/2 | Complete | 2026-03-25 |
+| 12. Session State Indicators | v2.1 | 3/3 | Complete | 2026-03-26 |
+| 13. Terminal UX | v2.1 | 2/2 | Complete | 2026-03-26 |
+| 13.1 Mobile Terminal Polish & Message Log | v2.1 | 3/3 | Complete | 2026-03-27 |
+| 14. Telegram Integration | v2.1 | 2/2 | Complete | 2026-03-28 |
+| 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
+| 15. New Project Creation | v2.2 | 0/2 | Planned | - |

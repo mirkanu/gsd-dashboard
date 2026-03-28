@@ -2,55 +2,63 @@
 
 ## What This Is
 
-A web dashboard forked from Claude Code Agent Monitor that adds a GSD (Get Shit Done) layer — reading `.planning/` files from multiple project directories and displaying phase progress, roadmap status, state/blockers, and requirements coverage across all tracked projects. Built for a single developer managing several concurrent AI-assisted projects.
+A web dashboard for managing multiple Claude Code GSD projects from a single interface. Forked from Claude Code Agent Monitor, it adds a GSD layer that reads `.planning/` files, shows phase progress and session states, provides live terminal access to tmux sessions, sends Telegram notifications when input is needed, and prevents OOM crashes on the shared container. Built for a single developer managing several concurrent AI-assisted projects.
 
 ## Core Value
 
-At a glance, see where every GSD project stands — which phase is active, what's done, what's blocked — without opening individual planning files.
+At a glance, see where every GSD project stands and interact with any session — without opening separate terminals or checking files manually.
 
-## Current State
+## Requirements
 
-**Version: v1 — Shipped 2026-03-18**
+### Validated
 
-Live at: https://gsd-dashboard-production.up.railway.app (admin / see DASHBOARD_PASS env var)
+- ✓ Foundation: fork, GSD tab, configurable projects, backend readers, frontend dashboard, Railway deploy — v1.0
+- ✓ File viewer: version badge, live URL, file content endpoints, drawer with 4 tabs, full-screen markdown — v1.1
+- ✓ Live data pipeline: agent data proxy through tunnel, stats (velocity/streak/TTL/blockers/next action) — v1.2
+- ✓ Project control plane: tmux wiring, send-keys, smart send UI, live xterm.js terminal overlay — v2.0
+- ✓ Session intelligence: state detection (working/waiting/paused/archived), colored indicators, archive/unarchive — v2.1
+- ✓ Terminal UX: send box in overlay, mobile keyboard fix, touch scroll, special key bar, message log — v2.1
+- ✓ Telegram integration: state transition notifications, scroll-to-select detection, reply polling — v2.1
+- ✓ OOM prevention: heap caps, memory watchdog, orphan cleanup — v2.1
 
-What's working:
-- GSD Projects tab shows all 4 projects (josie, gsddashboard, debates, reforma) with phase progress, status badges, roadmap panels, and requirements coverage
-- Backend reads `.planning/` files locally; Railway deployment proxies via cloudflared tunnel (`GSD_DATA_URL`)
-- Self-healing tunnel script (`scripts/tunnel.sh`) runs under s6-supervise — auto-restarts, updates Railway env var on each restart
-- Existing agent monitoring features (sessions, Kanban, cost tracking) fully preserved
+### Active
 
-## Current Milestone: v2.0 — Project Control Plane
+- [ ] New project creation: one-click directory + tmux + Claude launch from dashboard (Phase 15)
 
-**Goal:** Turn the dashboard into a full control surface for all GSD projects — send commands, open live terminals, and create new projects without touching a separate terminal.
+### Out of Scope
 
-**Target features:**
-- Send messages into each project's tmux session directly from the card (smart pre-fill from STATE.md next_action)
-- Full-screen live terminal overlay (xterm.js + WebSocket) attached to the project's tmux session
-- One-click new project creation: create directory + tmux session + launch Claude Code with /gsd:new-project
+- Multi-user auth or per-user session isolation (single developer tool)
+- Session recording / playback
+- Offline mode — live data is the core value
+- Mobile app — PWA-capable web dashboard is sufficient
 
 ## Context
 
-- Source repo: https://github.com/hoangsonww/Claude-Code-Agent-Monitor (React + Express + SQLite + WebSocket)
-- GSD planning files live under `{project_root}/.planning/` — key files: ROADMAP.md, STATE.md, REQUIREMENTS.md, phases/*/PLAN.md, phases/*/SUMMARY.md
-- All 4 initial projects are under `/data/home/`: josie, gsddashboard, debates, reforma
-- The existing agent monitoring features (session tracking, Kanban, cost tracking) are retained — GSD is an additive tab
-- GSD file format is Markdown with consistent structure (phase numbers, checkboxes, REQ-IDs like AUTH-01)
+Shipped v2.1 with ~16,900 LOC (JS/JSX/TS/TSX/CSS).
+Tech stack: React + Vite, Express, SQLite, WebSocket, xterm.js, node-pty.
+Deployed on Railway with cloudflared tunnel to local machine.
+239 commits across 16 completed phases in 10 days (2026-03-18 → 2026-03-28).
+6 tracked projects: josie, gsddashboard, debates, reforma + others.
+
+## Key Decisions
+
+| Decision | Rationale | Outcome |
+|----------|-----------|---------|
+| Fork + add GSD tab (not standalone app) | Reuses React + Express boilerplate, preserves agent monitoring | ✅ Correct — built in one day |
+| Configurable project list (gsd-projects.json) | Scales cleanly as projects are added | ✅ Correct |
+| Railway + cloudflared tunnel | GSD readers need local filesystem; tunnel exposes to cloud UI | ✅ Working — self-healing tunnel |
+| react-markdown for file rendering | GFM tables, checkboxes, prose styling work out of the box | ✅ Correct |
+| node-pty + xterm.js for terminal | Industry standard; noServer WS avoids port conflicts | ✅ Correct |
+| Session state via tmux capture-pane | No extra scripts; pattern matching on last 50 lines | ✅ Correct |
+| Telegram bot merged into server process | No separate repo/process; env var config, no-op when unset | ✅ Correct |
+| OOM: heap cap + watchdog + orphan cleanup | Three-layer defense for shared container with 4+ sessions | ✅ Correct |
 
 ## Constraints
 
 - **Tech stack**: Fork of Claude Code Agent Monitor — React frontend, Express backend, must stay compatible
 - **Data source**: Read-only filesystem access to `.planning/` directories on the same machine
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
-
-## Key Decisions
-
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Fork + add GSD tab (not standalone app) | Reuses React + Express boilerplate, preserves existing agent monitoring, faster to build | ✅ Correct — built in one day |
-| Manual refresh for GSD data | Sufficient for the use case, avoids complexity of file watchers | ✅ Correct — works well in practice |
-| Configurable project list (not hardcoded) | User has 4 projects now but expects to add more — config file approach scales cleanly | ✅ Correct — edit gsd-projects.json only |
-| Railway deployment + cloudflared proxy | Keep GSD readers local (filesystem access), expose via tunnel to Railway-hosted UI | ✅ Working — self-healing tunnel handles URL changes |
+- **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
 ---
-*Last updated: 2026-03-24 — v2.0 started*
+*Last updated: 2026-03-28 after v2.1 milestone*
