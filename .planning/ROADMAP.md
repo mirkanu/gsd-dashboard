@@ -7,7 +7,7 @@
 - ✅ **v1.2 GSD Stats & Live Data Pipeline** — Phases 7-8 (shipped 2026-03-23) → [archive](milestones/v1.2-ROADMAP.md)
 - ✅ **v2.0 Project Control Plane** — Phases 9-11 (shipped 2026-03-25) → [archive](milestones/v2.0-ROADMAP.md)
 - ✅ **v2.1 Session Intelligence & Terminal UX** — Phases 12-14, 16 (shipped 2026-03-28) → [archive](milestones/v2.1-ROADMAP.md)
-- 🚧 **v2.2 New Project Creation** — Phase 15 (in progress)
+- 🚧 **v2.2 Project Tasks** — Phases 17-19 (in progress)
 
 ---
 
@@ -59,23 +59,45 @@
 
 </details>
 
-### 🚧 v2.2 New Project Creation
+### 🚧 v2.2 Project Tasks
 
-- [ ] **Phase 15: New Project Creation** — One-click new project flow: create directory, tmux session, launch Claude with /gsd:new-project, add to config
+- [ ] **Phase 17: Task Data Layer** — SQLite table and CRUD API endpoints for per-project tasks
+- [ ] **Phase 18: Task UI** — Tasks tab in project drawer with add, view, archive, and unarchive interactions
+- [ ] **Phase 19: Clipboard Export** — Copy all open tasks as formatted markdown for GSD consumption
 
-#### Phase 15: New Project Creation
-**Goal**: Users can create a new GSD project — directory, tmux session, and Claude Code launch — from a single button in the dashboard
-**Depends on**: Phase 9
-**Requirements**: CREATE-01, CREATE-02, CREATE-03, CREATE-04
+## Phase Details
+
+### Phase 17: Task Data Layer
+**Goal**: The backend can store and serve per-project tasks
+**Depends on**: Nothing (new table and routes)
+**Requirements**: STORE-01, STORE-02, STORE-03, STORE-04
 **Success Criteria** (what must be TRUE):
-  1. A "New project" button is visible in the GSD tab header at all times
-  2. Clicking the button prompts for a project name; submitting creates the directory at `{base_path}/{name}` and a new tmux session named after the project
-  3. The backend sends `claude` followed by `/gsd:new-project` as the first input into the new tmux session so the project scaffold starts automatically
-  4. The new project's card appears in the dashboard grid immediately after creation without requiring a page refresh or manual config edit
-**Plans**: 2 plans
-Plans:
-- [ ] 15-01-PLAN.md — Backend POST /api/gsd/projects/create: directory, tmux session, claude launch, config write
-- [ ] 15-02-PLAN.md — Frontend: New project button + NewProjectDialog + optimistic card prepend
+  1. A `project_tasks` table exists in SQLite with id, project_key, title, description, archived, and created_at columns
+  2. POST /api/gsd/projects/:key/tasks creates a task and returns it with a generated id and timestamp
+  3. GET /api/gsd/projects/:key/tasks returns open tasks by default and archived tasks when the filter is set
+  4. PATCH /api/gsd/projects/:key/tasks/:id updates title, description, or archived status and returns the updated task
+**Plans**: TBD
+
+### Phase 18: Task UI
+**Goal**: Users can manage tasks for each project from the project drawer
+**Depends on**: Phase 17
+**Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05
+**Success Criteria** (what must be TRUE):
+  1. Opening a project drawer shows a Tasks tab as the first tab, before Message and GSD file tabs
+  2. User can type a title (required) and optional description and submit to create a task that appears in the list immediately
+  3. Open tasks are listed under the Tasks tab with their title and description visible
+  4. Each task row has an archive action; clicking it removes the task from the open list
+  5. A toggle switches the view to archived tasks, where each task has an unarchive action that moves it back to open
+**Plans**: TBD
+
+### Phase 19: Clipboard Export
+**Goal**: Users can copy all open tasks as formatted markdown for pasting into GSD commands
+**Depends on**: Phase 18
+**Requirements**: CLIP-01, CLIP-02
+**Success Criteria** (what must be TRUE):
+  1. A "Copy all" button is visible in the Tasks tab when at least one open task exists
+  2. Clicking the button copies all open tasks to the clipboard as `- **Title** — description` lines (one per task) and shows a confirmation to the user
+**Plans**: TBD
 
 ---
 
@@ -99,4 +121,21 @@ Plans:
 | 13.1 Mobile Terminal Polish & Message Log | v2.1 | 3/3 | Complete | 2026-03-27 |
 | 14. Telegram Integration | v2.1 | 2/2 | Complete | 2026-03-28 |
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
-| 15. New Project Creation | v2.2 | 0/2 | Planned | - |
+| 17. Task Data Layer | v2.2 | 0/? | Not started | - |
+| 18. Task UI | v2.2 | 0/? | Not started | - |
+| 19. Clipboard Export | v2.2 | 0/? | Not started | - |
+
+---
+
+## v3.0 Future
+
+### Phase 15: New Project Creation (Deferred)
+**Goal**: Users can create a new GSD project — directory, tmux session, and Claude Code launch — from a single button in the dashboard
+**Depends on**: Phase 9
+**Requirements**: CREATE-01, CREATE-02, CREATE-03, CREATE-04
+**Success Criteria** (what must be TRUE):
+  1. A "New project" button is visible in the GSD tab header at all times
+  2. Clicking the button prompts for a project name; submitting creates the directory at `{base_path}/{name}` and a new tmux session named after the project
+  3. The backend sends `claude` followed by `/gsd:new-project` as the first input into the new tmux session so the project scaffold starts automatically
+  4. The new project's card appears in the dashboard grid immediately after creation without requiring a page refresh or manual config edit
+**Status**: Deferred to v3.0
