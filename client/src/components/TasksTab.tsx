@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Archive, ArchiveRestore, ClipboardCopy, Plus } from "lucide-react";
+import { Archive, ArchiveRestore, ClipboardCopy, Pencil, Plus } from "lucide-react";
 import { api } from "../lib/api";
 import type { GsdTask } from "../lib/types";
 
@@ -8,20 +8,29 @@ function TaskRow({
   showArchived,
   onArchive,
   onUnarchive,
+  onEdit,
 }: {
   task: GsdTask;
   showArchived: boolean;
   onArchive: (id: number) => void;
   onUnarchive: (id: number) => void;
+  onEdit: (task: GsdTask) => void;
 }) {
   return (
     <div className="flex items-start justify-between gap-2 py-2 border-b border-border last:border-0">
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-gray-200 break-words">{task.title}</p>
+      <button
+        type="button"
+        className="w-full text-left min-w-0 flex-1"
+        onClick={() => onEdit(task)}
+      >
+        <div className="flex items-center gap-1 group/edit">
+          <p className="text-sm font-medium text-gray-200 break-words">{task.title}</p>
+          <Pencil className="w-3 h-3 text-gray-600 opacity-0 group-hover/edit:opacity-100 transition-opacity flex-shrink-0" />
+        </div>
         {task.description && (
           <p className="text-xs text-gray-500 mt-0.5 break-words">{task.description}</p>
         )}
-      </div>
+      </button>
       {!showArchived ? (
         <button
           onClick={() => onArchive(task.id)}
@@ -53,6 +62,7 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [editingTask, setEditingTask] = useState<GsdTask | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,18 +83,41 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
     };
   }, [projectKey, showArchived]);
 
+  function handleEdit(task: GsdTask) {
+    setEditingTask(task);
+    setTitle(task.title);
+    setDescription(task.description ?? "");
+  }
+
+  function handleCancelEdit() {
+    setEditingTask(null);
+    setTitle("");
+    setDescription("");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle || submitting) return;
     setSubmitting(true);
     try {
-      const newTask = await api.gsd.tasks.create(
-        projectKey,
-        trimmedTitle,
-        description.trim() || undefined
-      );
-      setTasks((prev) => [newTask, ...prev]);
+      if (editingTask) {
+        // Edit mode: PATCH existing task
+        const updated = await api.gsd.tasks.update(projectKey, editingTask.id, {
+          title: trimmedTitle,
+          description: description.trim(),
+        });
+        setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+        setEditingTask(null);
+      } else {
+        // Create mode: POST new task
+        const newTask = await api.gsd.tasks.create(
+          projectKey,
+          trimmedTitle,
+          description.trim() || undefined
+        );
+        setTasks((prev) => [newTask, ...prev]);
+      }
       setTitle("");
       setDescription("");
     } finally {
@@ -125,7 +158,7 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
 
   return (
     <div className="space-y-4">
-      {/* Add task form */}
+      {/* Add / Edit task form */}
       <form onSubmit={handleSubmit} className="space-y-2">
         <input
           type="text"
@@ -142,14 +175,25 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
           onChange={(e) => setDescription(e.target.value)}
           className="w-full bg-surface-3 border border-border rounded px-3 py-1.5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-accent"
         />
-        <button
-          type="submit"
-          disabled={title.trim() === "" || submitting}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-accent/10 border border-accent/20 text-accent rounded hover:bg-accent/20 disabled:opacity-40 transition-colors"
-        >
-          <Plus className="w-3 h-3" />
-          {submitting ? "Adding..." : "Add"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="submit"
+            disabled={title.trim() === "" || submitting}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-accent/10 border border-accent/20 text-accent rounded hover:bg-accent/20 disabled:opacity-40 transition-colors"
+          >
+            <Plus className="w-3 h-3" />
+            {submitting ? (editingTask ? "Saving..." : "Adding...") : (editingTask ? "Save" : "Add")}
+          </button>
+          {editingTask && (
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
 
       {/* Toggle + Copy all */}
@@ -189,6 +233,7 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
                 showArchived={showArchived}
                 onArchive={handleArchive}
                 onUnarchive={handleUnarchive}
+                onEdit={handleEdit}
               />
             ))}
           </div>
