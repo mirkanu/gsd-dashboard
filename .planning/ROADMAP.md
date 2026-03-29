@@ -116,7 +116,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. A "Copy all" button is visible in the Tasks tab when at least one open task exists
   2. Clicking the button copies all open tasks to the clipboard as `- **Title** — description` lines (one per task) and shows a confirmation to the user
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 19-01-PLAN.md — Add Copy all button with clipboard logic to TasksTab
 
 ---
 
@@ -143,7 +146,7 @@ Plans:
 | 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
 | 18. Task UI | 2/2 | Complete    | 2026-03-28 | - |
 | 18.1. Persistent Tunnel for Remote Tmux | 2/2 | Complete    | 2026-03-29 | - |
-| 19. Clipboard Export | v2.2 | 0/? | Not started | - |
+| 19. Clipboard Export | v2.2 | 0/1 | Not started | - |
 
 ### Phase 20: Fix Railway deployment
 
