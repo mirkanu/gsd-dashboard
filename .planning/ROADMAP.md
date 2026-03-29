@@ -142,7 +142,7 @@ Plans:
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
 | 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
 | 18. Task UI | 2/2 | Complete    | 2026-03-28 | - |
-| 18.1. Persistent Tunnel for Remote Tmux | 2/2 | Complete   | 2026-03-29 | - |
+| 18.1. Persistent Tunnel for Remote Tmux | 2/2 | Complete    | 2026-03-29 | - |
 | 19. Clipboard Export | v2.2 | 0/? | Not started | - |
 
 ### Phase 20: Fix Railway deployment
