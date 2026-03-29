@@ -344,8 +344,10 @@ router.get('/projects/:key/tasks', (req, res) => {
 router.patch('/projects/:key/tasks/:id', (req, res) => {
   const { id } = req.params;
   const { title, description, archived } = req.body || {};
-  // Convert archived boolean to 0/1; undefined stays null (COALESCE keeps existing)
-  const archivedInt = archived === true ? 1 : archived === false ? 0 : null;
+  // Convert archived boolean or integer (0|1) to 0/1; undefined stays null (COALESCE keeps existing)
+  const archivedInt = (archived === true || archived === 1) ? 1
+                    : (archived === false || archived === 0) ? 0
+                    : null;
   const titleVal = typeof title === 'string' ? title.trim() : null;
   const descVal = typeof description === 'string' ? description.trim() : null;
   try {
