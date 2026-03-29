@@ -146,7 +146,7 @@ Plans:
 | 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
 | 18. Task UI | 2/2 | Complete    | 2026-03-28 | - |
 | 18.1. Persistent Tunnel for Remote Tmux | 2/2 | Complete    | 2026-03-29 | - |
-| 19. Clipboard Export | 1/1 | Complete   | 2026-03-29 | - |
+| 19. Clipboard Export | 1/1 | Complete    | 2026-03-29 | - |
 
 ### Phase 20: Fix Railway deployment
 
