@@ -1,0 +1,16 @@
+[Unit]
+Description=GSD Dashboard Cloudflare Tunnel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/data/home/gsddashboard/.env
+ExecStart=/data/home/gsddashboard/scripts/tunnel.sh
+Restart=always
+RestartSec=15
+StandardOutput=append:/tmp/gsd-tunnel.log
+StandardError=append:/tmp/gsd-tunnel.log
+
+[Install]
+WantedBy=multi-user.target
