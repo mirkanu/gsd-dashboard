@@ -314,8 +314,25 @@ router.post('/projects/:name/unarchive', (req, res) => {
 });
 
 // POST /api/gsd/projects/:key/tasks — create a task
-router.post('/projects/:key/tasks', (req, res) => {
+router.post('/projects/:key/tasks', async (req, res) => {
   const { key } = req.params;
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(key)}/tasks`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req.body),
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
   const { title, description } = req.body || {};
   if (!title || typeof title !== 'string' || title.trim() === '') {
     return res.status(400).json({ error: 'title is required' });
@@ -329,8 +346,21 @@ router.post('/projects/:key/tasks', (req, res) => {
 });
 
 // GET /api/gsd/projects/:key/tasks — list tasks (?archived=true for archived)
-router.get('/projects/:key/tasks', (req, res) => {
+router.get('/projects/:key/tasks', async (req, res) => {
   const { key } = req.params;
+  if (GSD_DATA_URL) {
+    const qs = req.query.archived === 'true' ? '?archived=true' : '';
+    try {
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(key)}/tasks${qs}`,
+        { signal: AbortSignal.timeout(10000) }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
   const archived = req.query.archived === 'true' ? 1 : 0;
   try {
     const tasks = stmts.listTasks.all(key, archived);
@@ -341,8 +371,25 @@ router.get('/projects/:key/tasks', (req, res) => {
 });
 
 // PATCH /api/gsd/projects/:key/tasks/:id — update a task
-router.patch('/projects/:key/tasks/:id', (req, res) => {
-  const { id } = req.params;
+router.patch('/projects/:key/tasks/:id', async (req, res) => {
+  const { key, id } = req.params;
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(key)}/tasks/${encodeURIComponent(id)}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req.body),
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
   const { title, description, archived } = req.body || {};
   // Convert archived boolean or integer (0|1) to 0/1; undefined stays null (COALESCE keeps existing)
   const archivedInt = (archived === true || archived === 1) ? 1
