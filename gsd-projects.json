@@ -6,19 +6,33 @@
     },
     {
       "name": "gsddashboard",
-      "root": "/data/home/gsddashboard"
+      "root": "/data/home/gsddashboard",
+      "tmux_session": "gsddashboard"
     },
     {
       "name": "debates",
-      "root": "/data/home/debates"
+      "root": "/data/home/debates",
+      "tmux_session": "debates"
     },
     {
       "name": "reforma",
-      "root": "/data/home/reforma"
+      "root": "/data/home/reforma",
+      "tmux_session": "reforma"
     },
     {
       "name": "gsdTelegram",
-      "root": "/data/home/gsdTelegram"
+      "root": "/data/home/gsdTelegram",
+      "tmux_session": "gsdTelegram"
+    },
+    {
+      "name": "ynab",
+      "root": "/data/home/ynab",
+      "tmux_session": "ynab"
+    },
+    {
+      "name": "prc",
+      "root": "/data/home/prc",
+      "tmux_session": "PRC"
     }
   ]
 }
