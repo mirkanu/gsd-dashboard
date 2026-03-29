@@ -81,6 +81,7 @@ None.
 | 1 | HTTP 502 error fix — watchdog + EADDRINUSE handler | 2026-03-28 | e569d9b | [1-http-502-error](./quick/1-http-502-error-in-the-dashboard-again/) |
 | 2 | Alphabetical sort + paused collapsible section in GSD project grid | 2026-03-28 | 4fc84c5 | [2-order-cards-alphabetically-and-hide-paus](./quick/2-order-cards-alphabetically-and-hide-paus/) |
 | 3 | Force Railway rebuild by bumping Dockerfile cache-bust timestamps (both Stage 1 and Stage 2) | 2026-03-28 | f20ea97 | [3-fix-railway-deploy-clear-build-cache-fro](./quick/3-fix-railway-deploy-clear-build-cache-fro/) |
+| 4 | Fix task bugs: archive integer coercion (0\|1 vs boolean) + GSD_DATA_URL proxy guards on all 3 task routes | 2026-03-29 | 357516e | [4-fix-task-bugs-persistence-on-reload-and-](./quick/4-fix-task-bugs-persistence-on-reload-and-/) |
 | Phase 20-fix-railway-deployment P01 | 20 | 2 tasks | 2 files |
 | Phase 17-task-data-layer P01 | 10 | 2 tasks | 2 files |
 | Phase 17-task-data-layer P02 | 5 | 1 tasks | 1 files |
@@ -90,7 +91,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T19:11:34.275Z
-Stopped at: 18.1-02-PLAN.md blocked at Task 1 — cloudflared login (browser OAuth) required
+Last session: 2026-03-29T20:50:00.000Z
+Stopped at: Quick task 4 complete — task archive and persistence bugs fixed
 Resume file: None
 Next action: /gsd:plan-phase 17
