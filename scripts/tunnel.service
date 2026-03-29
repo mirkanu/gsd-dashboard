@@ -1,5 +1,5 @@
 [Unit]
-Description=GSD Dashboard Cloudflare Tunnel
+Description=GSD Dashboard ngrok Tunnel
 After=network-online.target
 Wants=network-online.target
 
