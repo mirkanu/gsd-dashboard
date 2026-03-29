@@ -103,7 +103,7 @@ Plans:
 **Goal:** Replace the ephemeral Cloudflare Quick Tunnel with a named Cloudflare Tunnel that has a permanent subdomain, so Railway's GSD_DATA_URL is set once and never needs updating — restoring stable terminal overlay, re-open tmux, and session state detection from the cloud dashboard
 **Requirements**: none (inserted phase, no formal requirement IDs)
 **Depends on:** Phase 18
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 18.1-01-PLAN.md — Rewrite tunnel.sh for named tunnel + systemd service unit + one-time setup script
@@ -142,7 +142,7 @@ Plans:
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
 | 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
 | 18. Task UI | 2/2 | Complete    | 2026-03-28 | - |
-| 18.1. Persistent Tunnel for Remote Tmux | - | 0/2 | Not started | - |
+| 18.1. Persistent Tunnel for Remote Tmux | 1/2 | In Progress|  | - |
 | 19. Clipboard Export | v2.2 | 0/? | Not started | - |
 
 ### Phase 20: Fix Railway deployment
