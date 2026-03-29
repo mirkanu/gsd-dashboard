@@ -63,7 +63,7 @@
 
 - [x] **Phase 17: Task Data Layer** — SQLite table and CRUD API endpoints for per-project tasks (completed 2026-03-28)
 - [x] **Phase 18: Task UI** — Tasks tab in project drawer with add, view, archive, and unarchive interactions (completed 2026-03-28)
-- [ ] **Phase 19: Clipboard Export** — Copy all open tasks as formatted markdown for GSD consumption
+- [x] **Phase 19: Clipboard Export** — Copy all open tasks as formatted markdown for GSD consumption (completed 2026-03-29)
 
 ## Phase Details
 
@@ -146,14 +146,14 @@ Plans:
 | 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
 | 18. Task UI | 2/2 | Complete    | 2026-03-28 | - |
 | 18.1. Persistent Tunnel for Remote Tmux | 2/2 | Complete    | 2026-03-29 | - |
-| 19. Clipboard Export | v2.2 | 0/1 | Not started | - |
+| 19. Clipboard Export | 1/1 | Complete   | 2026-03-29 | - |
 
 ### Phase 20: Fix Railway deployment
 
 **Goal:** Deploy the dequal-patch fix and add a post-build dist assertion so the live dashboard reflects recent client changes and future deploys cannot silently ship stale builds
 **Requirements**: none
 **Depends on:** none (hotfix, runs independently)
-**Plans:** 2/2 plans complete
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 20-01-PLAN.md — add verify-build.sh safeguard, deploy to Railway, verify live dashboard
