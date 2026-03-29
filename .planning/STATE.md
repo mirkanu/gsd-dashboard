@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Project Tasks
 status: planning
-stopped_at: Completed 18.1-persistent-tunnel-for-remote-tmux/18.1-01-PLAN.md
-last_updated: "2026-03-29T19:07:06.242Z"
+stopped_at: 18.1-02-PLAN.md blocked at Task 1 — cloudflared login (browser OAuth) required
+last_updated: "2026-03-29T19:11:48.243Z"
 last_activity: 2026-03-28 - Roadmap created for v2.2 (Phases 17-19)
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -59,6 +59,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 18.1-persistent-tunnel-for-remote-tmux]: Named tunnel replaces ephemeral quick tunnel — GSD_DATA_URL on Railway set once, never changes
 - [Phase 18.1-persistent-tunnel-for-remote-tmux]: tunnel-setup.sh prints instructions only (no automation) because cloudflared login requires interactive browser OAuth
 - [Phase 18.1-persistent-tunnel-for-remote-tmux]: POSIX sh used throughout — consistent with Alpine Docker base (no bash)
+- [Phase 18.1-persistent-tunnel-for-remote-tmux]: Plan 02 blocked at Task 1: cloudflared login requires browser OAuth — user must run tunnel-setup.sh before Railway can be configured
 
 ### Roadmap Evolution
 
@@ -89,7 +90,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T19:07:06.239Z
-Stopped at: Completed 18.1-persistent-tunnel-for-remote-tmux/18.1-01-PLAN.md
+Last session: 2026-03-29T19:11:34.275Z
+Stopped at: 18.1-02-PLAN.md blocked at Task 1 — cloudflared login (browser OAuth) required
 Resume file: None
 Next action: /gsd:plan-phase 17
