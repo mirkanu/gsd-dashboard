@@ -5,7 +5,7 @@ milestone_name: Project Tasks
 status: planning
 stopped_at: Completed 19-clipboard-export/19-01-PLAN.md
 last_updated: "2026-03-29T23:41:34.684Z"
-last_activity: "2026-03-29 - Completed quick task 4: Fix task bugs (archive coercion + proxy guards)"
+last_activity: "2026-03-30 - Completed quick task 5: Add inline task editing to TasksTab"
 progress:
   total_phases: 6
   completed_phases: 5
@@ -84,6 +84,7 @@ None.
 | 2 | Alphabetical sort + paused collapsible section in GSD project grid | 2026-03-28 | 4fc84c5 | [2-order-cards-alphabetically-and-hide-paus](./quick/2-order-cards-alphabetically-and-hide-paus/) |
 | 3 | Force Railway rebuild by bumping Dockerfile cache-bust timestamps (both Stage 1 and Stage 2) | 2026-03-28 | f20ea97 | [3-fix-railway-deploy-clear-build-cache-fro](./quick/3-fix-railway-deploy-clear-build-cache-fro/) |
 | 4 | Fix task bugs: archive integer coercion (0\|1 vs boolean) + GSD_DATA_URL proxy guards on all 3 task routes | 2026-03-29 | 357516e | [4-fix-task-bugs-persistence-on-reload-and-](./quick/4-fix-task-bugs-persistence-on-reload-and-/) |
+| 5 | Add inline task editing: click task title to load into form, PATCH on save, Cancel to reset | 2026-03-30 | 293e932 | [5-add-task-editing-click-task-to-load-into](./quick/5-add-task-editing-click-task-to-load-into/) |
 | Phase 20-fix-railway-deployment P01 | 20 | 2 tasks | 2 files |
 | Phase 17-task-data-layer P01 | 10 | 2 tasks | 2 files |
 | Phase 17-task-data-layer P02 | 5 | 1 tasks | 1 files |
