@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Archive, ArchiveRestore, Plus } from "lucide-react";
+import { Archive, ArchiveRestore, ClipboardCopy, Plus } from "lucide-react";
 import { api } from "../lib/api";
 import type { GsdTask } from "../lib/types";
 
@@ -52,6 +52,7 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,6 +90,15 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function handleCopyAll() {
+    const lines = tasks
+      .map((t) => (t.description ? `- **${t.title}** — ${t.description}` : `- **${t.title}**`))
+      .join("\n");
+    await navigator.clipboard.writeText(lines);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   async function handleArchive(taskId: number) {
@@ -142,13 +152,25 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
         </button>
       </form>
 
-      {/* Toggle */}
-      <button
-        onClick={() => setShowArchived((v) => !v)}
-        className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-      >
-        {showArchived ? "Show open" : "Show archived"}
-      </button>
+      {/* Toggle + Copy all */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setShowArchived((v) => !v)}
+          className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+        >
+          {showArchived ? "Show open" : "Show archived"}
+        </button>
+        {!showArchived && !loading && tasks.length > 0 && (
+          <button
+            onClick={handleCopyAll}
+            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            title="Copy all open tasks as markdown"
+          >
+            <ClipboardCopy className="w-3 h-3" />
+            {copied ? "Copied!" : "Copy all"}
+          </button>
+        )}
+      </div>
 
       {/* Task list */}
       <div>
