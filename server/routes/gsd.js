@@ -69,7 +69,7 @@ router.get("/projects", async (_req, res) => {
     `);
     const IDLE_PAUSED_MS = 48 * 60 * 60 * 1000;
     const now = Date.now();
-    const data = projects.map(({ name, root, tmux_session, archived }) => {
+    const data = projects.map(({ name, root, tmux_session, archived, display_name }) => {
       const row = sessionQuery.get(root);
       let sessionState = archived
         ? 'archived'
@@ -103,6 +103,7 @@ router.get("/projects", async (_req, res) => {
 
       return {
         ...readProject(name, root),
+        display_name: display_name || null,
         tmuxActive: isTmuxSessionActive(tmux_session),
         tmuxSession: tmux_session ?? null,
         sessionState,

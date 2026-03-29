@@ -517,7 +517,7 @@ function ProjectCard({
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 min-w-0">
             <MapPin className="w-4 h-4 text-accent flex-shrink-0" />
-            <h3 className="text-sm font-semibold text-gray-100 truncate capitalize">{project.name}</h3>
+            <h3 className="text-sm font-semibold text-gray-100 truncate capitalize">{project.display_name || project.name}</h3>
             {project.version && (
               <span className="text-[11px] font-medium px-1.5 py-0.5 rounded border bg-surface-3 text-gray-400 border-border flex-shrink-0">
                 {project.version}

@@ -31,6 +31,7 @@
     },
     {
       "name": "prc",
+      "display_name": "PRC",
       "root": "/data/home/prc",
       "tmux_session": "PRC"
     }
