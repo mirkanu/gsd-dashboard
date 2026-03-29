@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Project Tasks
 status: planning
-stopped_at: Completed 18-task-ui/18-02-PLAN.md
-last_updated: "2026-03-28T22:29:33.064Z"
+stopped_at: Completed 18.1-persistent-tunnel-for-remote-tmux/18.1-01-PLAN.md
+last_updated: "2026-03-29T19:07:06.242Z"
 last_activity: 2026-03-28 - Roadmap created for v2.2 (Phases 17-19)
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 5
+  total_plans: 9
+  completed_plans: 6
   percent: 0
 ---
 
@@ -56,10 +56,14 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 18-task-ui]: api.gsd.tasks.list defaults archived=false so callers get active tasks without specifying the flag
 - [Phase 18-task-ui]: Tasks tab inserted first in TABS array and set as default active tab in GsdDrawer
 - [Phase 18-task-ui]: Optimistic removal on archive/unarchive with revert-on-error for perceived performance
+- [Phase 18.1-persistent-tunnel-for-remote-tmux]: Named tunnel replaces ephemeral quick tunnel — GSD_DATA_URL on Railway set once, never changes
+- [Phase 18.1-persistent-tunnel-for-remote-tmux]: tunnel-setup.sh prints instructions only (no automation) because cloudflared login requires interactive browser OAuth
+- [Phase 18.1-persistent-tunnel-for-remote-tmux]: POSIX sh used throughout — consistent with Alpine Docker base (no bash)
 
 ### Roadmap Evolution
 
 - Phase 20 added: Fix Railway deployment
+- Phase 18.1 inserted after Phase 18: Persistent Tunnel for Remote Tmux (URGENT)
 
 ### Pending Todos
 
@@ -81,10 +85,11 @@ None.
 | Phase 17-task-data-layer P02 | 5 | 1 tasks | 1 files |
 | Phase 18-task-ui P01 | 9min | 1 tasks | 4 files |
 | Phase 18-task-ui P02 | 4min | 2 tasks | 2 files |
+| Phase 18.1-persistent-tunnel-for-remote-tmux P01 | 3min | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-03-28T22:23:22.174Z
-Stopped at: Completed 18-task-ui/18-02-PLAN.md
+Last session: 2026-03-29T19:07:06.239Z
+Stopped at: Completed 18.1-persistent-tunnel-for-remote-tmux/18.1-01-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 17
