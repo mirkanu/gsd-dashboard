@@ -24,8 +24,8 @@ Requirements for milestone v2.2 — Project Tasks. Each maps to roadmap phases.
 
 ### Clipboard Export
 
-- [ ] **CLIP-01**: "Copy all" button formats all open tasks as markdown and copies to clipboard
-- [ ] **CLIP-02**: Copied format uses `- **Title** — description` per task, ready for GSD consumption
+- [x] **CLIP-01**: "Copy all" button formats all open tasks as markdown and copies to clipboard
+- [x] **CLIP-02**: Copied format uses `- **Title** — description` per task, ready for GSD consumption
 
 ## Future Requirements
 
@@ -63,8 +63,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-03 | Phase 18 | Complete |
 | UI-04 | Phase 18 | Complete |
 | UI-05 | Phase 18 | Complete |
-| CLIP-01 | Phase 19 | Pending |
-| CLIP-02 | Phase 19 | Pending |
+| CLIP-01 | Phase 19 | Complete |
+| CLIP-02 | Phase 19 | Complete |
 
 **Coverage:**
 - v2.2 requirements: 11 total
