@@ -77,12 +77,13 @@ None.
 | 3 | Force Railway rebuild by bumping Dockerfile cache-bust timestamps | 2026-03-28 | f20ea97 |
 | 4 | Fix task bugs: archive integer coercion + GSD_DATA_URL proxy guards | 2026-03-29 | 357516e |
 | 5 | Add inline task editing: click task title to load into form, PATCH on save | 2026-03-30 | 293e932 |
+| 6 | Kanban board layout replacing filtered single-grid — 4 columns with CSS scroll-snap | 2026-03-30 | b2a1d74 |
 | Phase 21-card-ux-simplification P01 | 6 | 2 tasks | 2 files |
 | Phase 21-card-ux-simplification P02 | 5 | 2 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-03-30T08:34:16.682Z
-Stopped at: Completed 21-card-ux-simplification/21-02-PLAN.md
+Last session: 2026-03-30T10:02:00Z
+Stopped at: Completed quick-6 (Kanban board layout)
 Resume file: None
 Next action: /gsd:plan-phase 21
