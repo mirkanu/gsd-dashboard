@@ -453,7 +453,7 @@ function ProjectCard({
   const stateConf = SESSION_STATE_CONFIG[project.sessionState ?? "paused"];
 
   return (
-    <div className={`card flex flex-col gap-0 overflow-hidden cursor-pointer ${stateConf.border}`} onClick={() => onSelect(project)}>
+    <div className={`card flex flex-col gap-0 overflow-hidden cursor-pointer w-full min-w-0 ${stateConf.border}`} onClick={() => onSelect(project)}>
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-border/50 overflow-hidden">
         <div className="flex items-start justify-between gap-2 mb-2 min-w-0">
@@ -726,7 +726,7 @@ export function GSD() {
                 </div>
 
                 {/* Cards */}
-                <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[70vh]">
+                <div className="flex-1 space-y-2.5 overflow-y-auto overflow-x-hidden min-w-0 max-h-[70vh]">
                   {columnProjects.length > 0 ? (
                     columnProjects.map((project) => (
                       <ProjectCard
