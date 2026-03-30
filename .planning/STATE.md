@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 21 of 23 (Card UX Simplification) — ready to plan
+Phase: Phase 22 — Mobile Terminal Fixes (not started)
 Plan: —
-Status: Ready to plan
-Last activity: 2026-03-30 — Roadmap created for v2.3 (Phases 21-23)
+Status: Ready to plan Phase 22
+Last activity: 2026-03-30 - Completed quick task 6: Kanban board layout
 
-Progress: [░░░░░░░░░░] 0% (0/3 phases)
+Progress: [███░░░░░░░] 33% (1/3 phases)
 
 ## Performance Metrics
 
