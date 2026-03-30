@@ -158,11 +158,14 @@ const SPECIAL_KEYS = [
   { label: "Enter", seq: "\r" },
 ] as const;
 
-function SpecialKeyBar({ wsRef }: { wsRef: React.RefObject<WebSocket | null> }) {
+function SpecialKeyBar({ wsRef, termRef }: { wsRef: React.RefObject<WebSocket | null>; termRef: React.RefObject<Terminal | null> }) {
   const send = (seq: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(seq);
     }
+    // Re-focus terminal so scroll position and input focus stay on the terminal,
+    // not on the button that was just tapped.
+    termRef.current?.focus();
   };
   return (
     <div className="flex flex-wrap gap-1.5 px-4 py-2 border-t border-border/50">
@@ -322,6 +325,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
       touchStartX = e.touches[0].clientX;
       scrollIntent = false;
     };
+    const SCROLL_DAMPING = 3; // pixels of drag per tmux scroll line (higher = slower/more deliberate)
     const handleTouchMove = (e: TouchEvent) => {
       const dy = touchStartY - e.touches[0].clientY;
       const dx = touchStartX - e.touches[0].clientX;
@@ -333,7 +337,8 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
       e.preventDefault();
       e.stopImmediatePropagation();
       touchStartY = e.touches[0].clientY;
-      const lines = Math.max(1, Math.abs(Math.round(dy / ((terminal.options.fontSize as number) ?? 14))));
+      const fontSize = (terminal.options.fontSize as number) ?? 10;
+      const lines = Math.max(1, Math.abs(Math.round(dy / (fontSize * SCROLL_DAMPING))));
       const seq = dy > 0 ? '\x1b[<64;1;1M' : '\x1b[<65;1;1M';
       for (let i = 0; i < lines; i++) {
         if (ws.readyState === WebSocket.OPEN) ws.send(seq);
@@ -424,7 +429,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
               contextTokens={null}
             />
           )}
-          <SpecialKeyBar wsRef={wsRef} />
+          <SpecialKeyBar wsRef={wsRef} termRef={termRef} />
         </div>
       )}
     </div>
