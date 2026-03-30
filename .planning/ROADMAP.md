@@ -153,7 +153,11 @@ Plans:
   2. The dashboard shows only Waiting projects by default when first loaded
   3. A "Show All" button is visible and clicking it displays all non-archived projects regardless of state
   4. Each project card shows only project name, state indicator, status badges, live URL, and Open Terminal — stats, progress, next action, and blockers are absent from the card face
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 21-01-PLAN.md — State filter bar: clickable stat boxes, default Waiting, Show All button
+- [ ] 21-02-PLAN.md — Slim card face: remove progress/stats/next-action/blockers/roadmap from card
 
 ### Phase 22: Mobile Terminal Fixes
 **Goal**: The terminal overlay is comfortable to use on a mobile device without zoom, focus, or scroll annoyances
@@ -201,7 +205,7 @@ Plans:
 | 18.1. Persistent Tunnel for Remote Tmux | v2.2 | 2/2 | Complete | 2026-03-29 |
 | 19. Clipboard Export | v2.2 | 1/1 | Complete | 2026-03-29 |
 | 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
-| 21. Card UX Simplification | v2.3 | 0/TBD | Not started | - |
+| 21. Card UX Simplification | v2.3 | 0/2 | Not started | - |
 | 22. Mobile Terminal Fixes | v2.3 | 0/TBD | Not started | - |
 | 23. Task Textarea and MCP Server | v2.3 | 0/TBD | Not started | - |
 
