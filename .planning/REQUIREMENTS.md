@@ -44,7 +44,7 @@ Requirements for milestone v2.3 — UX Polish & Claude Desktop. Each maps to roa
 
 ### Task UX
 
-- [ ] **TASK-01**: Task description field is a multi-line textarea that auto-grows as content increases, with a max height limit
+- [x] **TASK-01**: Task description field is a multi-line textarea that auto-grows as content increases, with a max height limit
 
 ### Integration
 
@@ -96,7 +96,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MOB-01 | Phase 22 | Complete |
 | MOB-02 | Phase 22 | Complete |
 | MOB-03 | Phase 22 | Complete |
-| TASK-01 | Phase 23 | Pending |
+| TASK-01 | Phase 23 | Complete |
 | MCP-01 | Phase 23 | Pending |
 
 **Coverage:**
