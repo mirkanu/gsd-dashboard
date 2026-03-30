@@ -38,9 +38,9 @@ Requirements for milestone v2.3 — UX Polish & Claude Desktop. Each maps to roa
 
 ### Mobile Terminal
 
-- [ ] **MOB-01**: Terminal overlay touch scroll speed is reduced to a comfortable level (mobile only)
-- [ ] **MOB-02**: iOS keyboard opening does not cause the viewport to zoom (mobile only, applies globally)
-- [ ] **MOB-03**: Tapping special key buttons (Esc, arrows, etc) in the terminal does not shift focus or scroll position (mobile only)
+- [x] **MOB-01**: Terminal overlay touch scroll speed is reduced to a comfortable level (mobile only)
+- [x] **MOB-02**: iOS keyboard opening does not cause the viewport to zoom (mobile only, applies globally)
+- [x] **MOB-03**: Tapping special key buttons (Esc, arrows, etc) in the terminal does not shift focus or scroll position (mobile only)
 
 ### Task UX
 
@@ -93,9 +93,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CARD-02 | Phase 21 | Complete |
 | CARD-03 | Phase 21 | Complete |
 | CARD-04 | Phase 21 | Complete |
-| MOB-01 | Phase 22 | Pending |
-| MOB-02 | Phase 22 | Pending |
-| MOB-03 | Phase 22 | Pending |
+| MOB-01 | Phase 22 | Complete |
+| MOB-02 | Phase 22 | Complete |
+| MOB-03 | Phase 22 | Complete |
 | TASK-01 | Phase 23 | Pending |
 | MCP-01 | Phase 23 | Pending |
 

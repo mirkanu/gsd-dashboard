@@ -74,7 +74,7 @@
 ### 🚧 v2.3 UX Polish & Claude Desktop
 
 - [x] **Phase 21: Card UX Simplification** — State-based filtering with slim cards showing only essential info (completed 2026-03-30)
-- [ ] **Phase 22: Mobile Terminal Fixes** — Reduced scroll sensitivity, iOS zoom prevention, special key focus fix
+- [x] **Phase 22: Mobile Terminal Fixes** — Reduced scroll sensitivity, iOS zoom prevention, special key focus fix (completed 2026-03-30)
 - [ ] **Phase 23: Task Textarea and MCP Server** — Auto-growing textarea for task descriptions and MCP server for Claude Desktop
 
 ## Phase Details
@@ -209,7 +209,7 @@ Plans:
 | 19. Clipboard Export | v2.2 | 1/1 | Complete | 2026-03-29 |
 | 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
 | 21. Card UX Simplification | v2.3 | 2/2 | Complete | 2026-03-30 |
-| 22. Mobile Terminal Fixes | v2.3 | 0/1 | Not started | - |
+| 22. Mobile Terminal Fixes | 1/1 | Complete   | 2026-03-30 | - |
 | 23. Task Textarea and MCP Server | v2.3 | 0/TBD | Not started | - |
 
 ---
