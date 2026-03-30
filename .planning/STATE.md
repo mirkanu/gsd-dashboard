@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish & Claude Desktop
 status: planning
-stopped_at: —
-last_updated: "2026-03-30"
-last_activity: "2026-03-30 — Roadmap created for v2.3 (Phases 21-23)"
+stopped_at: Completed 21-card-ux-simplification/21-01-PLAN.md
+last_updated: "2026-03-30T08:24:53.559Z"
+last_activity: 2026-03-30 — Roadmap created for v2.3 (Phases 21-23)
 progress:
-  total_phases: 3
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 9
+  completed_phases: 5
+  total_plans: 12
+  completed_plans: 9
   percent: 0
 ---
 
@@ -50,6 +50,8 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 19-clipboard-export]: No toast library added — inline button label toggle (Copied!/Copy all) is sufficient clipboard confirmation
 - [Phase 18-task-ui]: Optimistic removal on archive/unarchive with revert-on-error for perceived performance
 - [Phase 17-task-data-layer]: Tasks are local-only (no GSD_DATA_URL proxy) — stored in local SQLite, Phase 18 UI calls endpoints directly
+- [Phase 21-card-ux-simplification]: Replace three-grid layout with single displayedProjects grid — filter state drives everything
+- [Phase 21-card-ux-simplification]: activeFilter defaults to 'waiting' so users see actionable items immediately on load
 
 ### Roadmap Evolution
 
@@ -74,10 +76,11 @@ None.
 | 3 | Force Railway rebuild by bumping Dockerfile cache-bust timestamps | 2026-03-28 | f20ea97 |
 | 4 | Fix task bugs: archive integer coercion + GSD_DATA_URL proxy guards | 2026-03-29 | 357516e |
 | 5 | Add inline task editing: click task title to load into form, PATCH on save | 2026-03-30 | 293e932 |
+| Phase 21-card-ux-simplification P01 | 6 | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-03-30
-Stopped at: Roadmap created for v2.3 — Phases 21-23 defined
+Last session: 2026-03-30T08:24:53.556Z
+Stopped at: Completed 21-card-ux-simplification/21-01-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 21
