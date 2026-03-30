@@ -740,8 +740,7 @@ export function GSD() {
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
   const [terminalInitialValue, setTerminalInitialValue] = useState<string>("");
-  const [archivedOpen, setArchivedOpen] = useState(false);
-  const [pausedOpen, setPausedOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<import("../lib/types").SessionState | null>("waiting");
 
   const TAB_TITLES: Record<string, string> = {
     messages: "Messages",
@@ -812,9 +811,9 @@ export function GSD() {
     return () => clearInterval(t);
   }, [rateLimit]);
 
-  const visibleProjects = projects.filter(p => p.sessionState !== "archived" && p.sessionState !== "paused");
-  const pausedProjects  = projects.filter(p => p.sessionState === "paused");
-  const archivedProjects = projects.filter(p => p.sessionState === "archived");
+  const displayedProjects = activeFilter === null
+    ? projects.filter(p => p.sessionState !== "archived")
+    : projects.filter(p => p.sessionState === activeFilter);
 
   const workingCount  = projects.filter(p => p.sessionState === "working").length;
   const waitingCount  = projects.filter(p => p.sessionState === "waiting").length;
@@ -889,86 +888,26 @@ export function GSD() {
       {/* Project cards grid */}
       {!loading && !error && (
         <>
-          {/* Active project cards grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {[...visibleProjects]
+            {[...displayedProjects]
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((project) => (
-              <ProjectCard
-                key={project.name}
-                project={project}
-                onSelect={setSelectedProject}
-                onOpenTerminal={(initialValue) => {
-                  setTerminalProject(project.name);
-                  setTerminalInitialValue(initialValue);
-                }}
-                onArchive={() => archiveProject(project.name)}
-                onUnarchive={() => unarchiveProject(project.name)}
-                onReopenTmux={() => load()}
-              />
-            ))}
+                <ProjectCard
+                  key={project.name}
+                  project={project}
+                  onSelect={setSelectedProject}
+                  onOpenTerminal={(initialValue) => {
+                    setTerminalProject(project.name);
+                    setTerminalInitialValue(initialValue);
+                  }}
+                  onArchive={() => archiveProject(project.name)}
+                  onUnarchive={() => unarchiveProject(project.name)}
+                  onReopenTmux={() => load()}
+                />
+              ))}
           </div>
-
-          {/* Paused section */}
-          {pausedProjects.length > 0 && (
-            <div className="mt-2">
-              <button
-                onClick={() => setPausedOpen(v => !v)}
-                className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-300 transition-colors mb-3"
-              >
-                {pausedOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                View paused ({pausedProjects.length})
-              </button>
-              {pausedOpen && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {pausedProjects.map((project) => (
-                    <ProjectCard
-                      key={project.name}
-                      project={project}
-                      onSelect={setSelectedProject}
-                      onOpenTerminal={(initialValue) => {
-                        setTerminalProject(project.name);
-                        setTerminalInitialValue(initialValue);
-                      }}
-                      onArchive={() => archiveProject(project.name)}
-                      onUnarchive={() => unarchiveProject(project.name)}
-                      onReopenTmux={() => load()}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Archived section */}
-          {archivedProjects.length > 0 && (
-            <div className="mt-2">
-              <button
-                onClick={() => setArchivedOpen(v => !v)}
-                className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-300 transition-colors mb-3"
-              >
-                {archivedOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                View archived ({archivedProjects.length})
-              </button>
-              {archivedOpen && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {archivedProjects.map((project) => (
-                    <ProjectCard
-                      key={project.name}
-                      project={project}
-                      onSelect={setSelectedProject}
-                      onOpenTerminal={(initialValue) => {
-                  setTerminalProject(project.name);
-                  setTerminalInitialValue(initialValue);
-                }}
-                      onArchive={() => archiveProject(project.name)}
-                      onUnarchive={() => unarchiveProject(project.name)}
-                      onReopenTmux={() => load()}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+          {displayedProjects.length === 0 && (
+            <p className="text-sm text-gray-500">No projects in this state.</p>
           )}
         </>
       )}
