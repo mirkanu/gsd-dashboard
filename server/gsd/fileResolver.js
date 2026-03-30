@@ -9,19 +9,20 @@ const path = require('path');
 const { readState } = require('./readers');
 
 const STATIC_MAPPINGS = {
+  project: '.planning/PROJECT.md',
   state: '.planning/STATE.md',
   roadmap: '.planning/ROADMAP.md',
   requirements: '.planning/REQUIREMENTS.md',
 };
 
-const VALID_IDS = new Set(['state', 'roadmap', 'requirements', 'plan']);
+const VALID_IDS = new Set(['project', 'state', 'roadmap', 'requirements', 'plan']);
 
 /**
  * Resolves a fileId to an absolute path within a project root.
  *
  * @param {string} _projectName - project name (unused but kept for symmetry with callers)
  * @param {string} root - absolute path to the project root directory
- * @param {string} fileId - one of: state, roadmap, requirements, plan
+ * @param {string} fileId - one of: project, state, roadmap, requirements, plan
  * @returns {string|null} absolute file path, or null if unresolvable
  */
 function resolveFile(_projectName, root, fileId) {
