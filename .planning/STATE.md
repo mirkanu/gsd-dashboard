@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish & Claude Desktop
 status: planning
-stopped_at: Completed 21-card-ux-simplification/21-02-PLAN.md
-last_updated: "2026-03-30T08:41:32.010Z"
-last_activity: 2026-03-30 — Roadmap created for v2.3 (Phases 21-23)
+stopped_at: Completed 22-mobile-terminal-fixes/22-01-PLAN.md
+last_updated: "2026-03-30T10:46:35.046Z"
+last_activity: "2026-03-30 - Completed quick task 6: Kanban board layout"
 progress:
   total_phases: 9
-  completed_phases: 6
-  total_plans: 12
-  completed_plans: 10
-  percent: 0
+  completed_phases: 7
+  total_plans: 13
+  completed_plans: 11
+  percent: 33
 ---
 
 # Project State
@@ -53,6 +53,9 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 21-card-ux-simplification]: Replace three-grid layout with single displayedProjects grid — filter state drives everything
 - [Phase 21-card-ux-simplification]: activeFilter defaults to 'waiting' so users see actionable items immediately on load
 - [Phase 21-card-ux-simplification]: Keep current_phase and milestone_name one-liners in ProjectCard header per plan spec
+- [Phase 22-mobile-terminal-fixes]: Use maximum-scale=1 (not user-scalable=no) in viewport meta to fix iOS zoom while preserving pinch-to-zoom
+- [Phase 22-mobile-terminal-fixes]: SCROLL_DAMPING=3 in TerminalOverlay: 30px drag per tmux scroll line for comfortable mobile scroll speed
+- [Phase 22-mobile-terminal-fixes]: Pass termRef to SpecialKeyBar for explicit terminal re-focus after each special key tap
 
 ### Roadmap Evolution
 
@@ -80,10 +83,11 @@ None.
 | 6 | Kanban board layout replacing filtered single-grid — 4 columns with CSS scroll-snap | 2026-03-30 | b2a1d74 |
 | Phase 21-card-ux-simplification P01 | 6 | 2 tasks | 2 files |
 | Phase 21-card-ux-simplification P02 | 5 | 2 tasks | 1 files |
+| Phase 22-mobile-terminal-fixes P01 | 8 | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:02:00Z
-Stopped at: Completed quick-6 (Kanban board layout)
+Last session: 2026-03-30T10:46:35.042Z
+Stopped at: Completed 22-mobile-terminal-fixes/22-01-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 21
