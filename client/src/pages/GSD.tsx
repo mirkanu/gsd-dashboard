@@ -2,15 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import {
   RefreshCw,
-  CheckCircle2,
-  Circle,
-  Clock,
-  AlertCircle,
-  ChevronDown,
-  ChevronRight,
   MapPin,
-  Layers,
-  ClipboardList,
   ExternalLink,
   X,
 } from "lucide-react";
@@ -18,7 +10,7 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { api } from "../lib/api";
-import type { GsdProject, GsdPhase } from "../lib/types";
+import type { GsdProject } from "../lib/types";
 import { GsdDrawer } from "../components/GsdDrawer";
 import { MarkdownViewer } from "../components/MarkdownViewer";
 
@@ -56,54 +48,6 @@ function StatusBadge({ status }: { status: string | null }) {
     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border capitalize ${STATUS_STYLES[level]}`}>
       {label}
     </span>
-  );
-}
-
-// ─── Phase status icon ────────────────────────────────────────────────────────
-
-function PhaseIcon({ status }: { status: string }) {
-  const s = status.toLowerCase();
-  if (s.includes("complete") || s.includes("done")) return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />;
-  if (s.includes("progress")) return <Clock className="w-3.5 h-3.5 text-accent flex-shrink-0" />;
-  if (s.includes("verif") || s.includes("awaiting")) return <AlertCircle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />;
-  return <Circle className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />;
-}
-
-// ─── Progress bar ─────────────────────────────────────────────────────────────
-
-function ProgressBar({ percent, className = "" }: { percent: number | null; className?: string }) {
-  const pct = percent ?? 0;
-  return (
-    <div className={`h-1.5 rounded-full bg-surface-3 overflow-hidden ${className}`}>
-      <div
-        className="h-full rounded-full bg-accent transition-all duration-500"
-        style={{ width: `${Math.min(100, pct)}%` }}
-      />
-    </div>
-  );
-}
-
-// ─── Roadmap panel ────────────────────────────────────────────────────────────
-
-function RoadmapPanel({ phases }: { phases: GsdPhase[] }) {
-  return (
-    <div className="space-y-1">
-      {phases.map((phase, i) => (
-        <div key={i} className="flex items-start gap-2 py-1">
-          <PhaseIcon status={phase.status} />
-          <div className="flex-1 min-w-0">
-            <span className={`text-xs ${phase.status.includes("complete") ? "text-gray-400" : "text-gray-200"}`}>
-              {phase.name}
-            </span>
-          </div>
-          {phase.plans_done !== null && phase.plans_total !== null && (
-            <span className="text-[11px] text-gray-600 flex-shrink-0">
-              {phase.plans_done}/{phase.plans_total}
-            </span>
-          )}
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -499,16 +443,9 @@ function ProjectCard({
   onUnarchive: () => void;
   onReopenTmux: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const [reopening, setReopening] = useState(false);
-  const { state, roadmap, requirements } = project;
-  const progress = state?.progress;
+  const { state } = project;
   const stateConf = SESSION_STATE_CONFIG[project.sessionState ?? "paused"];
-
-  const phaseSummary =
-    progress?.completed_phases != null && progress?.total_phases != null
-      ? `${progress.completed_phases}/${progress.total_phases} phases`
-      : null;
 
   return (
     <div className={`card flex flex-col gap-0 overflow-hidden cursor-pointer ${stateConf.border}`} onClick={() => onSelect(project)}>
@@ -556,70 +493,6 @@ function ProjectCard({
           </a>
         )}
       </div>
-
-      {/* Progress */}
-      <div className="px-4 py-3 border-b border-border/50">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs text-gray-500">Overall progress</span>
-          <span className="text-xs font-medium text-gray-300">{progress?.percent ?? 0}%</span>
-        </div>
-        <ProgressBar percent={progress?.percent ?? null} />
-        <div className="flex items-center justify-between mt-2 text-[11px] text-gray-600">
-          {phaseSummary && <span>{phaseSummary}</span>}
-          {requirements && (
-            <span>{requirements.checked}/{requirements.total} reqs ({requirements.percent}%)</span>
-          )}
-        </div>
-      </div>
-
-      {/* Last activity */}
-      {state?.last_activity && (
-        <div className="px-4 py-2.5 border-b border-border/50">
-          <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">
-            <span className="text-gray-600">Last: </span>{state.last_activity}
-          </p>
-        </div>
-      )}
-
-      {/* Next action */}
-      {state?.next_action && (
-        <div className="px-4 py-2.5 border-b border-border/50">
-          <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">
-            <span className="text-gray-600">Next: </span>{state.next_action}
-          </p>
-        </div>
-      )}
-
-      {/* Blockers */}
-      {state?.blockers && state.blockers.length > 0 && (
-        <div className="px-4 py-2.5 border-b border-border/50">
-          {state.blockers.map((b, i) => (
-            <div key={i} className="flex items-start gap-1.5">
-              <AlertCircle className="w-3 h-3 text-amber-400 flex-shrink-0 mt-0.5" />
-              <p className="text-[11px] text-amber-400/80 leading-relaxed">{b}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Stats row */}
-      {(project.velocity > 0 || project.streak > 0 || project.estimatedCompletion) && (
-        <div className="px-4 py-2.5 border-b border-border/50 flex items-center gap-2 flex-wrap text-[11px] text-gray-500">
-          {project.velocity > 0 && (
-            <span>{project.velocity} plan{project.velocity !== 1 ? 's' : ''} this week</span>
-          )}
-          {project.velocity > 0 && project.streak > 0 && <span className="text-gray-700">·</span>}
-          {project.streak > 0 && (
-            <span>{project.streak} day streak</span>
-          )}
-          {project.estimatedCompletion && (project.velocity > 0 || project.streak > 0) && (
-            <span className="text-gray-700">·</span>
-          )}
-          {project.estimatedCompletion && (
-            <span>{project.estimatedCompletion} est.</span>
-          )}
-        </div>
-      )}
 
       {/* Terminal button — open when active, re-open when configured but dead */}
       {project.tmuxActive ? (
@@ -684,45 +557,6 @@ function ProjectCard({
         </div>
       )}
 
-      {/* Expandable roadmap */}
-      {roadmap && roadmap.phases.length > 0 && (
-        <>
-          <button
-            onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
-            className="flex items-center gap-2 px-4 py-2.5 text-xs text-gray-500 hover:text-gray-300 hover:bg-surface-3 transition-colors w-full text-left"
-          >
-            {expanded ? (
-              <ChevronDown className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronRight className="w-3.5 h-3.5" />
-            )}
-            <Layers className="w-3.5 h-3.5" />
-            <span>{roadmap.phases.length} phases</span>
-            {requirements && (
-              <>
-                <span className="text-gray-700">·</span>
-                <ClipboardList className="w-3.5 h-3.5" />
-                <span>{requirements.percent}% requirements</span>
-              </>
-            )}
-          </button>
-
-          {expanded && (
-            <div className="px-4 pb-4 pt-1">
-              {requirements && (
-                <div className="mb-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] text-gray-600">Requirements coverage</span>
-                    <span className="text-[11px] text-gray-500">{requirements.checked}/{requirements.total}</span>
-                  </div>
-                  <ProgressBar percent={requirements.percent} />
-                </div>
-              )}
-              <RoadmapPanel phases={roadmap.phases} />
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 }
