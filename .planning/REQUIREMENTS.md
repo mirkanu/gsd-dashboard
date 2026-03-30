@@ -3,9 +3,7 @@
 **Defined:** 2026-03-28
 **Core Value:** At a glance, see where every GSD project stands and interact with any session
 
-## v2.2 Requirements
-
-Requirements for milestone v2.2 — Project Tasks. Each maps to roadmap phases.
+## v2.2 Requirements (Complete)
 
 ### Data Storage
 
@@ -27,6 +25,31 @@ Requirements for milestone v2.2 — Project Tasks. Each maps to roadmap phases.
 - [x] **CLIP-01**: "Copy all" button formats all open tasks as markdown and copies to clipboard
 - [x] **CLIP-02**: Copied format uses `- **Title** — description` per task, ready for GSD consumption
 
+## v2.3 Requirements
+
+Requirements for milestone v2.3 — UX Polish & Claude Desktop. Each maps to roadmap phases.
+
+### Card UX
+
+- [ ] **CARD-01**: User can click a state box (Working/Waiting/Paused/Archived) to filter the project grid to only that state's cards
+- [ ] **CARD-02**: Dashboard defaults to showing Waiting cards on load
+- [ ] **CARD-03**: A "Show All" button displays all non-archived projects regardless of state filter
+- [ ] **CARD-04**: Project cards show only: project name, state indicator, status badges, live URL, and Open Terminal — stats, progress, next action, and blockers are removed from the card face
+
+### Mobile Terminal
+
+- [ ] **MOB-01**: Terminal overlay touch scroll speed is reduced to a comfortable level (mobile only)
+- [ ] **MOB-02**: iOS keyboard opening does not cause the viewport to zoom (mobile only, applies globally)
+- [ ] **MOB-03**: Tapping special key buttons (Esc, arrows, etc) in the terminal does not shift focus or scroll position (mobile only)
+
+### Task UX
+
+- [ ] **TASK-01**: Task description field is a multi-line textarea that auto-grows as content increases, with a max height limit
+
+### Integration
+
+- [ ] **MCP-01**: An MCP server exposes .planning/ files (PROJECT.md, STATE.md, ROADMAP.md, REQUIREMENTS.md) for all tracked GSD projects so Claude Desktop can read them
+
 ## Future Requirements
 
 Deferred to v3.0+.
@@ -43,10 +66,11 @@ Deferred to v3.0+.
 | Feature | Reason |
 |---------|--------|
 | Task due dates / priorities | Overkill for simple notes; GSD handles prioritization |
-| Drag-and-drop reordering | Complexity not justified for v2.2 |
+| Drag-and-drop reordering | Complexity not justified |
 | Task assignments | Single developer tool |
 | Cross-project task views | Per-project scope is sufficient |
 | Rich text editing | Markdown plain text is sufficient |
+| Moved card info (stats/progress) to drawer | Removed from cards, not relocated — viewable via GSD file tabs |
 
 ## Traceability
 
@@ -65,12 +89,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-05 | Phase 18 | Complete |
 | CLIP-01 | Phase 19 | Complete |
 | CLIP-02 | Phase 19 | Complete |
+| CARD-01 | — | Pending |
+| CARD-02 | — | Pending |
+| CARD-03 | — | Pending |
+| CARD-04 | — | Pending |
+| MOB-01 | — | Pending |
+| MOB-02 | — | Pending |
+| MOB-03 | — | Pending |
+| TASK-01 | — | Pending |
+| MCP-01 | — | Pending |
 
 **Coverage:**
-- v2.2 requirements: 11 total
-- Mapped to phases: 11
-- Unmapped: 0 ✓
+- v2.3 requirements: 9 total
+- Mapped to phases: 0
+- Unmapped: 9 ⚠️
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after roadmap creation*
+*Last updated: 2026-03-30 after v2.3 milestone requirements*
