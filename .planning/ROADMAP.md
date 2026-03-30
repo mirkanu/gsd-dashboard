@@ -167,7 +167,10 @@ Plans:
   1. Scrolling the terminal overlay on a touch device moves at a comfortable speed without overshooting
   2. Opening the keyboard on iOS does not cause the viewport to zoom in
   3. Tapping Esc, arrow keys, or other special key buttons in the terminal does not shift scroll position or move focus away from the terminal input
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 22-01-PLAN.md — Viewport zoom fix + touch scroll damping + special key focus re-focus
 
 ### Phase 23: Task Textarea and MCP Server
 **Goal**: Task descriptions support multi-line input and Claude Desktop can read all tracked GSD project planning files via MCP
@@ -205,8 +208,8 @@ Plans:
 | 18.1. Persistent Tunnel for Remote Tmux | v2.2 | 2/2 | Complete | 2026-03-29 |
 | 19. Clipboard Export | v2.2 | 1/1 | Complete | 2026-03-29 |
 | 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
-| 21. Card UX Simplification | 2/2 | Complete    | 2026-03-30 | - |
-| 22. Mobile Terminal Fixes | v2.3 | 0/TBD | Not started | - |
+| 21. Card UX Simplification | v2.3 | 2/2 | Complete | 2026-03-30 |
+| 22. Mobile Terminal Fixes | v2.3 | 0/1 | Not started | - |
 | 23. Task Textarea and MCP Server | v2.3 | 0/TBD | Not started | - |
 
 ---
