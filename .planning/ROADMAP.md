@@ -179,7 +179,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. The task description field is a textarea that grows vertically as text is typed, up to a maximum height, and does not require horizontal scrolling
   2. Claude Desktop (or any MCP client) can connect to the MCP server and retrieve PROJECT.md, STATE.md, ROADMAP.md, and REQUIREMENTS.md for any tracked GSD project by name
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 23-01-PLAN.md — Auto-growing textarea replacing description input in TasksTab
+- [ ] 23-02-PLAN.md — GSD planning tools domain in MCP server (gsd_list_projects + gsd_read_planning_file)
 
 ---
 
@@ -209,8 +213,8 @@ Plans:
 | 19. Clipboard Export | v2.2 | 1/1 | Complete | 2026-03-29 |
 | 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
 | 21. Card UX Simplification | v2.3 | 2/2 | Complete | 2026-03-30 |
-| 22. Mobile Terminal Fixes | 1/1 | Complete    | 2026-03-30 | - |
-| 23. Task Textarea and MCP Server | v2.3 | 0/TBD | Not started | - |
+| 22. Mobile Terminal Fixes | v2.3 | 1/1 | Complete | 2026-03-30 |
+| 23. Task Textarea and MCP Server | v2.3 | 0/2 | Not started | - |
 
 ---
 
