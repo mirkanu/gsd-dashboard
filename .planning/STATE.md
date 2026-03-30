@@ -4,7 +4,7 @@ milestone: v2.3
 milestone_name: UX Polish & Claude Desktop
 status: planning
 stopped_at: Completed 21-card-ux-simplification/21-02-PLAN.md
-last_updated: "2026-03-30T08:34:16.693Z"
+last_updated: "2026-03-30T08:41:32.010Z"
 last_activity: 2026-03-30 — Roadmap created for v2.3 (Phases 21-23)
 progress:
   total_phases: 9
