@@ -75,7 +75,7 @@
 
 - [x] **Phase 21: Card UX Simplification** — State-based filtering with slim cards showing only essential info (completed 2026-03-30)
 - [x] **Phase 22: Mobile Terminal Fixes** — Reduced scroll sensitivity, iOS zoom prevention, special key focus fix (completed 2026-03-30)
-- [ ] **Phase 23: Task Textarea and MCP Server** — Auto-growing textarea for task descriptions and MCP server for Claude Desktop
+- [x] **Phase 23: Task Textarea and MCP Server** — Auto-growing textarea for task descriptions and MCP server for Claude Desktop (completed 2026-03-30)
 
 ## Phase Details
 
@@ -214,7 +214,7 @@ Plans:
 | 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
 | 21. Card UX Simplification | v2.3 | 2/2 | Complete | 2026-03-30 |
 | 22. Mobile Terminal Fixes | v2.3 | 1/1 | Complete | 2026-03-30 |
-| 23. Task Textarea and MCP Server | 1/2 | In Progress|  | - |
+| 23. Task Textarea and MCP Server | 2/2 | Complete   | 2026-03-30 | - |
 
 ---
 

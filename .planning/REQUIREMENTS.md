@@ -48,7 +48,7 @@ Requirements for milestone v2.3 — UX Polish & Claude Desktop. Each maps to roa
 
 ### Integration
 
-- [ ] **MCP-01**: An MCP server exposes .planning/ files (PROJECT.md, STATE.md, ROADMAP.md, REQUIREMENTS.md) for all tracked GSD projects so Claude Desktop can read them
+- [x] **MCP-01**: An MCP server exposes .planning/ files (PROJECT.md, STATE.md, ROADMAP.md, REQUIREMENTS.md) for all tracked GSD projects so Claude Desktop can read them
 
 ## Future Requirements
 
@@ -97,7 +97,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MOB-02 | Phase 22 | Complete |
 | MOB-03 | Phase 22 | Complete |
 | TASK-01 | Phase 23 | Complete |
-| MCP-01 | Phase 23 | Pending |
+| MCP-01 | Phase 23 | Complete |
 
 **Coverage:**
 - v2.3 requirements: 9 total
