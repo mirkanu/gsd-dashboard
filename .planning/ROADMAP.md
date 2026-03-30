@@ -209,7 +209,7 @@ Plans:
 | 19. Clipboard Export | v2.2 | 1/1 | Complete | 2026-03-29 |
 | 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
 | 21. Card UX Simplification | v2.3 | 2/2 | Complete | 2026-03-30 |
-| 22. Mobile Terminal Fixes | 1/1 | Complete   | 2026-03-30 | - |
+| 22. Mobile Terminal Fixes | 1/1 | Complete    | 2026-03-30 | - |
 | 23. Task Textarea and MCP Server | v2.3 | 0/TBD | Not started | - |
 
 ---
