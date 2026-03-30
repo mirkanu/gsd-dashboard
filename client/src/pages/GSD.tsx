@@ -574,7 +574,6 @@ export function GSD() {
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
   const [terminalInitialValue, setTerminalInitialValue] = useState<string>("");
-  const [activeFilter, setActiveFilter] = useState<import("../lib/types").SessionState | null>("waiting");
 
   const TAB_TITLES: Record<string, string> = {
     messages: "Messages",
@@ -645,15 +644,6 @@ export function GSD() {
     return () => clearInterval(t);
   }, [rateLimit]);
 
-  const displayedProjects = activeFilter === null
-    ? projects.filter(p => p.sessionState !== "archived")
-    : projects.filter(p => p.sessionState === activeFilter);
-
-  const workingCount  = projects.filter(p => p.sessionState === "working").length;
-  const waitingCount  = projects.filter(p => p.sessionState === "waiting").length;
-  const pausedCount   = projects.filter(p => p.sessionState === "paused").length;
-  const archivedCount = projects.filter(p => p.sessionState === "archived").length;
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -684,51 +674,6 @@ export function GSD() {
         </div>
       )}
 
-      {/* Summary stats — clickable filter boxes */}
-      {!loading && !error && projects.length > 0 && (
-        <>
-          <div className="grid grid-cols-4 gap-3">
-            <button
-              onClick={() => setActiveFilter("working")}
-              className={`card py-3 px-4 text-center cursor-pointer hover:bg-surface-3/50 transition-colors ${activeFilter === "working" ? "ring-2 ring-emerald-500/50" : ""}`}
-            >
-              <div className="text-2xl font-bold text-emerald-400">{workingCount}</div>
-              <div className="text-xs text-gray-500 mt-0.5">Working</div>
-            </button>
-            <button
-              onClick={() => setActiveFilter("waiting")}
-              className={`card py-3 px-4 text-center cursor-pointer hover:bg-surface-3/50 transition-colors ${activeFilter === "waiting" ? "ring-2 ring-amber-400/50" : ""}`}
-            >
-              <div className="text-2xl font-bold text-amber-400">{waitingCount}</div>
-              <div className="text-xs text-gray-500 mt-0.5">Waiting</div>
-            </button>
-            <button
-              onClick={() => setActiveFilter("paused")}
-              className={`card py-3 px-4 text-center cursor-pointer hover:bg-surface-3/50 transition-colors ${activeFilter === "paused" ? "ring-2 ring-red-500/50" : ""}`}
-            >
-              <div className="text-2xl font-bold text-red-400">{pausedCount}</div>
-              <div className="text-xs text-gray-500 mt-0.5">Paused</div>
-            </button>
-            <button
-              onClick={() => setActiveFilter("archived")}
-              className={`card py-3 px-4 text-center cursor-pointer hover:bg-surface-3/50 transition-colors ${activeFilter === "archived" ? "ring-2 ring-gray-500/50" : ""}`}
-            >
-              <div className="text-2xl font-bold text-gray-500">{archivedCount}</div>
-              <div className="text-xs text-gray-500 mt-0.5">Archived</div>
-            </button>
-          </div>
-          {activeFilter !== null && (
-            <div className="flex justify-end">
-              <button
-                onClick={() => setActiveFilter(null)}
-                className="text-xs text-gray-400 hover:text-gray-200 transition-colors px-3 py-1.5 rounded border border-border hover:bg-surface-3"
-              >
-                Show All
-              </button>
-            </div>
-          )}
-        </>
-      )}
 
       {/* States */}
       {loading && (
@@ -743,31 +688,65 @@ export function GSD() {
         </div>
       )}
 
-      {/* Project cards grid */}
+      {/* Kanban board */}
       {!loading && !error && (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {[...displayedProjects]
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((project) => (
-                <ProjectCard
-                  key={project.name}
-                  project={project}
-                  onSelect={setSelectedProject}
-                  onOpenTerminal={(initialValue) => {
-                    setTerminalProject(project.name);
-                    setTerminalInitialValue(initialValue);
-                  }}
-                  onArchive={() => archiveProject(project.name)}
-                  onUnarchive={() => unarchiveProject(project.name)}
-                  onReopenTmux={() => load()}
-                />
-              ))}
-          </div>
-          {displayedProjects.length === 0 && (
-            <p className="text-sm text-gray-500">No projects in this state.</p>
-          )}
-        </>
+        /* Mobile:  scroll-snap-x, each column is min-w-full so it fills viewport, user swipes.
+           Desktop: flex row, each column takes equal width (flex-1, min-w-0). */
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:-mx-8 md:px-8">
+          {(["waiting", "working", "paused", "archived"] as import("../lib/types").SessionState[]).map((state) => {
+            const conf = SESSION_STATE_CONFIG[state];
+            const columnProjects = [...projects.filter(p => p.sessionState === state)]
+              .sort((a, b) => a.name.localeCompare(b.name));
+            return (
+              <div
+                key={state}
+                /* Mobile: min-w-full snaps to center one column at a time.
+                   Desktop (md+): flex-1 + min-w-0 shares space equally across all 4 columns. */
+                className="bg-surface-1 rounded-xl border border-border p-3 flex flex-col flex-shrink-0 snap-center min-w-full md:min-w-0 md:flex-1"
+              >
+                {/* Column header */}
+                <div className="flex items-center gap-2 mb-4 px-1">
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                    state === "waiting"  ? "bg-amber-400" :
+                    state === "working"  ? "bg-emerald-500 animate-pulse" :
+                    state === "paused"   ? "bg-red-500" :
+                                           "bg-gray-600"
+                  }`} />
+                  <span className={`text-xs font-semibold uppercase tracking-wider ${conf.labelCls}`}>
+                    {conf.label}
+                  </span>
+                  <span className="ml-auto text-[11px] text-gray-600 bg-surface-3 px-2 py-0.5 rounded-full">
+                    {columnProjects.length}
+                  </span>
+                </div>
+
+                {/* Cards */}
+                <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[70vh]">
+                  {columnProjects.length > 0 ? (
+                    columnProjects.map((project) => (
+                      <ProjectCard
+                        key={project.name}
+                        project={project}
+                        onSelect={setSelectedProject}
+                        onOpenTerminal={(initialValue) => {
+                          setTerminalProject(project.name);
+                          setTerminalInitialValue(initialValue);
+                        }}
+                        onArchive={() => archiveProject(project.name)}
+                        onUnarchive={() => unarchiveProject(project.name)}
+                        onReopenTmux={() => load()}
+                      />
+                    ))
+                  ) : (
+                    <div className="flex items-center justify-center h-24 text-xs text-gray-600">
+                      No projects
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {selectedProject && (
