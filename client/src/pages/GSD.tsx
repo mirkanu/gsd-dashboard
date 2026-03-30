@@ -850,26 +850,50 @@ export function GSD() {
         </div>
       )}
 
-      {/* Summary stats */}
+      {/* Summary stats — clickable filter boxes */}
       {!loading && !error && projects.length > 0 && (
-        <div className="grid grid-cols-4 gap-3">
-          <div className="card py-3 px-4 text-center">
-            <div className="text-2xl font-bold text-emerald-400">{workingCount}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Working</div>
+        <>
+          <div className="grid grid-cols-4 gap-3">
+            <button
+              onClick={() => setActiveFilter("working")}
+              className={`card py-3 px-4 text-center cursor-pointer hover:bg-surface-3/50 transition-colors ${activeFilter === "working" ? "ring-2 ring-emerald-500/50" : ""}`}
+            >
+              <div className="text-2xl font-bold text-emerald-400">{workingCount}</div>
+              <div className="text-xs text-gray-500 mt-0.5">Working</div>
+            </button>
+            <button
+              onClick={() => setActiveFilter("waiting")}
+              className={`card py-3 px-4 text-center cursor-pointer hover:bg-surface-3/50 transition-colors ${activeFilter === "waiting" ? "ring-2 ring-amber-400/50" : ""}`}
+            >
+              <div className="text-2xl font-bold text-amber-400">{waitingCount}</div>
+              <div className="text-xs text-gray-500 mt-0.5">Waiting</div>
+            </button>
+            <button
+              onClick={() => setActiveFilter("paused")}
+              className={`card py-3 px-4 text-center cursor-pointer hover:bg-surface-3/50 transition-colors ${activeFilter === "paused" ? "ring-2 ring-red-500/50" : ""}`}
+            >
+              <div className="text-2xl font-bold text-red-400">{pausedCount}</div>
+              <div className="text-xs text-gray-500 mt-0.5">Paused</div>
+            </button>
+            <button
+              onClick={() => setActiveFilter("archived")}
+              className={`card py-3 px-4 text-center cursor-pointer hover:bg-surface-3/50 transition-colors ${activeFilter === "archived" ? "ring-2 ring-gray-500/50" : ""}`}
+            >
+              <div className="text-2xl font-bold text-gray-500">{archivedCount}</div>
+              <div className="text-xs text-gray-500 mt-0.5">Archived</div>
+            </button>
           </div>
-          <div className="card py-3 px-4 text-center">
-            <div className="text-2xl font-bold text-amber-400">{waitingCount}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Waiting</div>
-          </div>
-          <div className="card py-3 px-4 text-center">
-            <div className="text-2xl font-bold text-red-400">{pausedCount}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Paused</div>
-          </div>
-          <div className="card py-3 px-4 text-center">
-            <div className="text-2xl font-bold text-gray-500">{archivedCount}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Archived</div>
-          </div>
-        </div>
+          {activeFilter !== null && (
+            <div className="flex justify-end">
+              <button
+                onClick={() => setActiveFilter(null)}
+                className="text-xs text-gray-400 hover:text-gray-200 transition-colors px-3 py-1.5 rounded border border-border hover:bg-surface-3"
+              >
+                Show All
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* States */}
