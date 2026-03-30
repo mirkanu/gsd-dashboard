@@ -34,7 +34,7 @@ Requirements for milestone v2.3 — UX Polish & Claude Desktop. Each maps to roa
 - [x] **CARD-01**: User can click a state box (Working/Waiting/Paused/Archived) to filter the project grid to only that state's cards
 - [x] **CARD-02**: Dashboard defaults to showing Waiting cards on load
 - [x] **CARD-03**: A "Show All" button displays all non-archived projects regardless of state filter
-- [ ] **CARD-04**: Project cards show only: project name, state indicator, status badges, live URL, and Open Terminal — stats, progress, next action, and blockers are removed from the card face
+- [x] **CARD-04**: Project cards show only: project name, state indicator, status badges, live URL, and Open Terminal — stats, progress, next action, and blockers are removed from the card face
 
 ### Mobile Terminal
 
@@ -92,7 +92,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CARD-01 | Phase 21 | Complete |
 | CARD-02 | Phase 21 | Complete |
 | CARD-03 | Phase 21 | Complete |
-| CARD-04 | Phase 21 | Pending |
+| CARD-04 | Phase 21 | Complete |
 | MOB-01 | Phase 22 | Pending |
 | MOB-02 | Phase 22 | Pending |
 | MOB-03 | Phase 22 | Pending |
