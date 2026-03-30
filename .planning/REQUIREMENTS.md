@@ -89,21 +89,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-05 | Phase 18 | Complete |
 | CLIP-01 | Phase 19 | Complete |
 | CLIP-02 | Phase 19 | Complete |
-| CARD-01 | — | Pending |
-| CARD-02 | — | Pending |
-| CARD-03 | — | Pending |
-| CARD-04 | — | Pending |
-| MOB-01 | — | Pending |
-| MOB-02 | — | Pending |
-| MOB-03 | — | Pending |
-| TASK-01 | — | Pending |
-| MCP-01 | — | Pending |
+| CARD-01 | Phase 21 | Pending |
+| CARD-02 | Phase 21 | Pending |
+| CARD-03 | Phase 21 | Pending |
+| CARD-04 | Phase 21 | Pending |
+| MOB-01 | Phase 22 | Pending |
+| MOB-02 | Phase 22 | Pending |
+| MOB-03 | Phase 22 | Pending |
+| TASK-01 | Phase 23 | Pending |
+| MCP-01 | Phase 23 | Pending |
 
 **Coverage:**
 - v2.3 requirements: 9 total
-- Mapped to phases: 0
-- Unmapped: 9 ⚠️
+- Mapped to phases: 9
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-30 after v2.3 milestone requirements*
+*Last updated: 2026-03-30 after v2.3 roadmap creation (Phases 21-23)*

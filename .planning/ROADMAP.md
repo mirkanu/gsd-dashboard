@@ -7,7 +7,8 @@
 - ✅ **v1.2 GSD Stats & Live Data Pipeline** — Phases 7-8 (shipped 2026-03-23) → [archive](milestones/v1.2-ROADMAP.md)
 - ✅ **v2.0 Project Control Plane** — Phases 9-11 (shipped 2026-03-25) → [archive](milestones/v2.0-ROADMAP.md)
 - ✅ **v2.1 Session Intelligence & Terminal UX** — Phases 12-14, 16 (shipped 2026-03-28) → [archive](milestones/v2.1-ROADMAP.md)
-- 🚧 **v2.2 Project Tasks** — Phases 17-19 (in progress)
+- ✅ **v2.2 Project Tasks** — Phases 17-19 (shipped 2026-03-29)
+- 🚧 **v2.3 UX Polish & Claude Desktop** — Phases 21-23 (in progress)
 
 ---
 
@@ -59,11 +60,22 @@
 
 </details>
 
-### 🚧 v2.2 Project Tasks
+<details>
+<summary>✅ v2.2 Project Tasks (Phases 17-19) — SHIPPED 2026-03-29</summary>
 
 - [x] **Phase 17: Task Data Layer** — SQLite table and CRUD API endpoints for per-project tasks (completed 2026-03-28)
 - [x] **Phase 18: Task UI** — Tasks tab in project drawer with add, view, archive, and unarchive interactions (completed 2026-03-28)
+- [x] **Phase 18.1: Persistent Tunnel for Remote Tmux** (INSERTED) — Named cloudflared tunnel with permanent subdomain (completed 2026-03-29)
 - [x] **Phase 19: Clipboard Export** — Copy all open tasks as formatted markdown for GSD consumption (completed 2026-03-29)
+- [x] **Phase 20: Fix Railway Deployment** — dequal-patch fix + post-build dist assertion (completed 2026-03-30)
+
+</details>
+
+### 🚧 v2.3 UX Polish & Claude Desktop
+
+- [ ] **Phase 21: Card UX Simplification** — State-based filtering with slim cards showing only essential info
+- [ ] **Phase 22: Mobile Terminal Fixes** — Reduced scroll sensitivity, iOS zoom prevention, special key focus fix
+- [ ] **Phase 23: Task Textarea and MCP Server** — Auto-growing textarea for task descriptions and MCP server for Claude Desktop
 
 ## Phase Details
 
@@ -79,8 +91,8 @@
 **Plans**: 2 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — project_tasks schema + stmts + POST/GET/PATCH routes
-- [ ] 17-02-PLAN.md — task endpoint tests in api.test.js
+- [x] 17-01-PLAN.md — project_tasks schema + stmts + POST/GET/PATCH routes
+- [x] 17-02-PLAN.md — task endpoint tests in api.test.js
 
 ### Phase 18: Task UI
 **Goal**: Users can manage tasks for each project from the project drawer
@@ -95,8 +107,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 18-01-PLAN.md — GsdTask type + api.gsd.tasks methods (list/create/update)
-- [ ] 18-02-PLAN.md — TasksTab component + wire into GsdDrawer as first tab
+- [x] 18-01-PLAN.md — GsdTask type + api.gsd.tasks methods (list/create/update)
+- [x] 18-02-PLAN.md — TasksTab component + wire into GsdDrawer as first tab
 
 ### Phase 18.1: Persistent Tunnel for Remote Tmux (INSERTED)
 
@@ -106,8 +118,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 18.1-01-PLAN.md — Rewrite tunnel.sh for named tunnel + systemd service unit + one-time setup script
-- [ ] 18.1-02-PLAN.md — Verify tunnel prerequisites, set Railway GSD_DATA_URL, deploy, and end-to-end verify
+- [x] 18.1-01-PLAN.md — Rewrite tunnel.sh for named tunnel + systemd service unit + one-time setup script
+- [x] 18.1-02-PLAN.md — Verify tunnel prerequisites, set Railway GSD_DATA_URL, deploy, and end-to-end verify
 
 ### Phase 19: Clipboard Export
 **Goal**: Users can copy all open tasks as formatted markdown for pasting into GSD commands
@@ -119,7 +131,48 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 19-01-PLAN.md — Add Copy all button with clipboard logic to TasksTab
+- [x] 19-01-PLAN.md — Add Copy all button with clipboard logic to TasksTab
+
+### Phase 20: Fix Railway Deployment
+**Goal:** Deploy the dequal-patch fix and add a post-build dist assertion so the live dashboard reflects recent client changes and future deploys cannot silently ship stale builds
+**Requirements**: none
+**Depends on:** none (hotfix, runs independently)
+**Plans:** 1/1 plans complete
+
+Plans:
+- [x] 20-01-PLAN.md — add verify-build.sh safeguard, deploy to Railway, verify live dashboard
+
+---
+
+### Phase 21: Card UX Simplification
+**Goal**: Users can filter the project grid by session state and see only the information that matters on each card
+**Depends on**: Phase 20
+**Requirements**: CARD-01, CARD-02, CARD-03, CARD-04
+**Success Criteria** (what must be TRUE):
+  1. Clicking a state box (Working/Waiting/Paused/Archived) filters the grid to show only projects in that state
+  2. The dashboard shows only Waiting projects by default when first loaded
+  3. A "Show All" button is visible and clicking it displays all non-archived projects regardless of state
+  4. Each project card shows only project name, state indicator, status badges, live URL, and Open Terminal — stats, progress, next action, and blockers are absent from the card face
+**Plans**: TBD
+
+### Phase 22: Mobile Terminal Fixes
+**Goal**: The terminal overlay is comfortable to use on a mobile device without zoom, focus, or scroll annoyances
+**Depends on**: Phase 21
+**Requirements**: MOB-01, MOB-02, MOB-03
+**Success Criteria** (what must be TRUE):
+  1. Scrolling the terminal overlay on a touch device moves at a comfortable speed without overshooting
+  2. Opening the keyboard on iOS does not cause the viewport to zoom in
+  3. Tapping Esc, arrow keys, or other special key buttons in the terminal does not shift scroll position or move focus away from the terminal input
+**Plans**: TBD
+
+### Phase 23: Task Textarea and MCP Server
+**Goal**: Task descriptions support multi-line input and Claude Desktop can read all tracked GSD project planning files via MCP
+**Depends on**: Phase 21
+**Requirements**: TASK-01, MCP-01
+**Success Criteria** (what must be TRUE):
+  1. The task description field is a textarea that grows vertically as text is typed, up to a maximum height, and does not require horizontal scrolling
+  2. Claude Desktop (or any MCP client) can connect to the MCP server and retrieve PROJECT.md, STATE.md, ROADMAP.md, and REQUIREMENTS.md for any tracked GSD project by name
+**Plans**: TBD
 
 ---
 
@@ -143,20 +196,14 @@ Plans:
 | 13.1 Mobile Terminal Polish & Message Log | v2.1 | 3/3 | Complete | 2026-03-27 |
 | 14. Telegram Integration | v2.1 | 2/2 | Complete | 2026-03-28 |
 | 16. OOM Prevention | v2.1 | 1/1 | Complete | 2026-03-28 |
-| 17. Task Data Layer | 2/2 | Complete    | 2026-03-28 | - |
-| 18. Task UI | 2/2 | Complete    | 2026-03-28 | - |
-| 18.1. Persistent Tunnel for Remote Tmux | 2/2 | Complete    | 2026-03-29 | - |
-| 19. Clipboard Export | 1/1 | Complete    | 2026-03-29 | - |
-
-### Phase 20: Fix Railway deployment
-
-**Goal:** Deploy the dequal-patch fix and add a post-build dist assertion so the live dashboard reflects recent client changes and future deploys cannot silently ship stale builds
-**Requirements**: none
-**Depends on:** none (hotfix, runs independently)
-**Plans:** 1/1 plans complete
-
-Plans:
-- [ ] 20-01-PLAN.md — add verify-build.sh safeguard, deploy to Railway, verify live dashboard
+| 17. Task Data Layer | v2.2 | 2/2 | Complete | 2026-03-28 |
+| 18. Task UI | v2.2 | 2/2 | Complete | 2026-03-28 |
+| 18.1. Persistent Tunnel for Remote Tmux | v2.2 | 2/2 | Complete | 2026-03-29 |
+| 19. Clipboard Export | v2.2 | 1/1 | Complete | 2026-03-29 |
+| 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
+| 21. Card UX Simplification | v2.3 | 0/TBD | Not started | - |
+| 22. Mobile Terminal Fixes | v2.3 | 0/TBD | Not started | - |
+| 23. Task Textarea and MCP Server | v2.3 | 0/TBD | Not started | - |
 
 ---
 

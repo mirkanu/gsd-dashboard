@@ -5,9 +5,9 @@ milestone_name: UX Polish & Claude Desktop
 status: planning
 stopped_at: —
 last_updated: "2026-03-30"
-last_activity: "2026-03-30 — Milestone v2.3 started"
+last_activity: "2026-03-30 — Roadmap created for v2.3 (Phases 21-23)"
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** Milestone v2.3 — UX Polish & Claude Desktop
+**Current focus:** Milestone v2.3 — UX Polish & Claude Desktop (Phase 21 next)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 21 of 23 (Card UX Simplification) — ready to plan
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-30 — Milestone v2.3 started
+Status: Ready to plan
+Last activity: 2026-03-30 — Roadmap created for v2.3 (Phases 21-23)
 
 Progress: [░░░░░░░░░░] 0% (0/3 phases)
 
@@ -47,26 +47,15 @@ Progress: [░░░░░░░░░░] 0% (0/3 phases)
 See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 20-fix-railway-deployment]: Use sh (POSIX) not bash in verify-build.sh — Alpine Docker base has no bash
 - [Phase 20-fix-railway-deployment]: Copy client/scripts before npm ci so postinstall hook finds patch-dequal.cjs
-- [Phase 20-fix-railway-deployment]: 500-byte threshold in verify-build.sh catches empty dist/index.html without false positives
-- [Phase 17-task-data-layer]: Tasks are local-only (no GSD_DATA_URL proxy) — stored in local SQLite, Phase 18 UI calls endpoints directly
-- [Phase 17-task-data-layer]: COALESCE(?, column) pattern in updateTask allows partial patches by passing null to keep existing value
-- [Phase 17-task-data-layer]: archived stored as INTEGER (0/1) in SQLite — consistent with SQLite's typeless conventions
-- [Phase 17-task-data-layer]: Used project key 'task-test-proj' to avoid test collisions
-- [Phase 18-task-ui]: GsdTask.archived typed as 0 | 1 (not boolean) matching SQLite INTEGER storage and server response shape
-- [Phase 18-task-ui]: api.gsd.tasks.list defaults archived=false so callers get active tasks without specifying the flag
-- [Phase 18-task-ui]: Tasks tab inserted first in TABS array and set as default active tab in GsdDrawer
-- [Phase 18-task-ui]: Optimistic removal on archive/unarchive with revert-on-error for perceived performance
-- [Phase 18.1-persistent-tunnel-for-remote-tmux]: Named tunnel replaces ephemeral quick tunnel — GSD_DATA_URL on Railway set once, never changes
-- [Phase 18.1-persistent-tunnel-for-remote-tmux]: tunnel-setup.sh prints instructions only (no automation) because cloudflared login requires interactive browser OAuth
-- [Phase 18.1-persistent-tunnel-for-remote-tmux]: POSIX sh used throughout — consistent with Alpine Docker base (no bash)
-- [Phase 18.1-persistent-tunnel-for-remote-tmux]: Plan 02 blocked at Task 1: cloudflared login requires browser OAuth — user must run tunnel-setup.sh before Railway can be configured
 - [Phase 19-clipboard-export]: No toast library added — inline button label toggle (Copied!/Copy all) is sufficient clipboard confirmation
-- [Phase 19-clipboard-export]: Copy all button placed on right of toggle row using flex justify-between wrapper
+- [Phase 18-task-ui]: Optimistic removal on archive/unarchive with revert-on-error for perceived performance
+- [Phase 17-task-data-layer]: Tasks are local-only (no GSD_DATA_URL proxy) — stored in local SQLite, Phase 18 UI calls endpoints directly
 
 ### Roadmap Evolution
 
 - Phase 20 added: Fix Railway deployment
 - Phase 18.1 inserted after Phase 18: Persistent Tunnel for Remote Tmux (URGENT)
+- Phases 21-23 added: v2.3 UX Polish & Claude Desktop (2026-03-30)
 
 ### Pending Todos
 
@@ -78,24 +67,17 @@ None.
 
 ### Quick Tasks Completed
 
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 1 | HTTP 502 error fix — watchdog + EADDRINUSE handler | 2026-03-28 | e569d9b | [1-http-502-error](./quick/1-http-502-error-in-the-dashboard-again/) |
-| 2 | Alphabetical sort + paused collapsible section in GSD project grid | 2026-03-28 | 4fc84c5 | [2-order-cards-alphabetically-and-hide-paus](./quick/2-order-cards-alphabetically-and-hide-paus/) |
-| 3 | Force Railway rebuild by bumping Dockerfile cache-bust timestamps (both Stage 1 and Stage 2) | 2026-03-28 | f20ea97 | [3-fix-railway-deploy-clear-build-cache-fro](./quick/3-fix-railway-deploy-clear-build-cache-fro/) |
-| 4 | Fix task bugs: archive integer coercion (0\|1 vs boolean) + GSD_DATA_URL proxy guards on all 3 task routes | 2026-03-29 | 357516e | [4-fix-task-bugs-persistence-on-reload-and-](./quick/4-fix-task-bugs-persistence-on-reload-and-/) |
-| 5 | Add inline task editing: click task title to load into form, PATCH on save, Cancel to reset | 2026-03-30 | 293e932 | [5-add-task-editing-click-task-to-load-into](./quick/5-add-task-editing-click-task-to-load-into/) |
-| Phase 20-fix-railway-deployment P01 | 20 | 2 tasks | 2 files |
-| Phase 17-task-data-layer P01 | 10 | 2 tasks | 2 files |
-| Phase 17-task-data-layer P02 | 5 | 1 tasks | 1 files |
-| Phase 18-task-ui P01 | 9min | 1 tasks | 4 files |
-| Phase 18-task-ui P02 | 4min | 2 tasks | 2 files |
-| Phase 18.1-persistent-tunnel-for-remote-tmux P01 | 3min | 2 tasks | 3 files |
-| Phase 19-clipboard-export P01 | 3 | 1 tasks | 1 files |
+| # | Description | Date | Commit |
+|---|-------------|------|--------|
+| 1 | HTTP 502 error fix — watchdog + EADDRINUSE handler | 2026-03-28 | e569d9b |
+| 2 | Alphabetical sort + paused collapsible section in GSD project grid | 2026-03-28 | 4fc84c5 |
+| 3 | Force Railway rebuild by bumping Dockerfile cache-bust timestamps | 2026-03-28 | f20ea97 |
+| 4 | Fix task bugs: archive integer coercion + GSD_DATA_URL proxy guards | 2026-03-29 | 357516e |
+| 5 | Add inline task editing: click task title to load into form, PATCH on save | 2026-03-30 | 293e932 |
 
 ## Session Continuity
 
-Last session: 2026-03-29T23:36:10.614Z
-Stopped at: Completed 19-clipboard-export/19-01-PLAN.md
+Last session: 2026-03-30
+Stopped at: Roadmap created for v2.3 — Phases 21-23 defined
 Resume file: None
-Next action: /gsd:plan-phase 17
+Next action: /gsd:plan-phase 21
