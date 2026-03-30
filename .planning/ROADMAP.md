@@ -214,7 +214,7 @@ Plans:
 | 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
 | 21. Card UX Simplification | v2.3 | 2/2 | Complete | 2026-03-30 |
 | 22. Mobile Terminal Fixes | v2.3 | 1/1 | Complete | 2026-03-30 |
-| 23. Task Textarea and MCP Server | v2.3 | 0/2 | Not started | - |
+| 23. Task Textarea and MCP Server | 1/2 | In Progress|  | - |
 
 ---
 
