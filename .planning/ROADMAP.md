@@ -205,7 +205,7 @@ Plans:
 | 18.1. Persistent Tunnel for Remote Tmux | v2.2 | 2/2 | Complete | 2026-03-29 |
 | 19. Clipboard Export | v2.2 | 1/1 | Complete | 2026-03-29 |
 | 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
-| 21. Card UX Simplification | v2.3 | 0/2 | Not started | - |
+| 21. Card UX Simplification | 1/2 | In Progress|  | - |
 | 22. Mobile Terminal Fixes | v2.3 | 0/TBD | Not started | - |
 | 23. Task Textarea and MCP Server | v2.3 | 0/TBD | Not started | - |
 
