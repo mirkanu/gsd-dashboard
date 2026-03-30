@@ -45,7 +45,7 @@ function StatusBadge({ status }: { status: string | null }) {
   const level = classifyStatus(status);
   const label = status ? status.replace(/-/g, " ") : "unknown";
   return (
-    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border capitalize ${STATUS_STYLES[level]}`}>
+    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border capitalize truncate max-w-[120px] ${STATUS_STYLES[level]}`}>
       {label}
     </span>
   );
@@ -450,8 +450,8 @@ function ProjectCard({
   return (
     <div className={`card flex flex-col gap-0 overflow-hidden cursor-pointer ${stateConf.border}`} onClick={() => onSelect(project)}>
       {/* Header */}
-      <div className="px-4 pt-4 pb-3 border-b border-border/50">
-        <div className="flex items-start justify-between gap-2 mb-2">
+      <div className="px-4 pt-4 pb-3 border-b border-border/50 overflow-hidden">
+        <div className="flex items-start justify-between gap-2 mb-2 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <MapPin className="w-4 h-4 text-accent flex-shrink-0" />
             <h3 className="text-sm font-semibold text-gray-100 truncate capitalize">{project.display_name || project.name}</h3>
@@ -461,12 +461,12 @@ function ProjectCard({
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 min-w-0 flex-shrink overflow-hidden">
             <span className={`text-[11px] font-medium flex-shrink-0 ${stateConf.labelCls}`}>
               {stateConf.label}
             </span>
             {state?.blockers && state.blockers.length > 0 && (
-              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/20">
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/20 flex-shrink-0">
                 Blocked
               </span>
             )}
