@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Archive, ArchiveRestore, ClipboardCopy, Pencil, Plus } from "lucide-react";
 import { api } from "../lib/api";
 import type { GsdTask } from "../lib/types";
@@ -63,6 +63,7 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [editingTask, setEditingTask] = useState<GsdTask | null>(null);
+  const descRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,6 +83,13 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
       cancelled = true;
     };
   }, [projectKey, showArchived]);
+
+  useEffect(() => {
+    if (descRef.current) {
+      descRef.current.style.height = "auto";
+      descRef.current.style.height = `${descRef.current.scrollHeight}px`;
+    }
+  }, [description]);
 
   function handleEdit(task: GsdTask) {
     setEditingTask(task);
@@ -168,12 +176,18 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
           onChange={(e) => setTitle(e.target.value)}
           className="w-full bg-surface-3 border border-border rounded px-3 py-1.5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-accent"
         />
-        <input
-          type="text"
+        <textarea
+          ref={descRef}
           placeholder="Description (optional)"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full bg-surface-3 border border-border rounded px-3 py-1.5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-accent"
+          rows={1}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            e.target.style.height = "auto";
+            e.target.style.height = `${e.target.scrollHeight}px`;
+          }}
+          className="w-full bg-surface-3 border border-border rounded px-3 py-1.5 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-accent resize-none overflow-y-auto"
+          style={{ maxHeight: "10rem" }}
         />
         <div className="flex items-center gap-2">
           <button
