@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish & Claude Desktop
 status: planning
-stopped_at: Completed 23-task-textarea-and-mcp-server/23-01-PLAN.md
-last_updated: "2026-03-30T16:21:04.878Z"
-last_activity: "2026-03-30 - Completed quick task 6: Kanban board layout"
+stopped_at: Completed 23-task-textarea-and-mcp-server/23-02-PLAN.md
+last_updated: "2026-03-30T16:22:45.000Z"
+last_activity: "2026-03-30 - Completed phase 23 plan 02: GSD planning file MCP tools"
 progress:
   total_phases: 9
   completed_phases: 7
   total_plans: 15
-  completed_plans: 12
+  completed_plans: 13
   percent: 33
 ---
 
@@ -57,6 +57,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 22-mobile-terminal-fixes]: SCROLL_DAMPING=3 in TerminalOverlay: 30px drag per tmux scroll line for comfortable mobile scroll speed
 - [Phase 22-mobile-terminal-fixes]: Pass termRef to SpecialKeyBar for explicit terminal re-focus after each special key tap
 - [Phase 23-task-textarea-and-mcp-server]: Use inline onChange height reset + useEffect for description state to auto-size textarea on both user input and edit-load
+- [Phase 23-task-textarea-and-mcp-server]: api.get<string>() works for text/plain via tryParseJson fallback returning raw string; VALID_FILE_IDS excludes 'plan' (dynamic resolution not appropriate for MCP read)
 
 ### Roadmap Evolution
 
@@ -86,10 +87,11 @@ None.
 | Phase 21-card-ux-simplification P02 | 5 | 2 tasks | 1 files |
 | Phase 22-mobile-terminal-fixes P01 | 8 | 2 tasks | 2 files |
 | Phase 23-task-textarea-and-mcp-server P01 | 2 | 1 tasks | 1 files |
+| Phase 23-task-textarea-and-mcp-server P02 | 7 | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-03-30T16:21:04.875Z
-Stopped at: Completed 23-task-textarea-and-mcp-server/23-01-PLAN.md
+Last session: 2026-03-30T16:22:45.000Z
+Stopped at: Completed 23-task-textarea-and-mcp-server/23-02-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 21
