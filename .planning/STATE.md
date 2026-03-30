@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.2
-milestone_name: Project Tasks
+milestone: v2.3
+milestone_name: UX Polish & Claude Desktop
 status: planning
-stopped_at: Completed 19-clipboard-export/19-01-PLAN.md
-last_updated: "2026-03-29T23:41:34.684Z"
-last_activity: "2026-03-30 - Completed quick task 5: Add inline task editing to TasksTab"
+stopped_at: —
+last_updated: "2026-03-30"
+last_activity: "2026-03-30 — Milestone v2.3 started"
 progress:
-  total_phases: 6
-  completed_phases: 5
-  total_plans: 10
-  completed_plans: 8
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -18,17 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-28)
+See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** Milestone v2.2 — Project Tasks
+**Current focus:** Milestone v2.3 — UX Polish & Claude Desktop
 
 ## Current Position
 
-Phase: Phase 17 — Task Data Layer (not started)
+Phase: Not started (defining requirements)
 Plan: —
-Status: Ready to plan Phase 17
-Last activity: 2026-03-29 - Completed quick task 4: Fix task bugs (archive coercion + proxy guards)
+Status: Defining requirements
+Last activity: 2026-03-30 — Milestone v2.3 started
 
 Progress: [░░░░░░░░░░] 0% (0/3 phases)
 

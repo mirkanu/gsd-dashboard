@@ -20,10 +20,14 @@ At a glance, see where every GSD project stands and interact with any session �
 - ✓ Terminal UX: send box in overlay, mobile keyboard fix, touch scroll, special key bar, message log — v2.1
 - ✓ Telegram integration: state transition notifications, scroll-to-select detection, reply polling — v2.1
 - ✓ OOM prevention: heap caps, memory watchdog, orphan cleanup — v2.1
+- ✓ Project tasks: per-project task list with title, description, archive, clipboard export, inline editing — v2.2
 
 ### Active
 
-- [ ] Project tasks: per-project task list with title, description, archive, and clipboard export for GSD (v2.2)
+- [ ] Simplify cards: state-based filtering (default Waiting), remove stats/progress from cards, keep badges + live URL + Open Terminal (v2.3)
+- [ ] Mobile terminal fixes: reduce scroll sensitivity, prevent iOS keyboard zoom, fix focus shift on special key buttons (v2.3)
+- [ ] Multi-line task description: auto-growing textarea for notes (v2.3)
+- [ ] Claude Desktop GSD access: MCP server exposing .planning/ files for all projects (v2.3)
 
 ### Future
 
@@ -64,15 +68,15 @@ Deployed on Railway with cloudflared tunnel to local machine.
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
-## Current Milestone: v2.2 Project Tasks
+## Current Milestone: v2.3 UX Polish & Claude Desktop
 
-**Goal:** Add per-project task/note management with clipboard export for GSD execution
+**Goal:** Streamline the mobile and desktop dashboard experience and give Claude Desktop read access to all GSD project files
 
 **Target features:**
-- SQLite-backed task storage (title, description, archived flag, project key)
-- Tasks tab as first tab in project drawer
-- Add/view/archive tasks on each project card
-- "Copy all open tasks" button for pasting into GSD commands
+- Simplify project cards with state-based filtering (default: Waiting)
+- Fix mobile terminal issues (scroll sensitivity, iOS keyboard zoom, special key focus)
+- Auto-growing textarea for task descriptions
+- MCP server for Claude Desktop to access .planning/ files across all projects
 
 ---
-*Last updated: 2026-03-28 after v2.2 milestone start*
+*Last updated: 2026-03-30 after v2.3 milestone start*
