@@ -697,7 +697,7 @@ export function GSD() {
       {!loading && !error && (
         /* Mobile:  scroll-snap-x, each column is min-w-full so it fills viewport, user swipes.
            Desktop: flex row, each column takes equal width (flex-1, min-w-0). */
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:-mx-8 md:px-8">
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:-mx-8 md:px-8 max-w-[100vw]">
           {(["waiting", "working", "paused", "archived"] as import("../lib/types").SessionState[]).map((state) => {
             const conf = SESSION_STATE_CONFIG[state];
             const columnProjects = [...projects.filter(p => p.sessionState === state)]
@@ -707,7 +707,7 @@ export function GSD() {
                 key={state}
                 /* Mobile: min-w-full snaps to center one column at a time.
                    Desktop (md+): flex-1 + min-w-0 shares space equally across all 4 columns. */
-                className="bg-surface-1 rounded-xl border border-border p-3 flex flex-col flex-shrink-0 snap-center min-w-full md:min-w-0 md:flex-1"
+                className="bg-surface-1 rounded-xl border border-border p-3 flex flex-col flex-shrink-0 snap-center min-w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] md:min-w-0 md:max-w-none md:flex-1"
               >
                 {/* Column header */}
                 <div className="flex items-center gap-2 mb-4 px-1">
