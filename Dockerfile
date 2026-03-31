@@ -5,7 +5,16 @@ COPY package.json package-lock.json ./
 # cache-bust: 2026-03-28T18
 RUN npm ci --omit=dev
 
-# ── Stage 2: Build React client ───────────────────────────────────────
+# ── Stage 2: Build MCP server (ESM) ───────────────────────────────────
+FROM node:22-alpine AS mcp-build
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY mcp/package.json mcp/package-lock.json ./mcp/
+RUN cd mcp && npm ci
+COPY mcp/ ./mcp/
+RUN cd mcp && npm run build
+
+# ── Stage 3: Build React client ───────────────────────────────────────
 FROM node:22-alpine AS client-build
 # cache-bust: 2026-03-28T18
 WORKDIR /app/client
@@ -16,7 +25,7 @@ COPY client/ ./
 RUN npm run build
 RUN sh scripts/verify-build.sh
 
-# ── Stage 3: Production runtime ───────────────────────────────────────
+# ── Stage 4: Production runtime ───────────────────────────────────────
 FROM node:22-alpine
 WORKDIR /app
 
@@ -27,6 +36,8 @@ COPY gsd-projects.json ./
 COPY scripts/ ./scripts/
 COPY statusline/ ./statusline/
 COPY --from=client-build /app/client/dist ./client/dist/
+COPY --from=mcp-build /app/mcp/build ./mcp/build/
+COPY --from=mcp-build /app/mcp/node_modules ./mcp/node_modules/
 
 RUN mkdir -p data
 
