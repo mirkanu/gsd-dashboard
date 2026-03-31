@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish & Claude Desktop
 status: planning
-stopped_at: "Completed quick-9: enable text selection and copy in mobile terminal"
-last_updated: "2026-03-31T14:20:00.000Z"
-last_activity: "2026-03-31 - Completed quick task 9: mobile terminal Select mode toggle"
+stopped_at: "Completed quick-10: fix iOS terminal button tap causing keyboard flicker"
+last_updated: "2026-03-31T15:09:13Z"
+last_activity: "2026-03-31 - Completed quick task 10: iOS SpecialKeyBar keyboard flicker fix"
 progress:
   total_phases: 9
   completed_phases: 8
@@ -59,6 +59,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 23-task-textarea-and-mcp-server]: Use inline onChange height reset + useEffect for description state to auto-size textarea on both user input and edit-load
 - [Phase 23-task-textarea-and-mcp-server]: api.get<string>() works for text/plain via tryParseJson fallback returning raw string; VALID_FILE_IDS excludes 'plan' (dynamic resolution not appropriate for MCP read)
 - [quick-9-mobile-text-selection]: Use selectModeRef (not selectMode state) inside event handlers to avoid stale closure; button shown on mobile only; exiting select mode clears selection and refocuses terminal
+- [quick-10-ios-keyboard-flicker]: Use specialKeyPressRef boolean ref in handleXtermBlur to guard against iOS blur caused by SpecialKeyBar taps — immediately refocus terminal without triggering SendBox flash
 
 ### Roadmap Evolution
 
@@ -87,6 +88,7 @@ None.
 | 7 | Fix mobile card horizontal overflow — w-full min-w-0 on card root and overflow-x-hidden on column container | 2026-03-31 | 1108689 |
 | 8 | Add remote MCP transport for iPhone Claude — Streamable HTTP /mcp endpoint on Express server | 2026-03-31 | 5f04a6f |
 | 9 | Enable text selection and copy in mobile terminal — Select mode toggle bypasses touch handlers for xterm.js native selection | 2026-03-31 | 8ee0e5f |
+| 10 | Fix iOS SpecialKeyBar tap causing keyboard flicker — specialKeyPressRef guard in handleXtermBlur prevents SendBox flash | 2026-03-31 | baeddc7 |
 | Phase 21-card-ux-simplification P01 | 6 | 2 tasks | 2 files |
 | Phase 21-card-ux-simplification P02 | 5 | 2 tasks | 1 files |
 | Phase 22-mobile-terminal-fixes P01 | 8 | 2 tasks | 2 files |
@@ -95,7 +97,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T14:20:00.000Z
-Stopped at: Completed quick-9: enable text selection and copy in mobile terminal
+Last session: 2026-03-31T15:09:13Z
+Stopped at: Completed quick-10: fix iOS terminal button tap causing keyboard flicker
 Resume file: None
 Next action: /gsd:plan-phase 21
