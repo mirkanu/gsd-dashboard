@@ -1,20 +1,37 @@
 "use strict";
 const express = require("express");
+const path = require("path");
 
 let _routerPromise = null;
+
+// Resolve the mcp package root so dynamic ESM imports can find @modelcontextprotocol/sdk
+// which is installed in mcp/node_modules (not the project root).
+const MCP_DIR = path.resolve(__dirname, "..", "..", "mcp");
+const MCP_BUILD_DIR = path.join(MCP_DIR, "build");
+const SDK_STREAMABLE = path.join(
+  MCP_DIR,
+  "node_modules",
+  "@modelcontextprotocol",
+  "sdk",
+  "dist",
+  "esm",
+  "server",
+  "streamableHttp.js"
+);
 
 async function initMcpRouter() {
   const PORT = parseInt(process.env.PORT || process.env.DASHBOARD_PORT || "4820", 10);
   const dashboardUrl = `http://127.0.0.1:${PORT}`;
 
   // Dynamic ESM imports — mcp/build is ESM-only
+  // Use absolute file paths so resolution works regardless of CWD or calling file location
   const { StreamableHTTPServerTransport } = await import(
-    "@modelcontextprotocol/sdk/server/streamableHttp.js"
+    SDK_STREAMABLE
   );
-  const { buildServer } = await import("../../mcp/build/server.js");
-  const { loadConfig } = await import("../../mcp/build/config/app-config.js");
-  const { DashboardApiClient } = await import("../../mcp/build/clients/dashboard-api-client.js");
-  const { Logger } = await import("../../mcp/build/core/logger.js");
+  const { buildServer } = await import(path.join(MCP_BUILD_DIR, "server.js"));
+  const { loadConfig } = await import(path.join(MCP_BUILD_DIR, "config", "app-config.js"));
+  const { DashboardApiClient } = await import(path.join(MCP_BUILD_DIR, "clients", "dashboard-api-client.js"));
+  const { Logger } = await import(path.join(MCP_BUILD_DIR, "core", "logger.js"));
 
   // Build a stateless MCP server instance pointed at self (127.0.0.1 passes local-host validation)
   const config = loadConfig({
