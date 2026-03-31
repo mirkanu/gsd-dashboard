@@ -204,8 +204,22 @@ router.post('/projects/:name/send', async (req, res) => {
   }
 
   try {
-    const { execFileSync } = require('child_process');
-    execFileSync('tmux', ['send-keys', '-t', tmux_session, text, 'Enter'], { stdio: 'ignore' });
+    const { execFileSync, spawnSync } = require('child_process');
+    if (text.length > 1000) {
+      // Large text: use tmux load-buffer (reads from stdin) + paste-buffer to avoid arg length limits
+      const load = spawnSync('tmux', ['load-buffer', '-'], { input: text, encoding: 'utf8', stdio: ['pipe', 'ignore', 'ignore'] });
+      if (load.status !== 0) {
+        return res.status(500).json({ error: 'Failed to load buffer in tmux session', detail: load.stderr });
+      }
+      const paste = spawnSync('tmux', ['paste-buffer', '-t', tmux_session], { stdio: 'ignore' });
+      if (paste.status !== 0) {
+        return res.status(500).json({ error: 'Failed to paste buffer to tmux session' });
+      }
+      // Also send Enter after paste
+      execFileSync('tmux', ['send-keys', '-t', tmux_session, '', 'Enter'], { stdio: 'ignore' });
+    } else {
+      execFileSync('tmux', ['send-keys', '-t', tmux_session, text, 'Enter'], { stdio: 'ignore' });
+    }
     try { stmts.insertGsdMessage.run(name, 'outbound', text); } catch { /* non-blocking */ }
     return res.json({ ok: true });
   } catch (err) {
