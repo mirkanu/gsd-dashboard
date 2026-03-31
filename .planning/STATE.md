@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish & Claude Desktop
 status: planning
-stopped_at: "Completed quick-8: add remote MCP transport for iPhone Claude"
-last_updated: "2026-03-31T10:40:00.000Z"
-last_activity: "2026-03-31 - Completed quick task 8: remote MCP /mcp endpoint"
+stopped_at: "Completed quick-9: enable text selection and copy in mobile terminal"
+last_updated: "2026-03-31T14:20:00.000Z"
+last_activity: "2026-03-31 - Completed quick task 9: mobile terminal Select mode toggle"
 progress:
   total_phases: 9
   completed_phases: 8
@@ -58,6 +58,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 22-mobile-terminal-fixes]: Pass termRef to SpecialKeyBar for explicit terminal re-focus after each special key tap
 - [Phase 23-task-textarea-and-mcp-server]: Use inline onChange height reset + useEffect for description state to auto-size textarea on both user input and edit-load
 - [Phase 23-task-textarea-and-mcp-server]: api.get<string>() works for text/plain via tryParseJson fallback returning raw string; VALID_FILE_IDS excludes 'plan' (dynamic resolution not appropriate for MCP read)
+- [quick-9-mobile-text-selection]: Use selectModeRef (not selectMode state) inside event handlers to avoid stale closure; button shown on mobile only; exiting select mode clears selection and refocuses terminal
 
 ### Roadmap Evolution
 
@@ -85,6 +86,7 @@ None.
 | 6 | Kanban board layout replacing filtered single-grid — 4 columns with CSS scroll-snap | 2026-03-30 | b2a1d74 |
 | 7 | Fix mobile card horizontal overflow — w-full min-w-0 on card root and overflow-x-hidden on column container | 2026-03-31 | 1108689 |
 | 8 | Add remote MCP transport for iPhone Claude — Streamable HTTP /mcp endpoint on Express server | 2026-03-31 | 5f04a6f |
+| 9 | Enable text selection and copy in mobile terminal — Select mode toggle bypasses touch handlers for xterm.js native selection | 2026-03-31 | 8ee0e5f |
 | Phase 21-card-ux-simplification P01 | 6 | 2 tasks | 2 files |
 | Phase 21-card-ux-simplification P02 | 5 | 2 tasks | 1 files |
 | Phase 22-mobile-terminal-fixes P01 | 8 | 2 tasks | 2 files |
@@ -93,7 +95,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T10:40:00.000Z
-Stopped at: Completed quick-8: add remote MCP transport for iPhone Claude
+Last session: 2026-03-31T14:20:00.000Z
+Stopped at: Completed quick-9: enable text selection and copy in mobile terminal
 Resume file: None
 Next action: /gsd:plan-phase 21
