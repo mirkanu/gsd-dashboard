@@ -404,15 +404,32 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     };
   }, []); // empty deps — mount/unmount only
 
+  // Extract terminal buffer text for the selectable overlay
+  const getTerminalText = (): string => {
+    const term = termRef.current;
+    if (!term) return '';
+    const lines: string[] = [];
+    const buffer = term.buffer.active;
+    for (let i = 0; i < term.rows; i++) {
+      const line = buffer.getLine(buffer.viewportY + i);
+      if (line) lines.push(line.translateToString(true));
+    }
+    return lines.join('\n');
+  };
+
+  const [bufferText, setBufferText] = useState('');
+
   const toggleSelectMode = () => {
     const next = !selectMode;
     selectModeRef.current = next;
-    setSelectMode(next);
-    if (!next) {
-      // Exiting select mode: clear selection and restore focus
-      termRef.current?.clearSelection();
+    if (next) {
+      // Entering select mode: snapshot the terminal buffer text
+      setBufferText(getTerminalText());
+    } else {
+      // Exiting select mode: restore focus
       termRef.current?.focus();
     }
+    setSelectMode(next);
   };
 
   return (
@@ -448,7 +465,28 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
         </div>
       </div>
       {/* Terminal container — fills remaining height */}
-      <div ref={containerRef} className="flex-1 overflow-hidden p-2" />
+      <div className="flex-1 overflow-hidden relative">
+        <div ref={containerRef} className="absolute inset-0 p-2" />
+        {/* Selectable text overlay — appears on top of terminal canvas in select mode */}
+        {selectMode && (
+          <pre
+            className="absolute inset-0 p-2 overflow-auto select-text z-10"
+            style={{
+              fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+              fontSize: termRef.current?.options.fontSize ?? 10,
+              lineHeight: 1.2,
+              color: '#c9d1d9',
+              background: 'rgba(13, 17, 23, 0.92)',
+              whiteSpace: 'pre',
+              WebkitUserSelect: 'text',
+              userSelect: 'text',
+              margin: 0,
+            }}
+          >
+            {bufferText}
+          </pre>
+        )}
+      </div>
       {/* Send box + special keys — mobile only (desktop has physical keyboard) */}
       {isMobile && (
         <div className="flex-shrink-0">
