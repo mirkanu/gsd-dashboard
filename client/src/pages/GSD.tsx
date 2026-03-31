@@ -158,7 +158,15 @@ const SPECIAL_KEYS = [
   { label: "Enter", seq: "\r" },
 ] as const;
 
-function SpecialKeyBar({ wsRef, termRef }: { wsRef: React.RefObject<WebSocket | null>; termRef: React.RefObject<Terminal | null> }) {
+function SpecialKeyBar({
+  wsRef,
+  termRef,
+  specialKeyPressRef,
+}: {
+  wsRef: React.RefObject<WebSocket | null>;
+  termRef: React.RefObject<Terminal | null>;
+  specialKeyPressRef: React.RefObject<boolean>;
+}) {
   const send = (seq: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(seq);
@@ -172,8 +180,8 @@ function SpecialKeyBar({ wsRef, termRef }: { wsRef: React.RefObject<WebSocket | 
       {SPECIAL_KEYS.map((key) => (
         <button
           key={key.label}
-          onTouchStart={(e) => { e.preventDefault(); send(key.seq); }}
-          onTouchEnd={(e) => e.preventDefault()}
+          onTouchStart={(e) => { e.preventDefault(); specialKeyPressRef.current = true; send(key.seq); }}
+          onTouchEnd={(e) => { e.preventDefault(); specialKeyPressRef.current = false; }}
           onMouseDown={(e) => e.preventDefault()}
           className="text-[11px] px-2.5 py-1.5 rounded border border-border bg-surface-3 text-gray-400 active:bg-accent/20 active:text-accent active:border-accent/30 transition-colors select-none"
         >
@@ -206,6 +214,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
   const [terminalFocused, setTerminalFocused] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const selectModeRef = useRef(false); // ref for use inside event handlers (avoids stale closure)
+  const specialKeyPressRef = useRef(false); // true while a SpecialKeyBar button is being tapped
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -359,7 +368,14 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     // Track xterm textarea focus so mobile can hide SendBox when typing directly
     const xtermTextarea = container.querySelector('.xterm-helper-textarea') as HTMLTextAreaElement | null;
     const handleXtermFocus = () => setTerminalFocused(true);
-    const handleXtermBlur = () => setTerminalFocused(false);
+    const handleXtermBlur = () => {
+      if (specialKeyPressRef.current) {
+        // Special key tap caused this blur — immediately refocus to prevent keyboard flicker
+        terminal.focus();
+        return;
+      }
+      setTerminalFocused(false);
+    };
     xtermTextarea?.addEventListener('focus', handleXtermFocus);
     xtermTextarea?.addEventListener('blur', handleXtermBlur);
 
@@ -497,7 +513,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
               contextTokens={null}
             />
           )}
-          <SpecialKeyBar wsRef={wsRef} termRef={termRef} />
+          <SpecialKeyBar wsRef={wsRef} termRef={termRef} specialKeyPressRef={specialKeyPressRef} />
         </div>
       )}
     </div>
