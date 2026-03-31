@@ -204,6 +204,8 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
   const [isMobile] = useState(() => window.matchMedia('(pointer: coarse)').matches);
   const [bottomOffset, setBottomOffset] = useState(0);
   const [terminalFocused, setTerminalFocused] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const selectModeRef = useRef(false); // ref for use inside event handlers (avoids stale closure)
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -327,6 +329,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     };
     const SCROLL_DAMPING = 3; // pixels of drag per tmux scroll line (higher = slower/more deliberate)
     const handleTouchMove = (e: TouchEvent) => {
+      if (selectModeRef.current) return; // let xterm.js handle in select mode
       const dy = touchStartY - e.touches[0].clientY;
       const dx = touchStartX - e.touches[0].clientX;
       if (!scrollIntent) {
@@ -346,6 +349,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     };
     // Tap to focus: call terminal.focus() on touchend when no scroll intent
     const handleTouchEnd = () => {
+      if (selectModeRef.current) return; // don't steal focus/clear selection
       if (!scrollIntent) terminal.focus();
     };
     screen.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
@@ -400,6 +404,17 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     };
   }, []); // empty deps — mount/unmount only
 
+  const toggleSelectMode = () => {
+    const next = !selectMode;
+    selectModeRef.current = next;
+    setSelectMode(next);
+    if (!next) {
+      // Exiting select mode: clear selection and restore focus
+      termRef.current?.clearSelection();
+      termRef.current?.focus();
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black/90 flex flex-col"
@@ -409,13 +424,28 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
       {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-[#161b22] border-b border-[#30363d] flex-shrink-0">
         <span className="text-sm text-gray-300 font-mono">{projectName} — tmux session</span>
-        <button
-          onClick={onClose}
-          className="p-1 rounded hover:bg-surface-3 text-gray-400 hover:text-white transition-colors"
-          aria-label="Close terminal"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {isMobile && (
+            <button
+              onClick={toggleSelectMode}
+              className={`text-xs px-2 py-1 rounded border transition-colors select-none ${
+                selectMode
+                  ? 'bg-accent/20 text-accent border-accent/30'
+                  : 'bg-surface-3 text-gray-400 border-border hover:text-white'
+              }`}
+              aria-label={selectMode ? 'Exit select mode' : 'Enter select mode to copy text'}
+            >
+              {selectMode ? 'Done' : 'Select'}
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-surface-3 text-gray-400 hover:text-white transition-colors"
+            aria-label="Close terminal"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
       {/* Terminal container — fills remaining height */}
       <div ref={containerRef} className="flex-1 overflow-hidden p-2" />
