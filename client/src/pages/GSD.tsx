@@ -167,21 +167,52 @@ function SpecialKeyBar({
   termRef: React.RefObject<Terminal | null>;
   specialKeyPressRef: React.RefObject<boolean>;
 }) {
-  const send = (seq: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(seq);
-    }
-    // Re-focus terminal so scroll position and input focus stay on the terminal,
-    // not on the button that was just tapped.
-    termRef.current?.focus();
-  };
+  const barRef = useRef<HTMLDivElement>(null);
+
+  // Use native event listeners (not React synthetic) so preventDefault() fires
+  // BEFORE the browser's focus management blurs the xterm textarea. React's
+  // synthetic events are delegated to the root and fire too late on iOS Safari.
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      const btn = (e.target as HTMLElement).closest('button');
+      if (!btn) return;
+      e.preventDefault();
+      specialKeyPressRef.current = true;
+      const idx = parseInt(btn.getAttribute('data-idx') ?? '', 10);
+      const key = SPECIAL_KEYS[idx];
+      if (key) {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(key.seq);
+        }
+        termRef.current?.focus();
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const btn = (e.target as HTMLElement).closest('button');
+      if (!btn) return;
+      e.preventDefault();
+      specialKeyPressRef.current = false;
+    };
+
+    bar.addEventListener('touchstart', onTouchStart, { passive: false });
+    bar.addEventListener('touchend', onTouchEnd, { passive: false });
+
+    return () => {
+      bar.removeEventListener('touchstart', onTouchStart);
+      bar.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [wsRef, termRef, specialKeyPressRef]);
+
   return (
-    <div className="flex flex-wrap gap-1.5 px-4 py-2 border-t border-border/50">
-      {SPECIAL_KEYS.map((key) => (
+    <div ref={barRef} className="flex flex-wrap gap-1.5 px-4 py-2 border-t border-border/50">
+      {SPECIAL_KEYS.map((key, i) => (
         <button
           key={key.label}
-          onTouchStart={(e) => { e.preventDefault(); specialKeyPressRef.current = true; send(key.seq); }}
-          onTouchEnd={(e) => { e.preventDefault(); specialKeyPressRef.current = false; }}
+          data-idx={i}
           onMouseDown={(e) => e.preventDefault()}
           className="text-[11px] px-2.5 py-1.5 rounded border border-border bg-surface-3 text-gray-400 active:bg-accent/20 active:text-accent active:border-accent/30 transition-colors select-none"
         >
@@ -365,16 +396,23 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     screen.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
     screen.addEventListener('touchend', handleTouchEnd, { capture: true });
 
-    // Track xterm textarea focus so mobile can hide SendBox when typing directly
+    // Track xterm textarea focus so mobile can hide SendBox when typing directly.
+    // Debounce blur so that quick blur→focus cycles (caused by SpecialKeyBar taps)
+    // never flip terminalFocused and flash the SendBox.
     const xtermTextarea = container.querySelector('.xterm-helper-textarea') as HTMLTextAreaElement | null;
-    const handleXtermFocus = () => setTerminalFocused(true);
+    let blurTimer = 0;
+    const handleXtermFocus = () => {
+      clearTimeout(blurTimer);
+      setTerminalFocused(true);
+    };
     const handleXtermBlur = () => {
       if (specialKeyPressRef.current) {
         // Special key tap caused this blur — immediately refocus to prevent keyboard flicker
         terminal.focus();
         return;
       }
-      setTerminalFocused(false);
+      // Delay state change so a rapid refocus (e.g. from terminal.focus()) cancels it
+      blurTimer = window.setTimeout(() => setTerminalFocused(false), 80);
     };
     xtermTextarea?.addEventListener('focus', handleXtermFocus);
     xtermTextarea?.addEventListener('blur', handleXtermBlur);
@@ -387,6 +425,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
       screen.removeEventListener('touchend', handleTouchEnd, { capture: true } as EventListenerOptions);
       xtermTextarea?.removeEventListener('focus', handleXtermFocus);
       xtermTextarea?.removeEventListener('blur', handleXtermBlur);
+      clearTimeout(blurTimer);
       ws.close();
       terminal.dispose();
     };
