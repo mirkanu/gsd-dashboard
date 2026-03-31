@@ -17,12 +17,14 @@ const pricingRouter = require("./routes/pricing");
 const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
 const { createAgentProxy } = require("./routes/proxy");
+const mcpRemote = require("./routes/mcp-remote");
 const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
 
 function basicAuth(req, res, next) {
   // Skip auth for localhost and internal hook events
   const host = req.hostname || "";
   if (host === "localhost" || host === "127.0.0.1") return next();
+  if (req.path.startsWith("/mcp")) return next();
   if (req.path.startsWith("/api/hooks")) return next();
   if (req.path.startsWith("/api/gsd")) return next();
   if (req.path.startsWith("/api/sessions")) return next();
@@ -63,6 +65,7 @@ function createApp() {
   app.use("/api/pricing", pricingRouter);
   app.use("/api/settings", settingsRouter);
   app.use("/api/gsd", gsdRouter);
+  app.use("/mcp", mcpRemote);
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
