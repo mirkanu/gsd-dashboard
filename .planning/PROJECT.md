@@ -21,17 +21,27 @@ At a glance, see where every GSD project stands and interact with any session �
 - ✓ Telegram integration: state transition notifications, scroll-to-select detection, reply polling — v2.1
 - ✓ OOM prevention: heap caps, memory watchdog, orphan cleanup — v2.1
 - ✓ Project tasks: per-project task list with title, description, archive, clipboard export, inline editing — v2.2
+- ✓ Card UX simplification: kanban board, state-based filtering (default Waiting), streamlined cards — v2.3
+- ✓ Mobile terminal polish: scroll sensitivity, iOS keyboard zoom fix, special key focus, text selection, paste button — v2.3
+- ✓ Multi-line task description: auto-growing textarea for notes — v2.3
+- ✓ Claude Desktop/Mobile GSD access: MCP server + remote Streamable HTTP transport — v2.3
 
 ### Active
 
-- [ ] Simplify cards: state-based filtering (default Waiting), remove stats/progress from cards, keep badges + live URL + Open Terminal (v2.3)
-- [ ] Mobile terminal fixes: reduce scroll sensitivity, prevent iOS keyboard zoom, fix focus shift on special key buttons (v2.3)
-- [ ] Multi-line task description: auto-growing textarea for notes (v2.3)
-- [ ] Claude Desktop GSD access: MCP server exposing .planning/ files for all projects (v2.3)
+- [ ] GSD Autopilot: autonomous plan-all → execute-all loop per project, triggered from dashboard (v3.0)
+- [ ] Usage & cost tracking: Claude Max session/weekly limits, external service costs across all projects (v3.0)
+- [ ] External services page: status and cost of Railway, GitHub, Claude, OpenAI, etc. with receipt ingestion (v3.0)
+- [ ] Waiting accuracy: refresh card status on terminal close, "Waiting" = waiting on human input only (v3.0)
+- [ ] Message tab styling: distinguish Claude vs human messages with different background color and alignment (v3.0)
+- [ ] Task Archive All: suggest bulk archive after Copy (v3.0)
+- [ ] GitHub issues link on project cards (v3.0)
+- [ ] Dynamic shortcuts: next GSD command suggestions on cards (v3.0)
+- [ ] Pause card: define how to pause/resume a project from the dashboard (v3.0)
 
 ### Future
 
-- [ ] New project creation: one-click directory + tmux + Claude launch from dashboard (deferred to v3.0)
+- [ ] New project creation: one-click directory + tmux + Claude launch from dashboard (deferred)
+- [ ] Email receipt parsing pipeline for automated cost tracking (deferred — capability exists in YNAB project)
 
 ### Out of Scope
 
@@ -42,11 +52,12 @@ At a glance, see where every GSD project stands and interact with any session �
 
 ## Context
 
-Shipped v2.1 with ~16,900 LOC (JS/JSX/TS/TSX/CSS).
+Shipped v2.3 with kanban board, mobile terminal polish, MCP server, and 11 quick tasks.
 Tech stack: React + Vite, Express, SQLite, WebSocket, xterm.js, node-pty.
 Deployed on Railway with cloudflared tunnel to local machine.
-239 commits across 16 completed phases in 10 days (2026-03-18 → 2026-03-28).
 6 tracked projects: josie, gsddashboard, debates, reforma + others.
+GSD Autopilot fork (github.com/jamoeight/get-shit-done-autopilot) provides reference architecture for autonomous execution: plan-all → autopilot loop → progress watcher → failure learning → circuit breaker.
+User is a non-coder using vibe coding — wants maximum automation and hands-off execution.
 
 ## Key Decisions
 
@@ -68,15 +79,15 @@ Deployed on Railway with cloudflared tunnel to local machine.
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
-## Current Milestone: v2.3 UX Polish & Claude Desktop
+## Current Milestone: v3.0 Autopilot & Cost Intelligence
 
-**Goal:** Streamline the mobile and desktop dashboard experience and give Claude Desktop read access to all GSD project files
+**Goal:** Transform the dashboard from a monitoring tool into an autonomous execution controller with full cost visibility across all projects and services.
 
 **Target features:**
-- Simplify project cards with state-based filtering (default: Waiting)
-- Fix mobile terminal issues (scroll sensitivity, iOS keyboard zoom, special key focus)
-- Auto-growing textarea for task descriptions
-- MCP server for Claude Desktop to access .planning/ files across all projects
+- GSD Autopilot: plan-all phases, autonomous execution loop, pause/resume from dashboard, failure learning
+- Usage & cost intelligence: Claude Max limits tracking, external services status/cost page
+- Card UX: Waiting accuracy, GitHub issues links, Archive All, dynamic GSD shortcuts, pause card
+- Message tab: distinguish Claude vs human messages with visual differentiation
 
 ---
-*Last updated: 2026-03-30 after v2.3 milestone start*
+*Last updated: 2026-03-31 after v3.0 milestone start*
