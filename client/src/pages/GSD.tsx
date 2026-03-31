@@ -5,6 +5,7 @@ import {
   MapPin,
   ExternalLink,
   X,
+  ClipboardPaste,
 } from "lucide-react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
@@ -246,6 +247,21 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
   const [selectMode, setSelectMode] = useState(false);
   const selectModeRef = useRef(false); // ref for use inside event handlers (avoids stale closure)
   const specialKeyPressRef = useRef(false); // true while a SpecialKeyBar button is being tapped
+  const [pasteLabel, setPasteLabel] = useState<'Paste' | 'Pasted!'>('Paste');
+
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text) return;
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(text);
+        setPasteLabel('Pasted!');
+        setTimeout(() => setPasteLabel('Paste'), 1500);
+      }
+    } catch {
+      // Clipboard read denied — silently ignore
+    }
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -497,6 +513,15 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
       <div className="flex items-center justify-between px-4 py-2 bg-[#161b22] border-b border-[#30363d] flex-shrink-0">
         <span className="text-sm text-gray-300 font-mono">{projectName} — tmux session</span>
         <div className="flex items-center gap-2">
+          {isMobile && (
+            <button
+              onClick={handlePaste}
+              className="text-xs px-2 py-1 rounded border transition-colors select-none bg-surface-3 text-gray-400 border-border hover:text-white"
+              aria-label="Paste clipboard into terminal"
+            >
+              {pasteLabel}
+            </button>
+          )}
           {isMobile && (
             <button
               onClick={toggleSelectMode}
