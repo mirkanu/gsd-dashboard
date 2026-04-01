@@ -142,6 +142,34 @@ class AutopilotManager {
   }
 
   /**
+   * Return the current run state for status endpoint queries.
+   * @returns {{ runId: string|null, status: string, currentPhaseNum: number|null, projectName: string|null, startedAt: string|null }}
+   */
+  getStatus() {
+    if (!this._runId) {
+      return { runId: null, status: 'idle', currentPhaseNum: null, projectName: this._projectName, startedAt: null };
+    }
+    // Read current status from DB for accuracy (pause/resume updates DB)
+    let status = 'running';
+    try {
+      const row = this._db
+        .prepare('SELECT status FROM autopilot_runs WHERE id = ?')
+        .get(this._runId);
+      if (row) status = row.status;
+    } catch {
+      // Fall back to in-memory state if DB read fails
+      status = this.paused ? 'paused' : this._stopped ? 'stopped' : 'running';
+    }
+    return {
+      runId: this._runId,
+      status,
+      currentPhaseNum: this._currentPhase,
+      projectName: this._projectName,
+      startedAt: null, // startedAt not tracked in memory; available from DB if needed
+    };
+  }
+
+  /**
    * Permanently stop the loop. Status updated to 'stopped'.
    */
   stop() {

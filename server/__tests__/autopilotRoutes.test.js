@@ -124,9 +124,13 @@ before(async () => {
 });
 
 after(() => {
-  server.close();
+  if (server) server.close();
   try { fs.unlinkSync(TEST_DB); } catch { /* best-effort */ }
+  try { fs.unlinkSync(TEST_DB + '-wal'); } catch { /* best-effort */ }
+  try { fs.unlinkSync(TEST_DB + '-shm'); } catch { /* best-effort */ }
   try { fs.unlinkSync(FAKE_CONFIG_PATH); } catch { /* best-effort */ }
+  // Force exit since WS heartbeat interval keeps process alive
+  setTimeout(() => process.exit(0), 100);
 });
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
