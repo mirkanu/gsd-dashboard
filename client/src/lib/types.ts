@@ -69,6 +69,22 @@ export interface GsdTask {
   created_at: string;
 }
 
+export type AutopilotRunStatus = 'running' | 'paused' | 'completed' | 'failed' | 'idle' | 'halted';
+
+export interface AutopilotRun {
+  runId: string | null;
+  status: AutopilotRunStatus;
+  currentPhaseNum: number | null;
+  projectName: string;
+}
+
+export interface AutopilotProgressEvent {
+  projectName: string;
+  phaseNum: number;
+  status: 'planning' | 'executing' | 'completed' | 'failed' | 'halted';
+  runId: string;
+}
+
 // ─── Agent/Session Types ──────────────────────────────────────────────────────
 
 export type SessionStatus = "active" | "completed" | "error" | "abandoned";
@@ -178,8 +194,8 @@ export interface CostResult {
 }
 
 export interface WSMessage {
-  type: "session_created" | "session_updated" | "agent_created" | "agent_updated" | "new_event";
-  data: Session | Agent | DashboardEvent;
+  type: "session_created" | "session_updated" | "agent_created" | "agent_updated" | "new_event" | "autopilot_progress";
+  data: Session | Agent | DashboardEvent | AutopilotProgressEvent;
   timestamp: string;
 }
 
