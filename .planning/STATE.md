@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Autopilot & Cost Intelligence
 status: executing
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-04-01T12:33:06.509Z"
-last_activity: "2026-04-01 — Completed 24-02: SQLite schema, CircuitBreaker, processSpawner"
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-04-01T12:54:27.493Z"
+last_activity: "2026-04-01 — Completed 25-02: Autopilot REST routes + AutopilotManager.getStatus()"
 progress:
   total_phases: 13
   completed_phases: 9
   total_plans: 20
-  completed_plans: 16
-  percent: 82
+  completed_plans: 17
+  percent: 85
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** Phase 24 — Waiting Accuracy + Safety Foundation
+**Current focus:** Phase 25 — Autopilot Core
 
 ## Current Position
 
-Phase: 24 of 27 (Waiting Accuracy + Safety Foundation)
-Plan: 2 of 2 in current phase (phase complete)
-Status: In progress — Phase 24 all plans done
-Last activity: 2026-04-01 — Completed 24-02: SQLite schema, CircuitBreaker, processSpawner
+Phase: 25 of 27 (Autopilot Core)
+Plan: 2 of 3 in current phase (1 plan remaining)
+Status: In progress — Phase 25 plans 01+02 done, plan 03 remaining
+Last activity: 2026-04-01 — Completed 25-02: Autopilot REST routes + AutopilotManager.getStatus()
 
-Progress: [████████░░] 82% (v3.0: 2/11 plans)
+Progress: [█████████░] 85% (v3.0: 3/11 plans)
 
 ## Performance Metrics
 
@@ -58,6 +58,9 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 24]: Polling burst pattern: setInterval+setTimeout combo in GSD.tsx onClose refreshes card state within 2s of terminal close without full page reload
 - [Phase 25-01]: AutopilotManager: _failureRecorded guard prevents duplicate CircuitBreaker.recordFailure() calls when STATE.md status stays 'failed' across poll ticks
 - [Phase 25-01]: AutopilotManager: circuitBreakerFactory injection allows mock CB in tests without module mocking — consistent with Phase 24 injection pattern
+- [Phase 25]: runRegistry Map pattern (projectName → entry) enforces one active run per project with 409 on duplicate start
+- [Phase 25]: Test hook exports on router object (_setManagerFactory, _clearRun) avoid module mocking for DI in route tests
+- [Phase 25]: getStatus() reads DB status for accuracy, falls back to in-memory flags
 
 ### v3.0 Key Constraints (from research)
 
@@ -81,7 +84,7 @@ None at roadmap stage. Research flags to address in planning:
 
 ## Session Continuity
 
-Last session: 2026-04-01T12:33:06.502Z
-Stopped at: Completed 25-01-PLAN.md
+Last session: 2026-04-01T12:54:27.490Z
+Stopped at: Completed 25-02-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 24
