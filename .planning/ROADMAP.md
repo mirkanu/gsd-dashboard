@@ -8,7 +8,8 @@
 - ✅ **v2.0 Project Control Plane** — Phases 9-11 (shipped 2026-03-25) → [archive](milestones/v2.0-ROADMAP.md)
 - ✅ **v2.1 Session Intelligence & Terminal UX** — Phases 12-14, 16 (shipped 2026-03-28) → [archive](milestones/v2.1-ROADMAP.md)
 - ✅ **v2.2 Project Tasks** — Phases 17-19 (shipped 2026-03-29)
-- 🚧 **v2.3 UX Polish & Claude Desktop** — Phases 21-23 (in progress)
+- ✅ **v2.3 UX Polish & Claude Desktop** — Phases 21-23 (shipped 2026-03-30)
+- 🚧 **v3.0 Autopilot & Cost Intelligence** — Phases 24-27 (in progress)
 
 ---
 
@@ -71,11 +72,25 @@
 
 </details>
 
-### 🚧 v2.3 UX Polish & Claude Desktop
+<details>
+<summary>✅ v2.3 UX Polish & Claude Desktop (Phases 21-23) — SHIPPED 2026-03-30</summary>
 
 - [x] **Phase 21: Card UX Simplification** — State-based filtering with slim cards showing only essential info (completed 2026-03-30)
 - [x] **Phase 22: Mobile Terminal Fixes** — Reduced scroll sensitivity, iOS zoom prevention, special key focus fix (completed 2026-03-30)
 - [x] **Phase 23: Task Textarea and MCP Server** — Auto-growing textarea for task descriptions and MCP server for Claude Desktop (completed 2026-03-30)
+
+</details>
+
+### 🚧 v3.0 Autopilot & Cost Intelligence
+
+**Milestone Goal:** Transform the dashboard from a monitoring tool into an autonomous execution controller with full cost visibility across all projects and services.
+
+- [ ] **Phase 24: Waiting Accuracy + Safety Foundation** - Fix state detection and lay the database/backend groundwork required before any autopilot runs
+- [ ] **Phase 25: Autopilot Core** - Autonomous plan-all → execute-all loop with circuit breaker, pause/resume, and real-time progress
+- [ ] **Phase 26: Cost Intelligence** - Claude Max token tracking, external services cost page, visual alerts, and autopilot cost gate
+- [ ] **Phase 27: Card UX Polish** - GitHub issues links, Archive All, dynamic GSD shortcuts, message tab styling, and pause card
+
+---
 
 ## Phase Details
 
@@ -111,8 +126,7 @@ Plans:
 - [x] 18-02-PLAN.md — TasksTab component + wire into GsdDrawer as first tab
 
 ### Phase 18.1: Persistent Tunnel for Remote Tmux (INSERTED)
-
-**Goal:** Replace the ephemeral Cloudflare Quick Tunnel with a named Cloudflare Tunnel that has a permanent subdomain, so Railway's GSD_DATA_URL is set once and never needs updating — restoring stable terminal overlay, re-open tmux, and session state detection from the cloud dashboard
+**Goal:** Replace the ephemeral Cloudflare Quick Tunnel with a named Cloudflare Tunnel that has a permanent subdomain, so Railway's GSD_DATA_URL is set once and never needs updating
 **Requirements**: none (inserted phase, no formal requirement IDs)
 **Depends on:** Phase 18
 **Plans:** 2/2 plans complete
@@ -142,8 +156,6 @@ Plans:
 Plans:
 - [x] 20-01-PLAN.md — add verify-build.sh safeguard, deploy to Railway, verify live dashboard
 
----
-
 ### Phase 21: Card UX Simplification
 **Goal**: Users can filter the project grid by session state and see only the information that matters on each card
 **Depends on**: Phase 20
@@ -152,12 +164,12 @@ Plans:
   1. Clicking a state box (Working/Waiting/Paused/Archived) filters the grid to show only projects in that state
   2. The dashboard shows only Waiting projects by default when first loaded
   3. A "Show All" button is visible and clicking it displays all non-archived projects regardless of state
-  4. Each project card shows only project name, state indicator, status badges, live URL, and Open Terminal — stats, progress, next action, and blockers are absent from the card face
+  4. Each project card shows only project name, state indicator, status badges, live URL, and Open Terminal
 **Plans**: 2 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — State filter bar: clickable stat boxes, default Waiting, Show All button
-- [ ] 21-02-PLAN.md — Slim card face: remove progress/stats/next-action/blockers/roadmap from card
+- [x] 21-01-PLAN.md — State filter bar: clickable stat boxes, default Waiting, Show All button
+- [x] 21-02-PLAN.md — Slim card face: remove progress/stats/next-action/blockers/roadmap from card
 
 ### Phase 22: Mobile Terminal Fixes
 **Goal**: The terminal overlay is comfortable to use on a mobile device without zoom, focus, or scroll annoyances
@@ -170,7 +182,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 22-01-PLAN.md — Viewport zoom fix + touch scroll damping + special key focus re-focus
+- [x] 22-01-PLAN.md — Viewport zoom fix + touch scroll damping + special key focus re-focus
 
 ### Phase 23: Task Textarea and MCP Server
 **Goal**: Task descriptions support multi-line input and Claude Desktop can read all tracked GSD project planning files via MCP
@@ -182,8 +194,77 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 23-01-PLAN.md — Auto-growing textarea replacing description input in TasksTab
-- [ ] 23-02-PLAN.md — GSD planning tools domain in MCP server (gsd_list_projects + gsd_read_planning_file)
+- [x] 23-01-PLAN.md — Auto-growing textarea replacing description input in TasksTab
+- [x] 23-02-PLAN.md — GSD planning tools domain in MCP server (gsd_list_projects + gsd_read_planning_file)
+
+---
+
+### Phase 24: Waiting Accuracy + Safety Foundation
+**Goal**: "Waiting" state correctly means waiting on human input, and the database and backend infrastructure required for safe autopilot operation is in place
+**Depends on**: Phase 23
+**Requirements**: UX-01, UX-02, AUTO-05
+**Success Criteria** (what must be TRUE):
+  1. A project card shows "Waiting" only when the terminal session has paused and is awaiting human keypress — agent-thinking and processing phases show "Working"
+  2. Closing the terminal overlay automatically refreshes the card's state within 2 seconds without a full page reload
+  3. SQLite contains the four new tables (autopilot_runs, claude_api_usage, external_service_costs, process_registry) and all migration scripts run cleanly
+  4. The autopilot backend can spawn a GSD command detached from the Express event loop and return a job ID immediately — no blocking
+  5. The circuit breaker logic halts a simulated autopilot run after 3 consecutive failures on the same phase and marks the run as paused
+**Plans**: TBD
+
+Plans:
+- [ ] 24-01: Waiting state accuracy fix — improve tmux capture-pane pattern matching, add refresh-on-terminal-close
+- [ ] 24-02: Safety foundation — SQLite schema migrations, detached process spawning, process registry, circuit breaker class
+
+### Phase 25: Autopilot Core
+**Goal**: Users can launch and control an autonomous plan-all → execute-all loop for any project from the dashboard
+**Depends on**: Phase 24
+**Requirements**: AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-06, AUTO-07
+**Success Criteria** (what must be TRUE):
+  1. Clicking "Plan All" on a project card triggers batch planning of all remaining phases and shows real-time progress via the existing WebSocket feed
+  2. Clicking "Run Autopilot" launches the autonomous execution loop — the dashboard card updates as each phase is planned and executed without any user input
+  3. Clicking "Pause" on an active autopilot run stops the loop at the next safe point (end of current phase) and shows "Paused" on the card
+  4. Clicking "Resume" on a paused run restarts the loop from the next pending phase
+  5. When a phase fails, the autopilot stores the failure context, adjusts the retry prompt, and attempts the phase again before counting it as a failure toward the circuit breaker limit
+**Plans**: TBD
+
+Plans:
+- [ ] 25-01: AutopilotManager class — watchLoop, STATE.md monitoring, phase chaining, failure learning
+- [ ] 25-02: Autopilot API routes — /api/autopilot/start, /pause, /resume, /status
+- [ ] 25-03: Autopilot UI — Plan All button, Run Autopilot button, pause/resume controls, real-time progress display on cards
+
+### Phase 26: Cost Intelligence
+**Goal**: Users can see real-time Claude Max token consumption and external service costs, and autopilot is gated by configurable cost limits
+**Depends on**: Phase 24
+**Requirements**: COST-01, COST-02, COST-03, COST-04, COST-05, COST-06
+**Success Criteria** (what must be TRUE):
+  1. A Cost Intelligence page shows Claude Max session and weekly token usage as a progress bar with color coding (green below 80%, yellow 80-95%, red above 95%)
+  2. The cost page shows current status and estimated cost for Railway, GitHub, Claude, and OpenAI with a data freshness timestamp on every figure
+  3. Per-project cost badges are visible on each project card showing token spend during any active autopilot run
+  4. When token usage reaches the configured threshold, autopilot automatically pauses and sends a Telegram alert
+  5. Manual refresh respects a 60-second frontend debounce and 5-minute backend rate limit; stale data (over 6 hours old) is visually flagged in red
+**Plans**: TBD
+
+Plans:
+- [ ] 26-01: Cost backend — Anthropic Admin API integration, SQLite caching, /api/cost/* routes
+- [ ] 26-02: Cost Intelligence React page — progress bars, service breakdown, burn rate, freshness indicators
+- [ ] 26-03: Autopilot cost gate — pre-execution budget check, auto-pause on threshold breach, cost badges on cards
+
+### Phase 27: Card UX Polish
+**Goal**: Project cards surface GitHub issues, dynamic GSD shortcuts, a pause state, and the message log distinguishes human vs Claude messages
+**Depends on**: Phase 25
+**Requirements**: UX-03, UX-04, UX-05, UX-06, UX-07
+**Success Criteria** (what must be TRUE):
+  1. Each project card shows a link to the project's GitHub issues page (if configured) that opens in a new tab
+  2. After clicking "Copy" in the Tasks tab, the UI suggests "Archive All?" with a one-click confirm that archives all open tasks
+  3. Each project card shows the recommended next GSD command based on the current phase state (e.g., "/gsd:execute-phase 25" when a phase is planned but not yet executed)
+  4. A project card can be set to "Paused" state from the dashboard, showing a distinct visual indicator and suppressing autopilot from targeting that project
+  5. The Messages tab renders Claude messages with a distinct background and right-alignment, and human messages with a different background and left-alignment
+**Plans**: TBD
+
+Plans:
+- [ ] 27-01: GitHub issues link + Archive All suggestion + dynamic shortcuts on cards
+- [ ] 27-02: Pause card state — backend pause field, visual indicator, autopilot exclusion
+- [ ] 27-03: Message tab styling — distinguish Claude vs human messages by background color and alignment
 
 ---
 
@@ -214,19 +295,23 @@ Plans:
 | 20. Fix Railway Deployment | v2.2 | 1/1 | Complete | 2026-03-30 |
 | 21. Card UX Simplification | v2.3 | 2/2 | Complete | 2026-03-30 |
 | 22. Mobile Terminal Fixes | v2.3 | 1/1 | Complete | 2026-03-30 |
-| 23. Task Textarea and MCP Server | 2/2 | Complete    | 2026-03-30 | - |
+| 23. Task Textarea and MCP Server | v2.3 | 2/2 | Complete | 2026-03-30 |
+| 24. Waiting Accuracy + Safety Foundation | v3.0 | 0/2 | Not started | - |
+| 25. Autopilot Core | v3.0 | 0/3 | Not started | - |
+| 26. Cost Intelligence | v3.0 | 0/3 | Not started | - |
+| 27. Card UX Polish | v3.0 | 0/3 | Not started | - |
 
 ---
 
-## v3.0 Future
+## Deferred
 
-### Phase 15: New Project Creation (Deferred)
+### Phase 15: New Project Creation (Deferred to v3.1+)
 **Goal**: Users can create a new GSD project — directory, tmux session, and Claude Code launch — from a single button in the dashboard
 **Depends on**: Phase 9
 **Requirements**: CREATE-01, CREATE-02, CREATE-03, CREATE-04
 **Success Criteria** (what must be TRUE):
   1. A "New project" button is visible in the GSD tab header at all times
-  2. Clicking the button prompts for a project name; submitting creates the directory at `{base_path}/{name}` and a new tmux session named after the project
+  2. Clicking the button prompts for a project name; submitting creates the directory and a new tmux session named after the project
   3. The backend sends `claude` followed by `/gsd:new-project` as the first input into the new tmux session so the project scaffold starts automatically
-  4. The new project's card appears in the dashboard grid immediately after creation without requiring a page refresh or manual config edit
-**Status**: Deferred to v3.0
+  4. The new project's card appears in the dashboard grid immediately after creation without requiring a page refresh
+**Status**: Deferred to v3.1+
