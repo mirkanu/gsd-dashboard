@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { eventBus } from "../lib/eventBus";
 import { useParams } from "react-router-dom";
 import {
   RefreshCw,
@@ -584,10 +585,111 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
   );
 }
 
+// ─── Autopilot controls ───────────────────────────────────────────────────────
+
+function AutopilotControls({ project, autopilotRun }: {
+  project: GsdProject;
+  autopilotRun: import('../lib/types').AutopilotRun | null;
+}) {
+  const [busy, setBusy] = useState(false);
+  const status = autopilotRun?.status ?? 'idle';
+
+  const handlePlanAll = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (busy) return;
+    setBusy(true);
+    try { await api.autopilot.planAll(project.name); }
+    catch { /* silent */ }
+    finally { setBusy(false); }
+  };
+
+  const handleStart = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (busy) return;
+    setBusy(true);
+    try { await api.autopilot.start(project.name); }
+    catch { /* silent */ }
+    finally { setBusy(false); }
+  };
+
+  const handlePause = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (busy) return;
+    setBusy(true);
+    try { await api.autopilot.pause(project.name); }
+    catch { /* silent */ }
+    finally { setBusy(false); }
+  };
+
+  const handleResume = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (busy) return;
+    setBusy(true);
+    try { await api.autopilot.resume(project.name); }
+    catch { /* silent */ }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="px-4 pb-3 pt-1 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
+      {/* Plan All — always visible unless running */}
+      {(status === 'idle' || status === 'completed' || status === 'failed') ? (
+        <button
+          onClick={handlePlanAll}
+          disabled={busy}
+          className="text-[10px] px-2 py-1 rounded border border-border text-gray-500 hover:text-accent hover:border-accent/30 transition-colors disabled:opacity-40"
+        >
+          Plan All
+        </button>
+      ) : null}
+
+      {/* Run Autopilot / Pause / Resume */}
+      {(status === 'idle' || status === 'completed' || status === 'failed') ? (
+        <button
+          onClick={handleStart}
+          disabled={busy}
+          className="text-[10px] px-2 py-1 rounded border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-40"
+        >
+          {busy ? 'Starting…' : 'Run Autopilot'}
+        </button>
+      ) : status === 'running' ? (
+        <button
+          onClick={handlePause}
+          disabled={busy}
+          className="text-[10px] px-2 py-1 rounded border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 transition-colors disabled:opacity-40"
+        >
+          {busy ? '…' : 'Pause'}
+        </button>
+      ) : status === 'paused' ? (
+        <button
+          onClick={handleResume}
+          disabled={busy}
+          className="text-[10px] px-2 py-1 rounded border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors disabled:opacity-40"
+        >
+          {busy ? '…' : 'Resume'}
+        </button>
+      ) : null}
+
+      {/* Status indicator */}
+      {status === 'running' && autopilotRun?.currentPhaseNum != null && (
+        <span className="text-[10px] text-emerald-400 animate-pulse">
+          Phase {autopilotRun.currentPhaseNum}…
+        </span>
+      )}
+      {status === 'paused' && (
+        <span className="text-[10px] text-amber-400">Paused</span>
+      )}
+      {status === 'halted' && (
+        <span className="text-[10px] text-red-400">Circuit open</span>
+      )}
+    </div>
+  );
+}
+
 // ─── Project card ─────────────────────────────────────────────────────────────
 
 function ProjectCard({
-  project, onSelect, onOpenTerminal, onArchive, onUnarchive, onReopenTmux
+  project, onSelect, onOpenTerminal, onArchive, onUnarchive, onReopenTmux, autopilotRun
 }: {
   project: GsdProject;
   onSelect: (project: GsdProject) => void;
@@ -595,6 +697,7 @@ function ProjectCard({
   onArchive: () => void;
   onUnarchive: () => void;
   onReopenTmux: () => void;
+  autopilotRun: import('../lib/types').AutopilotRun | null;
 }) {
   const [reopening, setReopening] = useState(false);
   const { state } = project;
@@ -689,6 +792,11 @@ function ProjectCard({
         </div>
       )}
 
+      {/* Autopilot controls — non-archived projects only */}
+      {project.sessionState !== "archived" && (
+        <AutopilotControls project={project} autopilotRun={autopilotRun} />
+      )}
+
       {/* Archive / Unarchive button */}
       {project.sessionState !== "archived" ? (
         <div className="px-4 pb-3 pt-1" onClick={(e) => e.stopPropagation()}>
@@ -723,6 +831,7 @@ export function GSD() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProject, setSelectedProject] = useState<GsdProject | null>(null);
+  const [autopilotRuns, setAutopilotRuns] = useState<Map<string, import('../lib/types').AutopilotRun>>(new Map());
   const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
@@ -785,6 +894,26 @@ export function GSD() {
       if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
       if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
     };
+  }, []);
+
+  // Subscribe to autopilot_progress WS messages via eventBus
+  useEffect(() => {
+    const unsub = eventBus.subscribe((msg) => {
+      if (msg.type === 'autopilot_progress') {
+        const evt = msg.data as import('../lib/types').AutopilotProgressEvent;
+        setAutopilotRuns(prev => {
+          const next = new Map(prev);
+          next.set(evt.projectName, {
+            runId: evt.runId,
+            status: evt.status === 'completed' || evt.status === 'halted' ? evt.status : 'running',
+            currentPhaseNum: evt.phaseNum,
+            projectName: evt.projectName,
+          });
+          return next;
+        });
+      }
+    });
+    return unsub;
   }, []);
 
   // Live countdown for rate-limit reset
@@ -898,6 +1027,7 @@ export function GSD() {
                         onArchive={() => archiveProject(project.name)}
                         onUnarchive={() => unarchiveProject(project.name)}
                         onReopenTmux={() => load()}
+                        autopilotRun={autopilotRuns.get(project.name) ?? null}
                       />
                     ))
                   ) : (
