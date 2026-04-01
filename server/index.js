@@ -16,6 +16,7 @@ const analyticsRouter = require("./routes/analytics");
 const pricingRouter = require("./routes/pricing");
 const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
+const autopilotRouter = require("./routes/autopilot");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
 const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
@@ -27,6 +28,7 @@ function basicAuth(req, res, next) {
   if (req.path.startsWith("/mcp")) return next();
   if (req.path.startsWith("/api/hooks")) return next();
   if (req.path.startsWith("/api/gsd")) return next();
+  if (req.path.startsWith("/api/autopilot")) return next();
   if (req.path.startsWith("/api/sessions")) return next();
   if (req.path.startsWith("/api/agents")) return next();
   if (req.path.startsWith("/api/events")) return next();
@@ -65,6 +67,7 @@ function createApp() {
   app.use("/api/pricing", pricingRouter);
   app.use("/api/settings", settingsRouter);
   app.use("/api/gsd", gsdRouter);
+  app.use("/api/autopilot", autopilotRouter);
   app.use("/mcp", mcpRemote);
 
   app.get("/api/health", (_req, res) => {
