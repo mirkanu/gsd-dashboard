@@ -126,11 +126,17 @@ function detectSessionState(sessionName) {
   const output = capturePaneText(sessionName);
   if (output === null) return 'paused';
 
-  // Claude Code activity indicator — only present while Claude is actively processing.
-  // Matches the timer in the status line: "(4m 19s · ↓ 539 tokens" or "(30s · ↓"
-  // This takes priority over everything else: if the timer is visible, Claude is working.
-  if (/·\s*↓\s*[\d.]+/.test(output) || /·\s*thinking\)/.test(output)) {
-    return 'working';
+  // Claude Code activity indicators — only present while Claude is actively processing.
+  // timerPatterns covers all known Claude Code output variants showing active work.
+  const timerPatterns = [
+    /\(\s*\d+[ms]+\s*·\s*↓/,   // "(4m 19s · ↓" or "(30s · ↓"
+    /·\s*↓\s*[\d.]+/,           // "· ↓ 539" or "· ↓ 3.2" standalone
+    /·\s*↑\s*\d+.*·\s*↓/,      // "· ↑ 22 tokens · ↓ 539"
+    /\(\s*thinking\s*\)/,        // "(thinking)"
+    /·\s*thinking\)/,            // "· thinking)" existing variant
+  ];
+  for (const pattern of timerPatterns) {
+    if (pattern.test(output)) return 'working';
   }
 
   // Unambiguous waiting-for-input prompts (numbered selection, y/n, explicit prompts)
@@ -140,6 +146,7 @@ function detectSessionState(sessionName) {
     /\(y\/n\)/i,
     /Press Enter/i,
     /Select an option/i,
+    /^Choice\s+\(/mi,
   ];
   for (const pattern of waitingPatterns) {
     if (pattern.test(output)) return 'waiting';
@@ -149,4 +156,31 @@ function detectSessionState(sessionName) {
   return 'waiting';
 }
 
-module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit };
+/**
+ * Test hook: skip real tmux calls, run pattern logic on provided string.
+ * Used by server/__tests__/tmux.test.js to verify pattern coverage without tmux.
+ * @param {string} output
+ * @returns {'working'|'waiting'}
+ */
+function _testDetectFromOutput(output) {
+  const timerPatterns = [
+    /\(\s*\d+[ms]+\s*·\s*↓/,
+    /·\s*↓\s*[\d.]+/,
+    /·\s*↑\s*\d+.*·\s*↓/,
+    /\(\s*thinking\s*\)/,
+    /·\s*thinking\)/,
+  ];
+  const waitingPatterns = [
+    />\s+\d+\./,
+    /\[y\/n\]/i,
+    /\(y\/n\)/i,
+    /Press Enter/i,
+    /Select an option/i,
+    /^Choice\s+\(/mi,
+  ];
+  for (const p of timerPatterns) { if (p.test(output)) return 'working'; }
+  for (const p of waitingPatterns) { if (p.test(output)) return 'waiting'; }
+  return 'waiting';
+}
+
+module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, _testDetectFromOutput };
