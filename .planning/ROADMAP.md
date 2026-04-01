@@ -86,7 +86,7 @@
 **Milestone Goal:** Transform the dashboard from a monitoring tool into an autonomous execution controller with full cost visibility across all projects and services.
 
 - [x] **Phase 24: Waiting Accuracy + Safety Foundation** - Fix state detection and lay the database/backend groundwork required before any autopilot runs (completed 2026-04-01)
-- [ ] **Phase 25: Autopilot Core** - Autonomous plan-all → execute-all loop with circuit breaker, pause/resume, and real-time progress
+- [x] **Phase 25: Autopilot Core** - Autonomous plan-all → execute-all loop with circuit breaker, pause/resume, and real-time progress (completed 2026-04-01)
 - [ ] **Phase 26: Cost Intelligence** - Claude Max token tracking, external services cost page, visual alerts, and autopilot cost gate
 - [ ] **Phase 27: Card UX Polish** - GitHub issues links, Archive All, dynamic GSD shortcuts, message tab styling, and pause card
 
@@ -297,7 +297,7 @@ Plans:
 | 22. Mobile Terminal Fixes | v2.3 | 1/1 | Complete | 2026-03-30 |
 | 23. Task Textarea and MCP Server | v2.3 | 2/2 | Complete | 2026-03-30 |
 | 24. Waiting Accuracy + Safety Foundation | 2/2 | Complete    | 2026-04-01 | - |
-| 25. Autopilot Core | 2/3 | In Progress|  | - |
+| 25. Autopilot Core | 3/3 | Complete   | 2026-04-01 | - |
 | 26. Cost Intelligence | v3.0 | 0/3 | Not started | - |
 | 27. Card UX Polish | v3.0 | 0/3 | Not started | - |
 
