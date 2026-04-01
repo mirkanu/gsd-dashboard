@@ -28,8 +28,8 @@ Requirements for Autopilot & Cost Intelligence milestone. Each maps to roadmap p
 
 ### Card & State UX
 
-- [ ] **UX-01**: "Waiting" state accurately means waiting on human input — not agent-thinking or processing
-- [ ] **UX-02**: Card status refreshes automatically when terminal overlay is closed
+- [x] **UX-01**: "Waiting" state accurately means waiting on human input — not agent-thinking or processing
+- [x] **UX-02**: Card status refreshes automatically when terminal overlay is closed
 - [ ] **UX-03**: Project cards show link to GitHub issues for the project
 - [ ] **UX-04**: Task list suggests "Archive All" after using Copy
 - [ ] **UX-05**: Cards show dynamic shortcut to next recommended GSD command
@@ -76,8 +76,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COST-04 | Phase 26 | Pending |
 | COST-05 | Phase 26 | Pending |
 | COST-06 | Phase 26 | Pending |
-| UX-01 | Phase 24 | Pending |
-| UX-02 | Phase 24 | Pending |
+| UX-01 | Phase 24 | Complete |
+| UX-02 | Phase 24 | Complete |
 | UX-03 | Phase 27 | Pending |
 | UX-04 | Phase 27 | Pending |
 | UX-05 | Phase 27 | Pending |

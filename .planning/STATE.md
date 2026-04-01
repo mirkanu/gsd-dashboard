@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Autopilot & Cost Intelligence
-status: planning
-stopped_at: Completed 24-02-PLAN.md
-last_updated: "2026-04-01T08:50:10.275Z"
-last_activity: 2026-04-01 — v3.0 roadmap created, ready to plan Phase 24
+status: executing
+stopped_at: Completed 24-01-PLAN.md
+last_updated: "2026-04-01T08:56:04.228Z"
+last_activity: "2026-04-01 — Completed 24-02: SQLite schema, CircuitBreaker, processSpawner"
 progress:
   total_phases: 13
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 17
-  completed_plans: 14
-  percent: 0
+  completed_plans: 15
+  percent: 82
 ---
 
 # Project State
@@ -54,6 +54,8 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [quick-9]: Use selectModeRef (not selectMode state) inside event handlers to avoid stale closure
 - [Phase 24-02]: CircuitBreaker uses injected db param for test isolation (cleaner than module mocking)
 - [Phase 24-02]: processSpawner inserts process_registry record BEFORE spawning — guarantees record exists on immediate crash
+- [Phase 24]: _testDetectFromOutput pattern: test hook exported from tmux.js skips I/O, tests pure regex logic without mocking execFileSync
+- [Phase 24]: Polling burst pattern: setInterval+setTimeout combo in GSD.tsx onClose refreshes card state within 2s of terminal close without full page reload
 
 ### v3.0 Key Constraints (from research)
 
@@ -77,7 +79,7 @@ None at roadmap stage. Research flags to address in planning:
 
 ## Session Continuity
 
-Last session: 2026-04-01T08:50:10.269Z
-Stopped at: Completed 24-02-PLAN.md
+Last session: 2026-04-01T08:56:04.225Z
+Stopped at: Completed 24-01-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 24
