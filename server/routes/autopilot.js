@@ -15,7 +15,27 @@
  */
 
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const { AutopilotManager } = require('../autopilot/AutopilotManager');
+const { readState } = require('../gsd/readers');
+
+/**
+ * Resolve projectName → { root, startPhase, totalPhases } from gsd-projects.json + STATE.md.
+ */
+function resolveProject(projectName) {
+  const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../../gsd-projects.json');
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  const project = config.projects?.find((p) => p.name === projectName);
+  if (!project) return null;
+
+  const root = project.root;
+  const state = readState(root);
+  const currentPhase = parseInt(state?.current_phase, 10) || 1;
+  const totalPhases = state?.progress?.total_phases || currentPhase;
+
+  return { root, startPhase: currentPhase, totalPhases };
+}
 
 const router = express.Router();
 
@@ -77,8 +97,17 @@ router.post('/start', async (req, res) => {
   }
 
   try {
+    const projectInfo = resolveProject(projectName);
+    if (!projectInfo) {
+      return res.status(404).json({ error: `Project not found in gsd-projects.json: ${projectName}` });
+    }
     const manager = _managerFactory();
-    const { runId } = await manager.start(projectName, { runType: mode || 'execute' });
+    const { runId } = await manager.start(projectName, {
+      runType: mode || 'execute',
+      projectRoot: projectInfo.root,
+      startPhase: projectInfo.startPhase,
+      totalPhases: projectInfo.totalPhases,
+    });
     runRegistry.set(projectName, { manager, runId });
     return res.json({ runId, status: 'running' });
   } catch (err) {
@@ -190,8 +219,17 @@ router.post('/plan-all', async (req, res) => {
   }
 
   try {
+    const projectInfo = resolveProject(projectName);
+    if (!projectInfo) {
+      return res.status(404).json({ error: `Project not found in gsd-projects.json: ${projectName}` });
+    }
     const manager = _managerFactory();
-    const { runId } = await manager.start(projectName, { runType: 'plan-all' });
+    const { runId } = await manager.start(projectName, {
+      runType: 'plan-all',
+      projectRoot: projectInfo.root,
+      startPhase: projectInfo.startPhase,
+      totalPhases: projectInfo.totalPhases,
+    });
     runRegistry.set(projectName, { manager, runId });
     return res.json({ runId, status: 'running' });
   } catch (err) {
