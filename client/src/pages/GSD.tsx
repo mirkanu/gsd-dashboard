@@ -597,6 +597,7 @@ function AutopilotControls({ project, autopilotRun }: {
   const handlePlanAll = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (busy) return;
+    if (!window.confirm(`Plan all remaining phases for "${project.name}"?`)) return;
     setBusy(true);
     try { await api.autopilot.planAll(project.name); }
     catch { /* silent */ }
@@ -606,6 +607,7 @@ function AutopilotControls({ project, autopilotRun }: {
   const handleStart = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (busy) return;
+    if (!window.confirm(`Start autopilot for "${project.name}"? This will plan and execute all remaining phases automatically.`)) return;
     setBusy(true);
     try { await api.autopilot.start(project.name); }
     catch { /* silent */ }
