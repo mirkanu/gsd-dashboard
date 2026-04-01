@@ -9,13 +9,13 @@ Requirements for Autopilot & Cost Intelligence milestone. Each maps to roadmap p
 
 ### Autopilot
 
-- [ ] **AUTO-01**: User can trigger "Plan All Phases" to batch-plan remaining phases for a project
-- [ ] **AUTO-02**: User can launch autonomous execution that chains plan → execute → verify per phase
-- [ ] **AUTO-03**: User can pause autopilot from the dashboard (stops at next safe point)
-- [ ] **AUTO-04**: User can resume a paused autopilot run
+- [x] **AUTO-01**: User can trigger "Plan All Phases" to batch-plan remaining phases for a project
+- [x] **AUTO-02**: User can launch autonomous execution that chains plan → execute → verify per phase
+- [x] **AUTO-03**: User can pause autopilot from the dashboard (stops at next safe point)
+- [x] **AUTO-04**: User can resume a paused autopilot run
 - [x] **AUTO-05**: Autopilot stops automatically after 3 consecutive failures on same phase (circuit breaker)
-- [ ] **AUTO-06**: Failed phases extract failure context and retry with adjusted approach (failure learning)
-- [ ] **AUTO-07**: Autopilot displays real-time progress (current phase, task, elapsed time) via WebSocket
+- [x] **AUTO-06**: Failed phases extract failure context and retry with adjusted approach (failure learning)
+- [x] **AUTO-07**: Autopilot displays real-time progress (current phase, task, elapsed time) via WebSocket
 
 ### Cost Intelligence
 
@@ -63,13 +63,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTO-01 | Phase 25 | Pending |
-| AUTO-02 | Phase 25 | Pending |
-| AUTO-03 | Phase 25 | Pending |
-| AUTO-04 | Phase 25 | Pending |
+| AUTO-01 | Phase 25 | Complete |
+| AUTO-02 | Phase 25 | Complete |
+| AUTO-03 | Phase 25 | Complete |
+| AUTO-04 | Phase 25 | Complete |
 | AUTO-05 | Phase 24 | Complete |
-| AUTO-06 | Phase 25 | Pending |
-| AUTO-07 | Phase 25 | Pending |
+| AUTO-06 | Phase 25 | Complete |
+| AUTO-07 | Phase 25 | Complete |
 | COST-01 | Phase 26 | Pending |
 | COST-02 | Phase 26 | Pending |
 | COST-03 | Phase 26 | Pending |
