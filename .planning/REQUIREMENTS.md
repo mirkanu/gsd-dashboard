@@ -1,76 +1,61 @@
 # Requirements: GSD Dashboard
 
-**Defined:** 2026-03-28
+**Defined:** 2026-04-01
 **Core Value:** At a glance, see where every GSD project stands and interact with any session
 
-## v2.2 Requirements (Complete)
+## v3.0 Requirements
 
-### Data Storage
+Requirements for Autopilot & Cost Intelligence milestone. Each maps to roadmap phases.
 
-- [x] **STORE-01**: SQLite table `project_tasks` stores tasks with id, project_key, title, description, archived flag, and created_at timestamp
-- [x] **STORE-02**: API endpoint creates a task for a given project (POST /api/gsd/projects/:key/tasks)
-- [x] **STORE-03**: API endpoint lists tasks for a project with archived filter (GET /api/gsd/projects/:key/tasks)
-- [x] **STORE-04**: API endpoint updates a task's title, description, or archived status (PATCH /api/gsd/projects/:key/tasks/:id)
+### Autopilot
 
-### Task UI
+- [ ] **AUTO-01**: User can trigger "Plan All Phases" to batch-plan remaining phases for a project
+- [ ] **AUTO-02**: User can launch autonomous execution that chains plan → execute → verify per phase
+- [ ] **AUTO-03**: User can pause autopilot from the dashboard (stops at next safe point)
+- [ ] **AUTO-04**: User can resume a paused autopilot run
+- [ ] **AUTO-05**: Autopilot stops automatically after 3 consecutive failures on same phase (circuit breaker)
+- [ ] **AUTO-06**: Failed phases extract failure context and retry with adjusted approach (failure learning)
+- [ ] **AUTO-07**: Autopilot displays real-time progress (current phase, task, elapsed time) via WebSocket
 
-- [x] **UI-01**: Tasks tab appears as the first tab in the project drawer (before Message and GSD file tabs)
-- [x] **UI-02**: User can add a task with a required title and optional description
-- [x] **UI-03**: User can view list of open tasks for a project
-- [x] **UI-04**: User can archive a task from the task list
-- [x] **UI-05**: User can toggle to view archived tasks and unarchive them
+### Cost Intelligence
 
-### Clipboard Export
+- [ ] **COST-01**: Dashboard tracks Claude Max session usage (tokens consumed vs limit)
+- [ ] **COST-02**: Dashboard tracks Claude Max weekly usage with projected burn rate
+- [ ] **COST-03**: Visual alerts at 80% (yellow) and 95% (red) of usage limits
+- [ ] **COST-04**: Autopilot auto-pauses when usage reaches configurable threshold
+- [ ] **COST-05**: External services page shows status and cost for Railway, GitHub, Claude, OpenAI, and other configured services
+- [ ] **COST-06**: Per-project cost badges visible on project cards
 
-- [x] **CLIP-01**: "Copy all" button formats all open tasks as markdown and copies to clipboard
-- [x] **CLIP-02**: Copied format uses `- **Title** — description` per task, ready for GSD consumption
+### Card & State UX
 
-## v2.3 Requirements
+- [ ] **UX-01**: "Waiting" state accurately means waiting on human input — not agent-thinking or processing
+- [ ] **UX-02**: Card status refreshes automatically when terminal overlay is closed
+- [ ] **UX-03**: Project cards show link to GitHub issues for the project
+- [ ] **UX-04**: Task list suggests "Archive All" after using Copy
+- [ ] **UX-05**: Cards show dynamic shortcut to next recommended GSD command
+- [ ] **UX-06**: User can pause a project card (defined pause state with visual indicator)
+- [ ] **UX-07**: Messages tab distinguishes Claude vs human messages with different background colors and alignment
 
-Requirements for milestone v2.3 — UX Polish & Claude Desktop. Each maps to roadmap phases.
+## v3.1 Requirements
 
-### Card UX
+Deferred to future release. Tracked but not in current roadmap.
 
-- [x] **CARD-01**: User can click a state box (Working/Waiting/Paused/Archived) to filter the project grid to only that state's cards
-- [x] **CARD-02**: Dashboard defaults to showing Waiting cards on load
-- [x] **CARD-03**: A "Show All" button displays all non-archived projects regardless of state filter
-- [x] **CARD-04**: Project cards show only: project name, state indicator, status badges, live URL, and Open Terminal — stats, progress, next action, and blockers are removed from the card face
+### Advanced Automation
 
-### Mobile Terminal
-
-- [x] **MOB-01**: Terminal overlay touch scroll speed is reduced to a comfortable level (mobile only)
-- [x] **MOB-02**: iOS keyboard opening does not cause the viewport to zoom (mobile only, applies globally)
-- [x] **MOB-03**: Tapping special key buttons (Esc, arrows, etc) in the terminal does not shift focus or scroll position (mobile only)
-
-### Task UX
-
-- [x] **TASK-01**: Task description field is a multi-line textarea that auto-grows as content increases, with a max height limit
-
-### Integration
-
-- [x] **MCP-01**: An MCP server exposes .planning/ files (PROJECT.md, STATE.md, ROADMAP.md, REQUIREMENTS.md) for all tracked GSD projects so Claude Desktop can read them
-
-## Future Requirements
-
-Deferred to v3.0+.
-
-### Project Creation
-
-- **CREATE-01**: User can create a new GSD project from the dashboard
-- **CREATE-02**: Dashboard creates directory and tmux session for new project
-- **CREATE-03**: Dashboard launches Claude with /gsd:new-project in new session
-- **CREATE-04**: New project card appears immediately without refresh
+- **ADV-01**: Email receipt parsing pipeline for automated cost ingestion from forwarded invoices
+- **ADV-02**: Per-project cost budgets with automatic enforcement
+- **ADV-03**: New project creation: one-click directory + tmux + Claude launch from dashboard
+- **ADV-04**: Predictive cost estimates based on historical phase data
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Task due dates / priorities | Overkill for simple notes; GSD handles prioritization |
-| Drag-and-drop reordering | Complexity not justified |
-| Task assignments | Single developer tool |
-| Cross-project task views | Per-project scope is sufficient |
-| Rich text editing | Markdown plain text is sufficient |
-| Moved card info (stats/progress) to drawer | Removed from cards, not relocated — viewable via GSD file tabs |
+| Auto-fix forever (unlimited retries) | Masks real blockers, wastes tokens — circuit breaker is safer |
+| Auto-downgrade model on cost limit | Quality drops unpredictably — better to pause and alert |
+| Predict phase completion time | Non-deterministic AI execution makes time estimates unreliable |
+| Multi-user auth | Single developer tool |
+| Pause entire project hierarchy | Complex state management, high risk for low value |
 
 ## Traceability
 
@@ -78,32 +63,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STORE-01 | Phase 17 | Complete |
-| STORE-02 | Phase 17 | Complete |
-| STORE-03 | Phase 17 | Complete |
-| STORE-04 | Phase 17 | Complete |
-| UI-01 | Phase 18 | Complete |
-| UI-02 | Phase 18 | Complete |
-| UI-03 | Phase 18 | Complete |
-| UI-04 | Phase 18 | Complete |
-| UI-05 | Phase 18 | Complete |
-| CLIP-01 | Phase 19 | Complete |
-| CLIP-02 | Phase 19 | Complete |
-| CARD-01 | Phase 21 | Complete |
-| CARD-02 | Phase 21 | Complete |
-| CARD-03 | Phase 21 | Complete |
-| CARD-04 | Phase 21 | Complete |
-| MOB-01 | Phase 22 | Complete |
-| MOB-02 | Phase 22 | Complete |
-| MOB-03 | Phase 22 | Complete |
-| TASK-01 | Phase 23 | Complete |
-| MCP-01 | Phase 23 | Complete |
+| AUTO-01 | TBD | Pending |
+| AUTO-02 | TBD | Pending |
+| AUTO-03 | TBD | Pending |
+| AUTO-04 | TBD | Pending |
+| AUTO-05 | TBD | Pending |
+| AUTO-06 | TBD | Pending |
+| AUTO-07 | TBD | Pending |
+| COST-01 | TBD | Pending |
+| COST-02 | TBD | Pending |
+| COST-03 | TBD | Pending |
+| COST-04 | TBD | Pending |
+| COST-05 | TBD | Pending |
+| COST-06 | TBD | Pending |
+| UX-01 | TBD | Pending |
+| UX-02 | TBD | Pending |
+| UX-03 | TBD | Pending |
+| UX-04 | TBD | Pending |
+| UX-05 | TBD | Pending |
+| UX-06 | TBD | Pending |
+| UX-07 | TBD | Pending |
 
 **Coverage:**
-- v2.3 requirements: 9 total
-- Mapped to phases: 9
-- Unmapped: 0 ✓
+- v3.0 requirements: 20 total
+- Mapped to phases: 0
+- Unmapped: 20
 
 ---
-*Requirements defined: 2026-03-28*
-*Last updated: 2026-03-30 after v2.3 roadmap creation (Phases 21-23)*
+*Requirements defined: 2026-04-01*
+*Last updated: 2026-04-01 after initial definition*
