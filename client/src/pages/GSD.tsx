@@ -727,6 +727,8 @@ export function GSD() {
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
   const [terminalInitialValue, setTerminalInitialValue] = useState<string>("");
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const TAB_TITLES: Record<string, string> = {
     messages: "Messages",
@@ -776,6 +778,14 @@ export function GSD() {
     const interval = setInterval(() => load(), 30_000);
     return () => clearInterval(interval);
   }, [load]);
+
+  // Cleanup polling burst refs on unmount (UX-02)
+  useEffect(() => {
+    return () => {
+      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+    };
+  }, []);
 
   // Live countdown for rate-limit reset
   const [rateLimitCountdown, setRateLimitCountdown] = useState<string | null>(null);
@@ -920,7 +930,22 @@ export function GSD() {
         <TerminalOverlay
           projectName={terminalProject}
           wsBase={terminalWsBase}
-          onClose={() => { setTerminalProject(null); setTerminalInitialValue(""); load(); }}
+          onClose={() => {
+            setTerminalProject(null);
+            setTerminalInitialValue("");
+            // Polling burst: refresh card state every 500ms for 2s after terminal closes.
+            // This ensures the card badge (Working/Waiting/Paused) reflects the actual
+            // post-close state within the same interaction, not the next 30s poll.
+            if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
+            if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+            refreshIntervalRef.current = setInterval(() => load(false), 500);
+            refreshTimeoutRef.current = setTimeout(() => {
+              if (refreshIntervalRef.current) {
+                clearInterval(refreshIntervalRef.current);
+                refreshIntervalRef.current = null;
+              }
+            }, 2000);
+          }}
           initialSendValue={terminalInitialValue}
         />
       )}
