@@ -128,6 +128,64 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_project_tasks_key ON project_tasks(project_key, archived);
 `);
 
+// Migration: add autopilot/cost tables (Phase 24)
+try {
+  db.prepare("SELECT 1 FROM autopilot_runs LIMIT 1").get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS autopilot_runs (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      started_at TEXT NOT NULL,
+      ended_at TEXT,
+      status TEXT NOT NULL DEFAULT 'running' CHECK(status IN ('running','paused','completed','failed')),
+      failure_count INTEGER NOT NULL DEFAULT 0,
+      last_failed_phase_num INTEGER,
+      pause_reason TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS process_registry (
+      id TEXT PRIMARY KEY,
+      run_id TEXT,
+      command TEXT NOT NULL,
+      args TEXT,
+      pid INTEGER,
+      exit_code INTEGER,
+      started_at TEXT NOT NULL,
+      ended_at TEXT,
+      stdout TEXT,
+      stderr TEXT,
+      FOREIGN KEY (run_id) REFERENCES autopilot_runs(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS claude_api_usage (
+      id TEXT PRIMARY KEY,
+      run_id TEXT NOT NULL,
+      model TEXT NOT NULL,
+      input_tokens INTEGER NOT NULL DEFAULT 0,
+      output_tokens INTEGER NOT NULL DEFAULT 0,
+      cost_usd REAL NOT NULL DEFAULT 0,
+      recorded_at TEXT NOT NULL,
+      FOREIGN KEY (run_id) REFERENCES autopilot_runs(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS external_service_costs (
+      id TEXT PRIMARY KEY,
+      service TEXT NOT NULL,
+      cost_period TEXT NOT NULL DEFAULT 'monthly',
+      cost_usd REAL NOT NULL DEFAULT 0,
+      checked_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_autopilot_runs_project ON autopilot_runs(project_id);
+    CREATE INDEX IF NOT EXISTS idx_autopilot_runs_status ON autopilot_runs(status);
+    CREATE INDEX IF NOT EXISTS idx_process_registry_run ON process_registry(run_id);
+    CREATE INDEX IF NOT EXISTS idx_process_registry_pid ON process_registry(pid);
+    CREATE INDEX IF NOT EXISTS idx_claude_api_usage_run ON claude_api_usage(run_id);
+    CREATE INDEX IF NOT EXISTS idx_service_costs_service ON external_service_costs(service);
+  `);
+}
+
 // Seed default model pricing if table is empty
 const pricingCount = db.prepare("SELECT COUNT(*) as c FROM model_pricing").get();
 if (pricingCount.c === 0) {
@@ -264,6 +322,17 @@ db.prepare(
     AND session_id IN (SELECT id FROM sessions WHERE status IN ('completed', 'error', 'abandoned'))
 `
 ).run();
+
+// Startup cleanup: mark orphaned process_registry entries as exited (exit_code -1)
+// Protects against processes that started but never updated their exit code (crash/restart)
+try {
+  db.prepare(`
+    UPDATE process_registry
+    SET exit_code = -1, ended_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+    WHERE exit_code IS NULL
+      AND started_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-1 hour')
+  `).run();
+} catch { /* autopilot tables may not exist on very first boot */ }
 
 const stmts = {
   getSession: db.prepare("SELECT * FROM sessions WHERE id = ?"),
@@ -473,5 +542,32 @@ const stmts = {
      RETURNING *`
   ),
 };
+
+// Autopilot prepared statements (Phase 24)
+// Wrapped in try/catch: tables are created by migration above, but guard against
+// edge cases where migration may not have run (e.g. first boot on very old schema)
+try {
+  stmts.insertAutopilotRun = db.prepare(
+    'INSERT INTO autopilot_runs (id, project_id, started_at, status) VALUES (?, ?, ?, ?)'
+  );
+  stmts.getAutopilotRun = db.prepare('SELECT * FROM autopilot_runs WHERE id = ?');
+  stmts.updateAutopilotRunFailure = db.prepare(
+    'UPDATE autopilot_runs SET failure_count = ?, last_failed_phase_num = ? WHERE id = ?'
+  );
+  stmts.resetAutopilotRunFailure = db.prepare(
+    'UPDATE autopilot_runs SET failure_count = 0, pause_reason = NULL WHERE id = ?'
+  );
+  stmts.insertProcessRegistry = db.prepare(
+    'INSERT INTO process_registry (id, run_id, command, args, started_at) VALUES (?, ?, ?, ?, ?)'
+  );
+  stmts.updateProcessRegistryPid = db.prepare(
+    'UPDATE process_registry SET pid = ? WHERE id = ?'
+  );
+  stmts.updateProcessRegistryExit = db.prepare(
+    'UPDATE process_registry SET exit_code = ?, ended_at = ? WHERE id = ?'
+  );
+} catch (e) {
+  console.error('[db] Failed to prepare autopilot statements:', e.message);
+}
 
 module.exports = { db, stmts, DB_PATH };
