@@ -225,12 +225,12 @@ Plans:
   3. Clicking "Pause" on an active autopilot run stops the loop at the next safe point (end of current phase) and shows "Paused" on the card
   4. Clicking "Resume" on a paused run restarts the loop from the next pending phase
   5. When a phase fails, the autopilot stores the failure context, adjusts the retry prompt, and attempts the phase again before counting it as a failure toward the circuit breaker limit
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 25-01: AutopilotManager class — watchLoop, STATE.md monitoring, phase chaining, failure learning
-- [ ] 25-02: Autopilot API routes — /api/autopilot/start, /pause, /resume, /status
-- [ ] 25-03: Autopilot UI — Plan All button, Run Autopilot button, pause/resume controls, real-time progress display on cards
+- [ ] 25-01-PLAN.md — AutopilotManager class: watchLoop, STATE.md monitoring, phase chaining, failure learning
+- [ ] 25-02-PLAN.md — Autopilot API routes: /api/autopilot/start, /pause, /resume, /status, /plan-all
+- [ ] 25-03-PLAN.md — Autopilot UI: Plan All + Run Autopilot buttons, pause/resume controls, real-time card progress
 
 ### Phase 26: Cost Intelligence
 **Goal**: Users can see real-time Claude Max token consumption and external service costs, and autopilot is gated by configurable cost limits
