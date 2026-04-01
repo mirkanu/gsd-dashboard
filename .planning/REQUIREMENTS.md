@@ -13,7 +13,7 @@ Requirements for Autopilot & Cost Intelligence milestone. Each maps to roadmap p
 - [ ] **AUTO-02**: User can launch autonomous execution that chains plan → execute → verify per phase
 - [ ] **AUTO-03**: User can pause autopilot from the dashboard (stops at next safe point)
 - [ ] **AUTO-04**: User can resume a paused autopilot run
-- [ ] **AUTO-05**: Autopilot stops automatically after 3 consecutive failures on same phase (circuit breaker)
+- [x] **AUTO-05**: Autopilot stops automatically after 3 consecutive failures on same phase (circuit breaker)
 - [ ] **AUTO-06**: Failed phases extract failure context and retry with adjusted approach (failure learning)
 - [ ] **AUTO-07**: Autopilot displays real-time progress (current phase, task, elapsed time) via WebSocket
 
@@ -67,7 +67,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTO-02 | Phase 25 | Pending |
 | AUTO-03 | Phase 25 | Pending |
 | AUTO-04 | Phase 25 | Pending |
-| AUTO-05 | Phase 24 | Pending |
+| AUTO-05 | Phase 24 | Complete |
 | AUTO-06 | Phase 25 | Pending |
 | AUTO-07 | Phase 25 | Pending |
 | COST-01 | Phase 26 | Pending |

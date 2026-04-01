@@ -296,7 +296,7 @@ Plans:
 | 21. Card UX Simplification | v2.3 | 2/2 | Complete | 2026-03-30 |
 | 22. Mobile Terminal Fixes | v2.3 | 1/1 | Complete | 2026-03-30 |
 | 23. Task Textarea and MCP Server | v2.3 | 2/2 | Complete | 2026-03-30 |
-| 24. Waiting Accuracy + Safety Foundation | v3.0 | 0/2 | Not started | - |
+| 24. Waiting Accuracy + Safety Foundation | 1/2 | In Progress|  | - |
 | 25. Autopilot Core | v3.0 | 0/3 | Not started | - |
 | 26. Cost Intelligence | v3.0 | 0/3 | Not started | - |
 | 27. Card UX Polish | v3.0 | 0/3 | Not started | - |
