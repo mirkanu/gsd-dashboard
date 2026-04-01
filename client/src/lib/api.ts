@@ -157,6 +157,31 @@ export const api = {
     },
   },
 
+  autopilot: {
+    start: (projectName: string, mode: 'execute' | 'plan-all' = 'execute') =>
+      request<{ runId: string; status: string }>('/autopilot/start', {
+        method: 'POST',
+        body: JSON.stringify({ projectName, mode }),
+      }),
+    pause: (projectName: string) =>
+      request<{ ok: boolean }>('/autopilot/pause', {
+        method: 'POST',
+        body: JSON.stringify({ projectName }),
+      }),
+    resume: (projectName: string) =>
+      request<{ ok: boolean }>('/autopilot/resume', {
+        method: 'POST',
+        body: JSON.stringify({ projectName }),
+      }),
+    status: (projectName: string) =>
+      request<import('./types').AutopilotRun>(`/autopilot/status/${encodeURIComponent(projectName)}`),
+    planAll: (projectName: string) =>
+      request<{ runId: string; status: string }>('/autopilot/plan-all', {
+        method: 'POST',
+        body: JSON.stringify({ projectName }),
+      }),
+  },
+
   pricing: {
     list: () => request<{ pricing: ModelPricing[] }>("/pricing"),
     upsert: (data: Omit<ModelPricing, "updated_at">) =>
