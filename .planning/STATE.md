@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Autopilot & Cost Intelligence
 status: executing
-stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-04-01T12:54:27.493Z"
+stopped_at: Completed 25-03-PLAN.md
+last_updated: "2026-04-01T13:08:01.442Z"
 last_activity: "2026-04-01 — Completed 25-02: Autopilot REST routes + AutopilotManager.getStatus()"
 progress:
   total_phases: 13
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 20
-  completed_plans: 17
+  completed_plans: 18
   percent: 85
 ---
 
@@ -61,6 +61,8 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 25]: runRegistry Map pattern (projectName → entry) enforces one active run per project with 409 on duplicate start
 - [Phase 25]: Test hook exports on router object (_setManagerFactory, _clearRun) avoid module mocking for DI in route tests
 - [Phase 25]: getStatus() reads DB status for accuracy, falls back to in-memory flags
+- [Phase 25]: eventBus.subscribe() used in GSD.tsx for autopilot_progress WS messages — consistent with App.tsx publish pattern, avoids duplicate WS connections
+- [Phase 25]: autopilot_progress 'planning'/'executing' statuses mapped to 'running' in client AutopilotControls — simpler states for button visibility logic
 
 ### v3.0 Key Constraints (from research)
 
@@ -84,7 +86,7 @@ None at roadmap stage. Research flags to address in planning:
 
 ## Session Continuity
 
-Last session: 2026-04-01T12:54:27.490Z
-Stopped at: Completed 25-02-PLAN.md
+Last session: 2026-04-01T13:08:01.437Z
+Stopped at: Completed 25-03-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 24
