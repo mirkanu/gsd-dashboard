@@ -209,11 +209,11 @@ Plans:
   3. SQLite contains the four new tables (autopilot_runs, claude_api_usage, external_service_costs, process_registry) and all migration scripts run cleanly
   4. The autopilot backend can spawn a GSD command detached from the Express event loop and return a job ID immediately — no blocking
   5. The circuit breaker logic halts a simulated autopilot run after 3 consecutive failures on the same phase and marks the run as paused
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 24-01: Waiting state accuracy fix — improve tmux capture-pane pattern matching, add refresh-on-terminal-close
-- [ ] 24-02: Safety foundation — SQLite schema migrations, detached process spawning, process registry, circuit breaker class
+- [ ] 24-01-PLAN.md — Waiting state accuracy: refined tmux timer patterns + terminal close auto-refresh
+- [ ] 24-02-PLAN.md — Safety foundation: SQLite autopilot schema + CircuitBreaker class + processSpawner
 
 ### Phase 25: Autopilot Core
 **Goal**: Users can launch and control an autonomous plan-all → execute-all loop for any project from the dashboard
