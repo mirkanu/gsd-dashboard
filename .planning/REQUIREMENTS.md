@@ -63,32 +63,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTO-01 | TBD | Pending |
-| AUTO-02 | TBD | Pending |
-| AUTO-03 | TBD | Pending |
-| AUTO-04 | TBD | Pending |
-| AUTO-05 | TBD | Pending |
-| AUTO-06 | TBD | Pending |
-| AUTO-07 | TBD | Pending |
-| COST-01 | TBD | Pending |
-| COST-02 | TBD | Pending |
-| COST-03 | TBD | Pending |
-| COST-04 | TBD | Pending |
-| COST-05 | TBD | Pending |
-| COST-06 | TBD | Pending |
-| UX-01 | TBD | Pending |
-| UX-02 | TBD | Pending |
-| UX-03 | TBD | Pending |
-| UX-04 | TBD | Pending |
-| UX-05 | TBD | Pending |
-| UX-06 | TBD | Pending |
-| UX-07 | TBD | Pending |
+| AUTO-01 | Phase 25 | Pending |
+| AUTO-02 | Phase 25 | Pending |
+| AUTO-03 | Phase 25 | Pending |
+| AUTO-04 | Phase 25 | Pending |
+| AUTO-05 | Phase 24 | Pending |
+| AUTO-06 | Phase 25 | Pending |
+| AUTO-07 | Phase 25 | Pending |
+| COST-01 | Phase 26 | Pending |
+| COST-02 | Phase 26 | Pending |
+| COST-03 | Phase 26 | Pending |
+| COST-04 | Phase 26 | Pending |
+| COST-05 | Phase 26 | Pending |
+| COST-06 | Phase 26 | Pending |
+| UX-01 | Phase 24 | Pending |
+| UX-02 | Phase 24 | Pending |
+| UX-03 | Phase 27 | Pending |
+| UX-04 | Phase 27 | Pending |
+| UX-05 | Phase 27 | Pending |
+| UX-06 | Phase 27 | Pending |
+| UX-07 | Phase 27 | Pending |
 
 **Coverage:**
 - v3.0 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20
+- Mapped to phases: 20
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-01 after initial definition*
+*Last updated: 2026-04-01 — traceability complete after roadmap creation*
