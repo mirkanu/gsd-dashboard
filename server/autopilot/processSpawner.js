@@ -57,14 +57,23 @@ async function spawnGsdCommand(projectName, gsdCommand, options = {}) {
     ? `${gsdCommand} ${args.join(' ')}`
     : gsdCommand;
 
+  // Use -l to send the command as literal text (preserves spaces),
+  // then send Enter as a separate key name
   const child = spawnFn(
     'tmux',
-    ['send-keys', '-t', project.tmux_session, fullCommand, 'Enter'],
+    ['send-keys', '-t', project.tmux_session, '-l', fullCommand],
     {
       detached: true,
       stdio: 'ignore',
       cwd: project.root || process.cwd(),
     }
+  );
+
+  // Send Enter separately (key name, not literal)
+  spawnFn(
+    'tmux',
+    ['send-keys', '-t', project.tmux_session, 'Enter'],
+    { detached: true, stdio: 'ignore' }
   );
 
   // Record PID if the process provided one
