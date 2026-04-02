@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 Phase: 25 of 27 (Autopilot Core)
 Plan: 2 of 3 in current phase (1 plan remaining)
 Status: In progress — Phase 25 plans 01+02 done, plan 03 remaining
-Last activity: 2026-04-01 — Completed 25-02: Autopilot REST routes + AutopilotManager.getStatus()
+Last activity: 2026-04-02 — Completed quick-12: Fix autopilot command delivery (waitForIdle, error feedback)
 
-Progress: [█████████░] 85% (v3.0: 3/11 plans)
+Progress: [█████████░] 85% (v3.0: 8/11 plans)
 
 ## Performance Metrics
 
@@ -84,6 +84,12 @@ None at roadmap stage. Research flags to address in planning:
 - Verify `/gsd:plan-all` command syntax before Phase 25 implementation
 - Verify Anthropic Admin API rate limits via test call before Phase 26 implementation
 - Confirm STATE.md completion marker across 3+ projects before Phase 25 watchLoop
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 12 | Fix autopilot command delivery: waitForIdle, toast errors, error state on cards | 2026-04-02 | d6b81d4 | [12-fix-autopilot-command-delivery-waitforid](./quick/12-fix-autopilot-command-delivery-waitforid/) |
 
 ## Session Continuity
 
