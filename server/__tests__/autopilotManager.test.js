@@ -168,7 +168,7 @@ test('autopilot.manager: resume() resets CircuitBreaker and clears paused flag',
 test('autopilot.manager: failed phase triggers retry once before calling recordFailure', async () => {
   const db = makeTestDb();
 
-  // spawnFn tracks calls — first call is initial spawn, second is retry
+  // spawnFn tracks calls — first call is initial spawn (after confirm), second is retry
   let spawnCallCount = 0;
   const spawnFn = (_projectName, _cmd, _opts) => {
     spawnCallCount++;
@@ -207,8 +207,12 @@ test('autopilot.manager: failed phase triggers retry once before calling recordF
 
   await manager.start('test-project', { startPhase: 1, totalPhases: 3 });
 
-  // Wait for a few poll ticks then stop
-  await new Promise(resolve => setTimeout(resolve, 50));
+  // Wait for pending_confirmation to be broadcast, then confirm
+  await new Promise(resolve => setTimeout(resolve, 15));
+  manager.confirmSpawn(); // user confirms the spawn
+
+  // Wait for a few more poll ticks then stop
+  await new Promise(resolve => setTimeout(resolve, 60));
   manager.stop();
 
   // Spawn should have been called at least twice (initial + retry)
@@ -251,6 +255,10 @@ test('autopilot.manager: when CircuitBreaker opens, loop broadcasts autopilot_ha
   });
 
   const { runId } = await manager.start('test-project', { startPhase: 1, totalPhases: 3 });
+
+  // Wait for pending_confirmation to be broadcast, then confirm
+  await new Promise(resolve => setTimeout(resolve, 15));
+  manager.confirmSpawn(); // user confirms the spawn
 
   // Give loop time to detect failure and halt
   await new Promise(resolve => setTimeout(resolve, 80));
@@ -297,6 +305,10 @@ test('autopilot.manager: broadcast autopilot_progress called with correct shape 
 
   const { runId } = await manager.start('test-project', { startPhase: 1, totalPhases: 2 });
 
+  // Wait for pending_confirmation to be broadcast, then confirm to allow spawn
+  await new Promise(resolve => setTimeout(resolve, 15));
+  manager.confirmSpawn();
+
   // Wait for at least one phase transition
   await new Promise(resolve => setTimeout(resolve, 80));
   manager.stop();
@@ -308,8 +320,10 @@ test('autopilot.manager: broadcast autopilot_progress called with correct shape 
   for (const call of progressCalls) {
     assert.strictEqual(typeof call.data.projectName, 'string', 'data.projectName must be string');
     assert.strictEqual(typeof call.data.phaseNum, 'number', 'data.phaseNum must be number');
-    assert.ok(['started', 'completed', 'failed', 'retrying'].includes(call.data.status),
-      `data.status must be one of started/completed/failed/retrying, got: ${call.data.status}`);
+    assert.ok(
+      ['started', 'completed', 'failed', 'retrying', 'pending_confirmation', 'queued', 'queue_timeout'].includes(call.data.status),
+      `data.status must be a valid status, got: ${call.data.status}`
+    );
     assert.strictEqual(call.data.runId, runId, 'data.runId must match');
   }
 });

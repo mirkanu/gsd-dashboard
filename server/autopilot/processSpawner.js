@@ -20,7 +20,7 @@ const { waitForIdle } = require('../gsd/tmux');
  * @returns {Promise<{ jobId: string, pid: number|null, started_at: string }>}
  */
 async function spawnGsdCommand(projectName, gsdCommand, options = {}) {
-  const { args = [], runId = null, spawnFn = spawn, db = null, waitForIdleFn = waitForIdle } = options;
+  const { args = [], runId = null, spawnFn = spawn, db = null, waitForIdleFn = waitForIdle, waitTimeoutMs = 15000 } = options;
   const _db = db || require('../db').db;
 
   const configPath = process.env.GSD_PROJECTS_PATH ||
@@ -43,7 +43,7 @@ async function spawnGsdCommand(projectName, gsdCommand, options = {}) {
 
   // Wait for the tmux session to be idle before sending keys
   try {
-    await waitForIdleFn(project.tmux_session, 15000);
+    await waitForIdleFn(project.tmux_session, waitTimeoutMs);
   } catch (err) {
     const endedAt = new Date().toISOString();
     _db.prepare(

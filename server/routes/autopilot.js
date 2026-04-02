@@ -3,10 +3,11 @@
 /**
  * autopilot.js — Express routes for the autopilot control API.
  *
- * Five endpoints:
+ * Six endpoints:
  *   POST /api/autopilot/start      — launch autonomous plan+execute loop
  *   POST /api/autopilot/pause      — pause at next safe point
  *   POST /api/autopilot/resume     — resume from next pending phase
+ *   POST /api/autopilot/confirm    — confirm a pending phase spawn
  *   GET  /api/autopilot/status/:projectName — return current run state
  *   POST /api/autopilot/plan-all   — batch-plan all remaining phases (no execute)
  *
@@ -188,6 +189,29 @@ router.get('/status/:projectName', (req, res) => {
   try {
     const status = entry.manager.getStatus();
     return res.json(status);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/autopilot/confirm ──────────────────────────────────────────────
+
+router.post('/confirm', (req, res) => {
+  if (GSD_DATA_URL) return proxyIfRemote(req, res, '/api/autopilot/confirm');
+
+  const { projectName } = req.body || {};
+  if (!projectName || typeof projectName !== 'string') {
+    return res.status(400).json({ error: 'projectName is required' });
+  }
+
+  const entry = runRegistry.get(projectName);
+  if (!entry) {
+    return res.status(404).json({ error: `No active run found for project: ${projectName}` });
+  }
+
+  try {
+    entry.manager.confirmSpawn();
+    return res.json({ ok: true });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
