@@ -12,6 +12,10 @@
  *
  * Run registry: one active AutopilotManager per project at a time.
  * Managers are stored in an in-process Map keyed by projectName.
+ *
+ * When GSD_DATA_URL is set (Railway proxy mode), all requests are forwarded
+ * to the dev machine via the Cloudflare tunnel — autopilot runs locally
+ * where tmux, gsd-projects.json, and STATE.md exist.
  */
 
 const express = require('express');
@@ -19,6 +23,8 @@ const path = require('path');
 const fs = require('fs');
 const { AutopilotManager } = require('../autopilot/AutopilotManager');
 const { readState } = require('../gsd/readers');
+
+const GSD_DATA_URL = (process.env.GSD_DATA_URL || '').replace(/\/$/, '');
 
 /**
  * Resolve projectName → { root, startPhase, totalPhases } from gsd-projects.json + STATE.md.
@@ -37,6 +43,29 @@ function resolveProject(projectName) {
   return { root, startPhase: currentPhase, totalPhases };
 }
 
+/**
+ * Proxy a request to the dev machine when GSD_DATA_URL is set.
+ * Returns true if proxied (caller should return), false if local.
+ */
+async function proxyIfRemote(req, res, upstreamPath) {
+  if (!GSD_DATA_URL) return false;
+  try {
+    const opts = { signal: AbortSignal.timeout(30000) };
+    if (req.method === 'GET') {
+      opts.method = 'GET';
+    } else {
+      opts.method = req.method;
+      opts.headers = { 'Content-Type': 'application/json' };
+      opts.body = JSON.stringify(req.body);
+    }
+    const upstream = await fetch(`${GSD_DATA_URL}${upstreamPath}`, opts);
+    const data = await upstream.json();
+    return res.status(upstream.status).json(data);
+  } catch (err) {
+    return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+  }
+}
+
 const router = express.Router();
 
 /**
@@ -53,40 +82,23 @@ let _managerFactory = () => new AutopilotManager();
 
 // ─── Test hooks (no-op in production, used by autopilotRoutes.test.js) ────────
 
-/**
- * Replace the manager factory. Call _resetManagerFactory() to restore default.
- * @param {Function} factory - () => AutopilotManager-like object
- */
 router._setManagerFactory = function (factory) {
   _managerFactory = factory;
 };
 
-/**
- * Restore the default (production) manager factory.
- */
 router._resetManagerFactory = function () {
   _managerFactory = () => new AutopilotManager();
 };
 
-/**
- * Remove a run from the registry (used in tests to reset state between tests).
- * @param {string} projectName
- */
 router._clearRun = function (projectName) {
   runRegistry.delete(projectName);
 };
 
 // ─── POST /api/autopilot/start ────────────────────────────────────────────────
 
-/**
- * Start an autonomous plan+execute loop for a project.
- * Body: { projectName: string, mode?: 'execute' | 'plan-all' }
- * Response: 200 { runId, status: 'running' }
- *           400 { error } — projectName missing
- *           409 { error } — run already active for this project
- *           500 { error } — unexpected error
- */
 router.post('/start', async (req, res) => {
+  if (GSD_DATA_URL) return proxyIfRemote(req, res, '/api/autopilot/start');
+
   const { projectName, mode } = req.body || {};
   if (!projectName || typeof projectName !== 'string') {
     return res.status(400).json({ error: 'projectName is required' });
@@ -117,15 +129,9 @@ router.post('/start', async (req, res) => {
 
 // ─── POST /api/autopilot/pause ────────────────────────────────────────────────
 
-/**
- * Pause an active run at the next safe poll tick.
- * Body: { projectName: string }
- * Response: 200 { ok: true }
- *           400 { error } — projectName missing
- *           404 { error } — no active run for this project
- *           500 { error } — unexpected error
- */
 router.post('/pause', (req, res) => {
+  if (GSD_DATA_URL) return proxyIfRemote(req, res, '/api/autopilot/pause');
+
   const { projectName } = req.body || {};
   if (!projectName || typeof projectName !== 'string') {
     return res.status(400).json({ error: 'projectName is required' });
@@ -146,15 +152,9 @@ router.post('/pause', (req, res) => {
 
 // ─── POST /api/autopilot/resume ───────────────────────────────────────────────
 
-/**
- * Resume a paused run.
- * Body: { projectName: string }
- * Response: 200 { ok: true }
- *           400 { error } — projectName missing
- *           404 { error } — no active run for this project
- *           500 { error } — unexpected error
- */
 router.post('/resume', (req, res) => {
+  if (GSD_DATA_URL) return proxyIfRemote(req, res, '/api/autopilot/resume');
+
   const { projectName } = req.body || {};
   if (!projectName || typeof projectName !== 'string') {
     return res.status(400).json({ error: 'projectName is required' });
@@ -175,13 +175,9 @@ router.post('/resume', (req, res) => {
 
 // ─── GET /api/autopilot/status/:projectName ───────────────────────────────────
 
-/**
- * Return the current run state for a project.
- * Response: 200 { runId, status, currentPhaseNum, projectName }
- *           — runId is null and status is 'idle' when no run exists
- *           500 { error } — unexpected error
- */
 router.get('/status/:projectName', (req, res) => {
+  if (GSD_DATA_URL) return proxyIfRemote(req, res, `/api/autopilot/status/${encodeURIComponent(req.params.projectName)}`);
+
   const { projectName } = req.params;
 
   const entry = runRegistry.get(projectName);
@@ -199,16 +195,9 @@ router.get('/status/:projectName', (req, res) => {
 
 // ─── POST /api/autopilot/plan-all ─────────────────────────────────────────────
 
-/**
- * Batch-plan all remaining phases for a project without executing them.
- * Hardcodes mode = 'plan-all'.
- * Body: { projectName: string }
- * Response: 200 { runId, status: 'running' }
- *           400 { error } — projectName missing
- *           409 { error } — run already active for this project
- *           500 { error } — unexpected error
- */
 router.post('/plan-all', async (req, res) => {
+  if (GSD_DATA_URL) return proxyIfRemote(req, res, '/api/autopilot/plan-all');
+
   const { projectName } = req.body || {};
   if (!projectName || typeof projectName !== 'string') {
     return res.status(400).json({ error: 'projectName is required' });
