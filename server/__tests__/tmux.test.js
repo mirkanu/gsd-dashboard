@@ -37,3 +37,48 @@ test('waiting.accuracy: confirmation prompt "[y/n]" → waiting', () => {
 test('waiting.accuracy: plain shell prompt, no timer → waiting', () => {
   assert.strictEqual(_testDetectFromOutput('$ '), 'waiting');
 });
+
+// ─── waitForIdle tests (via _testWaitForIdle injectable) ──────────────────────
+
+const { _testWaitForIdle } = require('../gsd/tmux.js');
+
+test('waitForIdle: resolves immediately when session returns waiting', async () => {
+  const detectFn = () => 'waiting';
+  await assert.doesNotReject(
+    () => _testWaitForIdle(detectFn, 'idle-session', 3000),
+    'should resolve without error'
+  );
+});
+
+test('waitForIdle: resolves after session transitions from working to waiting', async () => {
+  let callCount = 0;
+  const detectFn = () => {
+    callCount++;
+    return callCount < 3 ? 'working' : 'waiting';
+  };
+  await assert.doesNotReject(
+    () => _testWaitForIdle(detectFn, 'busy-session', 5000),
+    'should resolve once session becomes idle'
+  );
+  assert.ok(callCount >= 3, 'should have polled at least 3 times');
+});
+
+test('waitForIdle: rejects with timeout error when session never becomes idle', async () => {
+  const detectFn = () => 'working';
+  await assert.rejects(
+    () => _testWaitForIdle(detectFn, 'busy-session', 100),
+    (err) => {
+      assert.ok(err instanceof Error, 'should throw an Error');
+      assert.ok(err.message.includes('Timeout waiting for idle session: busy-session'), `unexpected message: ${err.message}`);
+      return true;
+    }
+  );
+});
+
+test('waitForIdle: resolves immediately when sessionName is null', async () => {
+  const detectFn = () => { throw new Error('should not be called'); };
+  await assert.doesNotReject(
+    () => _testWaitForIdle(detectFn, null, 3000),
+    'should resolve immediately with no session'
+  );
+});

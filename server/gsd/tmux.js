@@ -183,4 +183,50 @@ function _testDetectFromOutput(output) {
   return 'waiting';
 }
 
-module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, _testDetectFromOutput };
+/**
+ * Poll for a tmux session to become idle (not 'working').
+ * Resolves when detectSessionState returns anything other than 'working'.
+ * Rejects with a timeout error if the session doesn't become idle in time.
+ *
+ * @param {string|null} sessionName
+ * @param {number} [timeoutMs=15000]
+ * @returns {Promise<void>}
+ */
+function waitForIdle(sessionName, timeoutMs = 15000) {
+  return _testWaitForIdle(detectSessionState, sessionName, timeoutMs);
+}
+
+/**
+ * Test hook: injectable detectFn variant of waitForIdle.
+ * Allows tests to provide a custom detect function without tmux calls.
+ *
+ * @param {Function} detectFn - (sessionName) => 'working'|'waiting'|'paused'|'archived'
+ * @param {string|null} sessionName
+ * @param {number} timeoutMs
+ * @returns {Promise<void>}
+ */
+function _testWaitForIdle(detectFn, sessionName, timeoutMs) {
+  if (!sessionName) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+
+    function poll() {
+      const state = detectFn(sessionName);
+      if (state !== 'working') {
+        return resolve();
+      }
+      const elapsed = Date.now() - start;
+      if (elapsed >= timeoutMs) {
+        return reject(new Error(`Timeout waiting for idle session: ${sessionName}`));
+      }
+      const remaining = timeoutMs - elapsed;
+      const delay = Math.min(1000, remaining);
+      setTimeout(poll, delay);
+    }
+
+    poll();
+  });
+}
+
+module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, _testDetectFromOutput, waitForIdle, _testWaitForIdle };

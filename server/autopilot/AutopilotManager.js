@@ -239,6 +239,8 @@ class AutopilotManager {
 
   /**
    * Spawn the GSD command for a phase and broadcast phase start.
+   * Sets _phaseSpawned=true immediately to prevent duplicate spawns while
+   * waiting for idle; resets to false if the spawn rejects (e.g. timeout).
    */
   _spawnPhase(phaseNum) {
     this._phaseSpawned = true;
@@ -248,11 +250,18 @@ class AutopilotManager {
       status: 'started',
       runId: this._runId,
     });
-    this._spawnFn(this._projectName, '/gsd:execute-phase', {
+    const result = this._spawnFn(this._projectName, '/gsd:execute-phase', {
       args: [`${phaseNum}`],
       runId: this._runId,
       db: this._db,
     });
+    // Handle async spawnFn: reset _phaseSpawned if waitForIdle times out
+    if (result && typeof result.then === 'function') {
+      result.catch(() => {
+        // Allow next tick to retry the spawn
+        this._phaseSpawned = false;
+      });
+    }
   }
 
   /**
