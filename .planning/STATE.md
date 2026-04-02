@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Autopilot & Cost Intelligence
 status: executing
-stopped_at: Completed 25-03-PLAN.md
-last_updated: "2026-04-01T13:19:05.840Z"
+stopped_at: "Completed quick-12: fix autopilot command delivery waitForIdle"
+last_updated: "2026-04-02T07:38:07.767Z"
 last_activity: "2026-04-01 — Completed 25-02: Autopilot REST routes + AutopilotManager.getStatus()"
 progress:
   total_phases: 13
@@ -63,6 +63,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 25]: getStatus() reads DB status for accuracy, falls back to in-memory flags
 - [Phase 25]: eventBus.subscribe() used in GSD.tsx for autopilot_progress WS messages — consistent with App.tsx publish pattern, avoids duplicate WS connections
 - [Phase 25]: autopilot_progress 'planning'/'executing' statuses mapped to 'running' in client AutopilotControls — simpler states for button visibility logic
+- [Phase quick-12]: _testWaitForIdle injectable: mirrors _testDetectFromOutput pattern — tests waitForIdle without real tmux calls
 
 ### v3.0 Key Constraints (from research)
 
@@ -86,7 +87,7 @@ None at roadmap stage. Research flags to address in planning:
 
 ## Session Continuity
 
-Last session: 2026-04-01T13:08:01.437Z
-Stopped at: Completed 25-03-PLAN.md
+Last session: 2026-04-02T07:37:54.237Z
+Stopped at: Completed quick-12: fix autopilot command delivery waitForIdle
 Resume file: None
 Next action: /gsd:plan-phase 24
