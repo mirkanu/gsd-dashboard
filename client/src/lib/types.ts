@@ -69,7 +69,7 @@ export interface GsdTask {
   created_at: string;
 }
 
-export type AutopilotRunStatus = 'running' | 'paused' | 'completed' | 'failed' | 'idle' | 'halted';
+export type AutopilotRunStatus = 'running' | 'paused' | 'completed' | 'failed' | 'idle' | 'halted' | 'pending_confirmation' | 'queued' | 'queue_timeout';
 
 export interface AutopilotRun {
   runId: string | null;
@@ -81,8 +81,9 @@ export interface AutopilotRun {
 export interface AutopilotProgressEvent {
   projectName: string;
   phaseNum: number;
-  status: 'planning' | 'executing' | 'completed' | 'failed' | 'halted';
+  status: 'planning' | 'executing' | 'completed' | 'failed' | 'halted' | 'pending_confirmation' | 'queued' | 'queue_timeout' | 'started' | 'retrying';
   runId: string;
+  pendingCommand?: string;
 }
 
 // ─── Agent/Session Types ──────────────────────────────────────────────────────

@@ -180,6 +180,11 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ projectName }),
       }),
+    confirm: (projectName: string) =>
+      request<{ ok: boolean }>('/autopilot/confirm', {
+        method: 'POST',
+        body: JSON.stringify({ projectName }),
+      }),
   },
 
   pricing: {

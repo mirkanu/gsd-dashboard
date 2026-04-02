@@ -593,6 +593,7 @@ function AutopilotControls({ project, autopilotRun }: {
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingCommand, setPendingCommand] = useState<string | null>(null);
   const status = autopilotRun?.status ?? 'idle';
 
   const showError = (err: unknown) => {
@@ -600,6 +601,22 @@ function AutopilotControls({ project, autopilotRun }: {
     setError(msg);
     setTimeout(() => setError(null), 4000);
   };
+
+  // Subscribe to autopilot_progress to capture pendingCommand label
+  useEffect(() => {
+    const unsub = eventBus.subscribe((msg) => {
+      if (msg.type === 'autopilot_progress') {
+        const evt = msg.data as import('../lib/types').AutopilotProgressEvent;
+        if (evt.projectName !== project.name) return;
+        if (evt.status === 'pending_confirmation' && evt.pendingCommand) {
+          setPendingCommand(evt.pendingCommand);
+        } else if (evt.status !== 'pending_confirmation') {
+          setPendingCommand(null);
+        }
+      }
+    });
+    return unsub;
+  }, [project.name]);
 
   const handlePlanAll = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -639,10 +656,28 @@ function AutopilotControls({ project, autopilotRun }: {
     finally { setBusy(false); }
   };
 
+  const handleConfirm = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (busy) return;
+    setBusy(true);
+    try { await api.autopilot.confirm(project.name); }
+    catch (err) { showError(err); }
+    finally { setBusy(false); }
+  };
+
+  const handleCancel = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (busy) return;
+    setBusy(true);
+    try { await api.autopilot.pause(project.name); }
+    catch (err) { showError(err); }
+    finally { setBusy(false); }
+  };
+
   return (
     <div className="px-4 pb-3 pt-1 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
-      {/* Plan All — always visible unless running */}
-      {(status === 'idle' || status === 'completed' || status === 'failed') ? (
+      {/* Plan All — visible when idle/completed/failed/queue_timeout */}
+      {(status === 'idle' || status === 'completed' || status === 'failed' || status === 'queue_timeout') ? (
         <button
           onClick={handlePlanAll}
           disabled={busy}
@@ -652,8 +687,8 @@ function AutopilotControls({ project, autopilotRun }: {
         </button>
       ) : null}
 
-      {/* Run Autopilot / Pause / Resume */}
-      {(status === 'idle' || status === 'completed' || status === 'failed') ? (
+      {/* Run Autopilot / Pause / Resume / Confirmation UI */}
+      {(status === 'idle' || status === 'completed' || status === 'failed' || status === 'queue_timeout') ? (
         <button
           onClick={handleStart}
           disabled={busy}
@@ -661,7 +696,29 @@ function AutopilotControls({ project, autopilotRun }: {
         >
           {busy ? 'Starting…' : 'Run Autopilot'}
         </button>
-      ) : status === 'running' ? (
+      ) : status === 'pending_confirmation' ? (
+        <div className="w-full flex flex-col gap-1.5 py-1">
+          <p className="text-[10px] text-gray-400">
+            Ready to send: <span className="font-mono text-accent">{pendingCommand ?? '/gsd:execute-phase'}</span>
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleConfirm}
+              disabled={busy}
+              className="text-[10px] px-2.5 py-1 rounded border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-40"
+            >
+              {busy ? '…' : 'Confirm'}
+            </button>
+            <button
+              onClick={handleCancel}
+              disabled={busy}
+              className="text-[10px] px-2.5 py-1 rounded border border-border text-gray-500 hover:text-red-400 hover:border-red-500/30 transition-colors disabled:opacity-40"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (status === 'running' || status === 'queued') ? (
         <button
           onClick={handlePause}
           disabled={busy}
@@ -690,6 +747,12 @@ function AutopilotControls({ project, autopilotRun }: {
       )}
       {status === 'halted' && (
         <span className="text-[10px] text-red-400">Circuit open</span>
+      )}
+      {status === 'queued' && (
+        <span className="text-[10px] text-amber-400 animate-pulse">Queued — waiting for idle…</span>
+      )}
+      {status === 'queue_timeout' && (
+        <span className="text-[10px] text-red-400">Queue timeout — session was busy</span>
       )}
 
       {error && (
@@ -918,9 +981,21 @@ export function GSD() {
         const evt = msg.data as import('../lib/types').AutopilotProgressEvent;
         setAutopilotRuns(prev => {
           const next = new Map(prev);
+          // Map event statuses to AutopilotRunStatus:
+          // - completed / halted / failed / queue_timeout → pass through as terminal statuses
+          // - pending_confirmation / queued → pass through as pending statuses
+          // - planning / executing / started / retrying → treat as 'running'
+          let runStatus: import('../lib/types').AutopilotRunStatus;
+          if (evt.status === 'completed') runStatus = 'completed';
+          else if (evt.status === 'halted') runStatus = 'halted';
+          else if (evt.status === 'failed') runStatus = 'failed';
+          else if (evt.status === 'queue_timeout') runStatus = 'queue_timeout';
+          else if (evt.status === 'pending_confirmation') runStatus = 'pending_confirmation';
+          else if (evt.status === 'queued') runStatus = 'queued';
+          else runStatus = 'running'; // planning, executing, started, retrying
           next.set(evt.projectName, {
             runId: evt.runId,
-            status: evt.status === 'completed' || evt.status === 'halted' ? evt.status : 'running',
+            status: runStatus,
             currentPhaseNum: evt.phaseNum,
             projectName: evt.projectName,
           });
