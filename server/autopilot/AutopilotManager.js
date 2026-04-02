@@ -60,6 +60,8 @@ class AutopilotManager {
     this._retryAttempted = false;
     this._failureRecorded = false;
     this._baselineCompleted = null;
+    this._pendingConfirmation = false;
+    this._pendingCommand = null;
   }
 
   // ─── Public API ─────────────────────────────────────────────────────────────
@@ -139,6 +141,31 @@ class AutopilotManager {
     this.paused = false;
     // Reset retry state so the current phase gets a fresh attempt
     this._retryAttempted = false;
+    // Reset pending confirmation so a new confirmation can be issued
+    this._pendingConfirmation = false;
+    this._pendingCommand = null;
+  }
+
+  /**
+   * Confirm a pending phase spawn. Called by POST /api/autopilot/confirm.
+   * Clears the pending_confirmation state and triggers the actual spawn.
+   * If waitForIdle times out (5 minutes), broadcasts queue_timeout and halts.
+   */
+  confirmSpawn() {
+    if (!this._pendingConfirmation) return; // idempotent
+    this._pendingConfirmation = false;
+    const phaseNum = this._pendingCommand?.phaseNum;
+    this._pendingCommand = null;
+
+    // Broadcast queued status — session may still be busy
+    this._broadcastFn('autopilot_progress', {
+      projectName: this._projectName,
+      phaseNum,
+      status: 'queued',
+      runId: this._runId,
+    });
+
+    this._doSpawn(phaseNum);
   }
 
   /**
@@ -175,6 +202,8 @@ class AutopilotManager {
   stop() {
     this._stopped = true;
     this.paused = false;
+    this._pendingConfirmation = false;
+    this._pendingCommand = null;
     if (this._interval) {
       clearInterval(this._interval);
       this._interval = null;
@@ -201,6 +230,9 @@ class AutopilotManager {
   _tick() {
     // Guard: stopped or paused — do nothing this tick
     if (this._stopped || this.paused) return;
+
+    // Guard: waiting for user to confirm spawn — do nothing this tick
+    if (this._pendingConfirmation) return;
 
     // Guard: circuit already open — halt
     if (this._cb && this._cb.isOpen()) {
@@ -238,12 +270,36 @@ class AutopilotManager {
   }
 
   /**
-   * Spawn the GSD command for a phase and broadcast phase start.
-   * Sets _phaseSpawned=true immediately to prevent duplicate spawns while
-   * waiting for idle; resets to false if the spawn rejects (e.g. timeout).
+   * Request user confirmation before spawning a phase.
+   * Sets _pendingConfirmation=true and broadcasts pending_confirmation status.
+   * The tick loop will not spawn until confirmSpawn() is called.
    */
   _spawnPhase(phaseNum) {
     this._phaseSpawned = true;
+    this._requestConfirmation(phaseNum);
+  }
+
+  /**
+   * Set pending_confirmation state and broadcast to the client.
+   */
+  _requestConfirmation(phaseNum) {
+    this._pendingConfirmation = true;
+    this._pendingCommand = { phaseNum };
+    this._broadcastFn('autopilot_progress', {
+      projectName: this._projectName,
+      phaseNum,
+      status: 'pending_confirmation',
+      pendingCommand: `/gsd:execute-phase ${phaseNum}`,
+      runId: this._runId,
+    });
+  }
+
+  /**
+   * Execute the actual spawn after confirmation. Uses a 5-minute waitForIdle
+   * timeout to handle busy sessions. On timeout, broadcasts queue_timeout and
+   * triggers _handlePhaseFailure.
+   */
+  _doSpawn(phaseNum) {
     this._broadcastFn('autopilot_progress', {
       projectName: this._projectName,
       phaseNum,
@@ -254,12 +310,28 @@ class AutopilotManager {
       args: [`${phaseNum}`],
       runId: this._runId,
       db: this._db,
+      waitTimeoutMs: 300000, // 5-minute queue timeout
     });
     // Handle async spawnFn: reset _phaseSpawned if waitForIdle times out
     if (result && typeof result.then === 'function') {
-      result.catch(() => {
-        // Allow next tick to retry the spawn
-        this._phaseSpawned = false;
+      result.catch((err) => {
+        const isQueueTimeout = err && (
+          String(err.message || '').includes('Timeout waiting for idle') ||
+          String(err.message || '').includes('timed out')
+        );
+        if (isQueueTimeout) {
+          // Broadcast queue_timeout and stop the run
+          this._broadcastFn('autopilot_progress', {
+            projectName: this._projectName,
+            phaseNum,
+            status: 'queue_timeout',
+            runId: this._runId,
+          });
+          this._handlePhaseFailure(phaseNum, 'Queue timeout: session busy for 5 minutes');
+        } else {
+          // Non-timeout error — allow next tick to re-request confirmation
+          this._phaseSpawned = false;
+        }
       });
     }
   }
@@ -283,6 +355,9 @@ class AutopilotManager {
     this._retryAttempted = false;
     this._failureRecorded = false;
     this._phaseStartedAt = Date.now();
+    // Defensive: clear any stale pending confirmation from the previous phase
+    this._pendingConfirmation = false;
+    this._pendingCommand = null;
 
     // Check if all phases are done
     if (this._currentPhase > this._totalPhases) {
@@ -349,6 +424,8 @@ class AutopilotManager {
       this._interval = null;
     }
     this._stopped = true;
+    this._pendingConfirmation = false;
+    this._pendingCommand = null;
 
     if (this._runId) {
       this._db

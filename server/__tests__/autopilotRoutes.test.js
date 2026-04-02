@@ -87,12 +87,13 @@ function get(urlPath) {
 
 /**
  * Creates a fake AutopilotManager with controllable behavior.
- * Tracks calls to start/pause/resume/getStatus.
+ * Tracks calls to start/pause/resume/getStatus/confirmSpawn.
  */
 function makeFakeManager(overrides = {}) {
   let runId = null;
   let status = 'running';
   let started = false;
+  let confirmCalled = false;
 
   return {
     async start(projectName, opts) {
@@ -104,9 +105,11 @@ function makeFakeManager(overrides = {}) {
     pause() { status = 'paused'; },
     resume() { status = 'running'; },
     stop() { status = 'stopped'; },
+    confirmSpawn() { confirmCalled = true; status = 'running'; },
     getStatus() {
       return { runId, status, currentPhaseNum: 1, projectName: 'test-project', startedAt: new Date().toISOString() };
     },
+    _wasConfirmCalled: () => confirmCalled,
     ...overrides,
   };
 }
@@ -238,6 +241,34 @@ describe('GET /api/autopilot/status/:projectName', () => {
     assert.strictEqual(res.status, 200);
     assert.ok(res.body.runId, 'Should have runId when run is active');
     assert.strictEqual(res.body.status, 'running');
+
+    autopilotRouteModule._clearRun('test-project');
+    autopilotRouteModule._resetManagerFactory();
+  });
+});
+
+describe('POST /api/autopilot/confirm', () => {
+  it('returns 400 when projectName is missing', async () => {
+    const res = await post('/api/autopilot/confirm', {});
+    assert.strictEqual(res.status, 400);
+    assert.ok(res.body.error, 'Should have error field');
+  });
+
+  it('returns 404 when no active run exists for project', async () => {
+    const res = await post('/api/autopilot/confirm', { projectName: 'no-run-project' });
+    assert.strictEqual(res.status, 404);
+    assert.ok(res.body.error);
+  });
+
+  it('returns 200 { ok: true } and calls confirmSpawn() when run exists', async () => {
+    const fakeManager = makeFakeManager();
+    autopilotRouteModule._setManagerFactory(() => fakeManager);
+    await post('/api/autopilot/start', { projectName: 'test-project' });
+
+    const res = await post('/api/autopilot/confirm', { projectName: 'test-project' });
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.ok, true);
+    assert.strictEqual(fakeManager._wasConfirmCalled(), true, 'confirmSpawn() must be called');
 
     autopilotRouteModule._clearRun('test-project');
     autopilotRouteModule._resetManagerFactory();
