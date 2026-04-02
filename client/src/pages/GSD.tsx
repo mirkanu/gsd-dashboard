@@ -592,7 +592,14 @@ function AutopilotControls({ project, autopilotRun }: {
   autopilotRun: import('../lib/types').AutopilotRun | null;
 }) {
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const status = autopilotRun?.status ?? 'idle';
+
+  const showError = (err: unknown) => {
+    const msg = err instanceof Error ? err.message : 'Request failed';
+    setError(msg);
+    setTimeout(() => setError(null), 4000);
+  };
 
   const handlePlanAll = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -600,7 +607,7 @@ function AutopilotControls({ project, autopilotRun }: {
     if (!window.confirm(`Plan all remaining phases for "${project.name}"?`)) return;
     setBusy(true);
     try { await api.autopilot.planAll(project.name); }
-    catch { /* silent */ }
+    catch (err) { showError(err); }
     finally { setBusy(false); }
   };
 
@@ -610,7 +617,7 @@ function AutopilotControls({ project, autopilotRun }: {
     if (!window.confirm(`Start autopilot for "${project.name}"? This will plan and execute all remaining phases automatically.`)) return;
     setBusy(true);
     try { await api.autopilot.start(project.name); }
-    catch { /* silent */ }
+    catch (err) { showError(err); }
     finally { setBusy(false); }
   };
 
@@ -619,7 +626,7 @@ function AutopilotControls({ project, autopilotRun }: {
     if (busy) return;
     setBusy(true);
     try { await api.autopilot.pause(project.name); }
-    catch { /* silent */ }
+    catch (err) { showError(err); }
     finally { setBusy(false); }
   };
 
@@ -628,7 +635,7 @@ function AutopilotControls({ project, autopilotRun }: {
     if (busy) return;
     setBusy(true);
     try { await api.autopilot.resume(project.name); }
-    catch { /* silent */ }
+    catch (err) { showError(err); }
     finally { setBusy(false); }
   };
 
@@ -683,6 +690,12 @@ function AutopilotControls({ project, autopilotRun }: {
       )}
       {status === 'halted' && (
         <span className="text-[10px] text-red-400">Circuit open</span>
+      )}
+
+      {error && (
+        <p className="text-xs text-red-400 w-full mt-1 truncate" title={error}>
+          {error}
+        </p>
       )}
     </div>
   );
