@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Autopilot & Cost Intelligence
 status: executing
-stopped_at: "Completed quick-12: fix autopilot command delivery waitForIdle"
+stopped_at: "Completed quick-13: add tmux session awareness and confirmation flow"
 last_updated: "2026-04-02T07:38:07.767Z"
 last_activity: "2026-04-01 — Completed 25-02: Autopilot REST routes + AutopilotManager.getStatus()"
 progress:
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 Phase: 25 of 27 (Autopilot Core)
 Plan: 2 of 3 in current phase (1 plan remaining)
 Status: In progress — Phase 25 plans 01+02 done, plan 03 remaining
-Last activity: 2026-04-02 — Completed quick-12: Fix autopilot command delivery (waitForIdle, error feedback)
+Last activity: 2026-04-02 — Completed quick-13: Add tmux session awareness and confirmation flow
 
 Progress: [█████████░] 85% (v3.0: 8/11 plans)
 
@@ -90,6 +90,7 @@ None at roadmap stage. Research flags to address in planning:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 12 | Fix autopilot command delivery: waitForIdle, toast errors, error state on cards | 2026-04-02 | d6b81d4 | [12-fix-autopilot-command-delivery-waitforid](./quick/12-fix-autopilot-command-delivery-waitforid/) |
+| 13 | Add tmux session awareness: pending_confirmation gate, confirm route, queue/queue_timeout handling | 2026-04-02 | cf6a13d | [13-add-tmux-session-awareness-and-confirmat](./quick/13-add-tmux-session-awareness-and-confirmat/) |
 
 ## Session Continuity
 
