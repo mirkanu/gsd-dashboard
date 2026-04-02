@@ -3,6 +3,7 @@ const { spawn } = require('child_process');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const fs = require('fs');
+const { waitForIdle } = require('../gsd/tmux');
 
 /**
  * Spawn a GSD command into a project's tmux session, detached from Express.
@@ -15,10 +16,11 @@ const fs = require('fs');
  * @param {string|null} [options.runId=null] - autopilot_runs.id if applicable
  * @param {Function} [options.spawnFn] - injectable spawn for testing (default: child_process.spawn)
  * @param {object|null} [options.db] - injectable db for testing (default: production db)
- * @returns {{ jobId: string, pid: number|null, started_at: string }}
+ * @param {Function} [options.waitForIdleFn] - injectable waitForIdle for testing (default: waitForIdle)
+ * @returns {Promise<{ jobId: string, pid: number|null, started_at: string }>}
  */
-function spawnGsdCommand(projectName, gsdCommand, options = {}) {
-  const { args = [], runId = null, spawnFn = spawn, db = null } = options;
+async function spawnGsdCommand(projectName, gsdCommand, options = {}) {
+  const { args = [], runId = null, spawnFn = spawn, db = null, waitForIdleFn = waitForIdle } = options;
   const _db = db || require('../db').db;
 
   const configPath = process.env.GSD_PROJECTS_PATH ||
@@ -38,6 +40,17 @@ function spawnGsdCommand(projectName, gsdCommand, options = {}) {
   _db.prepare(
     'INSERT INTO process_registry (id, run_id, command, args, started_at) VALUES (?, ?, ?, ?, ?)'
   ).run(jobId, runId, gsdCommand, JSON.stringify(args), startedAt);
+
+  // Wait for the tmux session to be idle before sending keys
+  try {
+    await waitForIdleFn(project.tmux_session, 15000);
+  } catch (err) {
+    const endedAt = new Date().toISOString();
+    _db.prepare(
+      'UPDATE process_registry SET exit_code = ?, ended_at = ? WHERE id = ?'
+    ).run(-2, endedAt, jobId);
+    throw err;
+  }
 
   // Build the command string to send via tmux send-keys
   const fullCommand = args.length > 0
