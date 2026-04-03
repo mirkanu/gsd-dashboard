@@ -1090,7 +1090,7 @@ export function GSD() {
       {!loading && !error && (
         /* Mobile:  scroll-snap-x, each column is min-w-full so it fills viewport, user swipes.
            Desktop: flex row, each column takes equal width (flex-1, min-w-0). */
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:-mx-8 md:px-8 max-w-[100vw]">
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-[calc(1rem+env(safe-area-inset-bottom))] -mx-4 px-4 md:-mx-8 md:px-8 max-w-[100vw]">
           {(["waiting", "working", "paused", "archived"] as import("../lib/types").SessionState[]).map((state) => {
             const conf = SESSION_STATE_CONFIG[state];
             const columnProjects = [...projects.filter(p => p.sessionState === state)]
