@@ -9,7 +9,8 @@
 - ✅ **v2.1 Session Intelligence & Terminal UX** — Phases 12-14, 16 (shipped 2026-03-28) → [archive](milestones/v2.1-ROADMAP.md)
 - ✅ **v2.2 Project Tasks** — Phases 17-19 (shipped 2026-03-29)
 - ✅ **v2.3 UX Polish & Claude Desktop** — Phases 21-23 (shipped 2026-03-30)
-- 🚧 **v3.0 Autopilot & Cost Intelligence** — Phases 24-27 (in progress)
+- ✅ **v3.0 Autopilot & Cost Intelligence** — Phases 24-27 (shipped 2026-04-03)
+- 🚧 **v4.0 Chat-First Dashboard** — Phases 28-32 (in progress)
 
 ---
 
@@ -62,209 +63,106 @@
 </details>
 
 <details>
-<summary>✅ v2.2 Project Tasks (Phases 17-19) — SHIPPED 2026-03-29</summary>
+<summary>✅ v2.2 Project Tasks (Phases 17-20) — SHIPPED 2026-03-30</summary>
 
-- [x] **Phase 17: Task Data Layer** — SQLite table and CRUD API endpoints for per-project tasks (completed 2026-03-28)
-- [x] **Phase 18: Task UI** — Tasks tab in project drawer with add, view, archive, and unarchive interactions (completed 2026-03-28)
-- [x] **Phase 18.1: Persistent Tunnel for Remote Tmux** (INSERTED) — Named cloudflared tunnel with permanent subdomain (completed 2026-03-29)
-- [x] **Phase 19: Clipboard Export** — Copy all open tasks as formatted markdown for GSD consumption (completed 2026-03-29)
-- [x] **Phase 20: Fix Railway Deployment** — dequal-patch fix + post-build dist assertion (completed 2026-03-30)
+- [x] Phase 17: Task Data Layer (2/2 plans) — completed 2026-03-28
+- [x] Phase 18: Task UI (2/2 plans) — completed 2026-03-28
+- [x] Phase 18.1: Persistent Tunnel for Remote Tmux (2/2 plans) — completed 2026-03-29
+- [x] Phase 19: Clipboard Export (1/1 plan) — completed 2026-03-29
+- [x] Phase 20: Fix Railway Deployment (1/1 plan) — completed 2026-03-30
 
 </details>
 
 <details>
 <summary>✅ v2.3 UX Polish & Claude Desktop (Phases 21-23) — SHIPPED 2026-03-30</summary>
 
-- [x] **Phase 21: Card UX Simplification** — State-based filtering with slim cards showing only essential info (completed 2026-03-30)
-- [x] **Phase 22: Mobile Terminal Fixes** — Reduced scroll sensitivity, iOS zoom prevention, special key focus fix (completed 2026-03-30)
-- [x] **Phase 23: Task Textarea and MCP Server** — Auto-growing textarea for task descriptions and MCP server for Claude Desktop (completed 2026-03-30)
+- [x] Phase 21: Card UX Simplification (2/2 plans) — completed 2026-03-30
+- [x] Phase 22: Mobile Terminal Fixes (1/1 plan) — completed 2026-03-30
+- [x] Phase 23: Task Textarea and MCP Server (2/2 plans) — completed 2026-03-30
 
 </details>
 
-### 🚧 v3.0 Autopilot & Cost Intelligence
+<details>
+<summary>✅ v3.0 Autopilot & Cost Intelligence (Phases 24-27) — SHIPPED 2026-04-03</summary>
 
-**Milestone Goal:** Transform the dashboard from a monitoring tool into an autonomous execution controller with full cost visibility across all projects and services.
+- [x] Phase 24: Waiting Accuracy + Safety Foundation (2/2 plans) — completed 2026-04-01
+- [x] Phase 25: Autopilot Core (3/3 plans) — completed 2026-04-01
+- [ ] Phase 26: Cost Intelligence — deferred
+- [ ] Phase 27: Card UX Polish — deferred (subsumed by v4.0)
 
-- [x] **Phase 24: Waiting Accuracy + Safety Foundation** - Fix state detection and lay the database/backend groundwork required before any autopilot runs (completed 2026-04-01)
-- [x] **Phase 25: Autopilot Core** - Autonomous plan-all → execute-all loop with circuit breaker, pause/resume, and real-time progress (completed 2026-04-01)
-- [ ] **Phase 26: Cost Intelligence** - Claude Max token tracking, external services cost page, visual alerts, and autopilot cost gate
-- [ ] **Phase 27: Card UX Polish** - GitHub issues links, Archive All, dynamic GSD shortcuts, message tab styling, and pause card
+</details>
+
+### 🚧 v4.0 Chat-First Dashboard
+
+**Milestone Goal:** Replace the kanban board with a WhatsApp/Telegram-style chat interface where each project is a conversation with Claude/GSD, using @chatscope/chat-ui-kit-react.
+
+- [ ] **Phase 28: Schema + Classifier Foundation** - Chat UI library, extended message schema, and tmux output classifier
+- [ ] **Phase 29: Chat List View** - Project conversation list replacing the kanban board as primary navigation
+- [ ] **Phase 30: Chat Window + Message Rendering** - Per-project chat with classified message bubbles and send box
+- [ ] **Phase 31: Interactivity + Real-Time Streaming** - Tappable actions, unread badges, and WebSocket chat updates
+- [ ] **Phase 32: Project Detail Panel** - Header-tap access to all controls, file tabs, and project metadata
 
 ---
 
 ## Phase Details
 
-### Phase 17: Task Data Layer
-**Goal**: The backend can store and serve per-project tasks
-**Depends on**: Nothing (new table and routes)
-**Requirements**: STORE-01, STORE-02, STORE-03, STORE-04
+### Phase 28: Schema + Classifier Foundation
+**Goal**: The data pipeline can receive raw tmux output, classify it into typed messages, and persist them for chat rendering
+**Depends on**: Phase 27 (v3.0 complete)
+**Requirements**: INF-01, INF-02, MSG-01, MSG-07
 **Success Criteria** (what must be TRUE):
-  1. A `project_tasks` table exists in SQLite with id, project_key, title, description, archived, and created_at columns
-  2. POST /api/gsd/projects/:key/tasks creates a task and returns it with a generated id and timestamp
-  3. GET /api/gsd/projects/:key/tasks returns open tasks by default and archived tasks when the filter is set
-  4. PATCH /api/gsd/projects/:key/tasks/:id updates title, description, or archived status and returns the updated task
-**Plans**: 2 plans
-
-Plans:
-- [x] 17-01-PLAN.md — project_tasks schema + stmts + POST/GET/PATCH routes
-- [x] 17-02-PLAN.md — task endpoint tests in api.test.js
-
-### Phase 18: Task UI
-**Goal**: Users can manage tasks for each project from the project drawer
-**Depends on**: Phase 17
-**Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05
-**Success Criteria** (what must be TRUE):
-  1. Opening a project drawer shows a Tasks tab as the first tab, before Message and GSD file tabs
-  2. User can type a title (required) and optional description and submit to create a task that appears in the list immediately
-  3. Open tasks are listed under the Tasks tab with their title and description visible
-  4. Each task row has an archive action; clicking it removes the task from the open list
-  5. A toggle switches the view to archived tasks, where each task has an unarchive action that moves it back to open
-**Plans**: 2 plans
-
-Plans:
-- [x] 18-01-PLAN.md — GsdTask type + api.gsd.tasks methods (list/create/update)
-- [x] 18-02-PLAN.md — TasksTab component + wire into GsdDrawer as first tab
-
-### Phase 18.1: Persistent Tunnel for Remote Tmux (INSERTED)
-**Goal:** Replace the ephemeral Cloudflare Quick Tunnel with a named Cloudflare Tunnel that has a permanent subdomain, so Railway's GSD_DATA_URL is set once and never needs updating
-**Requirements**: none (inserted phase, no formal requirement IDs)
-**Depends on:** Phase 18
-**Plans:** 2/2 plans complete
-
-Plans:
-- [x] 18.1-01-PLAN.md — Rewrite tunnel.sh for named tunnel + systemd service unit + one-time setup script
-- [x] 18.1-02-PLAN.md — Verify tunnel prerequisites, set Railway GSD_DATA_URL, deploy, and end-to-end verify
-
-### Phase 19: Clipboard Export
-**Goal**: Users can copy all open tasks as formatted markdown for pasting into GSD commands
-**Depends on**: Phase 18
-**Requirements**: CLIP-01, CLIP-02
-**Success Criteria** (what must be TRUE):
-  1. A "Copy all" button is visible in the Tasks tab when at least one open task exists
-  2. Clicking the button copies all open tasks to the clipboard as `- **Title** — description` lines (one per task) and shows a confirmation to the user
-**Plans**: 1 plan
-
-Plans:
-- [x] 19-01-PLAN.md — Add Copy all button with clipboard logic to TasksTab
-
-### Phase 20: Fix Railway Deployment
-**Goal:** Deploy the dequal-patch fix and add a post-build dist assertion so the live dashboard reflects recent client changes and future deploys cannot silently ship stale builds
-**Requirements**: none
-**Depends on:** none (hotfix, runs independently)
-**Plans:** 1/1 plans complete
-
-Plans:
-- [x] 20-01-PLAN.md — add verify-build.sh safeguard, deploy to Railway, verify live dashboard
-
-### Phase 21: Card UX Simplification
-**Goal**: Users can filter the project grid by session state and see only the information that matters on each card
-**Depends on**: Phase 20
-**Requirements**: CARD-01, CARD-02, CARD-03, CARD-04
-**Success Criteria** (what must be TRUE):
-  1. Clicking a state box (Working/Waiting/Paused/Archived) filters the grid to show only projects in that state
-  2. The dashboard shows only Waiting projects by default when first loaded
-  3. A "Show All" button is visible and clicking it displays all non-archived projects regardless of state
-  4. Each project card shows only project name, state indicator, status badges, live URL, and Open Terminal
-**Plans**: 2 plans
-
-Plans:
-- [x] 21-01-PLAN.md — State filter bar: clickable stat boxes, default Waiting, Show All button
-- [x] 21-02-PLAN.md — Slim card face: remove progress/stats/next-action/blockers/roadmap from card
-
-### Phase 22: Mobile Terminal Fixes
-**Goal**: The terminal overlay is comfortable to use on a mobile device without zoom, focus, or scroll annoyances
-**Depends on**: Phase 21
-**Requirements**: MOB-01, MOB-02, MOB-03
-**Success Criteria** (what must be TRUE):
-  1. Scrolling the terminal overlay on a touch device moves at a comfortable speed without overshooting
-  2. Opening the keyboard on iOS does not cause the viewport to zoom in
-  3. Tapping Esc, arrow keys, or other special key buttons in the terminal does not shift scroll position or move focus away from the terminal input
-**Plans**: 1 plan
-
-Plans:
-- [x] 22-01-PLAN.md — Viewport zoom fix + touch scroll damping + special key focus re-focus
-
-### Phase 23: Task Textarea and MCP Server
-**Goal**: Task descriptions support multi-line input and Claude Desktop can read all tracked GSD project planning files via MCP
-**Depends on**: Phase 21
-**Requirements**: TASK-01, MCP-01
-**Success Criteria** (what must be TRUE):
-  1. The task description field is a textarea that grows vertically as text is typed, up to a maximum height, and does not require horizontal scrolling
-  2. Claude Desktop (or any MCP client) can connect to the MCP server and retrieve PROJECT.md, STATE.md, ROADMAP.md, and REQUIREMENTS.md for any tracked GSD project by name
-**Plans**: 2 plans
-
-Plans:
-- [x] 23-01-PLAN.md — Auto-growing textarea replacing description input in TasksTab
-- [x] 23-02-PLAN.md — GSD planning tools domain in MCP server (gsd_list_projects + gsd_read_planning_file)
-
----
-
-### Phase 24: Waiting Accuracy + Safety Foundation
-**Goal**: "Waiting" state correctly means waiting on human input, and the database and backend infrastructure required for safe autopilot operation is in place
-**Depends on**: Phase 23
-**Requirements**: UX-01, UX-02, AUTO-05
-**Success Criteria** (what must be TRUE):
-  1. A project card shows "Waiting" only when the terminal session has paused and is awaiting human keypress — agent-thinking and processing phases show "Working"
-  2. Closing the terminal overlay automatically refreshes the card's state within 2 seconds without a full page reload
-  3. SQLite contains the four new tables (autopilot_runs, claude_api_usage, external_service_costs, process_registry) and all migration scripts run cleanly
-  4. The autopilot backend can spawn a GSD command detached from the Express event loop and return a job ID immediately — no blocking
-  5. The circuit breaker logic halts a simulated autopilot run after 3 consecutive failures on the same phase and marks the run as paused
-**Plans**: 2 plans
-
-Plans:
-- [ ] 24-01-PLAN.md — Waiting state accuracy: refined tmux timer patterns + terminal close auto-refresh
-- [ ] 24-02-PLAN.md — Safety foundation: SQLite autopilot schema + CircuitBreaker class + processSpawner
-
-### Phase 25: Autopilot Core
-**Goal**: Users can launch and control an autonomous plan-all → execute-all loop for any project from the dashboard
-**Depends on**: Phase 24
-**Requirements**: AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-06, AUTO-07
-**Success Criteria** (what must be TRUE):
-  1. Clicking "Plan All" on a project card triggers batch planning of all remaining phases and shows real-time progress via the existing WebSocket feed
-  2. Clicking "Run Autopilot" launches the autonomous execution loop — the dashboard card updates as each phase is planned and executed without any user input
-  3. Clicking "Pause" on an active autopilot run stops the loop at the next safe point (end of current phase) and shows "Paused" on the card
-  4. Clicking "Resume" on a paused run restarts the loop from the next pending phase
-  5. When a phase fails, the autopilot stores the failure context, adjusts the retry prompt, and attempts the phase again before counting it as a failure toward the circuit breaker limit
-**Plans**: 3 plans
-
-Plans:
-- [ ] 25-01-PLAN.md — AutopilotManager class: watchLoop, STATE.md monitoring, phase chaining, failure learning
-- [ ] 25-02-PLAN.md — Autopilot API routes: /api/autopilot/start, /pause, /resume, /status, /plan-all
-- [ ] 25-03-PLAN.md — Autopilot UI: Plan All + Run Autopilot buttons, pause/resume controls, real-time card progress
-
-### Phase 26: Cost Intelligence
-**Goal**: Users can see real-time Claude Max token consumption and external service costs, and autopilot is gated by configurable cost limits
-**Depends on**: Phase 24
-**Requirements**: COST-01, COST-02, COST-03, COST-04, COST-05, COST-06
-**Success Criteria** (what must be TRUE):
-  1. A Cost Intelligence page shows Claude Max session and weekly token usage as a progress bar with color coding (green below 80%, yellow 80-95%, red above 95%)
-  2. The cost page shows current status and estimated cost for Railway, GitHub, Claude, and OpenAI with a data freshness timestamp on every figure
-  3. Per-project cost badges are visible on each project card showing token spend during any active autopilot run
-  4. When token usage reaches the configured threshold, autopilot automatically pauses and sends a Telegram alert
-  5. Manual refresh respects a 60-second frontend debounce and 5-minute backend rate limit; stale data (over 6 hours old) is visually flagged in red
+  1. @chatscope/chat-ui-kit-react and its styles are installed and a minimal chatscope component renders in the app without style conflicts
+  2. The gsd_messages table has type and metadata columns, and inserting a classified message with type "stage_banner" persists and retrieves correctly
+  3. The tmux output classifier receives raw terminal text and returns an array of typed message objects (stage_banner, checkpoint, completion, error, text)
+  4. Tool calls, code output, and verbose working output are classified as "hidden" and excluded from chat-visible message queries
 **Plans**: TBD
 
-Plans:
-- [ ] 26-01: Cost backend — Anthropic Admin API integration, SQLite caching, /api/cost/* routes
-- [ ] 26-02: Cost Intelligence React page — progress bars, service breakdown, burn rate, freshness indicators
-- [ ] 26-03: Autopilot cost gate — pre-execution budget check, auto-pause on threshold breach, cost badges on cards
-
-### Phase 27: Card UX Polish
-**Goal**: Project cards surface GitHub issues, dynamic GSD shortcuts, a pause state, and the message log distinguishes human vs Claude messages
-**Depends on**: Phase 25
-**Requirements**: UX-03, UX-04, UX-05, UX-06, UX-07
+### Phase 29: Chat List View
+**Goal**: Users see their projects as a sorted conversation list and can filter and select any project to open
+**Depends on**: Phase 28
+**Requirements**: CHAT-01, CHAT-02, CHAT-03, CHAT-04, CHAT-05, INF-04
 **Success Criteria** (what must be TRUE):
-  1. Each project card shows a link to the project's GitHub issues page (if configured) that opens in a new tab
-  2. After clicking "Copy" in the Tasks tab, the UI suggests "Archive All?" with a one-click confirm that archives all open tasks
-  3. Each project card shows the recommended next GSD command based on the current phase state (e.g., "/gsd:execute-phase 25" when a phase is planned but not yet executed)
-  4. A project card can be set to "Paused" state from the dashboard, showing a distinct visual indicator and suppressing autopilot from targeting that project
-  5. The Messages tab renders Claude messages with a distinct background and right-alignment, and human messages with a different background and left-alignment
+  1. The main dashboard shows a conversation list (not kanban cards) with projects sorted by most recent message activity
+  2. Each project row displays the project name, a preview of the last message, a relative timestamp, and an unread count badge
+  3. Each row has a colored left border matching the project's session state (yellow=waiting, green=working, red=paused, grey=archived)
+  4. Filter tabs (All, Waiting, Working, Paused, Archived) appear above the list, each showing a count, and tapping one filters the list
+  5. Chatscope components render correctly in both light and dark themes with CSS variable overrides
 **Plans**: TBD
 
-Plans:
-- [ ] 27-01: GitHub issues link + Archive All suggestion + dynamic shortcuts on cards
-- [ ] 27-02: Pause card state — backend pause field, visual indicator, autopilot exclusion
-- [ ] 27-03: Message tab styling — distinguish Claude vs human messages by background color and alignment
+### Phase 30: Chat Window + Message Rendering
+**Goal**: Users can view a full conversation history for any project and send messages, with tmux output rendered as styled chat bubbles by type
+**Depends on**: Phase 29
+**Requirements**: CHAT-06, CHAT-07, CHAT-08, CHAT-10, MSG-02, MSG-03, MSG-04, MSG-05, MSG-06
+**Success Criteria** (what must be TRUE):
+  1. Tapping a project in the chat list opens a chat window showing the full message history as chat bubbles
+  2. GSD stage banners appear as centered system messages; checkpoints/questions show tappable option buttons; next-up blocks show command chips; completion summaries appear as Claude-aligned messages
+  3. Critical errors render with a red border; minor warnings are collapsed under an expandable summary
+  4. A message input box at the bottom sends text to the project's tmux session via send-keys on submit
+  5. A working indicator shows elapsed time, token count, and context window percentage as a gauge when the session is active
+**Plans**: TBD
+
+### Phase 31: Interactivity + Real-Time Streaming
+**Goal**: Chat updates arrive in real time via WebSocket, users can tap suggested actions to compose replies, and unread counts stay accurate
+**Depends on**: Phase 30
+**Requirements**: ACT-01, ACT-02, ACT-03, INF-03
+**Success Criteria** (what must be TRUE):
+  1. Tapping a suggested command chip or next-up action inserts the text into the reply box without auto-sending
+  2. Multi-choice answer buttons from GSD prompts insert the selected choice into the reply box when tapped
+  3. New classified messages stream into the open chat window via WebSocket without requiring page refresh or polling
+  4. When new messages arrive for a project the user is not currently viewing, the unread badge on that project's chat row increments in real time
+**Plans**: TBD
+
+### Phase 32: Project Detail Panel
+**Goal**: Users can access all project controls, file viewers, and metadata by tapping the chat header, and paused/archived projects preserve full history
+**Depends on**: Phase 30
+**Requirements**: DET-01, DET-02, DET-03, DET-04, DET-05, CHAT-09
+**Success Criteria** (what must be TRUE):
+  1. Tapping the chat window header/title opens a slide-in or overlay panel with project details
+  2. The detail panel contains all existing controls: autopilot start/pause/resume, pause project, archive/unarchive, and raw terminal access
+  3. File tabs (State, Roadmap, Requirements, Plan) render markdown content in the detail panel
+  4. Progress bars and status indicators (phase completion, session state, context tokens) are visible in the detail panel
+  5. Paused and archived projects show their full chat history; typing a message in a paused/archived chat triggers a "Reopen session?" confirmation before sending
+**Plans**: TBD
 
 ---
 
@@ -296,10 +194,15 @@ Plans:
 | 21. Card UX Simplification | v2.3 | 2/2 | Complete | 2026-03-30 |
 | 22. Mobile Terminal Fixes | v2.3 | 1/1 | Complete | 2026-03-30 |
 | 23. Task Textarea and MCP Server | v2.3 | 2/2 | Complete | 2026-03-30 |
-| 24. Waiting Accuracy + Safety Foundation | 2/2 | Complete    | 2026-04-01 | - |
-| 25. Autopilot Core | 3/3 | Complete    | 2026-04-01 | - |
-| 26. Cost Intelligence | v3.0 | 0/3 | Not started | - |
-| 27. Card UX Polish | v3.0 | 0/3 | Not started | - |
+| 24. Waiting Accuracy + Safety Foundation | v3.0 | 2/2 | Complete | 2026-04-01 |
+| 25. Autopilot Core | v3.0 | 3/3 | Complete | 2026-04-01 |
+| 26. Cost Intelligence | v3.0 | 0/3 | Deferred | - |
+| 27. Card UX Polish | v3.0 | 0/3 | Deferred | - |
+| 28. Schema + Classifier Foundation | v4.0 | 0/? | Not started | - |
+| 29. Chat List View | v4.0 | 0/? | Not started | - |
+| 30. Chat Window + Message Rendering | v4.0 | 0/? | Not started | - |
+| 31. Interactivity + Real-Time Streaming | v4.0 | 0/? | Not started | - |
+| 32. Project Detail Panel | v4.0 | 0/? | Not started | - |
 
 ---
 
@@ -309,9 +212,16 @@ Plans:
 **Goal**: Users can create a new GSD project — directory, tmux session, and Claude Code launch — from a single button in the dashboard
 **Depends on**: Phase 9
 **Requirements**: CREATE-01, CREATE-02, CREATE-03, CREATE-04
-**Success Criteria** (what must be TRUE):
-  1. A "New project" button is visible in the GSD tab header at all times
-  2. Clicking the button prompts for a project name; submitting creates the directory and a new tmux session named after the project
-  3. The backend sends `claude` followed by `/gsd:new-project` as the first input into the new tmux session so the project scaffold starts automatically
-  4. The new project's card appears in the dashboard grid immediately after creation without requiring a page refresh
 **Status**: Deferred to v3.1+
+
+### Phase 26: Cost Intelligence (Deferred from v3.0)
+**Goal**: Users can see real-time Claude Max token consumption and external service costs, and autopilot is gated by configurable cost limits
+**Depends on**: Phase 24
+**Requirements**: COST-01, COST-02, COST-03, COST-04, COST-05, COST-06
+**Status**: Deferred — not required for v4.0 chat redesign
+
+### Phase 27: Card UX Polish (Deferred from v3.0)
+**Goal**: Project cards surface GitHub issues, dynamic GSD shortcuts, a pause state, and the message log distinguishes human vs Claude messages
+**Depends on**: Phase 25
+**Requirements**: UX-03, UX-04, UX-05, UX-06, UX-07
+**Status**: Deferred — subsumed by v4.0 chat redesign (message styling, dynamic actions, pause state all handled in new chat UI)

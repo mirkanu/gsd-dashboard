@@ -83,13 +83,41 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| CHAT-01 | Phase 29 | Pending |
+| CHAT-02 | Phase 29 | Pending |
+| CHAT-03 | Phase 29 | Pending |
+| CHAT-04 | Phase 29 | Pending |
+| CHAT-05 | Phase 29 | Pending |
+| CHAT-06 | Phase 30 | Pending |
+| CHAT-07 | Phase 30 | Pending |
+| CHAT-08 | Phase 30 | Pending |
+| CHAT-09 | Phase 32 | Pending |
+| CHAT-10 | Phase 30 | Pending |
+| MSG-01 | Phase 28 | Pending |
+| MSG-02 | Phase 30 | Pending |
+| MSG-03 | Phase 30 | Pending |
+| MSG-04 | Phase 30 | Pending |
+| MSG-05 | Phase 30 | Pending |
+| MSG-06 | Phase 30 | Pending |
+| MSG-07 | Phase 28 | Pending |
+| ACT-01 | Phase 31 | Pending |
+| ACT-02 | Phase 31 | Pending |
+| ACT-03 | Phase 31 | Pending |
+| DET-01 | Phase 32 | Pending |
+| DET-02 | Phase 32 | Pending |
+| DET-03 | Phase 32 | Pending |
+| DET-04 | Phase 32 | Pending |
+| DET-05 | Phase 32 | Pending |
+| INF-01 | Phase 28 | Pending |
+| INF-02 | Phase 28 | Pending |
+| INF-03 | Phase 31 | Pending |
+| INF-04 | Phase 29 | Pending |
 
 **Coverage:**
-- v4.0 requirements: 25 total
-- Mapped to phases: 0
-- Unmapped: 25 ⚠️
+- v4.0 requirements: 29 total
+- Mapped to phases: 29
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-03 after v4.0 milestone definition*
+*Last updated: 2026-04-03 after v4.0 roadmap creation*
