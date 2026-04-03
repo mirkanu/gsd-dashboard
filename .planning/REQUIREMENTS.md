@@ -1,94 +1,95 @@
 # Requirements: GSD Dashboard
 
-**Defined:** 2026-04-01
+**Defined:** 2026-04-03
 **Core Value:** At a glance, see where every GSD project stands and interact with any session
 
-## v3.0 Requirements
+## v4.0 Requirements
 
-Requirements for Autopilot & Cost Intelligence milestone. Each maps to roadmap phases.
+Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 
-### Autopilot
+### Chat List
 
-- [x] **AUTO-01**: User can trigger "Plan All Phases" to batch-plan remaining phases for a project
-- [x] **AUTO-02**: User can launch autonomous execution that chains plan → execute → verify per phase
-- [x] **AUTO-03**: User can pause autopilot from the dashboard (stops at next safe point)
-- [x] **AUTO-04**: User can resume a paused autopilot run
-- [x] **AUTO-05**: Autopilot stops automatically after 3 consecutive failures on same phase (circuit breaker)
-- [x] **AUTO-06**: Failed phases extract failure context and retry with adjusted approach (failure learning)
-- [x] **AUTO-07**: Autopilot displays real-time progress (current phase, task, elapsed time) via WebSocket
+- [ ] **CHAT-01**: Projects displayed as chat rows sorted by most recent activity
+- [ ] **CHAT-02**: Each row shows project name, last message preview, timestamp, and unread count
+- [ ] **CHAT-03**: State-colored left border (yellow=waiting, green=working, red=paused, grey=archived)
+- [ ] **CHAT-04**: Filter tabs along top (All, Waiting, Working, Paused, Archived) with project counts
+- [ ] **CHAT-05**: Tapping a chat row opens the per-project chat window
+
+### Chat Window
+
+- [ ] **CHAT-06**: Full chat history with messages parsed from tmux output, displayed as chat bubbles
+- [ ] **CHAT-07**: Message input box that sends text to tmux via send-keys on submit
+- [ ] **CHAT-08**: Working indicator: pulsing "Working... 14m 18s · 5.8k tokens · Context: 45%" with gauge
+- [ ] **CHAT-09**: Paused/archived projects show full chat history; sending triggers "Reopen session?" confirmation
+- [ ] **CHAT-10**: Back button returns to chat list
+
+### Message Classification
+
+- [ ] **MSG-01**: Server-side tmux output classifier that parses terminal text into typed messages
+- [ ] **MSG-02**: GSD stage banners rendered as system messages (centered, styled)
+- [ ] **MSG-03**: Checkpoints/AskUserQuestion prompts rendered with tappable option buttons
+- [ ] **MSG-04**: Next Up blocks rendered with tappable command chips
+- [ ] **MSG-05**: Completion summaries rendered as Claude messages
+- [ ] **MSG-06**: Critical errors rendered as red-bordered messages; minor warnings collapsed
+- [ ] **MSG-07**: Tool calls, code output, and verbose working output hidden completely
+
+### Interactivity
+
+- [ ] **ACT-01**: Tapping a suggested command/action inserts it into reply box (not auto-send)
+- [ ] **ACT-02**: Multi-choice answers from GSD rendered as tappable buttons that insert the choice
+- [ ] **ACT-03**: Unread badge on chat rows when new messages arrive while not viewing that chat
+
+### Project Detail Panel
+
+- [ ] **DET-01**: Tapping chat header/title opens project detail panel (slide-in or overlay)
+- [ ] **DET-02**: Contains all existing controls: autopilot, pause, archive, reopen, raw terminal
+- [ ] **DET-03**: File tabs (State, Roadmap, Requirements, Plan) with markdown rendering
+- [ ] **DET-04**: Progress bars and status indicators
+- [ ] **DET-05**: Project metadata (display name, session state, context tokens)
+
+### Infrastructure
+
+- [ ] **INF-01**: Adopt @chatscope/chat-ui-kit-react for UI components
+- [ ] **INF-02**: Extend gsd_messages table schema for typed messages (type, metadata columns)
+- [ ] **INF-03**: WebSocket streaming of classified messages for real-time chat updates
+- [ ] **INF-04**: Light/dark theme support for chatscope components (CSS variable overrides)
+
+## Future Requirements
+
+Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 
 ### Cost Intelligence
+- **COST-01**: Claude Max session and weekly token usage as progress bar with color coding
+- **COST-02**: External services status/cost page (Railway, GitHub, Claude, OpenAI)
+- **COST-03**: Autopilot cost gate — halt when cost limit reached
 
-- [ ] **COST-01**: Dashboard tracks Claude Max session usage (tokens consumed vs limit)
-- [ ] **COST-02**: Dashboard tracks Claude Max weekly usage with projected burn rate
-- [ ] **COST-03**: Visual alerts at 80% (yellow) and 95% (red) of usage limits
-- [ ] **COST-04**: Autopilot auto-pauses when usage reaches configurable threshold
-- [ ] **COST-05**: External services page shows status and cost for Railway, GitHub, Claude, OpenAI, and other configured services
-- [ ] **COST-06**: Per-project cost badges visible on project cards
-
-### Card & State UX
-
-- [x] **UX-01**: "Waiting" state accurately means waiting on human input — not agent-thinking or processing
-- [x] **UX-02**: Card status refreshes automatically when terminal overlay is closed
-- [ ] **UX-03**: Project cards show link to GitHub issues for the project
-- [ ] **UX-04**: Task list suggests "Archive All" after using Copy
-- [ ] **UX-05**: Cards show dynamic shortcut to next recommended GSD command
-- [ ] **UX-06**: User can pause a project card (defined pause state with visual indicator)
-- [ ] **UX-07**: Messages tab distinguishes Claude vs human messages with different background colors and alignment
-
-## v3.1 Requirements
-
-Deferred to future release. Tracked but not in current roadmap.
-
-### Advanced Automation
-
-- **ADV-01**: Email receipt parsing pipeline for automated cost ingestion from forwarded invoices
-- **ADV-02**: Per-project cost budgets with automatic enforcement
-- **ADV-03**: New project creation: one-click directory + tmux + Claude launch from dashboard
-- **ADV-04**: Predictive cost estimates based on historical phase data
+### Project Management
+- **CREATE-01**: New project creation: one-click directory + tmux + Claude launch
+- **TASK-01**: Task Archive All: suggest bulk archive after Copy
+- **GH-01**: GitHub issues link on project cards
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Auto-fix forever (unlimited retries) | Masks real blockers, wastes tokens — circuit breaker is safer |
-| Auto-downgrade model on cost limit | Quality drops unpredictably — better to pause and alert |
-| Predict phase completion time | Non-deterministic AI execution makes time estimates unreliable |
-| Multi-user auth | Single developer tool |
-| Pause entire project hierarchy | Complex state management, high risk for low value |
+| End-to-end encryption | Single-user local tool, no security benefit |
+| Message search | Defer to v4.1 — focus on core chat UX first |
+| Voice messages / audio | Text-only interaction with Claude |
+| Group chats / multi-user | Single developer tool |
+| Message reactions / emoji | Not useful for project management context |
+| Custom chat themes beyond light/dark | Two themes sufficient |
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTO-01 | Phase 25 | Complete |
-| AUTO-02 | Phase 25 | Complete |
-| AUTO-03 | Phase 25 | Complete |
-| AUTO-04 | Phase 25 | Complete |
-| AUTO-05 | Phase 24 | Complete |
-| AUTO-06 | Phase 25 | Complete |
-| AUTO-07 | Phase 25 | Complete |
-| COST-01 | Phase 26 | Pending |
-| COST-02 | Phase 26 | Pending |
-| COST-03 | Phase 26 | Pending |
-| COST-04 | Phase 26 | Pending |
-| COST-05 | Phase 26 | Pending |
-| COST-06 | Phase 26 | Pending |
-| UX-01 | Phase 24 | Complete |
-| UX-02 | Phase 24 | Complete |
-| UX-03 | Phase 27 | Pending |
-| UX-04 | Phase 27 | Pending |
-| UX-05 | Phase 27 | Pending |
-| UX-06 | Phase 27 | Pending |
-| UX-07 | Phase 27 | Pending |
+| (populated during roadmap creation) | | |
 
 **Coverage:**
-- v3.0 requirements: 20 total
-- Mapped to phases: 20
-- Unmapped: 0
+- v4.0 requirements: 25 total
+- Mapped to phases: 0
+- Unmapped: 25 ⚠️
 
 ---
-*Requirements defined: 2026-04-01*
-*Last updated: 2026-04-01 — traceability complete after roadmap creation*
+*Requirements defined: 2026-04-03*
+*Last updated: 2026-04-03 after v4.0 milestone definition*

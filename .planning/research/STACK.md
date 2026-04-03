@@ -1,387 +1,198 @@
-# Stack Research: GSD Autopilot & Cost Intelligence
+# Technology Stack: v4.0 Chat-First Dashboard
 
-**Domain:** Autonomous workflow execution controller + multi-service cost aggregation
-**Researched:** 2026-03-31
-**Confidence:** HIGH (Claude API endpoints official, job scheduling mature, email parsing established)
+**Project:** GSD Dashboard Chat Redesign
+**Researched:** 2026-04-03
+**Scope:** NEW additions only. Existing validated stack (React 18, Vite 6, Express, SQLite/better-sqlite3, ws, xterm.js, node-pty, Tailwind CSS 3, lucide-react, react-router-dom) is not re-evaluated.
 
-## Executive Summary
+## Recommended Stack Additions
 
-v3.0 adds three new capabilities to the existing Express + SQLite + React stack:
+### Chat UI Components (Client)
 
-1. **GSD Autopilot** — autonomous plan-all → execute-all loop, requires lightweight job scheduling (no Redis/MongoDB needed)
-2. **Claude Max usage tracking** — Admin API cost/usage endpoints with organization-level access control
-3. **External service cost monitoring** — Railway API + GitHub billing API + receipt email parsing
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| @chatscope/chat-ui-kit-react | ^2.1.1 | Chat container, message list, message bubbles, conversation list, typing indicator | Production-tested chat UI primitives. Handles hard UX problems (sticky scroll-to-bottom, auto-scroll on new messages, message grouping by sender/time, typing indicators) that are painful and bug-prone to build from scratch. Peer deps: React 16-19, prop-types. MIT licensed. 1.7k stars, 16k weekly npm downloads. |
+| @chatscope/chat-ui-kit-styles | ^1.4.0 | Base CSS theme for chatscope components | Required companion to chat-ui-kit-react. Ships pre-compiled CSS (`styles.min.css`) -- no SCSS build step needed. Import the compiled CSS once, override with Tailwind utilities and CSS custom properties where needed. |
 
-**Key decision:** Use lightweight, in-process job scheduling (node-cron or Bree) instead of distributed queue systems. Autopilot is single-machine (local development controller), not a horizontally-scaled service. No new database tables needed — reuse existing SQLite schema.
+**Tailwind coexistence strategy:** Chatscope uses BEM-namespaced classes (`.cs-message`, `.cs-conversation-list`, `.cs-message-input`). These do not collide with Tailwind utility classes. The integration pattern is:
 
----
+1. Import `@chatscope/chat-ui-kit-styles/dist/default/styles.min.css` in the Vite entry point
+2. Wrap chatscope components in Tailwind-styled `<div>` containers for layout and spacing
+3. Override chatscope theme colors via CSS custom property overrides scoped to `.dark` class for dark mode support
+4. Do NOT attempt to rewrite chatscope component internals in Tailwind -- use their CSS as the rendering base
 
-## Recommended Stack
+**Dark mode:** Chatscope's default theme is light-only. Apply CSS overrides targeting `.cs-*` selectors inside a `.dark` parent. Approximately 20-30 CSS variable overrides needed (backgrounds, text colors, borders, input backgrounds). This is a one-time stylesheet, not per-component work.
 
-### Core Technologies (New)
+**Risk mitigation:** If chatscope proves too rigid for custom message types (tappable commands, stage banners), its components can be progressively replaced with custom Tailwind components. The data layer (WebSocket messages, SQLite persistence) is independent of the UI library. Start with chatscope for ConversationList and MessageList scroll behavior; build custom message renderers for specialized message types within chatscope's `Message.CustomContent`.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| **node-cron** | ^3.0.2 | Autonomous task scheduling for GSD plan/execute loop | Mature, no external dependencies (no Redis/MongoDB), simple GNU cron syntax, synchronous execution suitable for sequential GSD phases. Runs in main thread, sufficient for single-machine autopilot. |
-| **Anthropic Admin API** | v2023-06-01 | Claude API usage/cost tracking | Official endpoint for organization-level billing data. Requires `sk-ant-admin...` key (organization admin only). Returns token counts, cost breakdowns by model/workspace, 5-minute data freshness. |
-| **mailparser** | ^3.6.0 | Receipt email parsing for cost ingestion | Industry-standard MIME parser handles large emails (100MB+), extracts attachments. Low overhead, works with imap/pop3 adapters. Alternative: AgentMail for managed solution, but overkill for single-user dashboard. |
-| **node-fetch** (or built-in fetch) | Node.js 18+ | HTTP client for Railway API, GitHub API | Already available in Node 18+. Simple, no additional dependency. |
+### Terminal Output Processing (Server)
 
-### Supporting Libraries (New)
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| strip-ansi | 6.0.1 | Remove ANSI escape codes from tmux capture-pane output for classification | The tmux output contains ANSI color/cursor codes that must be stripped before regex pattern matching. strip-ansi is the standard tool (600M+ weekly downloads, zero deps). **Use version 6.0.1 specifically** -- it is the last CommonJS-compatible version. v7+ is ESM-only and the server uses `require()`. |
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| **simple-cron** (alternative) | ^1.0.0 | Alternative to node-cron if you need fewer features | Only if node-cron feels bloated; simpler API, less active maintenance. NOT recommended unless you have specific constraints. |
-| **node-schedule** | ^2.1.0 | Alternative task scheduler with richer syntax | More powerful than node-cron, supports date/time/recurrence patterns. Use ONLY if you need complex scheduling (e.g., "every 2nd Tuesday"). For simple "every 30 minutes", node-cron is sufficient. |
-| **axios** | ^1.7.0 | Optional HTTP client wrapper (convenience) | If you prefer axios's interceptor/timeout syntax over node-fetch. NOT required — use built-in fetch to reduce dependencies. |
-| **dotenv** | ^16.4.0 | Environment variable management for API keys | Already likely in use; ensure it's in package.json for Admin API key (`CLAUDE_ADMIN_API_KEY`). |
+**Why not ansi_up or ansi-to-html?** Those convert ANSI to styled HTML for display. We do not need that -- xterm.js already handles raw terminal rendering. The classifier needs clean plaintext for pattern matching. Classified results get rendered as chat message components, not as terminal HTML. strip-ansi is the right tool for this job.
 
-### Database Schema (SQLite Extension — No New Tables)
+**Why not ansi-regex directly?** strip-ansi already uses ansi-regex internally. Importing ansi-regex to manually `.replace()` is reimplementing strip-ansi with extra steps.
 
-Reuse existing better-sqlite3 with schema additions:
+### Message Classification (Server -- No New Dependency)
+
+Build a custom classifier as a server module (`server/gsd/classifier.js`) using regex pattern matching. No NLP or ML library needed. The patterns are specific to Claude Code / GSD output:
+
+| Message Type | Detection Pattern | Example |
+|-------------|-------------------|---------|
+| `stage` | `Phase \d+`, `PLAN:`, `EXECUTE:`, `RESEARCH:` | "Phase 3: Execute migration" |
+| `checkpoint` | Checkmark lines, progress percentages, `Step \d+ of \d+` | "Step 3 of 5 complete" |
+| `completion` | `PHASE COMPLETE`, `SUMMARY:`, success banners | "PHASE COMPLETE -- all tests pass" |
+| `error` | `Error:`, `BLOCKED`, stack traces, `FAILED` | "Error: npm test failed with exit code 1" |
+| `input_request` | `? `, `Do you want`, `(Y/n)`, multi-choice `>` | "? Continue with phase 4? (Y/n)" |
+| `rate_limit` | Existing patterns in `server/gsd/tmux.js` | "Rate limit exceeded, try again in 2 hours" |
+| `working` | Spinner patterns, tool use lines, `Reading`, `Writing` | "Reading server/db.js..." |
+| `text` | Default fallback | Any unclassified output |
+
+The existing `server/gsd/tmux.js` already has pattern matching for rate limits and state detection. The classifier extends these patterns rather than replacing them.
+
+### Message Persistence (No New Dependency -- Schema Extension)
+
+The existing `gsd_messages` table already stores per-project messages with direction and timestamp. Extend via migration:
 
 ```sql
--- Track Claude API usage from Admin API polls
-CREATE TABLE IF NOT EXISTS claude_api_usage (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  org_id TEXT NOT NULL,
-  model TEXT NOT NULL,
-  input_tokens INTEGER DEFAULT 0,
-  output_tokens INTEGER DEFAULT 0,
-  cost_usd REAL DEFAULT 0,
-  bucket_date TEXT NOT NULL,  -- ISO date YYYY-MM-DD
-  fetched_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-);
-CREATE INDEX IF NOT EXISTS idx_claude_usage_date ON claude_api_usage(bucket_date DESC);
-
--- Track external service costs
-CREATE TABLE IF NOT EXISTS external_service_costs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  service TEXT NOT NULL,  -- 'railway', 'github', 'openai', etc.
-  cost_usd REAL NOT NULL,
-  billing_period TEXT,     -- e.g., "2026-03" for monthly
-  details TEXT,           -- JSON: {plan: "pro", usage: {...}}
-  fetched_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-);
-CREATE INDEX IF NOT EXISTS idx_service_costs_service ON external_service_costs(service, billing_period DESC);
-
--- Track GSD autopilot execution runs
-CREATE TABLE IF NOT EXISTS autopilot_runs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  project TEXT NOT NULL,
-  started_at TEXT NOT NULL,
-  completed_at TEXT,
-  status TEXT CHECK(status IN ('running', 'success', 'failed', 'paused')),
-  phase_outputs TEXT,     -- JSON array of {phase_name, result, duration_ms}
-  error_message TEXT,
-  triggered_by TEXT,      -- 'schedule', 'manual', 'webhook'
-  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-);
-CREATE INDEX IF NOT EXISTS idx_autopilot_project ON autopilot_runs(project, completed_at DESC);
+ALTER TABLE gsd_messages ADD COLUMN message_type TEXT DEFAULT 'text';
+ALTER TABLE gsd_messages ADD COLUMN metadata TEXT;
 ```
 
-### External APIs (No Local Installation)
+- `message_type`: `'text'|'stage'|'checkpoint'|'completion'|'error'|'input_request'|'command'|'system'|'rate_limit'|'working'`
+- `metadata`: JSON blob for structured data (choices array for input_request, phase info for stage banners, error details)
 
-| API | Authentication | Purpose | Rate Limits |
-|-----|-----------------|---------|------------|
-| **Anthropic Admin API** | `sk-ant-admin...` API key | Fetch `/v1/organizations/usage_report/messages` and `/v1/organizations/cost_report` | 1 request/min recommended for polling; 5-min data freshness |
-| **Railway API** | Bearer token (`railway_prod_...`) | `GET /v1/billing/usage` for resource costs | Standard rate limits; check Railway docs |
-| **GitHub REST API** | Personal access token (classic or fine-grained) | `GET /repos/{owner}/{repo}/git/refs` for usage, `GET /user/billing/actions` for usage | 5,000 requests/hour (standard), 15,000 (authenticated) |
-| **OpenAI API** | Bearer token | `GET /v1/dashboard/billing/usage?start_date=...&end_date=...` | Check OpenAI docs; typically generous for billing queries |
+Follow the existing migration pattern in `server/db.js` (try SELECT, catch, ALTER TABLE). No new ORM, query builder, or migration tool needed.
 
----
+### Real-Time Chat Streaming (No New Dependency -- Protocol Extension)
+
+Extend the existing `ws` WebSocket protocol with new message types:
+
+```javascript
+// New WS message types for chat
+{ type: 'chat:message', project: string, message: { id, type, content, metadata, created_at } }
+{ type: 'chat:typing',  project: string, active: boolean }
+{ type: 'chat:unread',  project: string, count: number }
+```
+
+The existing `useWebSocket` hook on the client handles reconnection and message dispatch. Add chat message types to the discriminated union in `client/src/lib/types.ts`.
+
+No Socket.IO, no Pusher, no additional real-time library needed.
+
+## What NOT to Add
+
+| Temptation | Why Avoid | What to Do Instead |
+|------------|-----------|-------------------|
+| Socket.IO | Already using raw `ws`. Socket.IO adds 40KB+ bundle for rooms/namespaces this single-user app does not need. | Extend existing `ws` message types |
+| @chatscope/use-chat | Chatscope's state management hook. Over-engineered for this use case -- it assumes a generic chat app, not a dashboard consuming classified terminal output. Would fight with existing React state + WebSocket patterns. | useState/useReducer for message arrays, WebSocket for updates |
+| react-virtuoso or react-window | For virtualizing long message lists. Chatscope's MessageList already handles scroll behavior internally. | Only add if performance degrades with 1000+ messages per project (unlikely given pagination) |
+| date-fns or dayjs | For relative timestamps ("2m ago"). | Write a 20-line `timeAgo()` utility. The project already avoids date libraries. |
+| DOMPurify | For sanitizing message HTML. | Messages are classified server-side and rendered as React components with text content -- no `dangerouslySetInnerHTML` needed. |
+| sass / node-sass | For chatscope SCSS theming. | Chatscope ships pre-compiled CSS. Override with plain CSS. No SCSS toolchain needed. |
+| Zustand / Jotai / Redux | For chat state management. | React useState + useReducer + context is sufficient for per-project message arrays. Adding a state library for one feature adds unnecessary complexity. |
+| prop-types | Listed as chatscope peer dep. | Already bundled with React 18 projects transitively. No explicit install needed in most setups; add only if peer dep warning appears. |
+| Markdown renderer for messages | react-markdown is already installed. | Reuse existing `react-markdown` + `remark-gfm` for rendering message content that contains markdown. |
+
+## Alternatives Considered
+
+| Category | Recommended | Alternative | Why Not |
+|----------|-------------|-------------|---------|
+| Chat UI | @chatscope/chat-ui-kit-react | Build from scratch with Tailwind | Chatscope solves scroll-to-bottom, typing indicators, conversation list layout, and message grouping out of the box. Building these from scratch takes 2-3x longer and introduces subtle scroll bugs. The SCSS/Tailwind coexistence is manageable with the pre-compiled CSS approach. |
+| Chat UI | @chatscope/chat-ui-kit-react | stream-chat-react (GetStream) | Commercial SDK requiring their hosted backend. Massive overkill for a local single-user dashboard. |
+| Chat UI | @chatscope/chat-ui-kit-react | Custom with shadcn components | shadcn has no chat primitives. You would be building MessageList scroll behavior, ConversationList, typing indicators, and message grouping from scratch using generic Card/List components. Chatscope is purpose-built for this. |
+| ANSI stripping | strip-ansi@6.0.1 | Custom regex `\x1b\[[0-9;]*m` | The simple regex misses cursor movement sequences, OSC sequences, and edge cases. strip-ansi handles all ANSI escape types correctly. 10 lines of import vs 50+ lines of incomplete regex. |
+| Message store | SQLite (existing) | Redis | Single-user local app. Redis adds infrastructure dependency for zero benefit. SQLite WAL mode handles concurrent reads from the poller + writes from the classifier without contention. |
+| Real-time | ws (existing) | Pusher / Ably | Cloud pub-sub services for multi-user apps. This is single-user, single-machine. Raw WebSocket is already working. |
 
 ## Installation
 
 ```bash
-# Core task scheduling
-npm install node-cron@^3.0.2
+# Client dependencies (chat UI)
+cd client && npm install @chatscope/chat-ui-kit-react@^2.1.1 @chatscope/chat-ui-kit-styles@^1.4.0
 
-# Email parsing (for receipt ingestion)
-npm install mailparser@^3.6.0
-
-# Existing stack already provides:
-# - express (API routes for new endpoints)
-# - better-sqlite3 (cost tracking storage)
-# - ws (WebSocket for real-time cost updates)
-# - dotenv (API key management)
-
-# Dev dependencies (optional, for testing)
-npm install -D node-mocks-http@^1.13.0
+# Server dependency (ANSI processing)
+npm install strip-ansi@6.0.1
 ```
 
-**No breaking changes** — all new dependencies are additive. Existing API routes, database, and frontend remain untouched.
+**Total new dependencies: 3 packages** (2 client, 1 server). Zero new dev dependencies. No native module compilation. No new infrastructure.
 
----
+## Version Compatibility Matrix
 
-## New API Routes (Integration Points)
+| New Package | React 18 | Vite 6 | Tailwind 3 | Node 18+ | better-sqlite3 |
+|-------------|----------|--------|------------|----------|----------------|
+| @chatscope/chat-ui-kit-react@2.1.1 | Yes (supports 16-19) | Yes (standard React lib) | Coexists (BEM CSS namespaced) | N/A (client only) | N/A |
+| @chatscope/chat-ui-kit-styles@1.4.0 | N/A (CSS only) | Yes (CSS import) | Coexists (no class conflicts) | N/A (client only) | N/A |
+| strip-ansi@6.0.1 | N/A (server only) | N/A | N/A | Yes (CJS, no native deps) | N/A |
 
-### GSD Autopilot Controller
+## Integration Points with Existing Stack
 
-```javascript
-// POST /api/autopilot/start?project=PROJECT_NAME
-// Manually trigger autonomous plan → execute loop for a project
-// Payload: { max_phases?: 5, timeout_minutes?: 60 }
-// Response: { run_id, started_at, status: 'running' }
+### Client Data Flow
 
-// GET /api/autopilot/runs?project=PROJECT_NAME
-// List past autopilot execution runs
-// Response: { runs: [...], current_run?: {...} }
-
-// GET /api/autopilot/status/:runId
-// Poll status of a single autopilot run
-// Response: { run_id, status, phases_completed, error, updated_at }
-
-// POST /api/autopilot/pause/:runId
-// Pause a running autopilot
-// Response: { run_id, status: 'paused' }
+```
+useWebSocket (existing)
+    |
+    v
+chat:message / chat:typing / chat:unread (new WS types)
+    |
+    v
+ChatView component (new)
+    |
+    +---> ConversationList (@chatscope) -- project list with unread badges
+    +---> ChatContainer (@chatscope) -- per-project message view
+              |
+              +---> MessageList (@chatscope) -- scroll, grouping, auto-scroll
+              +---> Message (@chatscope) -- standard text messages
+              +---> Message.CustomContent -- stage banners, tappable commands, errors
+              +---> MessageInput (@chatscope) -- send box (reuses existing send-keys API)
 ```
 
-### Claude API Usage Tracking
+- Import chatscope CSS in `client/src/main.tsx` alongside existing Tailwind import
+- Chatscope components receive data from React state updated by WebSocket
+- Existing `react-router-dom` routes for navigation between chat list and detail
+- Existing `react-markdown` for rendering markdown within message content
 
-```javascript
-// GET /api/costs/claude-usage?days=7
-// Fetch Claude API usage from Admin API, cache in SQLite
-// Response: { daily: [{date, input_tokens, output_tokens, cost_usd, model}], total_cost_usd }
+### Server Data Flow
 
-// GET /api/costs/claude-limits
-// Check Claude Max subscription limits (requires research)
-// Response: { max_5x_hours: 140-280, max_20x_hours: 240-480, used_hours, window_type: 'rolling_5h' }
-
-// GET /api/costs/external-services
-// Aggregate Railway, GitHub, OpenAI, other services
-// Response: { services: [{name, cost_usd, billing_period, last_updated}], total_monthly_usd }
+```
+tmux capture-pane (existing, polling)
+    |
+    v
+strip-ansi (new) -- clean text extraction
+    |
+    v
+classifier module (new) -- regex pattern matching
+    |
+    v
+gsd_messages table (existing, extended schema)
+    |
+    v
+WebSocket broadcast (existing) -- chat:message events to client
 ```
 
-### Email Receipt Ingestion (Deferred to Future Milestone)
-
-```javascript
-// POST /api/costs/ingest-receipt
-// Parse attached email receipt, extract cost data
-// Payload: { email_raw: "...", service: "railway|github|openai" }
-// Response: { extracted_cost_usd, service, billing_period, confidence }
-// (Currently scaffolding only — full implementation in v3.1 or later)
-```
-
----
-
-## Alternatives Considered
-
-| Recommended | Alternative | When to Use Alternative | Notes |
-|-------------|-------------|-------------------------|-------|
-| **node-cron** | **Bree** | If you need: worker threads for CPU-intensive jobs, advanced concurrency, long-running job isolation | Bree launches separate worker processes, heavier overhead. Overkill for simple GSD orchestration (plan-all → execute is sequential, not parallel). |
-| **node-cron** | **node-schedule** | If you need: rich date/time patterns, recurring schedules across timezones | node-schedule more powerful, but added complexity. node-cron's GNU syntax sufficient for "every 30 minutes" or "at 2 AM daily". |
-| **node-cron** | **BullMQ (Redis-backed)** | If you need: distributed execution, job persistence across restarts, horizontal scaling | Requires external Redis service. GSD autopilot runs on single machine (developer's local). No need for distributed state. |
-| **Built-in fetch** | **axios** | If you prefer: interceptors, automatic JSON serialization, timeout middleware | axios adds ~30KB. Node 18+ fetch is sufficient and reduces dependencies. Use fetch unless you already have axios. |
-| **mailparser** | **AgentMail (managed)** | If you want: full inbox management, semantic search, automated threading | AgentMail is SaaS, requires paid plan. mailparser is library — parse emails you already have (e.g., from Gmail API). Simpler for single-user dashboard. |
-
----
-
-## What NOT to Use
-
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| **Redis-backed queues** (Bull, BullMQ, RQ) | GSD autopilot runs locally on single machine; Redis adds operational overhead, requires container orchestration | **node-cron** for simple scheduling; Bree if you need worker threads |
-| **MongoDB/Agenda scheduler** | Adds external dependency, persistence overhead. Better-sqlite3 already in use. | **SQLite for cost tracking** (already done); node-cron for task scheduling |
-| **Full workflow engines** (Temporal, Prefect, Airflow) | Enterprise-scale; overkill for single developer running 1-2 projects at a time. Complex learning curve. | **node-cron + simple Express routes** for autopilot orchestration |
-| **RabbitMQ/Kafka event streaming** | Premature optimization. Single machine doesn't need message broker. | **WebSocket broadcasts to React frontend** (already in place) for real-time updates |
-| **cron system calls** (`node-cron` with bash) | Brittle, platform-dependent, hard to debug, no error handling. | **node-cron native callbacks** for in-process orchestration |
-| **Third-party receipt OCR** (AWS Textract, GCP Vision) | Cost, API overhead, latency. Emails have structured cost data already. | **mailparser + regex extraction** for typical SaaS invoices |
-
----
-
-## Stack Patterns by Scenario
-
-### Scenario: Autopilot runs on schedule (every 30 minutes)
-
-```javascript
-// Use node-cron
-const cron = require('node-cron');
-
-cron.schedule('*/30 * * * *', async () => {
-  for (const project of projects) {
-    await startAutopilot(project);
-  }
-});
-```
-
-**Why:** Simple, in-process, no external dependencies.
-
-### Scenario: Autopilot triggered manually from dashboard button
-
-```javascript
-// Use existing Express route
-POST /api/autopilot/start?project=PROJECT_NAME
-
-// Backend spawns GSD plan-all → execute-all loop in background
-// Updates autopilot_runs table with status
-// Broadcasts progress via WebSocket to React frontend
-```
-
-**Why:** Decouples UI from long-running task. WebSocket keeps frontend responsive.
-
-### Scenario: Track Claude Max usage and trigger alerts
-
-```javascript
-// Poll Admin API every hour
-cron.schedule('0 * * * *', async () => {
-  const usage = await fetchClaudeUsage(adminApiKey);
-  db.insert('claude_api_usage', usage);
-
-  if (usage.cost_usd > WEEKLY_BUDGET) {
-    // Emit alert to dashboard
-    broadcast({ type: 'budget_alert', cost: usage.cost_usd });
-  }
-});
-```
-
-**Why:** Admin API is official, requires org admin key. Cache results in SQLite to avoid repeated API calls.
-
----
-
-## Version Compatibility
-
-| Package | Required Node Version | Conflicts | Notes |
-|---------|----------------------|-----------|-------|
-| **node-cron@^3.0.2** | >=14.0.0 | None known | Active maintenance, 2024+ releases |
-| **mailparser@^3.6.0** | >=12.0.0 | None known | Depends on streaming-mime-parser |
-| **better-sqlite3** | >=14.21.0 | None with cron/mailparser | Already in use; synchronous API plays well with node-cron |
-| **Node 18+ fetch** | >=18.0.0 | N/A | Removes need for node-fetch dependency |
-
----
-
-## Configuration (Environment Variables)
-
-Add to `.env` or Docker/Railway environment:
-
-```bash
-# Anthropic Admin API (organization-level key, not user API key)
-CLAUDE_ADMIN_API_KEY=sk-ant-admin-...
-CLAUDE_ORG_ID=org-...
-
-# External service APIs (optional if not tracking those services)
-RAILWAY_API_TOKEN=railway_prod_...
-GITHUB_API_TOKEN=ghp_...
-OPENAI_API_TOKEN=sk-...
-
-# Autopilot configuration
-AUTOPILOT_SCHEDULE="*/30 * * * *"    # every 30 minutes
-AUTOPILOT_MAX_PHASES=5               # stop after N phases
-AUTOPILOT_TIMEOUT_MINUTES=120
-AUTOPILOT_ENABLED=true
-
-# Cost tracking
-COST_FETCH_SCHEDULE="0 * * * *"      # hourly
-WEEKLY_BUDGET_LIMIT_USD=500
-```
-
----
-
-## Testing & Verification
-
-### Unit Tests
-
-```bash
-# Test node-cron scheduling logic
-npm run test:server -- --grep "autopilot"
-
-# Test Admin API client (mock fetch)
-npm run test:server -- --grep "claude-usage"
-
-# Test mailparser integration
-npm run test:server -- --grep "email-receipt"
-```
-
-### Integration Tests
-
-```bash
-# Spin up local SQLite, verify cost tracking writes to DB
-npm run dev
-
-# Manual: Trigger autopilot from dashboard, verify runs table
-# Manual: Check Claude Admin API response format against official docs
-```
-
-### Deployment Checklist
-
-- [ ] CLAUDE_ADMIN_API_KEY set in Railway environment (test with `/api/costs/claude-usage`)
-- [ ] node-cron schedule syntax validated (test with crontab.guru)
-- [ ] Autopilot runs table created in SQLite (migration in db.js)
-- [ ] WebSocket broadcasts working for autopilot progress
-- [ ] Claude Max limits endpoint verified against current API docs (may change)
-
----
-
-## Known Limitations & Risks
-
-### Admin API Key Exposure
-
-**Risk:** CLAUDE_ADMIN_API_KEY is organization-level admin secret. If exposed, attacker can read entire org's usage/costs.
-
-**Mitigation:**
-- Store in Railway secrets (never in `.env` file)
-- Log access to sensitive endpoints (POST /api/costs/...)
-- Consider rate-limiting cost endpoints to dashboard user only
-- Rotate key quarterly
-
-### Claude Max Limits Not Publicly Documented
-
-**Risk:** Claude Max has 5-hour rolling window + 7-day weekly limits, but "5x" and "20x" hour allocations aren't in official API. May need to reverse-engineer from `/stats` in Claude.ai.
-
-**Status:** Currently research-only. May require reading from Claude Code session logs or user documentation.
-
-**Recommended approach:** v3.0 tracks API usage (tokens, cost); v3.1 can add Max subscription limits once API stabilizes.
-
-### Email Receipt Parsing Deferred
-
-**Risk:** Parsing SaaS invoices is fragile — layouts vary per service, formats change.
-
-**Status:** Scaffolding only in v3.0. Full implementation (mailparser + regex rules per service) deferred to v3.1.
-
-**Alternative:** Continue manual entry in dashboard UI; email parsing as convenience feature later.
-
----
-
-## Integration with Existing Stack
-
-### Express Server
-
-- Add new routes to `server/routes/autopilot.js`, `server/routes/costs.js`
-- Integrate node-cron scheduler in `server/index.js` startup
-- Reuse existing `db` and WebSocket broadcast for updates
-
-### SQLite Database
-
-- Add schema migration in `server/db.js` (like existing token_usage migrations)
-- No schema conflicts with existing tables
-
-### React Frontend
-
-- Add "Costs" page to dashboard navigation
-- Add "Autopilot" card to project cards (current state, next run, manual trigger button)
-- Consume new WebSocket events: `autopilot_start`, `autopilot_complete`, `cost_alert`
-- Use existing `<Card>` and skeleton components from shadcn
-
-### MCP Server
-
-- Optionally expose `/tools/trigger-autopilot` for Claude Desktop integration
-- Expose `/tools/query-costs` for cost queries from Claude Code
-- (Non-blocking for v3.0 core features)
-
----
+- Classifier runs on existing state detection polling interval
+- Reuses `capturePaneText()` from `server/gsd/tmux.js`
+- Classified messages persisted via existing `insertGsdMessage` prepared statement (extended)
+- WebSocket broadcast uses existing `wss.clients.forEach()` pattern
+
+## Confidence Assessment
+
+| Decision | Confidence | Reason |
+|----------|------------|--------|
+| @chatscope/chat-ui-kit-react | MEDIUM | 1.7k stars, 16k weekly downloads, React 18 compatible, MIT license. Concern: last release May 2025 (10 months ago), moderately active maintenance. Verified via GitHub repo and npm. Fallback path exists (progressive replacement with custom components). |
+| @chatscope/chat-ui-kit-styles | MEDIUM | Required companion to chat-ui-kit-react. Pre-compiled CSS confirmed via GitHub README. Dark mode requires manual CSS overrides (not built-in). |
+| strip-ansi@6.0.1 | HIGH | 600M+ weekly downloads, zero dependencies, CJS compatible at v6. Industry standard for ANSI stripping. Verified ESM-only change at v7 via GitHub/npm. |
+| No new state management | HIGH | Existing useState + WebSocket pattern is proven in this codebase. Chat state (message array per project, unread count, typing boolean) is simple enough for React built-ins. |
+| SQLite schema extension | HIGH | Existing `gsd_messages` table + ALTER TABLE migration. Proven migration pattern already in `server/db.js` (autopilot_runs, model_pricing). |
+| No new WebSocket library | HIGH | Existing `ws` server + `useWebSocket` client hook already handles reconnection, message dispatch, broadcasting. Adding message types is additive, not architectural. |
+| Custom classifier (no library) | HIGH | Claude Code / GSD output patterns are project-specific. No generic NLP library would handle these better than targeted regex. Existing pattern matching in `tmux.js` proves this approach. |
 
 ## Sources
 
-- [Anthropic Usage and Cost API](https://platform.claude.com/docs/en/build-with-claude/usage-cost-api) — Official Admin API endpoints, authentication, examples (HIGH confidence)
-- [node-cron NPM](https://www.npmjs.com/package/node-cron) — Scheduling library, v3.0.2 current release (HIGH confidence)
-- [mailparser GitHub](https://github.com/nodemailer/mailparser) — Email MIME parsing, v3.6.0 active maintenance (HIGH confidence)
-- [Railway API Docs](https://docs.railway.com/integrations/api) — Cost tracking endpoints (HIGH confidence)
-- [GitHub REST API Billing](https://docs.github.com/en/rest/billing) — Recent API additions March 2026, usage reporting (HIGH confidence)
-- [BullMQ vs node-cron Comparison](https://judoscale.com/blog/node-task-queues) — Job queue alternatives, when to use each (MEDIUM confidence — not official, but credible blog)
-- [Bree Task Scheduler](https://jobscheduler.net/) — Worker thread-based alternative (MEDIUM confidence — less popular than node-cron)
-
----
-
-**Stack research for:** GSD Dashboard v3.0 (Autopilot & Cost Intelligence)
-**Researched:** 2026-03-31
-**Next steps:** Architecture phase to detail system boundaries, error handling, API contract changes
+- [chatscope/chat-ui-kit-react GitHub](https://github.com/chatscope/chat-ui-kit-react) -- Component list, peer deps (React 16-19), MIT license, v2.1.1
+- [chatscope npm](https://www.npmjs.com/package/@chatscope/chat-ui-kit-react) -- Version 2.1.1, ~16k weekly downloads
+- [chatscope Storybook](https://chatscope.io/storybook/react/) -- Component demos and API reference
+- [chatscope/chat-ui-kit-styles GitHub](https://github.com/chatscope/chat-ui-kit-styles) -- SCSS source, pre-compiled CSS availability
+- [strip-ansi GitHub](https://github.com/chalk/strip-ansi) -- CJS/ESM versioning, v6 is last CJS
+- [ansi_up GitHub](https://github.com/drudru/ansi_up) -- Evaluated and rejected (ANSI-to-HTML, not needed for classification)
+- [chatscope package.json](https://raw.githubusercontent.com/chatscope/chat-ui-kit-react/master/package.json) -- Verified peer dependencies
