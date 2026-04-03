@@ -651,7 +651,16 @@ function AutopilotControls({ project, autopilotRun }: {
     if (busy) return;
     if (!window.confirm(`Start autopilot for "${project.name}"? This will plan and execute all remaining phases automatically.`)) return;
     setBusy(true);
-    try { await api.autopilot.start(project.name); }
+    try {
+      const result = await api.autopilot.start(project.name);
+      // Optimistic update — set status to running immediately so UI reflects it
+      if (result.runId) {
+        eventBus.publish({
+          type: 'autopilot_progress',
+          data: { projectName: project.name, runId: result.runId, status: 'started', phaseNum: null },
+        } as any);
+      }
+    }
     catch (err) { showError(err); }
     finally { setBusy(false); }
   };
@@ -959,6 +968,21 @@ export function GSD() {
       setProjects(data.projects);
       setRateLimit(data.rateLimit ?? { active: false, resetAt: null });
       setError(null);
+
+      // Fetch autopilot status for all non-archived projects
+      const nonArchived = data.projects.filter((p: GsdProject) => p.sessionState !== 'archived');
+      const statuses = await Promise.all(
+        nonArchived.map((p: GsdProject) => api.autopilot.status(p.name).catch(() => null))
+      );
+      setAutopilotRuns(prev => {
+        const next = new Map(prev);
+        statuses.forEach((s) => {
+          if (s && s.runId && s.status !== 'idle') {
+            next.set(s.projectName, s);
+          }
+        });
+        return next;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load GSD data");
     } finally {
