@@ -767,13 +767,14 @@ function AutopilotControls({ project, autopilotRun }: {
 // ─── Project card ─────────────────────────────────────────────────────────────
 
 function ProjectCard({
-  project, onSelect, onOpenTerminal, onArchive, onUnarchive, onReopenTmux, autopilotRun
+  project, onSelect, onOpenTerminal, onArchive, onUnarchive, onPauseSession, onReopenTmux, autopilotRun
 }: {
   project: GsdProject;
   onSelect: (project: GsdProject) => void;
   onOpenTerminal: (initialValue: string) => void;
   onArchive: () => void;
   onUnarchive: () => void;
+  onPauseSession: () => void;
   onReopenTmux: () => void;
   autopilotRun: import('../lib/types').AutopilotRun | null;
 }) {
@@ -875,9 +876,17 @@ function ProjectCard({
         <AutopilotControls project={project} autopilotRun={autopilotRun} />
       )}
 
-      {/* Archive / Unarchive button */}
+      {/* Pause / Archive / Unarchive buttons */}
       {project.sessionState !== "archived" ? (
-        <div className="px-4 pb-3 pt-1" onClick={(e) => e.stopPropagation()}>
+        <div className="px-4 pb-3 pt-1 flex gap-3" onClick={(e) => e.stopPropagation()}>
+          {project.sessionState !== "paused" && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onPauseSession(); }}
+              className="text-[10px] text-red-600 hover:text-red-400 transition-colors"
+            >
+              Pause
+            </button>
+          )}
           <button
             onClick={(e) => { e.stopPropagation(); onArchive(); }}
             className="text-[10px] text-gray-600 hover:text-gray-400 transition-colors"
@@ -939,6 +948,13 @@ export function GSD() {
       if (manual) setRefreshing(false);
     }
   }, []);
+
+  const pauseSession = useCallback(async (name: string) => {
+    try {
+      await api.gsd.pauseSession(name);
+      load();
+    } catch { /* silent fail */ }
+  }, [load]);
 
   const archiveProject = useCallback(async (name: string) => {
     try {
@@ -1116,6 +1132,7 @@ export function GSD() {
                         }}
                         onArchive={() => archiveProject(project.name)}
                         onUnarchive={() => unarchiveProject(project.name)}
+                        onPauseSession={() => pauseSession(project.name)}
                         onReopenTmux={() => load()}
                         autopilotRun={autopilotRuns.get(project.name) ?? null}
                       />
