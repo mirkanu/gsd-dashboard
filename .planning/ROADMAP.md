@@ -115,7 +115,10 @@
   2. The gsd_messages table has type and metadata columns, and inserting a classified message with type "stage_banner" persists and retrieves correctly
   3. The tmux output classifier receives raw terminal text and returns an array of typed message objects (stage_banner, checkpoint, completion, error, text)
   4. Tool calls, code output, and verbose working output are classified as "hidden" and excluded from chat-visible message queries
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 28-01-PLAN.md — Schema migration + chatscope install
+- [ ] 28-02-PLAN.md — Tmux output classifier patterns
 
 ### Phase 29: Chat List View
 **Goal**: Users see their projects as a sorted conversation list and can filter and select any project to open
@@ -198,7 +201,7 @@
 | 25. Autopilot Core | v3.0 | 3/3 | Complete | 2026-04-01 |
 | 26. Cost Intelligence | v3.0 | 0/3 | Deferred | - |
 | 27. Card UX Polish | v3.0 | 0/3 | Deferred | - |
-| 28. Schema + Classifier Foundation | v4.0 | 0/? | Not started | - |
+| 28. Schema + Classifier Foundation | v4.0 | 0/2 | In progress | - |
 | 29. Chat List View | v4.0 | 0/? | Not started | - |
 | 30. Chat Window + Message Rendering | v4.0 | 0/? | Not started | - |
 | 31. Interactivity + Real-Time Streaming | v4.0 | 0/? | Not started | - |
