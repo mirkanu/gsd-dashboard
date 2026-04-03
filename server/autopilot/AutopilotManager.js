@@ -52,6 +52,9 @@ class AutopilotManager {
     /** @type {object|null} */
     this._cb = null;
 
+    /** @type {string} */
+    this._runType = 'execute';
+
     // Internal state for loop tracking
     this._currentPhase = 1;
     this._totalPhases = 1;
@@ -81,6 +84,7 @@ class AutopilotManager {
     const startPhase = opts.startPhase || 1;
     const totalPhases = opts.totalPhases || 1;
     const projectRoot = opts.projectRoot || null;
+    this._runType = opts.runType || 'execute';
 
     const runId = uuidv4();
     const startedAt = new Date().toISOString();
@@ -221,6 +225,18 @@ class AutopilotManager {
     }
   }
 
+  // ─── Private helpers ────────────────────────────────────────────────────────
+
+  /**
+   * Returns the correct GSD slash-command based on the current runType.
+   * 'plan-all' → '/gsd:plan-phase'
+   * everything else → '/gsd:execute-phase'
+   * @returns {string}
+   */
+  _gsdCommand() {
+    return this._runType === 'plan-all' ? '/gsd:plan-phase' : '/gsd:execute-phase';
+  }
+
   // ─── Internal loop ──────────────────────────────────────────────────────────
 
   /**
@@ -289,7 +305,7 @@ class AutopilotManager {
       projectName: this._projectName,
       phaseNum,
       status: 'pending_confirmation',
-      pendingCommand: `/gsd:execute-phase ${phaseNum}`,
+      pendingCommand: `${this._gsdCommand()} ${phaseNum}`,
       runId: this._runId,
     });
   }
@@ -306,7 +322,7 @@ class AutopilotManager {
       status: 'started',
       runId: this._runId,
     });
-    const result = this._spawnFn(this._projectName, '/gsd:execute-phase', {
+    const result = this._spawnFn(this._projectName, this._gsdCommand(), {
       args: [`${phaseNum}`],
       runId: this._runId,
       db: this._db,
@@ -378,7 +394,7 @@ class AutopilotManager {
         status: 'retrying',
         runId: this._runId,
       });
-      this._spawnFn(this._projectName, '/gsd:execute-phase', {
+      this._spawnFn(this._projectName, this._gsdCommand(), {
         args: [
           `${phaseNum}`,
           '--retry',

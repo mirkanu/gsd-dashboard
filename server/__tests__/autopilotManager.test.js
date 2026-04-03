@@ -270,6 +270,66 @@ test('autopilot.manager: when CircuitBreaker opens, loop broadcasts autopilot_ha
   assert.strictEqual(row.status, 'failed', 'DB status must be "failed" when circuit opens');
 });
 
+// ─── Test 7: runType='plan-all' uses /gsd:plan-phase ──────────────────────────
+
+test("autopilot.manager: runType='plan-all' calls spawnFn with /gsd:plan-phase and broadcasts correct pendingCommand", async () => {
+  const db = makeTestDb();
+
+  let capturedCmd = null;
+  let capturedArgs = null;
+  const spawnFn = (_projectName, cmd, opts) => {
+    capturedCmd = cmd;
+    capturedArgs = opts && opts.args ? opts.args.slice() : [];
+    return { jobId: 'job-plan', pid: null, started_at: new Date().toISOString() };
+  };
+
+  const broadcastFn = makeBroadcastFn();
+  const readStateFn = makeReadStateFn(0);
+
+  const mockCbFactory = (_runId, _threshold, _db) => ({
+    recordFailure: () => false,
+    isOpen: () => false,
+    reset: () => {},
+  });
+
+  const manager = new AutopilotManager({
+    db, spawnFn, broadcastFn, readStateFn, pollMs: 5,
+    circuitBreakerFactory: mockCbFactory,
+  });
+
+  await manager.start('test-project', {
+    runType: 'plan-all',
+    startPhase: 2,
+    totalPhases: 4,
+  });
+
+  // Wait for pending_confirmation to be broadcast
+  await new Promise(resolve => setTimeout(resolve, 20));
+
+  // Check that the pending_confirmation broadcast has the correct pendingCommand
+  const confirmCall = broadcastFn.getCalls().find(
+    c => c.type === 'autopilot_progress' && c.data.status === 'pending_confirmation'
+  );
+  assert.ok(confirmCall, 'pending_confirmation must be broadcast');
+  assert.strictEqual(
+    confirmCall.data.pendingCommand,
+    '/gsd:plan-phase 2',
+    `pendingCommand should be '/gsd:plan-phase 2', got: ${confirmCall.data.pendingCommand}`
+  );
+
+  // Confirm the spawn and let it execute
+  manager.confirmSpawn();
+  await new Promise(resolve => setTimeout(resolve, 20));
+  manager.stop();
+
+  // Check that spawnFn was called with /gsd:plan-phase
+  assert.strictEqual(
+    capturedCmd,
+    '/gsd:plan-phase',
+    `spawnFn first positional arg should be '/gsd:plan-phase', got: ${capturedCmd}`
+  );
+});
+
 // ─── Test 6: broadcast called at phase start and end with correct shape ───────
 
 test('autopilot.manager: broadcast autopilot_progress called with correct shape at phase transitions', async () => {
