@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 Phase: 25 of 27 (Autopilot Core)
 Plan: 2 of 3 in current phase (1 plan remaining)
 Status: In progress — Phase 25 plans 01+02 done, plan 03 remaining
-Last activity: 2026-04-03 — Completed quick-15: Add pm2 for auto-restart, add KidsAI project card
+Last activity: 2026-04-03 — Completed quick-16: Reopen terminal launches Claude with --dangerously-skip-permissions
 
 Progress: [█████████░] 85% (v3.0: 8/11 plans)
 
@@ -94,6 +94,7 @@ None at roadmap stage. Research flags to address in planning:
 | 13 | Add tmux session awareness: pending_confirmation gate, confirm route, queue/queue_timeout handling | 2026-04-02 | cf6a13d | [13-add-tmux-session-awareness-and-confirmat](./quick/13-add-tmux-session-awareness-and-confirmat/) |
 | 14 | Fix Plan All button: AutopilotManager honors runType='plan-all' to spawn /gsd:plan-phase instead of /gsd:execute-phase | 2026-04-03 | 44a0136 | [14-fix-plan-all-button-honor-runtype-to-sen](./quick/14-fix-plan-all-button-honor-runtype-to-sen/) |
 | 15 | Add pm2 process management for dashboard + tunnel, add KidsAI project card | 2026-04-03 | 0d5d579 | [15-fix-crashed-tmux-sessions-and-restore-da](./quick/15-fix-crashed-tmux-sessions-and-restore-da/) |
+| 16 | Reopen terminal launches Claude with --dangerously-skip-permissions | 2026-04-03 | pending | [16-reopen-terminal-launches-claude-with-dan](./quick/16-reopen-terminal-launches-claude-with-dan/) |
 
 ## Session Continuity
 
