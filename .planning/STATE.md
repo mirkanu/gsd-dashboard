@@ -95,7 +95,7 @@ None at roadmap stage. Research flags to address in planning:
 | 14 | Fix Plan All button: AutopilotManager honors runType='plan-all' to spawn /gsd:plan-phase instead of /gsd:execute-phase | 2026-04-03 | 44a0136 | [14-fix-plan-all-button-honor-runtype-to-sen](./quick/14-fix-plan-all-button-honor-runtype-to-sen/) |
 | 15 | Add pm2 process management for dashboard + tunnel, add KidsAI project card | 2026-04-03 | 0d5d579 | [15-fix-crashed-tmux-sessions-and-restore-da](./quick/15-fix-crashed-tmux-sessions-and-restore-da/) |
 | 16 | Reopen terminal launches Claude with --dangerously-skip-permissions | 2026-04-03 | 69fd5a1 | [16-reopen-terminal-launches-claude-with-dan](./quick/16-reopen-terminal-launches-claude-with-dan/) |
-| 17 | Add Pause button on each card to kill tmux session | 2026-04-03 | pending | [17-add-pause-button-on-each-card-to-kill-cl](./quick/17-add-pause-button-on-each-card-to-kill-cl/) |
+| 17 | Add Pause button on each card to kill tmux session | 2026-04-03 | c3ba690 | [17-add-pause-button-on-each-card-to-kill-cl](./quick/17-add-pause-button-on-each-card-to-kill-cl/) |
 
 ## Session Continuity
 
