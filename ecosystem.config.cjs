@@ -12,6 +12,15 @@ module.exports = {
       autorestart: true,
     },
     {
+      name: 'gsd-healthcheck',
+      script: 'scripts/healthcheck.sh',
+      cwd: '/data/home/gsddashboard',
+      interpreter: '/bin/sh',
+      autorestart: true,
+      restart_delay: 10000,
+      max_restarts: 10,
+    },
+    {
       name: 'gsd-tunnel',
       script: 'scripts/tunnel.sh',
       cwd: '/data/home/gsddashboard',
