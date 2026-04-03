@@ -95,6 +95,21 @@ router._clearRun = function (projectName) {
   runRegistry.delete(projectName);
 };
 
+/**
+ * Clear a runRegistry entry if the run is in a terminal state (failed/completed/stopped).
+ * Returns true if the entry was cleared or didn't exist, false if still active.
+ */
+function clearIfTerminal(projectName) {
+  const entry = runRegistry.get(projectName);
+  if (!entry) return true;
+  const status = entry.manager.getStatus().status;
+  if (['failed', 'completed', 'stopped'].includes(status)) {
+    runRegistry.delete(projectName);
+    return true;
+  }
+  return false;
+}
+
 // ─── POST /api/autopilot/start ────────────────────────────────────────────────
 
 router.post('/start', async (req, res) => {
@@ -105,7 +120,7 @@ router.post('/start', async (req, res) => {
     return res.status(400).json({ error: 'projectName is required' });
   }
 
-  if (runRegistry.has(projectName)) {
+  if (!clearIfTerminal(projectName)) {
     return res.status(409).json({ error: `Run already active for project: ${projectName}` });
   }
 
@@ -227,7 +242,7 @@ router.post('/plan-all', async (req, res) => {
     return res.status(400).json({ error: 'projectName is required' });
   }
 
-  if (runRegistry.has(projectName)) {
+  if (!clearIfTerminal(projectName)) {
     return res.status(409).json({ error: `Run already active for project: ${projectName}` });
   }
 
