@@ -1,0 +1,129 @@
+'use strict';
+
+const stripAnsi = require('strip-ansi');
+
+/**
+ * Message type constants for classified tmux output.
+ */
+const MESSAGE_TYPES = {
+  STAGE_BANNER: 'stage_banner',
+  CHECKPOINT: 'checkpoint',
+  COMPLETION: 'completion',
+  ERROR: 'error',
+  HIDDEN: 'hidden',
+  TEXT: 'text',
+};
+
+/**
+ * Priority-ordered pattern groups. First match wins.
+ * Order: hidden tool calls > hidden code > stage banners > errors > completions > checkpoints > hidden working
+ */
+const PATTERNS = [
+  // Hidden: tool calls (highest priority)
+  {
+    type: MESSAGE_TYPES.HIDDEN,
+    patterns: [
+      /^(?:Read|Write|Edit|Bash|Grep|Glob|WebSearch|WebFetch|TodoWrite|Search|Agent)\(/,
+      /^(?:mcp__|antml_)/,
+    ],
+  },
+  // Hidden: numbered code output lines
+  {
+    type: MESSAGE_TYPES.HIDDEN,
+    patterns: [
+      /^\s*\d+\s*\|/,
+    ],
+  },
+  // Stage banners
+  {
+    type: MESSAGE_TYPES.STAGE_BANNER,
+    patterns: [
+      /^#{1,3}\s+Phase\s+\d+/i,
+      /^#{1,3}\s+(?:PLANNING COMPLETE|GAP CLOSURE)/,
+      /^(?:PLAN|EXECUTE|RESEARCH):/i,
+      /^={3,}\s+/,
+      /^Wave\s+\d+:/i,
+    ],
+  },
+  // Errors
+  {
+    type: MESSAGE_TYPES.ERROR,
+    patterns: [
+      /^(?:Error|ERROR|FAILED|TypeError|SyntaxError|ReferenceError|FATAL):/,
+      /^npm ERR!/,
+      /^(?:ENOENT|EACCES|ECONNREFUSED)/,
+      /^Unhandled/,
+    ],
+  },
+  // Completions
+  {
+    type: MESSAGE_TYPES.COMPLETION,
+    patterns: [
+      /PHASE COMPLETE/i,
+      /All (?:plans|tasks) (?:executed|finished|complete)/i,
+      /SUMMARY\.md written/i,
+    ],
+  },
+  // Checkpoints
+  {
+    type: MESSAGE_TYPES.CHECKPOINT,
+    patterns: [
+      /YOUR ACTION:/i,
+      /^Checkpoint:/i,
+      /^VERIFY:/i,
+    ],
+  },
+  // Hidden: working/thinking (lowest priority among hidden)
+  {
+    type: MESSAGE_TYPES.HIDDEN,
+    patterns: [
+      /\(\s*\d+[hms].*?\xB7.*?\u2193/,
+      /\(\s*thinking\s*\)/,
+      /^\s*Reading\s+/,
+      /^\s*Writing\s+/,
+      /^\s*Searching\s+/,
+    ],
+  },
+];
+
+/**
+ * Classify a single line of raw tmux output.
+ *
+ * @param {string} rawLine - Raw line possibly containing ANSI codes
+ * @returns {{ msg_type: string, content: string, metadata: null } | null}
+ *   null if line is empty/whitespace after stripping
+ */
+function classifyLine(rawLine) {
+  const clean = stripAnsi(rawLine).trim();
+  if (!clean) return null;
+
+  for (const group of PATTERNS) {
+    for (const pattern of group.patterns) {
+      if (pattern.test(clean)) {
+        return { msg_type: group.type, content: clean, metadata: null };
+      }
+    }
+  }
+
+  return { msg_type: MESSAGE_TYPES.TEXT, content: clean, metadata: null };
+}
+
+/**
+ * Classify a multi-line chunk of raw tmux output.
+ *
+ * @param {string} rawText - Raw multi-line text
+ * @returns {Array<{ msg_type: string, content: string, metadata: null }>}
+ */
+function classifyChunks(rawText) {
+  return rawText
+    .split('\n')
+    .map(classifyLine)
+    .filter(Boolean);
+}
+
+module.exports = {
+  MESSAGE_TYPES,
+  PATTERNS,
+  classifyLine,
+  classifyChunks,
+};
