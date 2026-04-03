@@ -8,7 +8,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ENV_FILE="$SCRIPT_DIR/../.env"
-LOG_FILE="/tmp/gsd-tunnel.log"
+LOG_FILE="/data/home/gsddashboard/logs/gsd-tunnel.log"
 
 # Load env file
 if [ -f "$ENV_FILE" ]; then
