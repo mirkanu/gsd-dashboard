@@ -25,13 +25,13 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 
 ### Message Classification
 
-- [ ] **MSG-01**: Server-side tmux output classifier that parses terminal text into typed messages
+- [x] **MSG-01**: Server-side tmux output classifier that parses terminal text into typed messages
 - [ ] **MSG-02**: GSD stage banners rendered as system messages (centered, styled)
 - [ ] **MSG-03**: Checkpoints/AskUserQuestion prompts rendered with tappable option buttons
 - [ ] **MSG-04**: Next Up blocks rendered with tappable command chips
 - [ ] **MSG-05**: Completion summaries rendered as Claude messages
 - [ ] **MSG-06**: Critical errors rendered as red-bordered messages; minor warnings collapsed
-- [ ] **MSG-07**: Tool calls, code output, and verbose working output hidden completely
+- [x] **MSG-07**: Tool calls, code output, and verbose working output hidden completely
 
 ### Interactivity
 
@@ -93,13 +93,13 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 | CHAT-08 | Phase 30 | Pending |
 | CHAT-09 | Phase 32 | Pending |
 | CHAT-10 | Phase 30 | Pending |
-| MSG-01 | Phase 28 | Pending |
+| MSG-01 | Phase 28 | Complete |
 | MSG-02 | Phase 30 | Pending |
 | MSG-03 | Phase 30 | Pending |
 | MSG-04 | Phase 30 | Pending |
 | MSG-05 | Phase 30 | Pending |
 | MSG-06 | Phase 30 | Pending |
-| MSG-07 | Phase 28 | Pending |
+| MSG-07 | Phase 28 | Complete |
 | ACT-01 | Phase 31 | Pending |
 | ACT-02 | Phase 31 | Pending |
 | ACT-03 | Phase 31 | Pending |
