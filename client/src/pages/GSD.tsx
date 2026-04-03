@@ -7,6 +7,8 @@ import {
   ExternalLink,
   X,
   ClipboardPaste,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
@@ -1050,14 +1052,29 @@ export function GSD() {
           <h2 className="text-xl font-semibold text-gray-100">GSD Projects</h2>
           <p className="text-sm text-gray-500">Unified view across all configured projects</p>
         </div>
-        <button
-          onClick={() => load(true)}
-          disabled={refreshing}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-border transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const root = document.documentElement;
+              const isLight = root.classList.toggle("light");
+              root.classList.toggle("dark", !isLight);
+              localStorage.setItem("theme", isLight ? "light" : "dark");
+            }}
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-border transition-colors"
+            title="Toggle light/dark mode"
+          >
+            <Sun className="w-3.5 h-3.5 hidden dark:block" />
+            <Moon className="w-3.5 h-3.5 block dark:hidden" />
+          </button>
+          <button
+            onClick={() => load(true)}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-border transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Rate-limit banner */}
