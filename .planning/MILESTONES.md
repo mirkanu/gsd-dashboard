@@ -1,5 +1,25 @@
 # Milestones
 
+## v3.0 Autopilot & Cost Intelligence (Shipped: 2026-04-03)
+
+**Phases:** 17-25, 18.1 (11 phases, 20 plans + 18 quick tasks)
+**Timeline:** 2026-03-31 → 2026-04-03 (4 days)
+
+**Key accomplishments:**
+- Autopilot Core: AutopilotManager with circuit breaker, REST API, UI controls with WebSocket progress
+- Waiting accuracy: session state detection via tmux capture-pane, polling burst on terminal close
+- Safety foundation: CircuitBreaker, processSpawner with waitForIdle, process_registry
+- Task data layer + UI: per-project tasks with CRUD, textarea descriptions, clipboard export
+- Persistent tunnel: ngrok static domain replacing ephemeral cloudflare tunnels
+- Card UX: kanban board, pause button, archive/unarchive, light/dark mode toggle
+- pm2 process management with health check watchdog for auto-restart
+- Reopen terminal auto-launches Claude with --dangerously-skip-permissions
+
+**Deferred:** Cost Intelligence, Card UX Polish → subsumed by v4.0 chat redesign
+**Last phase number:** 27
+
+---
+
 ## v2.1 Session Intelligence & Terminal UX (Shipped: 2026-03-28)
 
 **Phases:** 12, 13, 13.1, 14, 16 (5 phases, 11 plans)
