@@ -25,23 +25,30 @@ At a glance, see where every GSD project stands and interact with any session �
 - ✓ Mobile terminal polish: scroll sensitivity, iOS keyboard zoom fix, special key focus, text selection, paste button — v2.3
 - ✓ Multi-line task description: auto-growing textarea for notes — v2.3
 - ✓ Claude Desktop/Mobile GSD access: MCP server + remote Streamable HTTP transport — v2.3
+- ✓ GSD Autopilot: AutopilotManager, REST API, UI controls, circuit breaker, process spawner — v3.0
+- ✓ Waiting accuracy: session state detection, polling burst on terminal close — v3.0
+- ✓ Pause card: pause button kills tmux session, reopen auto-launches Claude — v3.0
+- ✓ Light/dark mode toggle — v3.0
+- ✓ pm2 process management with health check watchdog — v3.0
 
 ### Active
 
-- [ ] GSD Autopilot: autonomous plan-all → execute-all loop per project, triggered from dashboard (v3.0)
-- [ ] Usage & cost tracking: Claude Max session/weekly limits, external service costs across all projects (v3.0)
-- [ ] External services page: status and cost of Railway, GitHub, Claude, OpenAI, etc. with receipt ingestion (v3.0)
-- [ ] Waiting accuracy: refresh card status on terminal close, "Waiting" = waiting on human input only (v3.0)
-- [ ] Message tab styling: distinguish Claude vs human messages with different background color and alignment (v3.0)
-- [ ] Task Archive All: suggest bulk archive after Copy (v3.0)
-- [ ] GitHub issues link on project cards (v3.0)
-- [ ] Dynamic shortcuts: next GSD command suggestions on cards (v3.0)
-- [ ] Pause card: define how to pause/resume a project from the dashboard (v3.0)
+- [ ] Chat-first UI: replace kanban with WhatsApp-style chat list and per-project chat windows (v4.0)
+- [ ] Tmux output classifier: parse terminal output into typed messages for chat display (v4.0)
+- [ ] Tappable actions: GSD commands and multi-choice answers rendered as interactive buttons (v4.0)
+- [ ] Project detail panel: all controls, file tabs, and status moved to header-tap view (v4.0)
+- [ ] Unread indicators and real-time chat streaming via WebSocket (v4.0)
 
 ### Future
 
+- [ ] Usage & cost tracking: Claude Max session/weekly limits, external service costs (deferred from v3.0)
+- [ ] External services page: Railway, GitHub, Claude, OpenAI status/cost with receipt ingestion (deferred from v3.0)
 - [ ] New project creation: one-click directory + tmux + Claude launch from dashboard (deferred)
-- [ ] Email receipt parsing pipeline for automated cost tracking (deferred — capability exists in YNAB project)
+- [ ] Email receipt parsing pipeline for automated cost tracking (deferred)
+- [ ] GitHub issues link on project cards (deferred from v3.0)
+- [ ] Dynamic shortcuts: next GSD command suggestions (subsumed by chat tappable actions in v4.0)
+- [ ] Message tab styling: subsumed by v4.0 chat redesign
+- [ ] Task Archive All: suggest bulk archive after Copy (deferred from v3.0)
 
 ### Out of Scope
 
@@ -79,15 +86,16 @@ User is a non-coder using vibe coding — wants maximum automation and hands-off
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
-## Current Milestone: v3.0 Autopilot & Cost Intelligence
+## Current Milestone: v4.0 Chat-First Dashboard
 
-**Goal:** Transform the dashboard from a monitoring tool into an autonomous execution controller with full cost visibility across all projects and services.
+**Goal:** Replace the kanban board with a WhatsApp/Telegram-style chat interface where each project is a conversation with Claude/GSD, using @chatscope/chat-ui-kit-react.
 
 **Target features:**
-- GSD Autopilot: plan-all phases, autonomous execution loop, pause/resume from dashboard, failure learning
-- Usage & cost intelligence: Claude Max limits tracking, external services status/cost page
-- Card UX: Waiting accuracy, GitHub issues links, Archive All, dynamic GSD shortcuts, pause card
-- Message tab: distinguish Claude vs human messages with visual differentiation
+- Chat list: project rows sorted by recency with unread badges, state-colored borders, filter tabs
+- Chat window: parsed tmux output as typed messages, tappable commands/choices, working indicator with context gauge
+- Message classifier: server-side tmux output parsing into stage banners, checkpoints, completions, errors
+- Project detail panel: tap chat header to access all controls, file tabs, autopilot, raw terminal
+- Paused/archived: full history preserved, sending triggers reopen confirmation
 
 ---
-*Last updated: 2026-03-31 after v3.0 milestone start*
+*Last updated: 2026-04-03 after v4.0 milestone start*
