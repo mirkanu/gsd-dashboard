@@ -49,8 +49,8 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INF-01**: Adopt @chatscope/chat-ui-kit-react for UI components
-- [ ] **INF-02**: Extend gsd_messages table schema for typed messages (type, metadata columns)
+- [x] **INF-01**: Adopt @chatscope/chat-ui-kit-react for UI components
+- [x] **INF-02**: Extend gsd_messages table schema for typed messages (type, metadata columns)
 - [ ] **INF-03**: WebSocket streaming of classified messages for real-time chat updates
 - [ ] **INF-04**: Light/dark theme support for chatscope components (CSS variable overrides)
 
@@ -108,8 +108,8 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 | DET-03 | Phase 32 | Pending |
 | DET-04 | Phase 32 | Pending |
 | DET-05 | Phase 32 | Pending |
-| INF-01 | Phase 28 | Pending |
-| INF-02 | Phase 28 | Pending |
+| INF-01 | Phase 28 | Complete |
+| INF-02 | Phase 28 | Complete |
 | INF-03 | Phase 31 | Pending |
 | INF-04 | Phase 29 | Pending |
 

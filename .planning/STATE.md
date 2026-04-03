@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Chat-First Dashboard
-status: ready_to_plan
-last_updated: "2026-04-03T15:00:00Z"
-last_activity: "2026-04-03 — Roadmap created for v4.0 (phases 28-32)"
+status: executing
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-04-03T21:21:57.865Z"
+last_activity: 2026-04-03 — Completed 28-01 schema migration + chatscope foundation
 progress:
-  total_phases: 5
+  total_phases: 8
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 4
+  completed_plans: 1
+  percent: 86
 ---
 
 # Project State
@@ -25,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 28 of 32 (Schema + Classifier Foundation)
-Plan: — (phase not yet planned)
-Status: Ready to plan
-Last activity: 2026-04-03 — Roadmap created for v4.0 (5 phases, 29 requirements mapped)
+Plan: 1 of 1 complete
+Status: Executing
+Last activity: 2026-04-03 — Completed 28-01 schema migration + chatscope foundation
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -42,6 +43,10 @@ Progress: [░░░░░░░░░░] 0%
 **v2.3 velocity:** ~5 plans, 3 phases, 1 day (2026-03-30)
 **v3.0 velocity:** 20 plans, 11 phases + 18 quick tasks, 4 days (2026-03-31 - 2026-04-03)
 
+| Phase | Plan | Duration | Tasks | Files |
+|-------|------|----------|-------|-------|
+| 28 | P01 | 15min | 3 | 7 |
+
 ## Accumulated Context
 
 ### Decisions
@@ -53,6 +58,9 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [v4.0]: Critical errors visible, minor warnings collapsed
 - [v4.0]: Working indicator includes context window gauge
 - [v4.0]: Paused/archived projects keep full chat history; sending triggers reopen confirmation
+- [28-01]: chatscope CSS loaded before Tailwind so utility classes can override defaults
+- [28-01]: message_type/metadata optional in TypeScript for backward compatibility
+- [28-01]: Hidden message filtering at SQL query level for performance
 
 ### Pending Todos
 
@@ -71,7 +79,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T15:00:00Z
-Stopped at: Roadmap created for v4.0 Chat-First Dashboard
+Last session: 2026-04-03T21:21:47.680Z
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None
-Next action: /gsd:plan-phase 28
+Next action: Plan next phase or continue with 28-02
+
