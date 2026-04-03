@@ -76,6 +76,7 @@ export interface AutopilotRun {
   status: AutopilotRunStatus;
   currentPhaseNum: number | null;
   projectName: string;
+  pendingCommand?: string | null;
 }
 
 export interface AutopilotProgressEvent {

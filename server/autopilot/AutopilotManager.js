@@ -180,6 +180,17 @@ class AutopilotManager {
     if (!this._runId) {
       return { runId: null, status: 'idle', currentPhaseNum: null, projectName: this._projectName, startedAt: null };
     }
+    // Check in-memory state first for pending_confirmation (not stored in DB)
+    if (this._pendingConfirmation) {
+      return {
+        runId: this._runId,
+        status: 'pending_confirmation',
+        currentPhaseNum: this._currentPhase,
+        projectName: this._projectName,
+        startedAt: null,
+        pendingCommand: this._pendingCommand ? `${this._gsdCommand()} ${this._pendingCommand.phaseNum}` : null,
+      };
+    }
     // Read current status from DB for accuracy (pause/resume updates DB)
     let status = 'running';
     try {
@@ -196,7 +207,7 @@ class AutopilotManager {
       status,
       currentPhaseNum: this._currentPhase,
       projectName: this._projectName,
-      startedAt: null, // startedAt not tracked in memory; available from DB if needed
+      startedAt: null,
     };
   }
 

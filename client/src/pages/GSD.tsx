@@ -614,6 +614,13 @@ function AutopilotControls({ project, autopilotRun }: {
   const [pendingCommand, setPendingCommand] = useState<string | null>(null);
   const status = autopilotRun?.status ?? 'idle';
 
+  // Seed pendingCommand from status API response (e.g. on page load)
+  useEffect(() => {
+    if (autopilotRun?.status === 'pending_confirmation' && autopilotRun.pendingCommand) {
+      setPendingCommand(autopilotRun.pendingCommand);
+    }
+  }, [autopilotRun]);
+
   const showError = (err: unknown) => {
     const msg = err instanceof Error ? err.message : 'Request failed';
     setError(msg);
