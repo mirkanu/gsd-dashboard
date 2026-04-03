@@ -201,7 +201,7 @@ Plans:
 | 25. Autopilot Core | v3.0 | 3/3 | Complete | 2026-04-01 |
 | 26. Cost Intelligence | v3.0 | 0/3 | Deferred | - |
 | 27. Card UX Polish | v3.0 | 0/3 | Deferred | - |
-| 28. Schema + Classifier Foundation | 2/2 | Complete   | 2026-04-03 | - |
+| 28. Schema + Classifier Foundation | 2/2 | Complete    | 2026-04-03 | - |
 | 29. Chat List View | v4.0 | 0/? | Not started | - |
 | 30. Chat Window + Message Rendering | v4.0 | 0/? | Not started | - |
 | 31. Interactivity + Real-Time Streaming | v4.0 | 0/? | Not started | - |
