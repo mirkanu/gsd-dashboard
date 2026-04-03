@@ -22,7 +22,8 @@
     {
       "name": "gsdTelegram",
       "root": "/data/home/gsdTelegram",
-      "tmux_session": "gsdTelegram"
+      "tmux_session": "gsdTelegram",
+      "archived": true
     },
     {
       "name": "ynab",
@@ -34,6 +35,12 @@
       "display_name": "PRC",
       "root": "/data/home/prc",
       "tmux_session": "PRC"
+    },
+    {
+      "name": "KidAI",
+      "display_name": "KidsAI",
+      "root": "/data/home/KidAI",
+      "tmux_session": "KidAI"
     }
   ]
 }
