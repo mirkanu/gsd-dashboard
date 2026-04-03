@@ -117,9 +117,9 @@ function SendBox({ projectName, initialValue, contextTokens }: { projectName: st
   return (
     <div
       className={`px-4 py-3 border-b border-border/50 ${
-        focused && isMobile ? "fixed left-0 right-0 bg-[#0d1117] border-t border-border z-[80]" : ""
+        focused && isMobile ? "fixed left-0 right-0 border-t border-border z-[80]" : ""
       }`}
-      style={focused && isMobile ? { bottom: 0 } : undefined}
+      style={focused && isMobile ? { bottom: 0, background: getTermTheme().background } : undefined}
       onClick={(e) => e.stopPropagation()}
     >
       {/* ContextBar hidden — token data inaccurate (cumulative vs current prompt); TODO: fix data source */}
@@ -227,6 +227,21 @@ function SpecialKeyBar({
   );
 }
 
+// ─── Theme-aware terminal colors ──────────────────────────────────────────────
+
+function isLightMode() {
+  return document.documentElement.classList.contains('light');
+}
+
+const TERM_THEMES = {
+  dark:  { background: '#0d1117', foreground: '#c9d1d9', overlay: 'rgba(0,0,0,0.9)', overlayText: 'rgba(13,17,23,0.92)' },
+  light: { background: '#f5f5f5', foreground: '#24292e', overlay: 'rgba(255,255,255,0.92)', overlayText: 'rgba(245,245,245,0.95)' },
+} as const;
+
+function getTermTheme() {
+  return isLightMode() ? TERM_THEMES.light : TERM_THEMES.dark;
+}
+
 // ─── Terminal overlay ─────────────────────────────────────────────────────────
 
 interface TerminalOverlayProps {
@@ -275,11 +290,12 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
     const wsUrl = `${base}/ws/terminal/${encodeURIComponent(projectName)}`;
 
     // Create terminal
+    const tt = getTermTheme();
     const terminal = new Terminal({
       cursorBlink: true,
       fontSize: window.matchMedia('(pointer: coarse)').matches ? 10 : 14,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-      theme: { background: '#0d1117', foreground: '#c9d1d9' },
+      theme: { background: tt.background, foreground: tt.foreground },
     });
     const fitAddon = new FitAddon();
     terminal.loadAddon(fitAddon);
@@ -508,8 +524,8 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
 
   return (
     <div
-      className="fixed inset-0 bg-black/90 flex flex-col"
-      style={{ zIndex: 70, bottom: bottomOffset > 0 ? bottomOffset : undefined, overscrollBehavior: 'contain' }}
+      className="fixed inset-0 flex flex-col"
+      style={{ zIndex: 70, bottom: bottomOffset > 0 ? bottomOffset : undefined, overscrollBehavior: 'contain', background: getTermTheme().overlay }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header bar */}
@@ -558,8 +574,8 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
               fontFamily: 'Menlo, Monaco, "Courier New", monospace',
               fontSize: termRef.current?.options.fontSize ?? 10,
               lineHeight: 1.2,
-              color: '#c9d1d9',
-              background: 'rgba(13, 17, 23, 0.92)',
+              color: getTermTheme().foreground,
+              background: getTermTheme().overlayText,
               whiteSpace: 'pre',
               WebkitUserSelect: 'text',
               userSelect: 'text',
@@ -1221,8 +1237,8 @@ export function TerminalPage() {
   // Wait for wsBase fetch before mounting the terminal — connecting with the
   // wrong host causes an immediate 4004 "Session not active" error on Railway.
   if (wsBase === undefined) return (
-    <div className="fixed inset-0 bg-black flex items-center justify-center">
-      <span className="text-gray-500 font-mono text-sm">Connecting…</span>
+    <div className="fixed inset-0 flex items-center justify-center" style={{ background: getTermTheme().background }}>
+      <span className="font-mono text-sm" style={{ color: getTermTheme().foreground }}>Connecting…</span>
     </div>
   );
 
