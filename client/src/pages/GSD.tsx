@@ -1119,7 +1119,7 @@ export function GSD() {
                 </div>
 
                 {/* Cards */}
-                <div className="flex-1 space-y-2.5 overflow-y-auto overflow-x-hidden min-w-0 max-h-[70vh]">
+                <div className="flex-1 space-y-2.5 overflow-y-auto overflow-x-hidden min-w-0 max-h-[70vh] pb-[env(safe-area-inset-bottom)]">
                   {columnProjects.length > 0 ? (
                     columnProjects.map((project) => (
                       <ProjectCard
