@@ -529,7 +529,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header bar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-[#161b22] border-b border-[#30363d] flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border flex-shrink-0" style={{ background: getTermTheme().background }}>
         <span className="text-sm text-gray-300 font-mono">{projectName} — tmux session</span>
         <div className="flex items-center gap-2">
           {isMobile && (
