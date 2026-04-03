@@ -293,6 +293,15 @@ try {
   ).run();
 }
 
+// Migrate: add message_type + metadata columns to gsd_messages (Phase 28)
+try {
+  db.prepare("SELECT message_type FROM gsd_messages LIMIT 1").get();
+} catch {
+  db.exec(`ALTER TABLE gsd_messages ADD COLUMN message_type TEXT NOT NULL DEFAULT 'text'`);
+  db.exec(`ALTER TABLE gsd_messages ADD COLUMN metadata TEXT`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_gsd_messages_type ON gsd_messages(project, message_type)`);
+}
+
 // Startup cleanup: mark stale active sessions as completed.
 // Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
 // so they stay "active" forever. Complete any active session whose last event is older than
@@ -508,6 +517,12 @@ const stmts = {
   ),
   listGsdMessages: db.prepare(
     `SELECT id, project, direction, content, created_at FROM gsd_messages WHERE project = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`
+  ),
+  insertClassifiedMessage: db.prepare(
+    `INSERT INTO gsd_messages (project, direction, content, message_type, metadata) VALUES (?, ?, ?, ?, ?)`
+  ),
+  listVisibleGsdMessages: db.prepare(
+    `SELECT id, project, direction, content, message_type, metadata, created_at FROM gsd_messages WHERE project = ? AND message_type != 'hidden' ORDER BY created_at DESC LIMIT ? OFFSET ?`
   ),
   countGsdMessages: db.prepare(
     `SELECT COUNT(*) as count FROM gsd_messages WHERE project = ?`
