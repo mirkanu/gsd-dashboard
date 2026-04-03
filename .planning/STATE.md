@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Autopilot & Cost Intelligence
 status: executing
-stopped_at: "Completed quick-13: add tmux session awareness and confirmation flow"
-last_updated: "2026-04-02T07:38:07.767Z"
+stopped_at: "Completed quick-14: fix plan-all button honor runType to send /gsd:plan-phase"
+last_updated: "2026-04-03T00:00:00Z"
 last_activity: "2026-04-01 — Completed 25-02: Autopilot REST routes + AutopilotManager.getStatus()"
 progress:
   total_phases: 13
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 Phase: 25 of 27 (Autopilot Core)
 Plan: 2 of 3 in current phase (1 plan remaining)
 Status: In progress — Phase 25 plans 01+02 done, plan 03 remaining
-Last activity: 2026-04-02 — Completed quick-13: Add tmux session awareness and confirmation flow
+Last activity: 2026-04-03 — Completed quick-14: Fix plan-all button to use /gsd:plan-phase
 
 Progress: [█████████░] 85% (v3.0: 8/11 plans)
 
@@ -64,6 +64,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 25]: eventBus.subscribe() used in GSD.tsx for autopilot_progress WS messages — consistent with App.tsx publish pattern, avoids duplicate WS connections
 - [Phase 25]: autopilot_progress 'planning'/'executing' statuses mapped to 'running' in client AutopilotControls — simpler states for button visibility logic
 - [Phase quick-12]: _testWaitForIdle injectable: mirrors _testDetectFromOutput pattern — tests waitForIdle without real tmux calls
+- [quick-14]: _gsdCommand() helper centralizes runType→command mapping; plan-all → /gsd:plan-phase, others → /gsd:execute-phase
 
 ### v3.0 Key Constraints (from research)
 
@@ -91,10 +92,11 @@ None at roadmap stage. Research flags to address in planning:
 |---|-------------|------|--------|-----------|
 | 12 | Fix autopilot command delivery: waitForIdle, toast errors, error state on cards | 2026-04-02 | d6b81d4 | [12-fix-autopilot-command-delivery-waitforid](./quick/12-fix-autopilot-command-delivery-waitforid/) |
 | 13 | Add tmux session awareness: pending_confirmation gate, confirm route, queue/queue_timeout handling | 2026-04-02 | cf6a13d | [13-add-tmux-session-awareness-and-confirmat](./quick/13-add-tmux-session-awareness-and-confirmat/) |
+| 14 | Fix Plan All button: AutopilotManager honors runType='plan-all' to spawn /gsd:plan-phase instead of /gsd:execute-phase | 2026-04-03 | 44a0136 | [14-fix-plan-all-button-honor-runtype-to-sen](./quick/14-fix-plan-all-button-honor-runtype-to-sen/) |
 
 ## Session Continuity
 
-Last session: 2026-04-02T08:37:57.808Z
-Stopped at: Completed quick-13: Add tmux session awareness and confirmation flow
+Last session: 2026-04-03T00:00:00Z
+Stopped at: Completed quick-14: Fix plan-all button honor runType to send /gsd:plan-phase
 Resume file: None
-Next action: Deploy and test autopilot confirmation flow
+Next action: Deploy and test plan-all vs run-autopilot command routing
