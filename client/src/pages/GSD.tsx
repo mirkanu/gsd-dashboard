@@ -771,9 +771,9 @@ function AutopilotControls({ project, autopilotRun }: {
       ) : null}
 
       {/* Status indicator */}
-      {status === 'running' && autopilotRun?.currentPhaseNum != null && (
+      {status === 'running' && (
         <span className="text-[10px] text-emerald-400 animate-pulse">
-          Phase {autopilotRun.currentPhaseNum}…
+          {autopilotRun?.currentPhaseNum != null ? `Phase ${autopilotRun.currentPhaseNum}…` : 'Starting…'}
         </span>
       )}
       {status === 'paused' && (

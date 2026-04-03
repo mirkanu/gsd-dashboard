@@ -303,7 +303,9 @@ class AutopilotManager {
    */
   _spawnPhase(phaseNum) {
     this._phaseSpawned = true;
-    this._requestConfirmation(phaseNum);
+    // Skip confirmation — user already confirmed via the UI dialog.
+    // Go straight to spawning the command.
+    this._doSpawn(phaseNum);
   }
 
   /**
