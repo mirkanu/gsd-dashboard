@@ -12,6 +12,8 @@
     "postinstall": "node scripts/patch-dequal.cjs"
   },
   "dependencies": {
+    "@chatscope/chat-ui-kit-react": "^2.1.1",
+    "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "@rollup/rollup-linux-x64-gnu": "^4.60.0",
     "@xterm/addon-fit": "^0.12.0-beta.195",
     "@xterm/xterm": "^6.1.0-beta.195",

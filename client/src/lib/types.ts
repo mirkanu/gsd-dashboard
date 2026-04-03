@@ -52,11 +52,15 @@ export interface GsdProject {
   sessionState: SessionState;
 }
 
+export type MessageType = 'text' | 'stage_banner' | 'checkpoint' | 'completion' | 'error' | 'hidden';
+
 export interface GsdMessage {
   id: number;
   project: string;
   direction: "outbound" | "inbound";
   content: string;
+  message_type?: MessageType;
+  metadata?: Record<string, unknown> | null;
   created_at: string;
 }
 
