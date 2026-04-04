@@ -66,13 +66,27 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| CLS-01 | Phase 33 | Pending |
+| CLS-02 | Phase 33 | Pending |
+| CLS-03 | Phase 33 | Pending |
+| CLS-04 | Phase 36 | Pending |
+| FBK-01 | Phase 34 | Pending |
+| FBK-02 | Phase 34 | Pending |
+| FBK-03 | Phase 34 | Pending |
+| FBK-04 | Phase 35 | Pending |
+| FBK-05 | Phase 34 | Pending |
+| SEND-01 | Phase 35 | Pending |
+| SEND-02 | Phase 35 | Pending |
+| WORK-01 | Phase 35 | Pending |
+| WORK-02 | Phase 35 | Pending |
+| REND-01 | Phase 36 | Pending |
+| REND-02 | Phase 36 | Pending |
 
 **Coverage:**
 - v4.1 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15 ⚠️
+- Mapped to phases: 15
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-04*
-*Last updated: 2026-04-04 after v4.1 milestone definition*
+*Last updated: 2026-04-04 after roadmap creation*
