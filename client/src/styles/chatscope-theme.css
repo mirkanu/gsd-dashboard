@@ -150,3 +150,14 @@
 :root.light .cs-message-separator::after {
   background: var(--border, #e2e8f0);
 }
+
+/* ─── Message List Layout Overrides ────────────────────────────────────── */
+
+:root .cs-message-list .cs-message-list__scroll-wrapper {
+  padding: 0;
+}
+
+/* Ensure custom cards inside MessageList don't inherit message bubble styles */
+:root .cs-message-list .cs-message-list__scroll-wrapper > div:not(.cs-message) {
+  width: 100%;
+}

@@ -1,22 +1,30 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ArrowLeft } from "lucide-react";
-import {
-  MessageList,
-  Message,
-  MessageSeparator,
-} from "@chatscope/chat-ui-kit-react";
+import { ArrowLeft, Send } from "lucide-react";
+import { MessageList } from "@chatscope/chat-ui-kit-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
+import { ChatMessageRenderer } from "./ChatMessageRenderer";
+import { WorkingIndicator } from "./WorkingIndicator";
+import { CommandChips } from "./CommandChips";
 import type {
   GsdMessage,
   SessionState,
   GsdChatMessageEvent,
 } from "../lib/types";
 
+const GSD_CHIPS = [
+  "/gsd:resume-work",
+  "/gsd:progress",
+  "/gsd:pause-work",
+  "/gsd:plan-phase",
+] as const;
+
 interface ChatWindowProps {
   projectName: string;
   displayName: string;
   sessionState: SessionState | null;
+  sessionUpdatedAt: string | null;
+  contextTokens: number | null;
   onBack: () => void;
 }
 
@@ -45,62 +53,20 @@ function MessageSkeleton() {
   );
 }
 
-function StageBanner({ content }: { content: string }) {
-  return (
-    <MessageSeparator>
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-        {content}
-      </span>
-    </MessageSeparator>
-  );
-}
-
-function SpecialCard({
-  content,
-  variant,
-}: {
-  content: string;
-  variant: "checkpoint" | "completion" | "error";
-}) {
-  const styles = {
-    checkpoint:
-      "border-amber-500/40 bg-amber-500/5 text-amber-300",
-    completion:
-      "border-emerald-500/40 bg-emerald-500/5 text-emerald-300",
-    error:
-      "border-red-500/40 bg-red-500/5 text-red-300",
-  };
-
-  const [expanded, setExpanded] = useState(false);
-  const lines = content.split("\n");
-  const collapsible = variant === "error" && lines.length > 3;
-
-  return (
-    <div className={`mx-4 my-2 rounded-lg border px-3 py-2 text-sm ${styles[variant]}`}>
-      <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed">
-        {collapsible && !expanded ? lines.slice(0, 3).join("\n") + "\n..." : content}
-      </pre>
-      {collapsible && (
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="mt-1 text-[10px] underline opacity-70 hover:opacity-100"
-        >
-          {expanded ? "Show less" : `Show all ${lines.length} lines`}
-        </button>
-      )}
-    </div>
-  );
-}
-
 export function ChatWindow({
   projectName,
   displayName,
   sessionState,
+  sessionUpdatedAt,
+  contextTokens,
   onBack,
 }: ChatWindowProps) {
   const [messages, setMessages] = useState<GsdMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [inputText, setInputText] = useState("");
+  const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Fetch initial messages
   useEffect(() => {
@@ -144,39 +110,47 @@ export function ChatWindow({
     if (!loading) scrollToBottom();
   }, [messages.length, loading, scrollToBottom]);
 
-  const renderMessage = (msg: GsdMessage) => {
-    const msgType = msg.message_type || "text";
+  // Send message handler
+  const handleSend = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || sending) return;
 
-    switch (msgType) {
-      case "stage_banner":
-        return <StageBanner key={msg.id} content={msg.content} />;
-      case "checkpoint":
-        return (
-          <SpecialCard key={msg.id} content={msg.content} variant="checkpoint" />
-        );
-      case "completion":
-        return (
-          <SpecialCard key={msg.id} content={msg.content} variant="completion" />
-        );
-      case "error":
-        return (
-          <SpecialCard key={msg.id} content={msg.content} variant="error" />
-        );
-      default: {
-        const direction =
-          msg.direction === "outbound" ? "outgoing" : "incoming";
-        return (
-          <Message
-            key={msg.id}
-            model={{
-              message: msg.content,
-              direction,
-              position: "single",
-            }}
-          />
-        );
+      // Optimistic outbound message
+      const optimistic: GsdMessage = {
+        id: Date.now(),
+        project: projectName,
+        direction: "outbound",
+        content: trimmed,
+        message_type: "text",
+        metadata: null,
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, optimistic]);
+      setInputText("");
+      setSending(true);
+
+      try {
+        await api.gsd.send(projectName, trimmed);
+      } catch {
+        // Could add error toast here; for now silent
+      } finally {
+        setSending(false);
       }
+    },
+    [projectName, sending]
+  );
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend(inputText);
     }
+  };
+
+  const handleChipSelect = (cmd: string) => {
+    setInputText(cmd);
+    textareaRef.current?.focus();
   };
 
   return (
@@ -203,6 +177,14 @@ export function ChatWindow({
         </div>
       </div>
 
+      {/* Working indicator */}
+      {sessionState === "working" && (
+        <WorkingIndicator
+          sessionUpdatedAt={sessionUpdatedAt}
+          contextTokens={contextTokens}
+        />
+      )}
+
       {/* Message area */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {loading ? (
@@ -213,10 +195,48 @@ export function ChatWindow({
           </div>
         ) : (
           <MessageList className="h-full">
-            {messages.map(renderMessage)}
+            {messages.map((msg) => (
+              <ChatMessageRenderer
+                key={msg.id}
+                msg={msg}
+                onAction={handleSend}
+              />
+            ))}
             <div ref={bottomRef} />
           </MessageList>
         )}
+      </div>
+
+      {/* Command chips when waiting */}
+      {sessionState === "waiting" && (
+        <CommandChips
+          commands={[...GSD_CHIPS]}
+          onSelect={handleChipSelect}
+        />
+      )}
+
+      {/* Send box */}
+      <div className="bg-surface-2 border-t border-border px-4 py-3 shrink-0">
+        <div className="flex items-end gap-2">
+          <textarea
+            ref={textareaRef}
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Send a message..."
+            rows={1}
+            className="bg-surface-3 border border-border rounded-lg px-3 py-2 text-sm resize-none w-full focus:outline-none focus:ring-1 focus:ring-accent/50 text-gray-200 placeholder-gray-500"
+            style={{ fontSize: 16 }}
+            disabled={sending}
+          />
+          <button
+            onClick={() => handleSend(inputText)}
+            disabled={!inputText.trim() || sending}
+            className="shrink-0 p-2 rounded-lg bg-accent text-white hover:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          >
+            <Send size={18} />
+          </button>
+        </div>
       </div>
     </div>
   );

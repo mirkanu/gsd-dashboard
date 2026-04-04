@@ -1203,6 +1203,8 @@ export function GSD() {
             projectName={chatView.project!}
             displayName={proj?.display_name || chatView.project || ''}
             sessionState={proj?.sessionState ?? null}
+            sessionUpdatedAt={proj?.sessionUpdatedAt ?? null}
+            contextTokens={proj?.contextTokens ?? null}
             onBack={() => { setChatView({ view: 'list' }); setSelectedProject(null); }}
           />
         );
