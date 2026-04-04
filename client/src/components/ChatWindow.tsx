@@ -30,6 +30,7 @@ interface ChatWindowProps {
   onBack: () => void;
   onOpenTerminal: () => void;
   onOpenDetails: () => void;
+  onSendStateChange?: (isWorking: boolean) => void;
   hideBackButton?: boolean;
   hideDetailsButton?: boolean;
   fillParent?: boolean;
@@ -71,6 +72,7 @@ export function ChatWindow({
   onBack,
   onOpenTerminal,
   onOpenDetails,
+  onSendStateChange,
   hideBackButton = false,
   hideDetailsButton = false,
   fillParent = false,
@@ -81,9 +83,24 @@ export function ChatWindow({
   const [sending, setSending] = useState(false);
   const [showReopenConfirm, setShowReopenConfirm] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [optimisticWorking, setOptimisticWorking] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Reset optimistic working when real state catches up or after 10s timeout
+  useEffect(() => {
+    if (!optimisticWorking) return;
+    if (sessionState === 'working') {
+      setOptimisticWorking(false);
+      return;
+    }
+    const timeout = setTimeout(() => setOptimisticWorking(false), 10_000);
+    return () => clearTimeout(timeout);
+  }, [optimisticWorking, sessionState]);
+
+  // Compute effective state: optimistic override when server hasn't caught up yet
+  const effectiveState = optimisticWorking && sessionState !== 'working' ? 'working' : sessionState;
 
   // Fetch initial messages
   useEffect(() => {
@@ -205,6 +222,8 @@ export function ChatWindow({
       setMessages((prev) => [...prev, optimistic]);
       setInputText("");
       setSending(true);
+      setOptimisticWorking(true);
+      onSendStateChange?.(true);
 
       try {
         await api.gsd.send(projectName, trimmed);
@@ -214,7 +233,7 @@ export function ChatWindow({
         setSending(false);
       }
     },
-    [projectName, sending, sessionState]
+    [projectName, sending, sessionState, onSendStateChange]
   );
 
   const handleConfirmSend = useCallback(() => {
@@ -252,13 +271,13 @@ export function ChatWindow({
             </button>
           )}
           <span className="font-semibold text-gray-200">{displayName}</span>
-          {sessionState && (
+          {effectiveState && (
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded ${
-                SESSION_STATE_STYLE[sessionState] || SESSION_STATE_STYLE.archived
+                SESSION_STATE_STYLE[effectiveState] || SESSION_STATE_STYLE.archived
               }`}
             >
-              {sessionState}
+              {effectiveState}
             </span>
           )}
         </div>
@@ -308,7 +327,7 @@ export function ChatWindow({
       </div>
 
       {/* Working indicator — typing indicator position */}
-      {sessionState === "working" && (
+      {effectiveState === "working" && (
         <WorkingIndicator
           sessionUpdatedAt={sessionUpdatedAt}
           contextTokens={contextTokens}
@@ -317,7 +336,7 @@ export function ChatWindow({
       )}
 
       {/* Command chips when waiting */}
-      {sessionState === "waiting" && (
+      {effectiveState === "waiting" && (
         <CommandChips
           commands={[...GSD_CHIPS]}
           onSelect={handleChipSelect}

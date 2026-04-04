@@ -874,12 +874,14 @@ export function GSD() {
     api.gsd.wsBase().then(({ wsBase }) => setTerminalWsBase(wsBase ?? null)).catch(() => {});
   }, []);
 
-  // Auto-load on mount + poll every 30s for real-time session state (VIEW-06)
+  // Auto-load on mount + adaptive polling: 3s when active project is working, 30s otherwise (VIEW-06, WORK-02)
   useEffect(() => {
     load();
-    const interval = setInterval(() => load(), 30_000);
+    const isWorking = selectedProj?.sessionState === 'working';
+    const ms = isWorking ? 3_000 : 30_000;
+    const interval = setInterval(() => load(), ms);
     return () => clearInterval(interval);
-  }, [load]);
+  }, [load, selectedProj?.sessionState]);
 
   // Cleanup polling burst refs on unmount (UX-02)
   useEffect(() => {
@@ -1103,6 +1105,7 @@ export function GSD() {
                       onBack={() => setChatView({ view: 'list' })}
                       onOpenTerminal={() => handleOpenTerminal(chatView.project!)}
                       onOpenDetails={() => {}}
+                      onSendStateChange={(working) => { if (working) load(); }}
                       hideBackButton={false}
                       hideDetailsButton={true}
                       fillParent={true}
@@ -1204,6 +1207,7 @@ export function GSD() {
             onBack={() => { setChatView({ view: 'list' }); setSelectedProject(null); }}
             onOpenTerminal={() => handleOpenTerminal(chatView.project!)}
             onOpenDetails={() => setSelectedProject(proj ?? null)}
+            onSendStateChange={(working) => { if (working) load(); }}
           />
         );
       })()}
