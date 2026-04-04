@@ -9,9 +9,9 @@ Requirements for Chat Polish milestone. Each maps to roadmap phases.
 
 ### Classifier Accuracy
 
-- [ ] **CLS-01**: tmux capture-pane uses `-J` flag to join soft-wrapped lines, eliminating duplicate/fragmented messages
-- [ ] **CLS-02**: 10+ missing HIDDEN patterns added (Update() calls, collapsed read summaries, task tree lines, selection UI chrome, session rating prompts, background notifications)
-- [ ] **CLS-03**: GSD banner format correctly matched — heavy horizontal rules (`━━━`) with `GSD ►` prefix, not just markdown headings
+- [x] **CLS-01**: tmux capture-pane uses `-J` flag to join soft-wrapped lines, eliminating duplicate/fragmented messages
+- [x] **CLS-02**: 10+ missing HIDDEN patterns added (Update() calls, collapsed read summaries, task tree lines, selection UI chrome, session rating prompts, background notifications)
+- [x] **CLS-03**: GSD banner format correctly matched — heavy horizontal rules (`━━━`) with `GSD ►` prefix, not just markdown headings
 - [ ] **CLS-04**: NEXT_UP blocks recognized as distinct type with tappable command rendering (▶ Next Up sections with `/gsd:` commands)
 
 ### Feedback System
@@ -66,9 +66,9 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLS-01 | Phase 33 | Pending |
-| CLS-02 | Phase 33 | Pending |
-| CLS-03 | Phase 33 | Pending |
+| CLS-01 | Phase 33 | Complete |
+| CLS-02 | Phase 33 | Complete |
+| CLS-03 | Phase 33 | Complete |
 | CLS-04 | Phase 36 | Pending |
 | FBK-01 | Phase 34 | Pending |
 | FBK-02 | Phase 34 | Pending |

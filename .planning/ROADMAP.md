@@ -14,7 +14,7 @@
 
 ## Phases
 
-- [ ] **Phase 33: Classifier Foundation** - Fix tmux line joining, expand HIDDEN patterns, fix GSD banner matching
+- [x] **Phase 33: Classifier Foundation** - Fix tmux line joining, expand HIDDEN patterns, fix GSD banner matching (completed 2026-04-04)
 - [ ] **Phase 34: Feedback Pipeline** - DB schema, API endpoints, reclassify logic for user corrections
 - [ ] **Phase 35: Feedback UI + Send Experience** - Context menu for corrections, send confirmation, working status reliability
 - [ ] **Phase 36: Message Rendering + New Types** - Markdown in chat bubbles, terminal text preservation, NEXT_UP type
@@ -29,7 +29,7 @@
   1. Long Claude output lines no longer appear as duplicate or fragmented messages in chat
   2. Tool calls (Update, Read collapsed summaries), task tree lines, selection UI chrome, session rating prompts, and background notifications no longer appear as visible TEXT messages
   3. GSD workflow banners with heavy horizontal rules and `GSD` prefix are classified as STAGE_BANNER, not TEXT
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 33-01-PLAN.md — Fix tmux -J flag, expand HIDDEN patterns, add GSD banner STAGE_BANNER patterns
@@ -82,7 +82,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 33. Classifier Foundation | v4.1 | 0/1 | Not started | - |
+| 33. Classifier Foundation | 1/1 | Complete   | 2026-04-04 | - |
 | 34. Feedback Pipeline | v4.1 | 0/0 | Not started | - |
 | 35. Feedback UI + Send Experience | v4.1 | 0/0 | Not started | - |
 | 36. Message Rendering + New Types | v4.1 | 0/0 | Not started | - |
