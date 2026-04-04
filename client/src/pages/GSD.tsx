@@ -1099,6 +1099,12 @@ export function GSD() {
                 {selectedProj ? (
                   <ProjectDetailsPanel
                     project={selectedProj}
+                    autopilotRun={autopilotRuns.get(selectedProj.name) ?? null}
+                    onPauseSession={() => pauseSession(selectedProj.name)}
+                    onArchive={() => archiveProject(selectedProj.name)}
+                    onUnarchive={() => unarchiveProject(selectedProj.name)}
+                    onOpenTerminal={() => handleOpenTerminal(selectedProj.name)}
+                    onReopenTmux={() => load()}
                     onExpand={(content, tabId) => setFullScreen({ content, title: TAB_TITLES[tabId] ?? tabId })}
                   />
                 ) : (
@@ -1180,6 +1186,12 @@ export function GSD() {
       {selectedProject && (
         <GsdDrawer
           project={selectedProject}
+          autopilotRun={autopilotRuns.get(selectedProject.name) ?? null}
+          onPauseSession={() => pauseSession(selectedProject.name)}
+          onArchive={() => { archiveProject(selectedProject.name); setSelectedProject(null); }}
+          onUnarchive={() => unarchiveProject(selectedProject.name)}
+          onOpenTerminal={() => handleOpenTerminal(selectedProject.name)}
+          onReopenTmux={() => load()}
           onClose={() => setSelectedProject(null)}
           onExpand={(content, tabId) => setFullScreen({ content, title: TAB_TITLES[tabId] ?? tabId })}
         />
