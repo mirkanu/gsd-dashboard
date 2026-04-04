@@ -159,7 +159,9 @@ Plans:
   2. Multi-choice answer buttons from GSD prompts insert the selected choice into the reply box when tapped
   3. New classified messages stream into the open chat window via WebSocket without requiring page refresh or polling
   4. When new messages arrive for a project the user is not currently viewing, the unread badge on that project's chat row increments in real time
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 31-01-PLAN.md — Fix checkpoint auto-send bug + unread badges
 
 ### Phase 32: Project Detail Panel
 **Goal**: Users can access all project controls, file viewers, and metadata by tapping the chat header, and paused/archived projects preserve full history
@@ -213,7 +215,7 @@ Plans:
 | 28. Schema + Classifier Foundation | v4.0 | 2/2 | Complete | 2026-04-03 |
 | 29. Chat List View | 2/2 | Complete    | 2026-04-04 | - |
 | 30. Chat Window + Message Rendering | 2/2 | Complete    | 2026-04-04 | - |
-| 31. Interactivity + Real-Time Streaming | v4.0 | 0/? | Not started | - |
+| 31. Interactivity + Real-Time Streaming | v4.0 | 0/1 | Not started | - |
 | 32. Project Detail Panel | 2/2 | Complete    | 2026-04-04 | - |
 
 ---
