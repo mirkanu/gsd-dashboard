@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Chat-First Dashboard
 status: executing
-stopped_at: Completed 31-01-PLAN.md
-last_updated: "2026-04-04T16:19:06.846Z"
+stopped_at: Completed quick-23
+last_updated: "2026-04-04T17:48:39.502Z"
 last_activity: 2026-04-04 — Completed 32-01 project controls and metadata in detail panel
 progress:
   total_phases: 8
@@ -86,6 +86,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 32]: Extracted AutopilotControls without padding wrapper for reuse in multiple layout contexts
 - [Phase 31]: Checkpoint buttons insert into textarea (not auto-send) matching command chip behavior
 - [Phase 31]: Unread counts tracked via eventBus with activeProjectRef to avoid stale closures
+- [Phase quick-23]: Status text from tmux displayed as-is in working indicator; indicator moved to bottom of chat
 
 ### Pending Todos
 
@@ -105,12 +106,12 @@ None.
 | 20 | Sticky chat header + disable scroll-to-bottom animation | 2026-04-04 | 347f77e | [20-sticky-chat-header-disable-scroll-to-bo](./quick/20-sticky-chat-header-disable-scroll-to-bo/) |
 | 21 | 3-column desktop layout: chat list, chat window, project details | 2026-04-04 | 03e41a8 | [21-3-column-desktop-layout-chat-list-chat-w](./quick/21-3-column-desktop-layout-chat-list-chat-w/) |
 | 22 | Fix terminal close on project switch, scroll isolation, chat scroll-to-bottom | 2026-04-04 | 1042c32 | [22-fix-terminal-close-on-project-switch-ter](./quick/22-fix-terminal-close-on-project-switch-ter/) |
-| 21 | 3-column desktop layout: chat list, chat window, project details | 2026-04-04 | 03e41a8 | [21-3-column-desktop-layout-chat-list-chat-w](./quick/21-3-column-desktop-layout-chat-list-chat-w/) |
+| 23 | Working indicator + classifier accuracy improvements | 2026-04-04 | 01088c2 | [23-working-indicator-classifier-accuracy-im](./quick/23-working-indicator-classifier-accuracy-im/) |
 
 ## Session Continuity
 
-Last session: 2026-04-04T16:13:41.378Z
-Stopped at: Completed 31-01-PLAN.md
+Last session: 2026-04-04T17:48:24.276Z
+Stopped at: Completed quick-23
 Resume file: None
 Next action: Continue with Phase 31
 
