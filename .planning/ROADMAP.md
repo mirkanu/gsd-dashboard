@@ -215,7 +215,7 @@ Plans:
 | 28. Schema + Classifier Foundation | v4.0 | 2/2 | Complete | 2026-04-03 |
 | 29. Chat List View | 2/2 | Complete    | 2026-04-04 | - |
 | 30. Chat Window + Message Rendering | 2/2 | Complete    | 2026-04-04 | - |
-| 31. Interactivity + Real-Time Streaming | 1/1 | Complete   | 2026-04-04 | - |
+| 31. Interactivity + Real-Time Streaming | 1/1 | Complete    | 2026-04-04 | - |
 | 32. Project Detail Panel | 2/2 | Complete    | 2026-04-04 | - |
 
 ---
