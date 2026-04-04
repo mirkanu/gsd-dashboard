@@ -19,6 +19,7 @@ const {
   hiddenWorkingSamples,
   hiddenCodeSamples,
   hiddenChromeSamples,
+  gsdBannerSamples,
   textSamples,
 } = require('./fixtures/tmux-samples');
 
@@ -192,6 +193,22 @@ describe('fixture validation', () => {
       const result = classifyLine(sample);
       assert.equal(result.msg_type, MESSAGE_TYPES.HIDDEN,
         `Expected hidden for: ${sample}`);
+    }
+  });
+
+  it('all GSD banner samples classified as stage_banner', () => {
+    for (const sample of gsdBannerSamples) {
+      const result = classifyLine(sample);
+      assert.equal(result.msg_type, MESSAGE_TYPES.STAGE_BANNER,
+        `Expected stage_banner for: ${sample}`);
+    }
+  });
+
+  it('text samples not caught by STAGE_BANNER patterns', () => {
+    for (const sample of textSamples) {
+      const result = classifyLine(sample);
+      assert.notEqual(result.msg_type, MESSAGE_TYPES.STAGE_BANNER,
+        `False positive stage_banner for: ${sample}`);
     }
   });
 

@@ -52,7 +52,7 @@ const PATTERNS = [
       /^Read \d+ files?\s/,              // Read 3 files (ctrl+o to expand)
       /^Listed \d+ director/,            // Listed 1 directory (ctrl+o to expand)
       /^Added \d+ lines/,               // Added 15 lines, removed 3 lines
-      /^[\u2500-\u257F]/,               // Background task tree lines (box-drawing chars)
+      /^[\u251C\u2514]/,               // Background task tree lines (├ └)
       /^Enter to select/,               // Selection UI navigation hint
       /How is Claude doing/,            // Session feedback prompt
       /ctrl\+o to expand/,              // Any collapsed output with ctrl+o hint
@@ -75,6 +75,11 @@ const PATTERNS = [
       /^(?:PLAN|EXECUTE|RESEARCH):/i,
       /^={3,}\s+/,
       /^Wave\s+\d+:/i,
+      /^[\u2501]{10,}$/,                    // Heavy horizontal rule line (━━━━━━━━━)
+      /GSD\s*[\u25BA\u25B6]\s*\w/,          // GSD ► RESEARCHING (banner text line)
+      /^●\s*Step\s+\d+/,                    // ● Step 7: Commit and Tag
+      /^[\u2554\u255A\u2557\u255D\u2551\u2550]{2,}/,  // Checkpoint/error box borders
+      /^[\u2500]{10,}$/,                     // Light horizontal rule (Next Up separator)
     ],
   },
   // Errors
