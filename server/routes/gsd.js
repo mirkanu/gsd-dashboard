@@ -263,7 +263,7 @@ router.get('/projects/:name/messages', (req, res) => {
   const limit = Math.min(parseInt(req.query.limit) || 50, 200);
   const offset = parseInt(req.query.offset) || 0;
   try {
-    const messages = stmts.listGsdMessages.all(name, limit, offset);
+    const messages = stmts.listVisibleGsdMessages.all(name, limit, offset);
     const { count: total } = stmts.countGsdMessages.get(name);
     res.json({ messages, total });
   } catch (err) {
