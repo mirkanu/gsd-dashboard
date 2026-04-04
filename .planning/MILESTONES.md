@@ -1,5 +1,26 @@
 # Milestones
 
+## v4.0 Chat-First Dashboard (Shipped: 2026-04-04)
+
+**Phases:** 28-32 (5 phases, 9 plans + 5 quick tasks)
+**Timeline:** 2026-04-04 (1 day)
+
+**Key accomplishments:**
+- Chat-first UI: WhatsApp/Telegram-style conversation list replacing kanban board
+- Per-project chat window with classified message bubbles from tmux output
+- Tmux output classifier: regex-based pipeline classifying terminal output into typed messages (stage banners, checkpoints, completions, errors, hidden)
+- @chatscope/chat-ui-kit-react integration with dark/light theme support
+- 3-column desktop layout (20% chat list / 50% chat / 30% project details)
+- Working indicator with live tmux status text (typing indicator pattern)
+- Tappable command chips and checkpoint option buttons (insert, don't auto-send)
+- Unread badge tracking via WebSocket eventBus
+- Project detail panel with autopilot controls, metadata, file tabs
+- Reopen confirmation for paused/archived project sends
+
+**Last phase number:** 32
+
+---
+
 ## v3.0 Autopilot & Cost Intelligence (Shipped: 2026-04-03)
 
 **Phases:** 17-25, 18.1 (11 phases, 20 plans + 18 quick tasks)

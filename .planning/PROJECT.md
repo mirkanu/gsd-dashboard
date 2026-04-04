@@ -30,14 +30,17 @@ At a glance, see where every GSD project stands and interact with any session �
 - ✓ Pause card: pause button kills tmux session, reopen auto-launches Claude — v3.0
 - ✓ Light/dark mode toggle — v3.0
 - ✓ pm2 process management with health check watchdog — v3.0
+- ✓ Chat-first UI: WhatsApp-style chat list and per-project chat windows — v4.0
+- ✓ Tmux output classifier: regex pipeline classifying terminal output into typed messages — v4.0
+- ✓ Tappable actions: command chips and checkpoint buttons insert into reply box — v4.0
+- ✓ Project detail panel: controls, file tabs, metadata in 3-column desktop layout — v4.0
+- ✓ Unread indicators and real-time chat streaming via WebSocket — v4.0
+- ✓ 3-column desktop layout: chat list / chat window / project details — v4.0
+- ✓ Working indicator with live tmux status text — v4.0
 
 ### Active
 
-- [ ] Chat-first UI: replace kanban with WhatsApp-style chat list and per-project chat windows (v4.0)
-- [ ] Tmux output classifier: parse terminal output into typed messages for chat display (v4.0)
-- [ ] Tappable actions: GSD commands and multi-choice answers rendered as interactive buttons (v4.0)
-- [ ] Project detail panel: all controls, file tabs, and status moved to header-tap view (v4.0)
-- [ ] Unread indicators and real-time chat streaming via WebSocket (v4.0)
+(None — milestone complete, planning next)
 
 ### Future
 
@@ -86,16 +89,17 @@ User is a non-coder using vibe coding — wants maximum automation and hands-off
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
-## Current Milestone: v4.0 Chat-First Dashboard
+## Current Milestone: v4.0 Chat-First Dashboard — SHIPPED
 
-**Goal:** Replace the kanban board with a WhatsApp/Telegram-style chat interface where each project is a conversation with Claude/GSD, using @chatscope/chat-ui-kit-react.
+**Shipped:** 2026-04-04
+**Phases:** 28-32 (5 phases, 9 plans) + quick tasks 19-23
 
-**Target features:**
-- Chat list: project rows sorted by recency with unread badges, state-colored borders, filter tabs
-- Chat window: parsed tmux output as typed messages, tappable commands/choices, working indicator with context gauge
-- Message classifier: server-side tmux output parsing into stage banners, checkpoints, completions, errors
-- Project detail panel: tap chat header to access all controls, file tabs, autopilot, raw terminal
-- Paused/archived: full history preserved, sending triggers reopen confirmation
+**Delivered:**
+- WhatsApp/Telegram-style chat interface replacing kanban board
+- 3-column desktop layout (chat list / chat / project details)
+- Tmux output classifier with typed message rendering
+- Working indicator, tappable actions, unread badges
+- Project detail panel with autopilot controls and file tabs
 
 ---
-*Last updated: 2026-04-03 after v4.0 milestone start*
+*Last updated: 2026-04-04 after v4.0 milestone complete*
