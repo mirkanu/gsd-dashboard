@@ -83,6 +83,6 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 33. Classifier Foundation | 1/1 | Complete    | 2026-04-04 | - |
-| 34. Feedback Pipeline | 1/1 | Complete   | 2026-04-04 | - |
+| 34. Feedback Pipeline | 1/1 | Complete    | 2026-04-04 | - |
 | 35. Feedback UI + Send Experience | v4.1 | 0/0 | Not started | - |
 | 36. Message Rendering + New Types | v4.1 | 0/0 | Not started | - |
