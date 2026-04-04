@@ -94,6 +94,7 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 19 | Fix chat window: timestamps, scroll, sticky header with controls | 2026-04-04 | 870d1c9 | [19-fix-chat-window-timestamps-scroll-sticky](./quick/19-fix-chat-window-timestamps-scroll-sticky/) |
+| 20 | Sticky chat header + disable scroll-to-bottom animation | 2026-04-04 | 347f77e | [20-sticky-chat-header-disable-scroll-to-bo](./quick/20-sticky-chat-header-disable-scroll-to-bo/) |
 
 ## Session Continuity
 
