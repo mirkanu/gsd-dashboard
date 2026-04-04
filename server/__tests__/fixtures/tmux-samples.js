@@ -93,6 +93,19 @@ const hiddenToolOutputSamples = [
   '{ "path": "server/db.js" }',
 ];
 
+const hiddenChromeSamples = [
+  '\u25CF Update(.planning/PROJECT.md)',
+  'Read 3 files (ctrl+o to expand)',
+  'Listed 1 directory (ctrl+o to expand)',
+  'Added 15 lines, removed 3 lines',
+  '\u251C Stack research v4.1',
+  '\u2514 Pitfalls research v4.1',
+  'Enter to select \u00B7 up/down to navigate \u00B7 Esc to cancel',
+  'How is Claude doing this session? (optional)',
+  '1. [ ] Trust all tools',
+  '2. [x] Selected option',
+];
+
 const textSamples = [
   'I will now implement the classifier module.',
   'The function takes a raw line of tmux output and returns a typed object.',
@@ -110,5 +123,6 @@ module.exports = {
   hiddenToolOutputSamples,
   hiddenWorkingSamples,
   hiddenCodeSamples,
+  hiddenChromeSamples,
   textSamples,
 };
