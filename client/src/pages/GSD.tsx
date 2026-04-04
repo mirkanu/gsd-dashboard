@@ -14,9 +14,11 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { api } from "../lib/api";
-import type { GsdProject } from "../lib/types";
+import type { GsdProject, SessionState } from "../lib/types";
 import { GsdDrawer } from "../components/GsdDrawer";
 import { MarkdownViewer } from "../components/MarkdownViewer";
+import { ChatListView } from "../components/ChatListView";
+import { ChatListFilters } from "../components/ChatListFilters";
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -952,6 +954,8 @@ export function GSD() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProject, setSelectedProject] = useState<GsdProject | null>(null);
+  const [chatView, setChatView] = useState<{ view: 'list' | 'chat'; project?: string }>({ view: 'list' });
+  const [activeFilter, setActiveFilter] = useState<SessionState | null>(null);
   const [autopilotRuns, setAutopilotRuns] = useState<Map<string, import('../lib/types').AutopilotRun>>(new Map());
   const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
@@ -1150,66 +1154,43 @@ export function GSD() {
         </div>
       )}
 
-      {/* Kanban board */}
-      {!loading && !error && (
-        /* Mobile:  scroll-snap-x, each column is min-w-full so it fills viewport, user swipes.
-           Desktop: flex row, each column takes equal width (flex-1, min-w-0). */
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-[calc(1rem+env(safe-area-inset-bottom))] -mx-4 px-4 md:-mx-8 md:px-8 max-w-[100vw]">
-          {(["waiting", "working", "paused", "archived"] as import("../lib/types").SessionState[]).map((state) => {
-            const conf = SESSION_STATE_CONFIG[state];
-            const columnProjects = [...projects.filter(p => p.sessionState === state)]
-              .sort((a, b) => a.name.localeCompare(b.name));
-            return (
-              <div
-                key={state}
-                /* Mobile: min-w-full snaps to center one column at a time.
-                   Desktop (md+): flex-1 + min-w-0 shares space equally across all 4 columns. */
-                className="bg-surface-1 rounded-xl border border-border p-3 flex flex-col flex-shrink-0 snap-center min-w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] md:min-w-0 md:max-w-none md:flex-1"
-              >
-                {/* Column header */}
-                <div className="flex items-center gap-2 mb-4 px-1">
-                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                    state === "waiting"  ? "bg-amber-400" :
-                    state === "working"  ? "bg-emerald-500 animate-pulse" :
-                    state === "paused"   ? "bg-red-500" :
-                                           "bg-gray-600"
-                  }`} />
-                  <span className={`text-xs font-semibold uppercase tracking-wider ${conf.labelCls}`}>
-                    {conf.label}
-                  </span>
-                  <span className="ml-auto text-[11px] text-gray-600 bg-surface-3 px-2 py-0.5 rounded-full">
-                    {columnProjects.length}
-                  </span>
-                </div>
+      {/* Chat list view */}
+      {!loading && !error && chatView.view === 'list' && (() => {
+        const filtered = activeFilter === null
+          ? projects.filter((p) => p.sessionState !== "archived")
+          : projects.filter((p) => p.sessionState === activeFilter);
+        return (
+          <div className="bg-surface-1 rounded-xl border border-border overflow-hidden">
+            <ChatListFilters
+              projects={projects}
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+            />
+            <ChatListView
+              projects={filtered}
+              onSelectProject={(name) => {
+                setChatView({ view: 'chat', project: name });
+                const proj = projects.find((p) => p.name === name) ?? null;
+                setSelectedProject(proj);
+              }}
+            />
+          </div>
+        );
+      })()}
 
-                {/* Cards */}
-                <div className="flex-1 space-y-2.5 overflow-y-auto overflow-x-hidden min-w-0 max-h-[70dvh] pb-4">
-                  {columnProjects.length > 0 ? (
-                    columnProjects.map((project) => (
-                      <ProjectCard
-                        key={project.name}
-                        project={project}
-                        onSelect={setSelectedProject}
-                        onOpenTerminal={(initialValue) => {
-                          setTerminalProject(project.name);
-                          setTerminalInitialValue(initialValue);
-                        }}
-                        onArchive={() => archiveProject(project.name)}
-                        onUnarchive={() => unarchiveProject(project.name)}
-                        onPauseSession={() => pauseSession(project.name)}
-                        onReopenTmux={() => load()}
-                        autopilotRun={autopilotRuns.get(project.name) ?? null}
-                      />
-                    ))
-                  ) : (
-                    <div className="flex items-center justify-center h-24 text-xs text-gray-600">
-                      No projects
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+      {/* Chat placeholder — selected project */}
+      {!loading && !error && chatView.view === 'chat' && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 py-20 text-gray-500">
+          <p className="text-sm">Chat view for <span className="font-semibold text-gray-300">{chatView.project}</span> -- coming in Phase 30</p>
+          <button
+            onClick={() => {
+              setChatView({ view: 'list' });
+              setSelectedProject(null);
+            }}
+            className="px-4 py-2 rounded-lg text-sm border border-border text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors"
+          >
+            Back to list
+          </button>
         </div>
       )}
 
