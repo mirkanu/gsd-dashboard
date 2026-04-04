@@ -28,6 +28,9 @@ interface ChatWindowProps {
   onBack: () => void;
   onOpenTerminal: () => void;
   onOpenDetails: () => void;
+  hideBackButton?: boolean;
+  hideDetailsButton?: boolean;
+  fillParent?: boolean;
 }
 
 const SESSION_STATE_STYLE: Record<string, string> = {
@@ -65,6 +68,9 @@ export function ChatWindow({
   onBack,
   onOpenTerminal,
   onOpenDetails,
+  hideBackButton = false,
+  hideDetailsButton = false,
+  fillParent = false,
 }: ChatWindowProps) {
   const [messages, setMessages] = useState<GsdMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,16 +170,18 @@ export function ChatWindow({
   };
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100dvh - 2rem)' }}>
+    <div className="flex flex-col" style={fillParent ? { height: '100%' } : { height: 'calc(100dvh - 2rem)' }}>
       {/* Chat header — sticky */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-2 shrink-0 sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-gray-200 transition-colors active:scale-95"
-          >
-            <ArrowLeft size={20} />
-          </button>
+          {!hideBackButton && (
+            <button
+              onClick={onBack}
+              className="text-gray-400 hover:text-gray-200 transition-colors active:scale-95"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
           <span className="font-semibold text-gray-200">{displayName}</span>
           {sessionState && (
             <span
@@ -195,13 +203,15 @@ export function ChatWindow({
               <Terminal size={16} />
             </button>
           )}
-          <button
-            onClick={onOpenDetails}
-            className="p-1.5 rounded text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors active:scale-95"
-            title="Project Details"
-          >
-            <FolderOpen size={16} />
-          </button>
+          {!hideDetailsButton && (
+            <button
+              onClick={onOpenDetails}
+              className="p-1.5 rounded text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors active:scale-95"
+              title="Project Details"
+            >
+              <FolderOpen size={16} />
+            </button>
+          )}
         </div>
       </div>
 

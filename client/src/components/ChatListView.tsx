@@ -9,6 +9,7 @@ import type { GsdProject, SessionState } from "../lib/types";
 interface ChatListViewProps {
   projects: GsdProject[];
   onSelectProject: (name: string) => void;
+  activeProject?: string;
 }
 
 const STATE_BORDER: Record<SessionState, string> = {
@@ -26,7 +27,7 @@ function truncate(s: string, max: number): string {
   return s.length > max ? s.slice(0, max) + "..." : s;
 }
 
-export function ChatListView({ projects, onSelectProject }: ChatListViewProps) {
+export function ChatListView({ projects, onSelectProject, activeProject }: ChatListViewProps) {
   // Sort by sessionUpdatedAt descending (newest first), nulls to bottom
   const sorted = [...projects].sort((a, b) => {
     if (!a.sessionUpdatedAt && !b.sessionUpdatedAt) return 0;
@@ -54,7 +55,7 @@ export function ChatListView({ projects, onSelectProject }: ChatListViewProps) {
         return (
           <div
             key={p.name}
-            className={`border-l-4 ${STATE_BORDER[p.sessionState]}`}
+            className={`border-l-4 ${STATE_BORDER[p.sessionState]}${activeProject === p.name ? ' bg-accent/10' : ''}`}
           >
             <Conversation
               name={displayName}
