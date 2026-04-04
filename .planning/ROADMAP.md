@@ -43,10 +43,10 @@ Plans:
   2. POSTing a correction to the API immediately updates the message type in the database (reclassify on submit)
   3. GET endpoint returns feedback history that can be used to identify pattern gaps
   4. Corrections submitted for one project apply universally -- patterns are not project-scoped
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 34-01: TBD
+- [ ] 34-01-PLAN.md — DB migration, PatternManager, feedback API endpoints, classifier wiring
 
 ### Phase 35: Feedback UI + Send Experience
 **Goal**: Users can correct misclassified messages in-place and get immediate confirmation when sending commands
@@ -83,6 +83,6 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 33. Classifier Foundation | 1/1 | Complete    | 2026-04-04 | - |
-| 34. Feedback Pipeline | v4.1 | 0/0 | Not started | - |
+| 34. Feedback Pipeline | v4.1 | 0/1 | Not started | - |
 | 35. Feedback UI + Send Experience | v4.1 | 0/0 | Not started | - |
 | 36. Message Rendering + New Types | v4.1 | 0/0 | Not started | - |
