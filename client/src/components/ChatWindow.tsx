@@ -115,8 +115,13 @@ export function ChatWindow({
     return unsub;
   }, [projectName]);
 
-  // Scroll to bottom — instant on initial load, no auto-scroll after
+  // Reset scroll flag when project changes
   const initialScrollDone = useRef(false);
+  useEffect(() => {
+    initialScrollDone.current = false;
+  }, [projectName]);
+
+  // Scroll to bottom — instant on initial load, no auto-scroll after
   const scrollToBottom = useCallback(() => {
     if (!initialScrollDone.current) {
       bottomRef.current?.scrollIntoView({ behavior: "instant" });

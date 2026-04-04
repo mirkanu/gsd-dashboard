@@ -583,7 +583,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         </div>
       </div>
       {/* Terminal container — fills remaining height */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 overflow-hidden relative" onWheel={(e) => e.stopPropagation()}>
         <div ref={containerRef} className="absolute inset-0 p-2" />
         {/* Selectable text overlay — appears on top of terminal canvas in select mode */}
         {selectMode && (
@@ -1055,13 +1055,14 @@ export function GSD() {
                     activeProject={chatView.project}
                     onSelectProject={(name) => {
                       setChatView({ view: 'chat', project: name });
+                      setTerminalProject(null); // close terminal when switching projects
                     }}
                   />
                 </div>
               </div>
 
               {/* Middle: chat window OR terminal OR empty state */}
-              <div className="flex flex-col overflow-hidden">
+              <div className="flex flex-col overflow-hidden" style={{ overscrollBehavior: 'contain' }}>
                 {chatView.project ? (
                   terminalProject ? (
                     <TerminalOverlay
@@ -1160,6 +1161,7 @@ export function GSD() {
             projects={filteredProjects}
             onSelectProject={(name) => {
               setChatView({ view: 'chat', project: name });
+              setTerminalProject(null);
             }}
           />
         </div>
