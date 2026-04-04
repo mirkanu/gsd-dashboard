@@ -1,0 +1,86 @@
+/* ─── Chatscope Dark Theme Overrides ──────────────────────────────────────── */
+/* Loaded after @chatscope/chat-ui-kit-styles, before index.css (Tailwind).  */
+/* Uses :root specificity boost — NO !important.                              */
+
+/* Conversation list container */
+:root .cs-conversation-list {
+  background: var(--surface-1, #0f172a);
+  border-color: var(--border, #1e293b);
+}
+
+/* Scroll wrapper — fix mobile scroll */
+:root .cs-conversation-list__scroll-wrapper {
+  touch-action: auto;
+}
+
+/* Individual conversation row */
+:root .cs-conversation {
+  background: var(--surface-2, #1e293b);
+  color: inherit;
+  border-bottom: 1px solid var(--border, #1e293b);
+  border-left: none;
+}
+
+:root .cs-conversation:hover {
+  background: var(--surface-3, #334155);
+}
+
+:root .cs-conversation--active {
+  background: var(--surface-3, #334155);
+}
+
+/* Conversation text elements */
+:root .cs-conversation__name {
+  color: inherit;
+}
+
+:root .cs-conversation__info {
+  color: var(--surface-5, #94a3b8);
+}
+
+:root .cs-conversation__last-activity-time {
+  color: var(--surface-5, #94a3b8);
+}
+
+/* Unread indicator */
+:root .cs-conversation__unread-dot {
+  background: var(--accent, #6366f1);
+}
+
+/* ─── Light Theme Overrides ───────────────────────────────────────────────── */
+
+:root.light .cs-conversation-list {
+  background: var(--surface-1, #ffffff);
+  border-color: var(--border, #e2e8f0);
+}
+
+:root.light .cs-conversation {
+  background: var(--surface-2, #f8fafc);
+  color: inherit;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  border-left: none;
+}
+
+:root.light .cs-conversation:hover {
+  background: var(--surface-3, #f1f5f9);
+}
+
+:root.light .cs-conversation--active {
+  background: var(--surface-3, #f1f5f9);
+}
+
+:root.light .cs-conversation__name {
+  color: inherit;
+}
+
+:root.light .cs-conversation__info {
+  color: var(--surface-5, #64748b);
+}
+
+:root.light .cs-conversation__last-activity-time {
+  color: var(--surface-5, #64748b);
+}
+
+:root.light .cs-conversation__unread-dot {
+  background: var(--accent, #6366f1);
+}
