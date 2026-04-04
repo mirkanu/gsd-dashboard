@@ -1,199 +1,479 @@
-# Architecture: v4.0 Chat-First Dashboard
+# Architecture: Classifier Feedback Loop and Auto-Fix System
 
-**Domain:** Chat-based project monitoring UI
+**Domain:** Chat message classifier feedback pipeline
 **Researched:** 2026-04-03
+**Confidence:** HIGH (all components are internal, patterns well-understood)
 
-## Recommended Architecture
-
-v4.0 adds a server-side message classifier and replaces the client-side kanban view with a chat interface. The architecture extends existing patterns -- no new infrastructure, no new databases, no new real-time transport.
-
-### System Overview
+## Current Architecture (Baseline)
 
 ```
-tmux capture-pane (existing, polling every 5s)
-        |
-        v
-strip-ansi --> classifier module (NEW: server/gsd/classifier.js)
-        |
-        v
-gsd_messages table (EXTENDED: add message_type, metadata columns)
-        |
-        v
-WebSocket broadcast (EXTENDED: chat:message, chat:typing, chat:unread)
-        |
-        v
-React chat UI (NEW: chatscope components + custom message renderers)
+tmux capture-pane
+  |
+  v
+TmuxClassifier.poll()  -->  classifyChunks()  -->  PATTERNS (static array in classifierPatterns.js)
+  |                                                    |
+  |  diff new lines                                    |  first regex match wins
+  |                                                    v
+  |                                            { msg_type, content }
+  v
+insertClassifiedMessage  -->  gsd_messages table  -->  WebSocket broadcast
+                                                         |
+                                                         v
+                                                  ChatMessageRenderer (switch on msg_type)
+```
+
+**Key constraints from current code:**
+- `PATTERNS` in `classifierPatterns.js` is a static JS array, evaluated top-to-bottom, first match wins
+- `classifyLine()` is a pure function: strip ANSI, trim, test each pattern group in order
+- Lines matching no pattern default to `text`
+- `gsd_messages` stores: `id, project, direction, content, message_type, metadata, created_at`
+- Messages are already persisted with their classified `message_type` -- this is the field feedback corrects
+- `TmuxClassifier` receives `stmts` (prepared statements) and `broadcast` via constructor
+
+---
+
+## Recommended Architecture: Feedback Pipeline
+
+```
+User right-clicks/long-presses message in ChatMessageRenderer
+  |
+  v
+POST /api/gsd/messages/:id/feedback  { correct_type: "hidden" | "text" | ... }
+  |
+  v
+Server:
+  1. Insert into classifier_feedback table (audit log)
+  2. Derive regex pattern override from content + correct_type
+  3. Upsert into classifier_overrides table
+  4. Hot-reload override into PatternManager's in-memory list
+  5. Update the original message's message_type in gsd_messages
+  6. Broadcast correction via WebSocket (gsd_message_updated)
+  |
+  v
+Client: update message in place (optimistic update, reconcile on WS confirm)
+
+Future tmux output matching the derived pattern --> auto-classified correctly
 ```
 
 ### Component Boundaries
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| **Classifier** (`server/gsd/classifier.js`) | Parse tmux plaintext into typed messages. Strip ANSI, match patterns, assign message_type + metadata. | tmux.js (input), db.js (output), websocket.js (broadcast) |
-| **ClassifierPoller** (in existing polling loop) | Run classifier on each active project at polling interval. Diff against last-seen output to avoid duplicate messages. | classifier.js, tmux.js |
-| **gsd_messages (extended)** | Store classified messages with type and metadata. Source of truth for chat history. | db.js prepared statements |
-| **Chat API routes** (`server/routes/chat.js`) | HTTP endpoints for message history, unread counts, mark-as-read. | db.js, gsd_messages table |
-| **ChatListView** (client component) | ConversationList showing all projects sorted by recency. Unread badges, state colors. | WebSocket (chat:unread), API (/api/chat/conversations) |
-| **ChatWindow** (client component) | ChatContainer with MessageList, typed message renderers, MessageInput. | WebSocket (chat:message), API (/api/chat/messages/:project), send-keys API |
-| **Message Renderers** (client components) | Custom renders for each message_type: stage banners, error cards, tappable commands, plain text. | ChatWindow (parent), react-markdown (for text content) |
-| **ProjectDetailPanel** (client component) | Slide-out panel on header tap. Contains autopilot controls, file tabs, raw terminal, settings. | Existing GsdDrawer content, refactored into panel |
+| Component | Responsibility | New/Modified |
+|-----------|---------------|--------------|
+| `server/gsd/patternManager.js` | Merges static PATTERNS + DB overrides, provides `classifyLine()`/`classifyChunks()` | **NEW** |
+| `server/gsd/classifier.js` | Accepts PatternManager via constructor, uses it instead of raw classifyChunks | **MODIFY** (2 lines) |
+| `server/gsd/classifierPatterns.js` | Static regex baseline -- NEVER modified by the system | **NONE** |
+| `server/db.js` | Migration for 2 new tables + 5 new prepared statements | **MODIFY** |
+| `server/routes/gsd.js` | Feedback endpoint, overrides admin endpoints | **MODIFY** |
+| `server/index.js` | Instantiate PatternManager, pass to TmuxClassifier | **MODIFY** (3 lines) |
+| `client/src/lib/types.ts` | Add `gsd_message_updated` to WSMessage union | **MODIFY** |
+| `client/src/components/ChatMessageRenderer.tsx` | Add context menu / long-press for feedback | **MODIFY** |
+| `client/src/components/ChatWindow.tsx` | Handle `gsd_message_updated` WS events, call feedback API | **MODIFY** |
 
-### Data Flow: Classified Message Creation
+---
 
-```
-1. Polling loop fires (every 5s per active project)
-2. capturePaneText(sessionName) returns raw tmux output with ANSI codes
-3. strip-ansi removes escape sequences --> clean plaintext
-4. Classifier diffs against last-seen-hash to find new lines
-5. For each new block of output:
-   a. Pattern match against classifier rules (stage, error, input_request, etc.)
-   b. Create message object: { type, content, metadata, project, direction: 'inbound' }
-   c. Insert into gsd_messages via prepared statement
-   d. Broadcast via WebSocket: { type: 'chat:message', project, message }
-6. Client receives WebSocket message, appends to local message array
-7. Chatscope MessageList auto-scrolls to show new message
-```
+## Database Schema: Two New Tables
 
-### Data Flow: User Sends Command
+### Table: `classifier_feedback` (audit log)
 
-```
-1. User types in MessageInput or taps command button
-2. Client sends POST /api/gsd/terminal/send (existing endpoint)
-3. Server dispatches via tmux send-keys (existing)
-4. Client also inserts optimistic outbound message into local state
-5. Server inserts outbound message into gsd_messages: { direction: 'outbound', type: 'command' }
-6. Broadcast via WebSocket confirms message persisted
+Every user correction is logged here for analysis, even if it duplicates a prior override.
+
+```sql
+CREATE TABLE IF NOT EXISTS classifier_feedback (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  message_id INTEGER NOT NULL,
+  original_type TEXT NOT NULL,
+  corrected_type TEXT NOT NULL,
+  content_snapshot TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  FOREIGN KEY (message_id) REFERENCES gsd_messages(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_feedback_message ON classifier_feedback(message_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_created ON classifier_feedback(created_at DESC);
 ```
 
-### Data Flow: Unread Tracking
+### Table: `classifier_overrides` (active runtime patterns)
+
+Each row is a regex that takes precedence over static patterns.
+
+```sql
+CREATE TABLE IF NOT EXISTS classifier_overrides (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  pattern TEXT NOT NULL,
+  target_type TEXT NOT NULL CHECK(target_type IN ('text','stage_banner','checkpoint','completion','error','hidden')),
+  priority INTEGER NOT NULL DEFAULT 0,
+  source TEXT NOT NULL DEFAULT 'feedback' CHECK(source IN ('feedback','manual')),
+  enabled INTEGER NOT NULL DEFAULT 1,
+  hit_count INTEGER NOT NULL DEFAULT 0,
+  feedback_id INTEGER,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  FOREIGN KEY (feedback_id) REFERENCES classifier_feedback(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_overrides_enabled ON classifier_overrides(enabled, priority DESC);
+```
+
+**Column rationale:**
+- `pattern`: regex string derived from the corrected message content
+- `target_type`: what the pattern should classify lines as
+- `priority`: higher wins; manual overrides can beat auto-derived ones
+- `enabled`: soft-delete without losing history
+- `hit_count`: tracks how often this override fires (useful for pruning stale overrides)
+- `feedback_id`: links back to the creating feedback record (nullable for manual overrides)
+
+### New Prepared Statements (added to `server/db.js` stmts)
+
+```javascript
+stmts.getGsdMessage = db.prepare('SELECT * FROM gsd_messages WHERE id = ?');
+stmts.updateMessageType = db.prepare('UPDATE gsd_messages SET message_type = ? WHERE id = ?');
+stmts.insertFeedback = db.prepare(
+  `INSERT INTO classifier_feedback (message_id, original_type, corrected_type, content_snapshot)
+   VALUES (?, ?, ?, ?)`
+);
+stmts.listOverrides = db.prepare(
+  'SELECT * FROM classifier_overrides WHERE enabled = 1 ORDER BY priority DESC, id DESC'
+);
+stmts.disableOverride = db.prepare(
+  'UPDATE classifier_overrides SET enabled = 0 WHERE id = ?'
+);
+```
+
+---
+
+## PatternManager: The Core New Component
+
+File: `server/gsd/patternManager.js`
+
+### Responsibilities
+
+1. **On startup:** Load `classifier_overrides` from DB where `enabled = 1`, compile into RegExp objects
+2. **On classify:** Check overrides first (priority order), then static PATTERNS, then default to `text`
+3. **On feedback:** Derive pattern, insert override, hot-reload into memory (no restart needed)
+4. **On disable:** Remove override from memory, set `enabled = 0` in DB
+
+### Classification Order (Three-Tier)
 
 ```
-1. Server tracks last_read_at per project (new column or separate table)
-2. On each new message insert, increment unread count for project
-3. Broadcast chat:unread to all connected clients
-4. When user opens a project chat, client sends POST /api/chat/mark-read/:project
-5. Server resets unread count, broadcasts updated count
+1. DB overrides (sorted by priority DESC, then id DESC)
+   -- First match wins within overrides
+   -- These take absolute precedence over static patterns
+
+2. Static PATTERNS from classifierPatterns.js
+   -- Unchanged from current behavior
+   -- First match wins within static patterns
+
+3. Default: 'text' (no match anywhere)
 ```
+
+### Pattern Derivation Strategy (Auto-Fix Logic)
+
+When a user corrects a message, the system must create a regex that matches similar future content. The strategy is deliberately simple because terminal output has predictable structure:
+
+**Step 1: Extract prefix**
+Take the first line of the corrected content, escape regex special characters, truncate to 40 characters, anchor to start of line.
+
+```javascript
+function derivePattern(content) {
+  const firstLine = content.split('\n')[0].trim();
+  const escaped = firstLine.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const prefix = escaped.substring(0, 40);
+  return `^${prefix}`;
+}
+```
+
+**Step 2: Deduplication check**
+Before inserting, check if an existing enabled override already matches this content with the same target type. If so, just log the feedback -- do not create a duplicate override.
+
+**Step 3: Conflict resolution**
+If an existing override matches but targets a different type, the new feedback wins (user explicitly corrected). Disable the old override, create a new one with higher priority.
+
+### Code Structure
+
+```javascript
+// server/gsd/patternManager.js
+'use strict';
+const { classifyLine: staticClassifyLine } = require('./classifierPatterns');
+const stripAnsi = require('strip-ansi');
+
+class PatternManager {
+  constructor(db) {
+    this.db = db;
+    this.overrides = []; // { id, pattern, target_type, priority, regex }
+    this.loadOverrides();
+  }
+
+  loadOverrides() {
+    const rows = this.db.prepare(
+      'SELECT * FROM classifier_overrides WHERE enabled = 1 ORDER BY priority DESC, id DESC'
+    ).all();
+    this.overrides = rows.map(row => ({
+      ...row,
+      regex: new RegExp(row.pattern),
+    }));
+  }
+
+  classifyLine(rawLine) {
+    const clean = stripAnsi(rawLine).trim();
+    if (!clean) return null;
+
+    // Tier 1: DB overrides
+    for (const override of this.overrides) {
+      if (override.regex.test(clean)) {
+        // Non-blocking hit count bump
+        this.db.prepare(
+          'UPDATE classifier_overrides SET hit_count = hit_count + 1 WHERE id = ?'
+        ).run(override.id);
+        return { msg_type: override.target_type, content: clean, metadata: null };
+      }
+    }
+
+    // Tier 2+3: static patterns + default (delegate to existing pure function)
+    return staticClassifyLine(rawLine);
+  }
+
+  classifyChunks(rawText) {
+    return rawText.split('\n').map(line => this.classifyLine(line)).filter(Boolean);
+  }
+
+  addOverride(pattern, targetType, feedbackId) {
+    const result = this.db.prepare(
+      'INSERT INTO classifier_overrides (pattern, target_type, feedback_id) VALUES (?, ?, ?)'
+    ).run(pattern, targetType, feedbackId);
+    // Hot-reload: prepend to in-memory list (highest priority = checked first)
+    this.overrides.unshift({
+      id: Number(result.lastInsertRowid),
+      pattern,
+      target_type: targetType,
+      priority: 0,
+      enabled: 1,
+      hit_count: 0,
+      regex: new RegExp(pattern),
+    });
+    return Number(result.lastInsertRowid);
+  }
+
+  disableOverride(id) {
+    this.db.prepare('UPDATE classifier_overrides SET enabled = 0 WHERE id = ?').run(id);
+    this.overrides = this.overrides.filter(o => o.id !== id);
+  }
+
+  // Check if content is already covered by an existing override with matching type
+  findExistingOverride(content, targetType) {
+    return this.overrides.find(o =>
+      o.regex.test(content) && o.target_type === targetType
+    ) || null;
+  }
+
+  // Check if content matches an override with a DIFFERENT type (conflict)
+  findConflictingOverride(content, targetType) {
+    return this.overrides.find(o =>
+      o.regex.test(content) && o.target_type !== targetType
+    ) || null;
+  }
+}
+
+module.exports = { PatternManager };
+```
+
+---
+
+## Integration Points
+
+### 1. TmuxClassifier Modification (Minimal)
+
+```javascript
+// Before (classifier.js line 4):
+const { classifyChunks } = require('./classifierPatterns');
+
+// After: PatternManager injected via constructor
+class TmuxClassifier {
+  constructor(stmts, broadcast, patternManager) {  // added param
+    this.stmts = stmts;
+    this.broadcast = broadcast;
+    this.patternManager = patternManager;           // store it
+    this.snapshots = new Map();
+  }
+
+  poll(projectName, tmuxSession) {
+    // ... existing diff logic unchanged ...
+    const chunks = this.patternManager.classifyChunks(newContent);  // changed line
+    // ... rest unchanged ...
+  }
+}
+```
+
+### 2. Server Initialization (server/index.js)
+
+```javascript
+const { PatternManager } = require('./gsd/patternManager');
+const patternManager = new PatternManager(db);
+
+// Pass to TmuxClassifier (existing construction site)
+const classifier = new TmuxClassifier(stmts, broadcast, patternManager);
+
+// Also expose patternManager on app for route access
+app.locals.patternManager = patternManager;
+```
+
+### 3. New API Route: `POST /api/gsd/messages/:id/feedback`
+
+Added to `server/routes/gsd.js`.
+
+```
+Request:  { correct_type: "hidden" | "text" | "error" | "stage_banner" | "checkpoint" | "completion" }
+Response: { ok: true, override_id: number | null, message: { id, message_type, ... } }
+```
+
+**Pipeline (10 steps):**
+
+1. Fetch original message from `gsd_messages` by `id`
+2. Validate `correct_type` is a valid MessageType
+3. If `correct_type === original.message_type`, return early (no-op)
+4. Insert into `classifier_feedback` (audit log)
+5. Derive regex pattern from content via `derivePattern()`
+6. Check for duplicate override (same pattern, same target) -- skip creation if exists
+7. Check for conflicting override (same pattern, different target) -- disable conflict if exists
+8. If new pattern needed, call `patternManager.addOverride(pattern, correctType, feedbackId)`
+9. Update `gsd_messages` SET `message_type = correct_type` WHERE `id = ?`
+10. Broadcast `gsd_message_updated` via WebSocket, return updated message
+
+### 4. Admin Routes (for debugging)
+
+```
+GET  /api/gsd/classifier/overrides      -- List all enabled overrides with hit counts
+DELETE /api/gsd/classifier/overrides/:id -- Disable an override (soft delete)
+```
+
+### 5. WebSocket: New Event Type
+
+```javascript
+broadcast('gsd_message_updated', {
+  project: message.project,
+  message: { id, project, direction, content, message_type: correct_type, created_at }
+});
+```
+
+Client handles by replacing the message in local state.
+
+---
+
+## Data Flow: Complete Feedback Cycle (Example)
+
+```
+1. User sees "Read(server/db.js)" rendered as a text bubble (should be hidden)
+
+2. User long-presses the message -> context menu:
+   [Text] [Hidden] [Error] [Stage Banner] [Checkpoint] [Completion]
+
+3. User taps "Hidden"
+
+4. Client:
+   - Optimistic update: message disappears from chat
+   - POST /api/gsd/messages/1234/feedback { correct_type: "hidden" }
+
+5. Server:
+   a. Reads message 1234: { content: "Read(server/db.js)", message_type: "text" }
+   b. Inserts feedback: { message_id: 1234, original: "text", corrected: "hidden" }
+   c. Derives pattern: "^Read\\(server\\/db\\.js\\)"
+   d. Checks existing overrides: no match -> new override needed
+   e. Inserts override: { pattern: "^Read\\(server\\/db\\.js\\)", target_type: "hidden" }
+   f. Hot-loads override into PatternManager.overrides array
+   g. Updates gsd_messages row 1234: SET message_type = "hidden"
+   h. Broadcasts: gsd_message_updated { id: 1234, message_type: "hidden" }
+
+6. ALL future tmux lines starting with "Read(server/db.js" will be classified
+   as "hidden" automatically -- no code changes, no restart needed.
+```
+
+---
+
+## Persistence Across Server Restarts
+
+All pattern overrides survive restarts because they live in SQLite:
+
+1. `PatternManager` constructor calls `loadOverrides()` on startup
+2. Reads all `enabled = 1` rows from `classifier_overrides`
+3. Compiles each `pattern` string into a `RegExp`
+4. Stores in `this.overrides` array for in-memory matching
+
+**Zero data loss.** Overrides persist in the DB.
+**No file modifications.** Static `classifierPatterns.js` is never edited by the system.
+**Clean separation.** Static patterns = developer-authored baseline. DB overrides = user-corrected runtime layer.
+
+---
 
 ## Patterns to Follow
 
-### Pattern 1: Classifier as Pure Function
+### Pattern 1: Layered Classification (Override > Static > Default)
+**What:** Three-tier pattern evaluation where DB overrides take absolute precedence.
+**Why:** Allows runtime corrections without modifying source code. Static patterns remain the stable baseline. Overrides are the "diff" layer on top.
 
-**What:** The classifier takes plaintext input and returns an array of typed message objects. No side effects, no database access, no WebSocket calls.
-**When:** Always. The poller handles persistence and broadcasting.
-**Why:** Testable in isolation. Can unit test with sample tmux output strings.
+### Pattern 2: Optimistic UI with WebSocket Reconciliation
+**What:** Client updates message type immediately on feedback submission, then reconciles when WebSocket confirms.
+**Why:** Meets the perceived performance mandate (visible response within one frame). If server rejects, revert with toast.
 
-```javascript
-// server/gsd/classifier.js
-function classifyOutput(plaintext) {
-  const messages = [];
-  const lines = plaintext.split('\n');
+### Pattern 3: Existing Migration Pattern in db.js
+**What:** Use try/catch SELECT to detect missing tables, then CREATE IF NOT EXISTS.
+**Why:** Matches the existing migration approach (see lines 132-187, 296-303 of db.js). No separate migration framework needed.
 
-  for (const line of lines) {
-    if (/^Phase \d+/i.test(line)) {
-      messages.push({ type: 'stage', content: line.trim(), metadata: {} });
-    } else if (/Error:|FAILED|BLOCKED/i.test(line)) {
-      messages.push({ type: 'error', content: line.trim(), metadata: {} });
-    } else if (/\?\s/.test(line) || /\(Y\/n\)/i.test(line)) {
-      messages.push({ type: 'input_request', content: line.trim(), metadata: {} });
-    }
-    // ... more patterns
-  }
-  return messages;
-}
-```
-
-### Pattern 2: Diff-Based Message Detection
-
-**What:** Hash the last N lines of tmux output. On each poll, only process lines that weren't in the previous hash.
-**When:** Every classifier poll cycle.
-**Why:** Prevents duplicate messages. Tmux capture-pane returns the full visible buffer every time.
-
-```javascript
-// Track last-seen content hash per project
-const lastSeen = new Map(); // project -> { hash, lineCount }
-
-function getNewLines(project, currentOutput) {
-  const lines = currentOutput.split('\n');
-  const hash = simpleHash(currentOutput);
-  const prev = lastSeen.get(project);
-
-  if (prev && prev.hash === hash) return []; // no change
-
-  // Find where new content starts (simplified)
-  const newLines = prev ? lines.slice(prev.lineCount) : lines;
-  lastSeen.set(project, { hash, lineCount: lines.length });
-  return newLines;
-}
-```
-
-### Pattern 3: Chatscope Wrapper Components
-
-**What:** Wrap each chatscope component in a Tailwind-styled container. Never modify chatscope's internal CSS directly.
-**When:** Every chatscope component usage.
-**Why:** Maintains upgrade path. If chatscope releases updates, wrapper components isolate changes.
-
-```tsx
-// client/src/components/chat/ChatList.tsx
-import { ConversationList, Conversation } from '@chatscope/chat-ui-kit-react';
-
-export function ChatList({ projects, onSelect }) {
-  return (
-    <div className="h-full border-r border-border">
-      <ConversationList>
-        {projects.map(p => (
-          <Conversation
-            key={p.key}
-            name={p.name}
-            lastSenderName={p.lastMessage?.type === 'outbound' ? 'You' : 'Claude'}
-            info={p.lastMessage?.content?.slice(0, 60)}
-            onClick={() => onSelect(p.key)}
-          />
-        ))}
-      </ConversationList>
-    </div>
-  );
-}
-```
+---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Mixing Raw Terminal in Chat
+### Anti-Pattern 1: Modifying classifierPatterns.js at Runtime
+**What:** Writing to the source JS file to add patterns.
+**Why bad:** Requires restart, causes git diffs, fragile file I/O, no rollback capability.
+**Instead:** DB overrides with in-memory hot-reload.
 
-**What:** Dumping unsanitized terminal output directly into chat messages.
-**Why bad:** Terminal output contains ANSI codes, cursor movements, partial lines, spinner characters, and progress bars. Rendered as chat messages, this is unreadable garbage.
-**Instead:** Always run through strip-ansi + classifier. Only classified output becomes messages. Raw terminal stays in xterm.js overlay.
+### Anti-Pattern 2: Complex NLP/ML for Pattern Derivation
+**What:** Using fuzzy matching, LLMs, or similarity scoring to derive patterns from corrected content.
+**Why bad:** Over-engineered. Terminal output is structured with predictable prefixes (tool names, error prefixes, status markers). A simple escaped-prefix regex handles 95%+ of cases.
+**Instead:** Simple first-line prefix regex. The user provides the intelligence (correct type); the system just needs to match similar lines.
 
-### Anti-Pattern 2: Polling the Database for New Messages
+### Anti-Pattern 3: Full Rebuild from Feedback Log
+**What:** Re-deriving all overrides from the feedback audit log on every change.
+**Why bad:** O(n) rebuild, complex reconciliation, unnecessary when overrides are already correct.
+**Instead:** Each feedback creates/updates exactly one override atomically.
 
-**What:** Client polling GET /api/chat/messages every N seconds to check for new messages.
-**Why bad:** Wasteful, laggy, doesn't scale. Existing WebSocket infrastructure already pushes updates.
-**Instead:** Use WebSocket chat:message events for real-time. HTTP API only for initial page load (history) and mark-as-read.
+### Anti-Pattern 4: Regex Compilation on Every Classify Call
+**What:** Compiling RegExp objects inside the hot path of `classifyLine()`.
+**Why bad:** Regex compilation is expensive relative to regex testing.
+**Instead:** Compile once on load/add, store compiled `RegExp` in the overrides array.
 
-### Anti-Pattern 3: Overriding Chatscope Internals
-
-**What:** Using CSS `!important` or patching chatscope source to change scroll behavior, message layout, etc.
-**Why bad:** Breaks on library updates. Creates unmaintainable CSS specificity wars.
-**Instead:** Use chatscope's documented customization points (SCSS variables via CSS overrides, Message.CustomContent for custom renders). If a component doesn't support needed customization, replace that specific component with a custom Tailwind one rather than hacking the library.
-
-### Anti-Pattern 4: One Message Per Terminal Line
-
-**What:** Creating a separate chat message for every line of terminal output.
-**Why bad:** A single Claude Code response can be 50+ lines. 50 chat bubbles for one response is unusable.
-**Instead:** Classifier should group related lines into logical messages. A stage banner is one message. A multi-line error with stack trace is one message. The grouping logic is part of the classifier's responsibility.
+---
 
 ## Scalability Considerations
 
-| Concern | Current (6 projects) | At 20 projects | At 100 projects |
-|---------|----------------------|-----------------|------------------|
-| Classifier polling | 6 tmux captures every 5s. Negligible CPU. | 20 captures/5s. Still fine. | Batch captures, increase interval to 10s. |
-| Message storage | ~100 messages/project/day. ~600/day total. SQLite handles easily. | ~2K messages/day. Fine. | Implement message archival (move >30d messages to archive table). |
-| WebSocket broadcast | All messages to all clients (1 client typically). Trivial. | Same. | Add project subscription (only send messages for projects client is viewing). |
-| Chat list rendering | 6 items. Instant. | 20 items. Instant. | Add search/filter. ConversationList handles scroll. |
-| Message list rendering | ~100 messages visible. Chatscope handles scroll. | Same per project. | Paginate history. Load last 50 on open, fetch more on scroll-up. |
+| Concern | At 100 overrides | At 1000 overrides | Mitigation |
+|---------|-------------------|---------------------|------------|
+| Classification speed | Negligible (<1ms) | ~5ms per line | Batch into single alternation regex if needed |
+| Memory | Trivial (~10KB) | ~100KB | Still trivial |
+| DB reads on startup | <10ms | ~50ms | One-time cost, acceptable |
+| Stale overrides | Manual review | Auto-prune where `hit_count = 0` after 30 days | Cleanup query in maintenance sweep |
+
+Realistically, a single-developer tool will accumulate 50-200 overrides over months. Performance will never be a concern.
+
+---
+
+## File Changes Summary
+
+| File | Change | Description |
+|------|--------|-------------|
+| `server/gsd/patternManager.js` | **NEW** | PatternManager class: merges static + DB patterns, hot-reload |
+| `server/gsd/classifier.js` | **MODIFY** | Accept PatternManager via constructor, call `patternManager.classifyChunks()` |
+| `server/gsd/classifierPatterns.js` | **NONE** | Unchanged -- remains the static baseline |
+| `server/db.js` | **MODIFY** | Add migration for `classifier_feedback` + `classifier_overrides` tables, 5 new prepared statements |
+| `server/routes/gsd.js` | **MODIFY** | Add `POST /messages/:id/feedback`, `GET /classifier/overrides`, `DELETE /classifier/overrides/:id` |
+| `server/index.js` | **MODIFY** | Instantiate PatternManager, pass to TmuxClassifier, expose on `app.locals` |
+| `client/src/lib/types.ts` | **MODIFY** | Add `gsd_message_updated` WSMessage type |
+| `client/src/components/ChatMessageRenderer.tsx` | **MODIFY** | Add context menu / long-press trigger for feedback |
+| `client/src/components/ChatWindow.tsx` | **MODIFY** | Handle `gsd_message_updated` WS events, call feedback API |
+
+---
 
 ## Sources
 
-- Existing codebase: server/gsd/tmux.js (capture-pane, pattern matching), server/db.js (gsd_messages schema), client/src/hooks/useWebSocket.ts
-- @chatscope/chat-ui-kit-react Storybook: component APIs and customization patterns
-- WhatsApp Web architecture: chat list + detail pattern, unread tracking, message grouping
+- Direct code analysis: `server/gsd/classifierPatterns.js` (PATTERNS array, `classifyLine`, `classifyChunks`)
+- Direct code analysis: `server/gsd/classifier.js` (TmuxClassifier constructor, poll loop, groupConsecutiveText)
+- Direct code analysis: `server/db.js` (migration pattern, prepared statements pattern, existing gsd_messages schema)
+- Direct code analysis: `client/src/lib/types.ts` (MessageType, GsdMessage, WSMessage types)
+- Direct code analysis: `client/src/components/ChatMessageRenderer.tsx` (msg_type switch rendering)
+- Project context: `.planning/PROJECT.md` (v4.1 milestone goals, feedback loop requirements)
