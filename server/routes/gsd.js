@@ -475,4 +475,162 @@ router.patch('/projects/:key/tasks/:id', async (req, res) => {
   }
 });
 
+// --- Classifier feedback & overrides (Phase 34) ---
+
+const { MESSAGE_TYPES } = require('../gsd/classifierPatterns');
+const { PatternManager } = require('../gsd/patternManager');
+
+// POST /api/gsd/messages/:id/feedback — submit a classifier correction
+router.post('/messages/:id/feedback', async (req, res) => {
+  const { id } = req.params;
+
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/messages/${encodeURIComponent(id)}/feedback`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req.body),
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
+
+  const { correct_type } = req.body || {};
+  const validTypes = Object.values(MESSAGE_TYPES);
+  if (!correct_type || !validTypes.includes(correct_type)) {
+    return res.status(400).json({ error: `correct_type must be one of: ${validTypes.join(', ')}` });
+  }
+
+  try {
+    const message = stmts.getGsdMessage.get(parseInt(id, 10));
+    if (!message) return res.status(404).json({ error: 'Message not found' });
+
+    // No-op if type already matches
+    if (correct_type === message.message_type) {
+      return res.json({ ok: true, message: 'No change needed' });
+    }
+
+    // Insert feedback record
+    const feedbackResult = stmts.insertFeedback.run(
+      message.id, message.message_type, correct_type, message.content
+    );
+    const feedbackId = Number(feedbackResult.lastInsertRowid);
+
+    // Override management
+    const patternManager = req.app.locals.patternManager;
+    const pattern = PatternManager.derivePattern(message.content);
+    let override_id = null;
+
+    // Check for existing override with same content+type (skip if found)
+    const existing = patternManager.findExistingOverride(message.content, correct_type);
+    if (!existing) {
+      // Check for conflicting override (different type matching same content)
+      const conflict = patternManager.findConflictingOverride(message.content, correct_type);
+      if (conflict) {
+        patternManager.disableOverride(conflict.id);
+      }
+      override_id = patternManager.addOverride(pattern, correct_type, feedbackId);
+    }
+
+    // Update the message type immediately
+    stmts.updateMessageType.run(correct_type, message.id);
+
+    // Broadcast the update
+    const broadcast = req.app.locals.broadcast;
+    if (broadcast) {
+      broadcast('gsd_message_updated', {
+        project: message.project,
+        message: { ...message, message_type: correct_type },
+      });
+    }
+
+    res.json({ ok: true, override_id, message: { id: message.id, message_type: correct_type } });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to process feedback', detail: err.message });
+  }
+});
+
+// GET /api/gsd/classifier/feedback — feedback history
+router.get('/classifier/feedback', async (req, res) => {
+  if (GSD_DATA_URL) {
+    try {
+      const qs = new URLSearchParams();
+      if (req.query.limit) qs.set('limit', req.query.limit);
+      if (req.query.offset) qs.set('offset', req.query.offset);
+      const q = qs.toString();
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/classifier/feedback${q ? `?${q}` : ''}`,
+        { signal: AbortSignal.timeout(10000) }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+  const offset = parseInt(req.query.offset) || 0;
+  try {
+    const feedback = stmts.listFeedback.all(limit, offset);
+    res.json({ feedback });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read feedback', detail: err.message });
+  }
+});
+
+// GET /api/gsd/classifier/overrides — active overrides
+router.get('/classifier/overrides', async (req, res) => {
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/classifier/overrides`,
+        { signal: AbortSignal.timeout(10000) }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
+  try {
+    const overrides = stmts.listOverrides.all();
+    res.json({ overrides });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read overrides', detail: err.message });
+  }
+});
+
+// DELETE /api/gsd/classifier/overrides/:id — disable an override
+router.delete('/classifier/overrides/:id', async (req, res) => {
+  const { id } = req.params;
+
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/classifier/overrides/${encodeURIComponent(id)}`,
+        { method: 'DELETE', signal: AbortSignal.timeout(10000) }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
+
+  try {
+    const patternManager = req.app.locals.patternManager;
+    patternManager.disableOverride(parseInt(id, 10));
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to disable override', detail: err.message });
+  }
+});
+
 module.exports = router;
