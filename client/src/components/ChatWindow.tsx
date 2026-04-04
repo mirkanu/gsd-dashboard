@@ -107,9 +107,13 @@ export function ChatWindow({
     return unsub;
   }, [projectName]);
 
-  // Auto-scroll to bottom on new messages
+  // Scroll to bottom — instant on initial load, no auto-scroll after
+  const initialScrollDone = useRef(false);
   const scrollToBottom = useCallback(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!initialScrollDone.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "instant" });
+      initialScrollDone.current = true;
+    }
   }, []);
 
   useEffect(() => {
@@ -160,7 +164,7 @@ export function ChatWindow({
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex flex-col" style={{ height: 'calc(100dvh - 2rem)' }}>
       {/* Chat header — sticky */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-2 shrink-0 sticky top-0 z-10">
         <div className="flex items-center gap-3">
