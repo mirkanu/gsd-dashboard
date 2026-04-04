@@ -1,7 +1,6 @@
 'use strict';
 
 const { capturePaneText } = require('./tmux');
-const { classifyChunks } = require('./classifierPatterns');
 
 /**
  * TmuxClassifier — polls active tmux sessions, diffs output, classifies chunks,
@@ -11,10 +10,12 @@ class TmuxClassifier {
   /**
    * @param {object} stmts - Prepared statements from db.js (needs insertClassifiedMessage)
    * @param {function} broadcast - WebSocket broadcast(type, data)
+   * @param {import('./patternManager').PatternManager} patternManager - Three-tier classifier
    */
-  constructor(stmts, broadcast) {
+  constructor(stmts, broadcast, patternManager) {
     this.stmts = stmts;
     this.broadcast = broadcast;
+    this.patternManager = patternManager;
     /** @type {Map<string, string[]>} previous capture-pane lines per project */
     this.snapshots = new Map();
   }
@@ -37,7 +38,7 @@ class TmuxClassifier {
     // Update snapshot
     this.snapshots.set(projectName, currentLines);
 
-    const chunks = classifyChunks(newContent);
+    const chunks = this.patternManager.classifyChunks(newContent);
     // Filter out hidden messages
     const visible = chunks.filter(c => c.msg_type !== 'hidden');
     // Group consecutive text messages

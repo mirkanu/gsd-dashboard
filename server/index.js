@@ -112,7 +112,19 @@ function startServer(app, port) {
 
 if (require.main === module) {
   const PORT = parseInt(process.env.PORT || process.env.DASHBOARD_PORT || "4820", 10);
+
+  // Initialize classifier early so app.locals can reference patternManager before server starts
+  const { TmuxClassifier } = require('./gsd/classifier');
+  const { isTmuxSessionActive: isActive } = require('./gsd/tmux');
+  const classifierDb = require('./db');
+  const { broadcast: classifierBroadcast } = require('./websocket');
+  const { PatternManager } = require('./gsd/patternManager');
+  const patternManager = new PatternManager(classifierDb.db);
+  const classifier = new TmuxClassifier(classifierDb.stmts, classifierBroadcast, patternManager);
+
   const app = createApp();
+  app.locals.patternManager = patternManager;
+  app.locals.broadcast = classifierBroadcast;
   startServer(app, PORT).then(() => {
     if (telegramEnabled) startReplyPoller();
   });
@@ -191,12 +203,6 @@ if (require.main === module) {
   );
 
   // TmuxClassifier: poll active projects every 2.5s, classify output, persist + broadcast
-  const { TmuxClassifier } = require('./gsd/classifier');
-  const { isTmuxSessionActive: isActive } = require('./gsd/tmux');
-  const classifierDb = require('./db');
-  const { broadcast: classifierBroadcast } = require('./websocket');
-  const classifier = new TmuxClassifier(classifierDb.stmts, classifierBroadcast);
-
   function loadGsdConfig() {
     try {
       const configPath = process.env.GSD_PROJECTS_PATH || require('path').resolve(__dirname, '../gsd-projects.json');
