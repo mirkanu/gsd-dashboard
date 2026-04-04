@@ -271,7 +271,7 @@ export function ChatWindow({
               <ChatMessageRenderer
                 key={msg.id}
                 msg={msg}
-                onAction={handleSend}
+                onAction={handleChipSelect}
               />
             ))}
             <div ref={bottomRef} />

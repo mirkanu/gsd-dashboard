@@ -14,7 +14,7 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { api } from "../lib/api";
-import type { GsdProject, SessionState } from "../lib/types";
+import type { GsdProject, SessionState, GsdChatMessageEvent } from "../lib/types";
 import { GsdDrawer } from "../components/GsdDrawer";
 import { MarkdownViewer } from "../components/MarkdownViewer";
 import { ChatListView } from "../components/ChatListView";
@@ -786,6 +786,9 @@ export function GSD() {
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
   const [terminalInitialValue, setTerminalInitialValue] = useState<string>("");
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const activeProjectRef = useRef<string | undefined>();
+  activeProjectRef.current = chatView.project;
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Lock body scroll when terminal overlay is open (prevents background scroll on mobile)
@@ -914,6 +917,20 @@ export function GSD() {
           return next;
         });
       }
+    });
+    return unsub;
+  }, []);
+
+  // Subscribe to chat messages for unread badge counts (ACT-03)
+  useEffect(() => {
+    const unsub = eventBus.subscribe((msg) => {
+      if (msg.type !== 'gsd_chat_message') return;
+      const evt = msg.data as GsdChatMessageEvent;
+      if (evt.project === activeProjectRef.current) return;
+      setUnreadCounts(prev => ({
+        ...prev,
+        [evt.project]: (prev[evt.project] || 0) + 1,
+      }));
     });
     return unsub;
   }, []);
@@ -1053,8 +1070,10 @@ export function GSD() {
                   <ChatListView
                     projects={filteredProjects}
                     activeProject={chatView.project}
+                    unreadCounts={unreadCounts}
                     onSelectProject={(name) => {
                       setChatView({ view: 'chat', project: name });
+                      setUnreadCounts(prev => ({ ...prev, [name]: 0 }));
                       setTerminalProject(null); // close terminal when switching projects
                     }}
                   />
@@ -1159,8 +1178,10 @@ export function GSD() {
           />
           <ChatListView
             projects={filteredProjects}
+            unreadCounts={unreadCounts}
             onSelectProject={(name) => {
               setChatView({ view: 'chat', project: name });
+              setUnreadCounts(prev => ({ ...prev, [name]: 0 }));
               setTerminalProject(null);
             }}
           />
