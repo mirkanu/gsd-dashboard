@@ -29,17 +29,23 @@
   background: var(--surface-3, #334155);
 }
 
-/* Conversation text elements */
+/* Conversation text elements — must override chatscope's hardcoded rgba(0,0,0,.87) */
 :root .cs-conversation__name {
-  color: inherit;
+  color: #e2e8f0;
 }
 
 :root .cs-conversation__info {
-  color: var(--surface-5, #94a3b8);
+  color: #94a3b8;
 }
 
 :root .cs-conversation__last-activity-time {
-  color: var(--surface-5, #94a3b8);
+  color: #94a3b8;
+}
+
+/* Avatar text */
+:root .cs-avatar__text {
+  color: #e2e8f0;
+  background: var(--surface-4, #334155);
 }
 
 /* Unread indicator */
@@ -70,15 +76,20 @@
 }
 
 :root.light .cs-conversation__name {
-  color: inherit;
+  color: #1e293b;
 }
 
 :root.light .cs-conversation__info {
-  color: var(--surface-5, #64748b);
+  color: #64748b;
 }
 
 :root.light .cs-conversation__last-activity-time {
-  color: var(--surface-5, #64748b);
+  color: #64748b;
+}
+
+:root.light .cs-avatar__text {
+  color: #1e293b;
+  background: var(--surface-4, #e2e8f0);
 }
 
 :root.light .cs-conversation__unread-dot {
