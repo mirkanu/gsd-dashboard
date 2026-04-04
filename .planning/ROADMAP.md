@@ -145,7 +145,10 @@ Plans:
   3. Critical errors render with a red border; minor warnings are collapsed under an expandable summary
   4. A message input box at the bottom sends text to the project's tmux session via send-keys on submit
   5. A working indicator shows elapsed time, token count, and context window percentage as a gauge when the session is active
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 30-01-PLAN.md — TmuxClassifier polling loop + ChatWindow with message history
+- [ ] 30-02-PLAN.md — Custom message renderers + send box + working indicator
 
 ### Phase 31: Interactivity + Real-Time Streaming
 **Goal**: Chat updates arrive in real time via WebSocket, users can tap suggested actions to compose replies, and unread counts stay accurate
