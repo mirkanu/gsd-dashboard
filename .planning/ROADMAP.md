@@ -58,10 +58,11 @@ Plans:
   3. Session state visibly changes to "Working" within 1 second of sending a command (optimistic status)
   4. Working indicator displays actual tmux status text (e.g. "Working... 1m 17s . 304 tokens") instead of generic label
   5. Status updates reflect Claude starting/stopping work within 3 seconds
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 35-01: TBD
+- [ ] 35-01-PLAN.md — Radix context menu on chat messages for classifier feedback corrections
+- [ ] 35-02-PLAN.md — Optimistic working state on send, faster status polling when active
 
 ### Phase 36: Message Rendering + New Types
 **Goal**: Chat messages render rich content (markdown, tables, code) and NEXT_UP blocks surface actionable GSD commands
@@ -84,5 +85,5 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 33. Classifier Foundation | 1/1 | Complete    | 2026-04-04 | - |
 | 34. Feedback Pipeline | 1/1 | Complete    | 2026-04-04 | - |
-| 35. Feedback UI + Send Experience | v4.1 | 0/0 | Not started | - |
+| 35. Feedback UI + Send Experience | v4.1 | 0/2 | Not started | - |
 | 36. Message Rendering + New Types | v4.1 | 0/0 | Not started | - |
