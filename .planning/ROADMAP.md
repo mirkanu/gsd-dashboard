@@ -99,7 +99,7 @@
 - [x] **Phase 28: Schema + Classifier Foundation** - Chat UI library, extended message schema, and tmux output classifier (completed 2026-04-03)
 - [x] **Phase 29: Chat List View** - Project conversation list replacing the kanban board as primary navigation (completed 2026-04-04)
 - [x] **Phase 30: Chat Window + Message Rendering** - Per-project chat with classified message bubbles and send box (completed 2026-04-04)
-- [ ] **Phase 31: Interactivity + Real-Time Streaming** - Tappable actions, unread badges, and WebSocket chat updates
+- [x] **Phase 31: Interactivity + Real-Time Streaming** - Tappable actions, unread badges, and WebSocket chat updates (completed 2026-04-04)
 - [x] **Phase 32: Project Detail Panel** - Header-tap access to all controls, file tabs, and project metadata (completed 2026-04-04)
 
 ---
@@ -215,7 +215,7 @@ Plans:
 | 28. Schema + Classifier Foundation | v4.0 | 2/2 | Complete | 2026-04-03 |
 | 29. Chat List View | 2/2 | Complete    | 2026-04-04 | - |
 | 30. Chat Window + Message Rendering | 2/2 | Complete    | 2026-04-04 | - |
-| 31. Interactivity + Real-Time Streaming | v4.0 | 0/1 | Not started | - |
+| 31. Interactivity + Real-Time Streaming | 1/1 | Complete   | 2026-04-04 | - |
 | 32. Project Detail Panel | 2/2 | Complete    | 2026-04-04 | - |
 
 ---

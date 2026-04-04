@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Chat-First Dashboard
 status: executing
-stopped_at: Completed 32-01-PLAN.md
-last_updated: "2026-04-04T15:16:18.252Z"
+stopped_at: Completed 31-01-PLAN.md
+last_updated: "2026-04-04T16:13:41.382Z"
 last_activity: 2026-04-04 — Completed 32-01 project controls and metadata in detail panel
 progress:
   total_phases: 8
-  completed_phases: 4
-  total_plans: 10
-  completed_plans: 8
+  completed_phases: 5
+  total_plans: 11
+  completed_plans: 9
   percent: 93
 ---
 
@@ -53,6 +53,7 @@ Progress: [█████████░] 93%
 | 30 | P02 | 5min | 2 | 10 |
 | Phase 32 P02 | 3min | 1 tasks | 1 files |
 | Phase 32 P01 | 10min | 2 tasks | 6 files |
+| Phase 31 P01 | 14min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase quick-21]: 3-column desktop layout: 20% chat list, 50% chat, 30% details using CSS grid at >=1024px
 - [Phase 32]: Force flag parameter on handleSend for confirmation bypass in paused/archived chat sends
 - [Phase 32]: Extracted AutopilotControls without padding wrapper for reuse in multiple layout contexts
+- [Phase 31]: Checkpoint buttons insert into textarea (not auto-send) matching command chip behavior
+- [Phase 31]: Unread counts tracked via eventBus with activeProjectRef to avoid stale closures
 
 ### Pending Todos
 
@@ -106,8 +109,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T15:09:31.669Z
-Stopped at: Completed 32-01-PLAN.md
+Last session: 2026-04-04T16:13:41.378Z
+Stopped at: Completed 31-01-PLAN.md
 Resume file: None
 Next action: Continue with Phase 31
 
