@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Chat Polish
 status: executing
-stopped_at: Completed 35-01-PLAN.md
-last_updated: "2026-04-04T23:22:53.463Z"
-last_activity: 2026-04-04 — Completed 35-01 Feedback UI Context Menu
+stopped_at: Completed 35-02-PLAN.md
+last_updated: "2026-04-04T23:53:04Z"
+last_activity: 2026-04-04 — Completed 35-02 Send + Working Status Experience
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 3
-  percent: 96
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 35 (3 of 4) — Feedback UI & Send Experience
-Plan: 01 of 02 DONE
-Status: Executing
-Last activity: 2026-04-04 — Completed 35-01 Feedback UI Context Menu
+Plan: 02 of 02 DONE
+Status: Phase Complete
+Last activity: 2026-04-04 — Completed 35-02 Send + Working Status Experience
 
-Progress: [█████████░] 96%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -55,6 +55,8 @@ Progress: [█████████░] 96%
 - [33-01]: Used specific tree chars instead of box-drawing range to avoid banner pattern conflicts
 - [33-01]: GSD banner patterns in STAGE_BANNER group; bullet tool pattern requires ( so Step lines fall through correctly
 - [Phase 34]: PatternManager uses own db.prepare() for hot-path hit_count; override dedup via find+disable pattern
+- [35-02]: effectiveState pattern merges optimistic and real state locally in ChatWindow
+- [35-02]: Adaptive polling: 3s when working, 30s otherwise for balance of responsiveness and load
 
 ### Pending Todos
 
@@ -72,10 +74,11 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T23:41:40Z
-Stopped at: Completed 35-01-PLAN.md
+Last session: 2026-04-04T23:53:04Z
+Stopped at: Completed 35-02-PLAN.md
 Resume file: None
-Next action: Execute 35-02-PLAN.md
+Next action: Phase 35 complete, proceed to next phase
 | Phase 34 P01 | 9min | 2 tasks | 5 files |
 | Phase 35 P01 | 6min | 2 tasks | 5 files |
+| Phase 35 P02 | 5min | 1 task | 2 files |
 
