@@ -1,6 +1,7 @@
 'use strict';
 
 const { execFileSync } = require('child_process');
+const stripAnsi = require('strip-ansi');
 
 /**
  * Check whether a named tmux session exists and is running.
@@ -229,4 +230,22 @@ function _testWaitForIdle(detectFn, sessionName, timeoutMs) {
   });
 }
 
-module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, _testDetectFromOutput, waitForIdle, _testWaitForIdle };
+/**
+ * Extract the last status line (working/completion indicator) from raw tmux text.
+ * Looks for lines starting with ✻ or ✶ symbols, scanning from bottom up.
+ * Returns the trimmed status text, or null if not found.
+ * @param {string|null|undefined} rawText
+ * @returns {string|null}
+ */
+function extractStatusLine(rawText) {
+  if (!rawText) return null;
+  const lines = rawText.split('\n');
+  const statusPattern = /^[✻✶]/;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const clean = stripAnsi(lines[i]).trim();
+    if (clean && statusPattern.test(clean)) return clean;
+  }
+  return null;
+}
+
+module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, _testDetectFromOutput, waitForIdle, _testWaitForIdle };

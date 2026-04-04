@@ -15,6 +15,7 @@ const {
   completionSamples,
   errorSamples,
   hiddenToolCallSamples,
+  hiddenToolOutputSamples,
   hiddenWorkingSamples,
   hiddenCodeSamples,
   textSamples,
@@ -150,6 +151,14 @@ describe('fixture validation', () => {
       const result = classifyLine(sample);
       assert.equal(result.msg_type, MESSAGE_TYPES.COMPLETION,
         `Expected completion for: ${sample}`);
+    }
+  });
+
+  it('all hidden tool output samples classified as hidden', () => {
+    for (const sample of hiddenToolOutputSamples) {
+      const result = classifyLine(sample);
+      assert.equal(result.msg_type, MESSAGE_TYPES.HIDDEN,
+        `Expected hidden for: ${sample}`);
     }
   });
 
