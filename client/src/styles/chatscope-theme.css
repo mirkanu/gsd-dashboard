@@ -95,3 +95,58 @@
 :root.light .cs-conversation__unread-dot {
   background: var(--accent, #6366f1);
 }
+
+/* ─── Message List & Bubble Overrides ────────────────────────────────────── */
+
+:root .cs-message-list {
+  background: var(--surface-1, #0f172a);
+}
+
+:root .cs-message__content {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+:root .cs-message__content--incoming {
+  background: var(--surface-3, #334155);
+  color: var(--text-primary, #e2e8f0);
+}
+
+:root .cs-message__content--outgoing {
+  background: #4f46e5;
+  color: #f1f5f9;
+}
+
+:root .cs-message-separator {
+  color: #94a3b8;
+}
+
+:root .cs-message-separator::before,
+:root .cs-message-separator::after {
+  background: var(--border, #1e293b);
+}
+
+/* ─── Light Theme Message Overrides ──────────────────────────────────────── */
+
+:root.light .cs-message-list {
+  background: var(--surface-1, #ffffff);
+}
+
+:root.light .cs-message__content--incoming {
+  background: var(--surface-3, #f1f5f9);
+  color: var(--text-primary, #1e293b);
+}
+
+:root.light .cs-message__content--outgoing {
+  background: #6366f1;
+  color: #ffffff;
+}
+
+:root.light .cs-message-separator {
+  color: #64748b;
+}
+
+:root.light .cs-message-separator::before,
+:root.light .cs-message-separator::after {
+  background: var(--border, #e2e8f0);
+}

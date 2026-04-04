@@ -201,9 +201,14 @@ export interface CostResult {
   breakdown: CostBreakdown[];
 }
 
+export interface GsdChatMessageEvent {
+  project: string;
+  message: GsdMessage;
+}
+
 export interface WSMessage {
-  type: "session_created" | "session_updated" | "agent_created" | "agent_updated" | "new_event" | "autopilot_progress";
-  data: Session | Agent | DashboardEvent | AutopilotProgressEvent;
+  type: "session_created" | "session_updated" | "agent_created" | "agent_updated" | "new_event" | "autopilot_progress" | "gsd_chat_message";
+  data: Session | Agent | DashboardEvent | AutopilotProgressEvent | GsdChatMessageEvent;
   timestamp: string;
 }
 
