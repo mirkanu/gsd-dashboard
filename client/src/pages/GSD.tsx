@@ -1229,7 +1229,14 @@ export function GSD() {
               <div className="flex flex-wrap justify-center gap-2">
                 {proj?.tmuxActive && (
                   <button
-                    onClick={() => { setTerminalProject(chatView.project!); setTerminalInitialValue(""); }}
+                    onClick={() => {
+                      if (window.matchMedia('(pointer: coarse)').matches) {
+                        window.open(`/terminal/${encodeURIComponent(proj.name)}`, '_blank');
+                      } else {
+                        setTerminalProject(chatView.project!);
+                        setTerminalInitialValue("");
+                      }
+                    }}
                     className="px-4 py-2 rounded-lg text-sm border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
                   >
                     Open Terminal
