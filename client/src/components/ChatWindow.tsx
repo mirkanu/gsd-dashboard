@@ -76,6 +76,8 @@ export function ChatWindow({
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
+  const [showReopenConfirm, setShowReopenConfirm] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -126,11 +128,29 @@ export function ChatWindow({
     if (!loading) scrollToBottom();
   }, [messages.length, loading, scrollToBottom]);
 
+  // Clear reopen confirmation when switching projects
+  useEffect(() => {
+    setShowReopenConfirm(false);
+    setPendingMessage(null);
+  }, [projectName]);
+
   // Send message handler
   const handleSend = useCallback(
-    async (text: string) => {
+    async (text: string, force = false) => {
       const trimmed = text.trim();
       if (!trimmed || sending) return;
+
+      // Intercept sends to paused/archived projects
+      const isPausedOrArchived = sessionState === "paused" || sessionState === "archived";
+      if (isPausedOrArchived && !force) {
+        setPendingMessage(trimmed);
+        setShowReopenConfirm(true);
+        return;
+      }
+
+      // Clear confirmation state
+      setShowReopenConfirm(false);
+      setPendingMessage(null);
 
       // Optimistic outbound message
       const optimistic: GsdMessage = {
@@ -154,8 +174,17 @@ export function ChatWindow({
         setSending(false);
       }
     },
-    [projectName, sending]
+    [projectName, sending, sessionState]
   );
+
+  const handleConfirmSend = useCallback(() => {
+    if (pendingMessage) handleSend(pendingMessage, true);
+  }, [pendingMessage, handleSend]);
+
+  const handleCancelSend = useCallback(() => {
+    setShowReopenConfirm(false);
+    setPendingMessage(null);
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -251,6 +280,29 @@ export function ChatWindow({
           commands={[...GSD_CHIPS]}
           onSelect={handleChipSelect}
         />
+      )}
+
+      {/* Reopen confirmation banner */}
+      {showReopenConfirm && (
+        <div className="bg-amber-500/10 border-t border-amber-500/30 px-4 py-2.5 flex items-center justify-between shrink-0">
+          <span className="text-xs text-amber-400">
+            This project is {sessionState}. Send anyway?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={handleCancelSend}
+              className="text-xs px-2.5 py-1 rounded border border-border text-gray-400 hover:text-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmSend}
+              className="text-xs px-2.5 py-1 rounded border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 transition-colors"
+            >
+              Send anyway
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Send box */}
