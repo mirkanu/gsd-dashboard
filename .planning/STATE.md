@@ -10,8 +10,8 @@ progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 6
-  completed_plans: 4
-  percent: 92
+  completed_plans: 5
+  percent: 94
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-03)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** v4.0 Phase 29 — Chat List View
+**Current focus:** v4.0 Phase 30 — Chat Window Message Rendering
 
 ## Current Position
 
-Phase: 29 of 32 (Chat List View)
-Plan: 2 of 2 complete
+Phase: 30 of 32 (Chat Window Message Rendering)
+Plan: 1 of 2 complete
 Status: Executing
-Last activity: 2026-04-04 — Completed 29-02 chat list view UI
+Last activity: 2026-04-04 — Completed 30-01 chat window message rendering
 
-Progress: [█████████░] 92%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [█████████░] 92%
 | 28 | P02 | 16min | 2 | 3 |
 | 29 | P01 | 13min | 2 | 6 |
 | 29 | P02 | 45min | 3 | 4 |
+| 30 | P01 | 12min | 2 | 7 |
 
 ## Accumulated Context
 
@@ -70,6 +71,9 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [Phase 29]: lastMessage uses MAX(id) subquery, content truncated to 100 chars server-side
 - [Phase 29]: Default filter set to Waiting for most actionable view
 - [Phase 29]: Mobile terminal opens in new tab instead of overlay to avoid DOM conflicts
+- [30-01]: Messages endpoint upgraded to listVisibleGsdMessages for classified message support
+- [30-01]: Consecutive text chunks grouped into single messages to reduce DB writes
+- [30-01]: Error cards collapsible when >3 lines to prevent stack traces dominating chat
 
 ### Pending Todos
 
@@ -88,8 +92,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T08:06:05.593Z
-Stopped at: Completed 29-02-PLAN.md
+Last session: 2026-04-04T08:51:00Z
+Stopped at: Completed 30-01-PLAN.md
 Resume file: None
-Next action: Continue with Phase 30
+Next action: Continue with 30-02-PLAN.md
 
