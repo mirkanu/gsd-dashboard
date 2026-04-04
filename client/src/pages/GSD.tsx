@@ -955,7 +955,7 @@ export function GSD() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProject, setSelectedProject] = useState<GsdProject | null>(null);
   const [chatView, setChatView] = useState<{ view: 'list' | 'chat'; project?: string }>({ view: 'list' });
-  const [activeFilter, setActiveFilter] = useState<SessionState | null>(null);
+  const [activeFilter, setActiveFilter] = useState<SessionState | null>("waiting");
   const [autopilotRuns, setAutopilotRuns] = useState<Map<string, import('../lib/types').AutopilotRun>>(new Map());
   const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
@@ -1170,8 +1170,6 @@ export function GSD() {
               projects={filtered}
               onSelectProject={(name) => {
                 setChatView({ view: 'chat', project: name });
-                const proj = projects.find((p) => p.name === name) ?? null;
-                setSelectedProject(proj);
               }}
             />
           </div>
@@ -1181,39 +1179,92 @@ export function GSD() {
       {/* Chat placeholder — selected project (Phase 30 will replace with real chat) */}
       {!loading && !error && chatView.view === 'chat' && (() => {
         const proj = projects.find((p) => p.name === chatView.project);
+        const displayName = proj?.display_name || chatView.project;
         return (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 py-20 text-gray-500">
-            <p className="text-sm">Chat view for <span className="font-semibold text-gray-300">{chatView.project}</span> — coming in Phase 30</p>
-            <div className="flex gap-3">
-              {proj?.tmuxActive && (
+          <div className="flex-1 flex flex-col">
+            {/* Chat header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-2">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { setChatView({ view: 'list' }); setSelectedProject(null); }}
+                  className="text-gray-400 hover:text-gray-200 transition-colors"
+                >
+                  ←
+                </button>
+                <span className="font-semibold text-gray-200">{displayName}</span>
+                {proj?.sessionState && (
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                    proj.sessionState === 'working' ? 'bg-emerald-500/20 text-emerald-400' :
+                    proj.sessionState === 'waiting' ? 'bg-amber-400/20 text-amber-400' :
+                    proj.sessionState === 'paused' ? 'bg-red-500/20 text-red-400' :
+                    'bg-gray-600/20 text-gray-500'
+                  }`}>{proj.sessionState}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Placeholder body */}
+            <div className="flex-1 flex flex-col items-center justify-center gap-6 py-20 text-gray-500">
+              <p className="text-sm">Chat view coming in Phase 30</p>
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap justify-center gap-2">
+                {proj?.tmuxActive && (
+                  <button
+                    onClick={() => { setTerminalProject(chatView.project!); setTerminalInitialValue(""); }}
+                    className="px-4 py-2 rounded-lg text-sm border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                  >
+                    Open Terminal
+                  </button>
+                )}
+                {proj && proj.sessionState === 'paused' && (
+                  <button
+                    onClick={async () => {
+                      try { await api.gsd.reopenTmux(proj.name); load(); } catch {}
+                    }}
+                    className="px-4 py-2 rounded-lg text-sm border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
+                  >
+                    Re-open
+                  </button>
+                )}
                 <button
                   onClick={() => {
-                    setTerminalProject(chatView.project!);
-                    setTerminalInitialValue("");
+                    const p = projects.find((pr) => pr.name === chatView.project) ?? null;
+                    setSelectedProject(p);
                   }}
-                  className="px-4 py-2 rounded-lg text-sm border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm border border-border text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors"
                 >
-                  Open Terminal
+                  Project Details
                 </button>
-              )}
-              <button
-                onClick={() => {
-                  const p = projects.find((pr) => pr.name === chatView.project) ?? null;
-                  setSelectedProject(p);
-                }}
-                className="px-4 py-2 rounded-lg text-sm border border-border text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors"
-              >
-                Project Details
-              </button>
-              <button
-                onClick={() => {
-                  setChatView({ view: 'list' });
-                  setSelectedProject(null);
-                }}
-                className="px-4 py-2 rounded-lg text-sm border border-border text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors"
-              >
-                Back to list
-              </button>
+              </div>
+
+              {/* Secondary actions */}
+              <div className="flex flex-wrap justify-center gap-3">
+                {proj && proj.sessionState !== 'paused' && proj.sessionState !== 'archived' && (
+                  <button
+                    onClick={() => { pauseSession(proj.name); }}
+                    className="text-[11px] text-red-500 hover:text-red-400 transition-colors"
+                  >
+                    Pause
+                  </button>
+                )}
+                {proj && proj.sessionState !== 'archived' && (
+                  <button
+                    onClick={() => { archiveProject(proj.name); setChatView({ view: 'list' }); }}
+                    className="text-[11px] text-gray-600 hover:text-gray-400 transition-colors"
+                  >
+                    Archive
+                  </button>
+                )}
+                {proj && proj.sessionState === 'archived' && (
+                  <button
+                    onClick={() => { unarchiveProject(proj.name); }}
+                    className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
+                  >
+                    Unarchive
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -1233,11 +1284,17 @@ export function GSD() {
           onClose={() => setFullScreen(null)}
         />
       )}
+      {terminalProject && (() => {
+        // Lock body scroll while terminal is open (prevents chat list scroll-through on mobile)
+        document.body.style.overflow = 'hidden';
+        return null;
+      })()}
       {terminalProject && (
         <TerminalOverlay
           projectName={terminalProject}
           wsBase={terminalWsBase}
           onClose={() => {
+            document.body.style.overflow = '';
             setTerminalProject(null);
             setTerminalInitialValue("");
             // Polling burst: refresh card state every 500ms for 2s after terminal closes.
