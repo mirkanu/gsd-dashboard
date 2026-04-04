@@ -9,8 +9,8 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 
 ### Chat List
 
-- [ ] **CHAT-01**: Projects displayed as chat rows sorted by most recent activity
-- [ ] **CHAT-02**: Each row shows project name, last message preview, timestamp, and unread count
+- [x] **CHAT-01**: Projects displayed as chat rows sorted by most recent activity
+- [x] **CHAT-02**: Each row shows project name, last message preview, timestamp, and unread count
 - [ ] **CHAT-03**: State-colored left border (yellow=waiting, green=working, red=paused, grey=archived)
 - [ ] **CHAT-04**: Filter tabs along top (All, Waiting, Working, Paused, Archived) with project counts
 - [ ] **CHAT-05**: Tapping a chat row opens the per-project chat window
@@ -52,7 +52,7 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 - [x] **INF-01**: Adopt @chatscope/chat-ui-kit-react for UI components
 - [x] **INF-02**: Extend gsd_messages table schema for typed messages (type, metadata columns)
 - [ ] **INF-03**: WebSocket streaming of classified messages for real-time chat updates
-- [ ] **INF-04**: Light/dark theme support for chatscope components (CSS variable overrides)
+- [x] **INF-04**: Light/dark theme support for chatscope components (CSS variable overrides)
 
 ## Future Requirements
 
@@ -83,8 +83,8 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CHAT-01 | Phase 29 | Pending |
-| CHAT-02 | Phase 29 | Pending |
+| CHAT-01 | Phase 29 | Complete |
+| CHAT-02 | Phase 29 | Complete |
 | CHAT-03 | Phase 29 | Pending |
 | CHAT-04 | Phase 29 | Pending |
 | CHAT-05 | Phase 29 | Pending |
@@ -111,7 +111,7 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 | INF-01 | Phase 28 | Complete |
 | INF-02 | Phase 28 | Complete |
 | INF-03 | Phase 31 | Pending |
-| INF-04 | Phase 29 | Pending |
+| INF-04 | Phase 29 | Complete |
 
 **Coverage:**
 - v4.0 requirements: 29 total
