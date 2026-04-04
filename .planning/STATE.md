@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Chat-First Dashboard
 status: executing
-stopped_at: Completed 32-02 reopen confirmation banner
-last_updated: "2026-04-04T15:01:21.091Z"
-last_activity: 2026-04-04 — Completed 30-02 custom message renderers and send box
+stopped_at: Completed 32-01-PLAN.md
+last_updated: "2026-04-04T15:09:31.673Z"
+last_activity: 2026-04-04 — Completed 32-01 project controls and metadata in detail panel
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 7
-  percent: 96
+  completed_plans: 8
+  percent: 93
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 
 ## Current Position
 
-Phase: 30 of 32 (Chat Window Message Rendering)
-Plan: 2 of 2 complete
+Phase: 32 of 32 (Project Detail Panel)
+Plan: 1 of 2 complete
 Status: Executing
-Last activity: 2026-04-04 — Completed 30-02 custom message renderers and send box
+Last activity: 2026-04-04 — Completed 32-01 project controls and metadata in detail panel
 
-Progress: [█████████░] 96%
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [█████████░] 96%
 | 30 | P01 | 12min | 2 | 7 |
 | 30 | P02 | 5min | 2 | 10 |
 | Phase 32 P02 | 3min | 1 tasks | 1 files |
+| Phase 32 P01 | 10min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [30-02]: HSL hue rotation for context gauge color (green-to-red)
 - [Phase quick-21]: 3-column desktop layout: 20% chat list, 50% chat, 30% details using CSS grid at >=1024px
 - [Phase 32]: Force flag parameter on handleSend for confirmation bypass in paused/archived chat sends
+- [Phase 32]: Extracted AutopilotControls without padding wrapper for reuse in multiple layout contexts
 
 ### Pending Todos
 
@@ -102,8 +104,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T15:01:21.077Z
-Stopped at: Completed 32-02 reopen confirmation banner
+Last session: 2026-04-04T15:09:31.669Z
+Stopped at: Completed 32-01-PLAN.md
 Resume file: None
 Next action: Continue with Phase 31
 

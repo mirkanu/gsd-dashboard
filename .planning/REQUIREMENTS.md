@@ -41,11 +41,11 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 
 ### Project Detail Panel
 
-- [ ] **DET-01**: Tapping chat header/title opens project detail panel (slide-in or overlay)
-- [ ] **DET-02**: Contains all existing controls: autopilot, pause, archive, reopen, raw terminal
-- [ ] **DET-03**: File tabs (State, Roadmap, Requirements, Plan) with markdown rendering
-- [ ] **DET-04**: Progress bars and status indicators
-- [ ] **DET-05**: Project metadata (display name, session state, context tokens)
+- [x] **DET-01**: Tapping chat header/title opens project detail panel (slide-in or overlay)
+- [x] **DET-02**: Contains all existing controls: autopilot, pause, archive, reopen, raw terminal
+- [x] **DET-03**: File tabs (State, Roadmap, Requirements, Plan) with markdown rendering
+- [x] **DET-04**: Progress bars and status indicators
+- [x] **DET-05**: Project metadata (display name, session state, context tokens)
 
 ### Infrastructure
 
@@ -103,11 +103,11 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 | ACT-01 | Phase 31 | Pending |
 | ACT-02 | Phase 31 | Pending |
 | ACT-03 | Phase 31 | Pending |
-| DET-01 | Phase 32 | Pending |
-| DET-02 | Phase 32 | Pending |
-| DET-03 | Phase 32 | Pending |
-| DET-04 | Phase 32 | Pending |
-| DET-05 | Phase 32 | Pending |
+| DET-01 | Phase 32 | Complete |
+| DET-02 | Phase 32 | Complete |
+| DET-03 | Phase 32 | Complete |
+| DET-04 | Phase 32 | Complete |
+| DET-05 | Phase 32 | Complete |
 | INF-01 | Phase 28 | Complete |
 | INF-02 | Phase 28 | Complete |
 | INF-03 | Phase 31 | Pending |
