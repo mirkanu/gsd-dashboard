@@ -31,7 +31,7 @@ const PATTERNS = [
   {
     type: MESSAGE_TYPES.HIDDEN,
     patterns: [
-      /^●\s+(?:Bash|Read|Write|Edit|Grep|Glob|WebSearch|WebFetch|TodoWrite|Search|Agent|Skill)\(/,
+      /^●\s+(?:Bash|Read|Write|Edit|Grep|Glob|WebSearch|WebFetch|TodoWrite|Search|Agent|Skill|Update)\(/,
     ],
   },
   // Hidden: continuation lines, collapsed markers, status lines, user prompt echo, JSON results
@@ -43,6 +43,20 @@ const PATTERNS = [
       /^[✻✶]/,                // working/completion status indicators
       /^❯/,                    // user input echo in tmux
       /^\{[\s"]/,              // opening brace of JSON tool results
+    ],
+  },
+  // Hidden: collapsed summaries, chrome, selection UI, feedback prompts
+  {
+    type: MESSAGE_TYPES.HIDDEN,
+    patterns: [
+      /^Read \d+ files?\s/,              // Read 3 files (ctrl+o to expand)
+      /^Listed \d+ director/,            // Listed 1 directory (ctrl+o to expand)
+      /^Added \d+ lines/,               // Added 15 lines, removed 3 lines
+      /^[\u2500-\u257F]/,               // Background task tree lines (box-drawing chars)
+      /^Enter to select/,               // Selection UI navigation hint
+      /How is Claude doing/,            // Session feedback prompt
+      /ctrl\+o to expand/,              // Any collapsed output with ctrl+o hint
+      /^\s*\d+\.\s*\[[ x]\]/,          // Numbered checkbox items: 1. [ ] Option
     ],
   },
   // Hidden: numbered code output lines

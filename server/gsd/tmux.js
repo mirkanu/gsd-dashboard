@@ -25,7 +25,7 @@ function isTmuxSessionActive(sessionName) {
  */
 function capturePaneText(sessionName) {
   try {
-    return execFileSync('tmux', ['capture-pane', '-p', '-t', sessionName], { encoding: 'utf8', timeout: 2000 });
+    return execFileSync('tmux', ['capture-pane', '-p', '-J', '-t', sessionName], { encoding: 'utf8', timeout: 2000 });
   } catch {
     return null;
   }

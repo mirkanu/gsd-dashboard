@@ -18,6 +18,7 @@ const {
   hiddenToolOutputSamples,
   hiddenWorkingSamples,
   hiddenCodeSamples,
+  hiddenChromeSamples,
   textSamples,
 } = require('./fixtures/tmux-samples');
 
@@ -183,6 +184,22 @@ describe('fixture validation', () => {
       const result = classifyLine(sample);
       assert.equal(result.msg_type, MESSAGE_TYPES.TEXT,
         `Expected text for: ${sample}`);
+    }
+  });
+
+  it('all hidden chrome samples classified as hidden', () => {
+    for (const sample of hiddenChromeSamples) {
+      const result = classifyLine(sample);
+      assert.equal(result.msg_type, MESSAGE_TYPES.HIDDEN,
+        `Expected hidden for: ${sample}`);
+    }
+  });
+
+  it('text samples not false-positive matched by new HIDDEN patterns', () => {
+    for (const sample of textSamples) {
+      const result = classifyLine(sample);
+      assert.equal(result.msg_type, MESSAGE_TYPES.TEXT,
+        `False positive: ${sample} classified as ${result.msg_type}`);
     }
   });
 });
