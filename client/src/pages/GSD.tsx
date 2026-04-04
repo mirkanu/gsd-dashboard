@@ -1113,7 +1113,8 @@ export function GSD() {
   }, [rateLimit]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <>
+    <div className={`space-y-6 animate-fade-in ${terminalProject ? 'invisible h-0 overflow-hidden' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -1301,30 +1302,31 @@ export function GSD() {
           onClose={() => setFullScreen(null)}
         />
       )}
-      {terminalProject && (
-        <TerminalOverlay
-          projectName={terminalProject}
-          wsBase={terminalWsBase}
-          onClose={() => {
-            setTerminalProject(null);
-            setTerminalInitialValue("");
-            // Polling burst: refresh card state every 500ms for 2s after terminal closes.
-            // This ensures the card badge (Working/Waiting/Paused) reflects the actual
-            // post-close state within the same interaction, not the next 30s poll.
-            if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-            if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
-            refreshIntervalRef.current = setInterval(() => load(false), 500);
-            refreshTimeoutRef.current = setTimeout(() => {
-              if (refreshIntervalRef.current) {
-                clearInterval(refreshIntervalRef.current);
-                refreshIntervalRef.current = null;
-              }
-            }, 2000);
-          }}
-          initialSendValue={terminalInitialValue}
-        />
-      )}
     </div>
+    {terminalProject && (
+      <TerminalOverlay
+        projectName={terminalProject}
+        wsBase={terminalWsBase}
+        onClose={() => {
+          setTerminalProject(null);
+          setTerminalInitialValue("");
+          // Polling burst: refresh card state every 500ms for 2s after terminal closes.
+          // This ensures the card badge (Working/Waiting/Paused) reflects the actual
+          // post-close state within the same interaction, not the next 30s poll.
+          if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
+          if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+          refreshIntervalRef.current = setInterval(() => load(false), 500);
+          refreshTimeoutRef.current = setTimeout(() => {
+            if (refreshIntervalRef.current) {
+              clearInterval(refreshIntervalRef.current);
+              refreshIntervalRef.current = null;
+            }
+          }, 2000);
+        }}
+        initialSendValue={terminalInitialValue}
+      />
+    )}
+    </>
   );
 }
 
