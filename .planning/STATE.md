@@ -96,6 +96,7 @@ None.
 |---|-------------|------|--------|-----------|
 | 19 | Fix chat window: timestamps, scroll, sticky header with controls | 2026-04-04 | 870d1c9 | [19-fix-chat-window-timestamps-scroll-sticky](./quick/19-fix-chat-window-timestamps-scroll-sticky/) |
 | 20 | Sticky chat header + disable scroll-to-bottom animation | 2026-04-04 | 347f77e | [20-sticky-chat-header-disable-scroll-to-bo](./quick/20-sticky-chat-header-disable-scroll-to-bo/) |
+| 21 | 3-column desktop layout: chat list, chat window, project details | 2026-04-04 | 03e41a8 | [21-3-column-desktop-layout-chat-list-chat-w](./quick/21-3-column-desktop-layout-chat-list-chat-w/) |
 
 ## Session Continuity
 
