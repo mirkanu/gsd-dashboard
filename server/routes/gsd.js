@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
-const { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit } = require('../gsd/tmux');
+const { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine } = require('../gsd/tmux');
 const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED: telegramEnabled } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
 
@@ -128,6 +128,7 @@ router.get("/projects", async (_req, res) => {
         contextTokens: row?.context_tokens ?? null,
         sessionUpdatedAt: row?.updated_at ?? null,
         lastMessage: lastMsgMap.get(name) || null,
+        statusText: sessionState === 'working' ? (extractStatusLine(capturePaneText(tmux_session)) || null) : null,
       };
     });
 

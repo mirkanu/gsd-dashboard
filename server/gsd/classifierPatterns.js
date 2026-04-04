@@ -27,6 +27,24 @@ const PATTERNS = [
       /^(?:mcp__|antml_)/,
     ],
   },
+  // Hidden: bullet tool calls (● prefix)
+  {
+    type: MESSAGE_TYPES.HIDDEN,
+    patterns: [
+      /^●\s+(?:Bash|Read|Write|Edit|Grep|Glob|WebSearch|WebFetch|TodoWrite|Search|Agent|Skill)\(/,
+    ],
+  },
+  // Hidden: continuation lines, collapsed markers, status lines, user prompt echo, JSON results
+  {
+    type: MESSAGE_TYPES.HIDDEN,
+    patterns: [
+      /^⎿/,                    // tool result continuation marker
+      /^…\s*\+\d+\s+lines/,   // collapsed output indicator
+      /^[✻✶]/,                // working/completion status indicators
+      /^❯/,                    // user input echo in tmux
+      /^\{[\s"]/,              // opening brace of JSON tool results
+    ],
+  },
   // Hidden: numbered code output lines
   {
     type: MESSAGE_TYPES.HIDDEN,

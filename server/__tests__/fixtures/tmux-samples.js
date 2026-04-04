@@ -79,6 +79,20 @@ const hiddenCodeSamples = [
   '\x1b[2m  7 | return null;\x1b[0m',
 ];
 
+const hiddenToolOutputSamples = [
+  '● Bash(npm run build)',
+  '● Read(server/db.js)',
+  '● Edit(src/app.tsx)',
+  '● Skill(/gsd:quick)',
+  '⎿  result text here',
+  '⎿  Done (exit 0)',
+  '… +42 lines (ctrl+o to expand)',
+  '✻ Working… (1m 17s · ↓ 304 tokens · thought for 3s)',
+  '✶ Cooked for 13m 35s',
+  '❯ /gsd:quick fix the bug',
+  '{ "path": "server/db.js" }',
+];
+
 const textSamples = [
   'I will now implement the classifier module.',
   'The function takes a raw line of tmux output and returns a typed object.',
@@ -93,6 +107,7 @@ module.exports = {
   completionSamples,
   errorSamples,
   hiddenToolCallSamples,
+  hiddenToolOutputSamples,
   hiddenWorkingSamples,
   hiddenCodeSamples,
   textSamples,
