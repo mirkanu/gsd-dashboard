@@ -20,6 +20,20 @@ import { MarkdownViewer } from "../components/MarkdownViewer";
 import { ChatListView } from "../components/ChatListView";
 import { ChatListFilters } from "../components/ChatListFilters";
 import { ChatWindow } from "../components/ChatWindow";
+import { ProjectDetailsPanel } from "../components/ProjectDetailsPanel";
+
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia(query).matches : false
+  );
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, [query]);
+  return matches;
+}
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -252,9 +266,10 @@ interface TerminalOverlayProps {
   wsBase: string | null;
   onClose: () => void;
   initialSendValue: string;
+  inline?: boolean;
 }
 
-function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: TerminalOverlayProps) {
+function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inline = false }: TerminalOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -527,8 +542,8 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
 
   return (
     <div
-      className="fixed inset-0 flex flex-col"
-      style={{ zIndex: 70, bottom: bottomOffset > 0 ? bottomOffset : undefined, overscrollBehavior: 'none', background: getTermTheme().overlay }}
+      className={`${inline ? 'relative' : 'fixed inset-0'} flex flex-col`}
+      style={{ zIndex: inline ? undefined : 70, bottom: !inline && bottomOffset > 0 ? bottomOffset : undefined, overscrollBehavior: 'none', background: getTermTheme().overlay, ...(inline ? { height: '100%' } : {}) }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header bar */}
@@ -949,6 +964,7 @@ function ProjectCard({
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export function GSD() {
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const [projects, setProjects] = useState<GsdProject[]>([]);
   const [rateLimit, setRateLimit] = useState<{ active: boolean; resetAt: string | null }>({ active: false, resetAt: null });
   const [loading, setLoading] = useState(true);
@@ -965,13 +981,14 @@ export function GSD() {
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Lock body scroll when terminal overlay is open (prevents background scroll on mobile)
+  // On desktop, terminal is inline in the grid so no body lock needed.
   useEffect(() => {
-    if (terminalProject) {
+    if (terminalProject && !isDesktop) {
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
       document.body.style.top = `-${window.scrollY}px`;
-    } else {
+    } else if (!terminalProject) {
       const scrollY = document.body.style.top;
       document.body.style.overflow = '';
       document.body.style.position = '';
@@ -979,7 +996,7 @@ export function GSD() {
       document.body.style.top = '';
       window.scrollTo(0, parseInt(scrollY || '0') * -1);
     }
-  }, [terminalProject]);
+  }, [terminalProject, isDesktop]);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const TAB_TITLES: Record<string, string> = {
@@ -1113,52 +1130,196 @@ export function GSD() {
     return () => clearInterval(t);
   }, [rateLimit]);
 
+  // Derive the selected project object for the right panel from chatView
+  const selectedProj = chatView.project
+    ? projects.find((p) => p.name === chatView.project) ?? null
+    : null;
+
+  // Filtered projects for chat list
+  const filteredProjects = activeFilter === null
+    ? projects.filter((p) => p.sessionState !== "archived")
+    : projects.filter((p) => p.sessionState === activeFilter);
+
+  const handleTerminalClose = useCallback(() => {
+    setTerminalProject(null);
+    setTerminalInitialValue("");
+    // Polling burst: refresh card state every 500ms for 2s after terminal closes.
+    if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
+    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+    refreshIntervalRef.current = setInterval(() => load(false), 500);
+    refreshTimeoutRef.current = setTimeout(() => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    }, 2000);
+  }, [load]);
+
+  const handleOpenTerminal = useCallback((projectName: string) => {
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      window.open(`/terminal/${encodeURIComponent(projectName)}`, '_blank');
+    } else {
+      setTerminalProject(projectName);
+      setTerminalInitialValue("");
+    }
+  }, []);
+
+  // ─── Header (shared between layouts) ─────────────────────────────────────────
+  const headerEl = (
+    <div className="flex items-center justify-between gap-3">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-100">GSD Projects</h2>
+        <p className="text-sm text-gray-500">Unified view across all configured projects</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => {
+            const root = document.documentElement;
+            const isLight = root.classList.toggle("light");
+            root.classList.toggle("dark", !isLight);
+            localStorage.setItem("theme", isLight ? "light" : "dark");
+          }}
+          className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-border transition-colors"
+          title="Toggle light/dark mode"
+        >
+          <Sun className="w-3.5 h-3.5 hidden dark:block" />
+          <Moon className="w-3.5 h-3.5 block dark:hidden" />
+        </button>
+        <button
+          onClick={() => load(true)}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-border transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
+      </div>
+    </div>
+  );
+
+  // ─── Rate-limit banner (shared) ───────────────────────────────────────────────
+  const rateLimitBanner = rateLimit.active ? (
+    <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-orange-500/30 bg-orange-500/10 text-orange-300 text-sm">
+      <span className="text-orange-400 text-base">⚠</span>
+      <span className="font-medium">Rate limit active across all sessions.</span>
+      {rateLimitCountdown
+        ? <span className="ml-1 text-orange-400 font-mono">Resets in {rateLimitCountdown}</span>
+        : <span className="ml-1 text-orange-400/70">Reset time unknown — check your Anthropic plan.</span>
+      }
+    </div>
+  ) : null;
+
+  // ─── Desktop 3-column layout (>=1024px) ───────────────────────────────────────
+  if (isDesktop) {
+    return (
+      <>
+        <div className="animate-fade-in flex flex-col" style={{ height: 'calc(100dvh - 2rem)' }}>
+          {/* Header above grid */}
+          <div className="shrink-0 pb-3">
+            {headerEl}
+            {rateLimitBanner && <div className="mt-3">{rateLimitBanner}</div>}
+          </div>
+
+          {loading && (
+            <div className="flex items-center justify-center flex-1 text-gray-500 text-sm">
+              Loading project data…
+            </div>
+          )}
+
+          {error && (
+            <div className="card p-4 border-red-500/20 bg-red-500/5">
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <div className="grid grid-cols-[20%_1fr_30%] flex-1 min-h-0 border border-border rounded-xl overflow-hidden">
+              {/* Left: chat list + filters — always visible */}
+              <div className="flex flex-col border-r border-border overflow-hidden bg-surface-1">
+                <ChatListFilters
+                  projects={projects}
+                  activeFilter={activeFilter}
+                  onFilterChange={setActiveFilter}
+                />
+                <div className="flex-1 overflow-y-auto">
+                  <ChatListView
+                    projects={filteredProjects}
+                    activeProject={chatView.project}
+                    onSelectProject={(name) => {
+                      setChatView({ view: 'chat', project: name });
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Middle: chat window OR terminal OR empty state */}
+              <div className="flex flex-col overflow-hidden">
+                {chatView.project ? (
+                  terminalProject ? (
+                    <TerminalOverlay
+                      projectName={terminalProject}
+                      wsBase={terminalWsBase}
+                      onClose={handleTerminalClose}
+                      initialSendValue={terminalInitialValue}
+                      inline={true}
+                    />
+                  ) : (
+                    <ChatWindow
+                      projectName={chatView.project}
+                      displayName={selectedProj?.display_name || chatView.project}
+                      sessionState={selectedProj?.sessionState ?? null}
+                      sessionUpdatedAt={selectedProj?.sessionUpdatedAt ?? null}
+                      contextTokens={selectedProj?.contextTokens ?? null}
+                      tmuxActive={selectedProj?.tmuxActive ?? false}
+                      onBack={() => setChatView({ view: 'list' })}
+                      onOpenTerminal={() => handleOpenTerminal(chatView.project!)}
+                      onOpenDetails={() => {}}
+                      hideBackButton={false}
+                      hideDetailsButton={true}
+                      fillParent={true}
+                    />
+                  )
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                    Select a project to start chatting
+                  </div>
+                )}
+              </div>
+
+              {/* Right: project details panel */}
+              <div className="overflow-hidden">
+                {selectedProj ? (
+                  <ProjectDetailsPanel
+                    project={selectedProj}
+                    onExpand={(content, tabId) => setFullScreen({ content, title: TAB_TITLES[tabId] ?? tabId })}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500 text-sm border-l border-border bg-surface-2">
+                    Project details
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {fullScreen && (
+          <MarkdownViewer
+            content={fullScreen.content}
+            title={fullScreen.title}
+            onClose={() => setFullScreen(null)}
+          />
+        )}
+      </>
+    );
+  }
+
+  // ─── Mobile layout (<1024px) — unchanged single-column view switching ────────
   return (
     <>
     <div className={`space-y-6 animate-fade-in ${terminalProject ? 'invisible h-0 overflow-hidden' : ''}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-100">GSD Projects</h2>
-          <p className="text-sm text-gray-500">Unified view across all configured projects</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              const root = document.documentElement;
-              const isLight = root.classList.toggle("light");
-              root.classList.toggle("dark", !isLight);
-              localStorage.setItem("theme", isLight ? "light" : "dark");
-            }}
-            className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-border transition-colors"
-            title="Toggle light/dark mode"
-          >
-            <Sun className="w-3.5 h-3.5 hidden dark:block" />
-            <Moon className="w-3.5 h-3.5 block dark:hidden" />
-          </button>
-          <button
-            onClick={() => load(true)}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-border transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh
-          </button>
-        </div>
-      </div>
-
-      {/* Rate-limit banner */}
-      {rateLimit.active && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-orange-500/30 bg-orange-500/10 text-orange-300 text-sm">
-          <span className="text-orange-400 text-base">⚠</span>
-          <span className="font-medium">Rate limit active across all sessions.</span>
-          {rateLimitCountdown
-            ? <span className="ml-1 text-orange-400 font-mono">Resets in {rateLimitCountdown}</span>
-            : <span className="ml-1 text-orange-400/70">Reset time unknown — check your Anthropic plan.</span>
-          }
-        </div>
-      )}
-
+      {headerEl}
+      {rateLimitBanner}
 
       {/* States */}
       {loading && (
@@ -1174,26 +1335,21 @@ export function GSD() {
       )}
 
       {/* Chat list view */}
-      {!loading && !error && chatView.view === 'list' && (() => {
-        const filtered = activeFilter === null
-          ? projects.filter((p) => p.sessionState !== "archived")
-          : projects.filter((p) => p.sessionState === activeFilter);
-        return (
-          <div className="bg-surface-1 rounded-xl border border-border overflow-hidden">
-            <ChatListFilters
-              projects={projects}
-              activeFilter={activeFilter}
-              onFilterChange={setActiveFilter}
-            />
-            <ChatListView
-              projects={filtered}
-              onSelectProject={(name) => {
-                setChatView({ view: 'chat', project: name });
-              }}
-            />
-          </div>
-        );
-      })()}
+      {!loading && !error && chatView.view === 'list' && (
+        <div className="bg-surface-1 rounded-xl border border-border overflow-hidden">
+          <ChatListFilters
+            projects={projects}
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+          />
+          <ChatListView
+            projects={filteredProjects}
+            onSelectProject={(name) => {
+              setChatView({ view: 'chat', project: name });
+            }}
+          />
+        </div>
+      )}
 
       {/* Chat window — selected project */}
       {!loading && !error && chatView.view === 'chat' && (() => {
@@ -1207,14 +1363,7 @@ export function GSD() {
             contextTokens={proj?.contextTokens ?? null}
             tmuxActive={proj?.tmuxActive ?? false}
             onBack={() => { setChatView({ view: 'list' }); setSelectedProject(null); }}
-            onOpenTerminal={() => {
-              if (window.matchMedia('(pointer: coarse)').matches) {
-                window.open(`/terminal/${encodeURIComponent(chatView.project!)}`, '_blank');
-              } else {
-                setTerminalProject(chatView.project!);
-                setTerminalInitialValue("");
-              }
-            }}
+            onOpenTerminal={() => handleOpenTerminal(chatView.project!)}
             onOpenDetails={() => setSelectedProject(proj ?? null)}
           />
         );
@@ -1239,22 +1388,7 @@ export function GSD() {
       <TerminalOverlay
         projectName={terminalProject}
         wsBase={terminalWsBase}
-        onClose={() => {
-          setTerminalProject(null);
-          setTerminalInitialValue("");
-          // Polling burst: refresh card state every 500ms for 2s after terminal closes.
-          // This ensures the card badge (Working/Waiting/Paused) reflects the actual
-          // post-close state within the same interaction, not the next 30s poll.
-          if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-          if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
-          refreshIntervalRef.current = setInterval(() => load(false), 500);
-          refreshTimeoutRef.current = setTimeout(() => {
-            if (refreshIntervalRef.current) {
-              clearInterval(refreshIntervalRef.current);
-              refreshIntervalRef.current = null;
-            }
-          }, 2000);
-        }}
+        onClose={handleTerminalClose}
         initialSendValue={terminalInitialValue}
       />
     )}
