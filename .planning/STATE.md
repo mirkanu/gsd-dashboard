@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Chat-First Dashboard
 status: executing
-stopped_at: Completed 29-02-PLAN.md
-last_updated: "2026-04-04T08:12:26.718Z"
-last_activity: 2026-04-04 — Completed 29-02 chat list view UI
+stopped_at: Completed 30-02-PLAN.md
+last_updated: "2026-04-04T09:03:13Z"
+last_activity: 2026-04-04 — Completed 30-02 custom message renderers and send box
 progress:
   total_phases: 8
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 5
-  percent: 94
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 7
+  percent: 96
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-03)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** v4.0 Phase 30 — Chat Window Message Rendering
+**Current focus:** v4.0 Phase 31 — Chat Enhancements (next)
 
 ## Current Position
 
 Phase: 30 of 32 (Chat Window Message Rendering)
-Plan: 1 of 2 complete
+Plan: 2 of 2 complete
 Status: Executing
-Last activity: 2026-04-04 — Completed 30-01 chat window message rendering
+Last activity: 2026-04-04 — Completed 30-02 custom message renderers and send box
 
-Progress: [█████████░] 94%
+Progress: [█████████░] 96%
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Progress: [█████████░] 94%
 | 29 | P01 | 13min | 2 | 6 |
 | 29 | P02 | 45min | 3 | 4 |
 | 30 | P01 | 12min | 2 | 7 |
+| 30 | P02 | 5min | 2 | 10 |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [30-01]: Messages endpoint upgraded to listVisibleGsdMessages for classified message support
 - [30-01]: Consecutive text chunks grouped into single messages to reduce DB writes
 - [30-01]: Error cards collapsible when >3 lines to prevent stack traces dominating chat
+- [30-02]: CommandChips insert into textarea without auto-sending per ACT-01 design
+- [30-02]: Native textarea for send box instead of chatscope MessageInput (known bugs)
+- [30-02]: HSL hue rotation for context gauge color (green-to-red)
 
 ### Pending Todos
 
@@ -92,8 +96,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T08:51:00Z
-Stopped at: Completed 30-01-PLAN.md
+Last session: 2026-04-04T09:03:13Z
+Stopped at: Completed 30-02-PLAN.md
 Resume file: None
-Next action: Continue with 30-02-PLAN.md
+Next action: Continue with Phase 31
 
