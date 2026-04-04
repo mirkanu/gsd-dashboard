@@ -1205,7 +1205,17 @@ export function GSD() {
             sessionState={proj?.sessionState ?? null}
             sessionUpdatedAt={proj?.sessionUpdatedAt ?? null}
             contextTokens={proj?.contextTokens ?? null}
+            tmuxActive={proj?.tmuxActive ?? false}
             onBack={() => { setChatView({ view: 'list' }); setSelectedProject(null); }}
+            onOpenTerminal={() => {
+              if (window.matchMedia('(pointer: coarse)').matches) {
+                window.open(`/terminal/${encodeURIComponent(chatView.project!)}`, '_blank');
+              } else {
+                setTerminalProject(chatView.project!);
+                setTerminalInitialValue("");
+              }
+            }}
+            onOpenDetails={() => setSelectedProject(proj ?? null)}
           />
         );
       })()}

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ArrowLeft, Send } from "lucide-react";
-import { MessageList } from "@chatscope/chat-ui-kit-react";
+import { ArrowLeft, Send, Terminal, FolderOpen } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
 import { ChatMessageRenderer } from "./ChatMessageRenderer";
@@ -25,7 +24,10 @@ interface ChatWindowProps {
   sessionState: SessionState | null;
   sessionUpdatedAt: string | null;
   contextTokens: number | null;
+  tmuxActive: boolean;
   onBack: () => void;
+  onOpenTerminal: () => void;
+  onOpenDetails: () => void;
 }
 
 const SESSION_STATE_STYLE: Record<string, string> = {
@@ -59,13 +61,17 @@ export function ChatWindow({
   sessionState,
   sessionUpdatedAt,
   contextTokens,
+  tmuxActive,
   onBack,
+  onOpenTerminal,
+  onOpenDetails,
 }: ChatWindowProps) {
   const [messages, setMessages] = useState<GsdMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Fetch initial messages
@@ -155,8 +161,8 @@ export function ChatWindow({
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      {/* Chat header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-2 shrink-0">
+      {/* Chat header — sticky */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-2 shrink-0 sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
@@ -175,6 +181,24 @@ export function ChatWindow({
             </span>
           )}
         </div>
+        <div className="flex items-center gap-2">
+          {tmuxActive && (
+            <button
+              onClick={onOpenTerminal}
+              className="p-1.5 rounded text-gray-400 hover:text-emerald-400 hover:bg-surface-3 transition-colors active:scale-95"
+              title="Open Terminal"
+            >
+              <Terminal size={16} />
+            </button>
+          )}
+          <button
+            onClick={onOpenDetails}
+            className="p-1.5 rounded text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors active:scale-95"
+            title="Project Details"
+          >
+            <FolderOpen size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Working indicator */}
@@ -185,8 +209,8 @@ export function ChatWindow({
         />
       )}
 
-      {/* Message area */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      {/* Message area — plain scrollable div (chatscope MessageList has scroll bugs) */}
+      <div className="flex-1 min-h-0 overflow-y-auto bg-surface-1" ref={scrollContainerRef}>
         {loading ? (
           <MessageSkeleton />
         ) : messages.length === 0 ? (
@@ -194,7 +218,7 @@ export function ChatWindow({
             No messages yet
           </div>
         ) : (
-          <MessageList className="h-full">
+          <div className="flex flex-col gap-1 p-3">
             {messages.map((msg) => (
               <ChatMessageRenderer
                 key={msg.id}
@@ -203,7 +227,7 @@ export function ChatWindow({
               />
             ))}
             <div ref={bottomRef} />
-          </MessageList>
+          </div>
         )}
       </div>
 
