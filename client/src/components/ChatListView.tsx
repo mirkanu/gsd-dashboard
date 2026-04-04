@@ -10,6 +10,7 @@ interface ChatListViewProps {
   projects: GsdProject[];
   onSelectProject: (name: string) => void;
   activeProject?: string;
+  unreadCounts?: Record<string, number>;
 }
 
 const STATE_BORDER: Record<SessionState, string> = {
@@ -27,7 +28,7 @@ function truncate(s: string, max: number): string {
   return s.length > max ? s.slice(0, max) + "..." : s;
 }
 
-export function ChatListView({ projects, onSelectProject, activeProject }: ChatListViewProps) {
+export function ChatListView({ projects, onSelectProject, activeProject, unreadCounts }: ChatListViewProps) {
   // Sort by sessionUpdatedAt descending (newest first), nulls to bottom
   const sorted = [...projects].sort((a, b) => {
     if (!a.sessionUpdatedAt && !b.sessionUpdatedAt) return 0;
@@ -61,7 +62,7 @@ export function ChatListView({ projects, onSelectProject, activeProject }: ChatL
               name={displayName}
               info={info}
               lastActivityTime={timeAgo(p.sessionUpdatedAt)}
-              unreadCnt={0}
+              unreadCnt={unreadCounts?.[p.name] || 0}
               onClick={() => onSelectProject(p.name)}
             >
               <Avatar name={displayName} />
