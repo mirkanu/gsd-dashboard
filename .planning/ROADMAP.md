@@ -92,7 +92,7 @@
 
 </details>
 
-### 🚧 v4.0 Chat-First Dashboard
+### v4.0 Chat-First Dashboard
 
 **Milestone Goal:** Replace the kanban board with a WhatsApp/Telegram-style chat interface where each project is a conversation with Claude/GSD, using @chatscope/chat-ui-kit-react.
 
@@ -171,7 +171,10 @@ Plans:
   3. File tabs (State, Roadmap, Requirements, Plan) render markdown content in the detail panel
   4. Progress bars and status indicators (phase completion, session state, context tokens) are visible in the detail panel
   5. Paused and archived projects show their full chat history; typing a message in a paused/archived chat triggers a "Reopen session?" confirmation before sending
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 32-01-PLAN.md — Extract controls + metadata into detail panel and drawer
+- [ ] 32-02-PLAN.md — Reopen confirmation for paused/archived chat sends
 
 ---
 
@@ -211,7 +214,7 @@ Plans:
 | 29. Chat List View | 2/2 | Complete    | 2026-04-04 | - |
 | 30. Chat Window + Message Rendering | 2/2 | Complete    | 2026-04-04 | - |
 | 31. Interactivity + Real-Time Streaming | v4.0 | 0/? | Not started | - |
-| 32. Project Detail Panel | v4.0 | 0/? | Not started | - |
+| 32. Project Detail Panel | v4.0 | 0/2 | Not started | - |
 
 ---
 
