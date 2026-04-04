@@ -214,7 +214,7 @@ Plans:
 | 29. Chat List View | 2/2 | Complete    | 2026-04-04 | - |
 | 30. Chat Window + Message Rendering | 2/2 | Complete    | 2026-04-04 | - |
 | 31. Interactivity + Real-Time Streaming | v4.0 | 0/? | Not started | - |
-| 32. Project Detail Panel | v4.0 | 0/2 | Not started | - |
+| 32. Project Detail Panel | 1/2 | In Progress|  | - |
 
 ---
 
