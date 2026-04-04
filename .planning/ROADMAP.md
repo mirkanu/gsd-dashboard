@@ -205,7 +205,7 @@ Plans:
 | 26. Cost Intelligence | v3.0 | 0/3 | Deferred | - |
 | 27. Card UX Polish | v3.0 | 0/3 | Deferred | - |
 | 28. Schema + Classifier Foundation | v4.0 | 2/2 | Complete | 2026-04-03 |
-| 29. Chat List View | 2/2 | Complete   | 2026-04-04 | - |
+| 29. Chat List View | 2/2 | Complete    | 2026-04-04 | - |
 | 30. Chat Window + Message Rendering | v4.0 | 0/? | Not started | - |
 | 31. Interactivity + Real-Time Streaming | v4.0 | 0/? | Not started | - |
 | 32. Project Detail Panel | v4.0 | 0/? | Not started | - |
