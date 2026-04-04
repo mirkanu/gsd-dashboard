@@ -15,7 +15,7 @@
 ## Phases
 
 - [x] **Phase 33: Classifier Foundation** - Fix tmux line joining, expand HIDDEN patterns, fix GSD banner matching (completed 2026-04-04)
-- [ ] **Phase 34: Feedback Pipeline** - DB schema, API endpoints, reclassify logic for user corrections
+- [x] **Phase 34: Feedback Pipeline** - DB schema, API endpoints, reclassify logic for user corrections (completed 2026-04-04)
 - [ ] **Phase 35: Feedback UI + Send Experience** - Context menu for corrections, send confirmation, working status reliability
 - [ ] **Phase 36: Message Rendering + New Types** - Markdown in chat bubbles, terminal text preservation, NEXT_UP type
 
@@ -43,7 +43,7 @@ Plans:
   2. POSTing a correction to the API immediately updates the message type in the database (reclassify on submit)
   3. GET endpoint returns feedback history that can be used to identify pattern gaps
   4. Corrections submitted for one project apply universally -- patterns are not project-scoped
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 34-01-PLAN.md — DB migration, PatternManager, feedback API endpoints, classifier wiring
@@ -83,6 +83,6 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 33. Classifier Foundation | 1/1 | Complete    | 2026-04-04 | - |
-| 34. Feedback Pipeline | v4.1 | 0/1 | Not started | - |
+| 34. Feedback Pipeline | 1/1 | Complete   | 2026-04-04 | - |
 | 35. Feedback UI + Send Experience | v4.1 | 0/0 | Not started | - |
 | 36. Message Rendering + New Types | v4.1 | 0/0 | Not started | - |
