@@ -24,13 +24,13 @@ Requirements for Chat Polish milestone. Each maps to roadmap phases.
 
 ### Send Experience
 
-- [ ] **SEND-01**: Immediate echo of sent message in chat with visual confirmation (optimistic outbound bubble)
-- [ ] **SEND-02**: Session state changes to "Working" immediately after send (optimistic status update)
+- [x] **SEND-01**: Immediate echo of sent message in chat with visual confirmation (optimistic outbound bubble)
+- [x] **SEND-02**: Session state changes to "Working" immediately after send (optimistic status update)
 
 ### Working Status
 
-- [ ] **WORK-01**: Working indicator shows actual tmux status text pulled from capture-pane (e.g. "✻ Working… 1m 17s · 304 tokens")
-- [ ] **WORK-02**: Status updates within 3 seconds of Claude starting/stopping work
+- [x] **WORK-01**: Working indicator shows actual tmux status text pulled from capture-pane (e.g. "✻ Working… 1m 17s · 304 tokens")
+- [x] **WORK-02**: Status updates within 3 seconds of Claude starting/stopping work
 
 ### Message Rendering
 
@@ -75,10 +75,10 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | FBK-03 | Phase 34 | Complete |
 | FBK-04 | Phase 35 | Complete |
 | FBK-05 | Phase 34 | Complete |
-| SEND-01 | Phase 35 | Pending |
-| SEND-02 | Phase 35 | Pending |
-| WORK-01 | Phase 35 | Pending |
-| WORK-02 | Phase 35 | Pending |
+| SEND-01 | Phase 35 | Complete |
+| SEND-02 | Phase 35 | Complete |
+| WORK-01 | Phase 35 | Complete |
+| WORK-02 | Phase 35 | Complete |
 | REND-01 | Phase 36 | Pending |
 | REND-02 | Phase 36 | Pending |
 

@@ -16,7 +16,7 @@
 
 - [x] **Phase 33: Classifier Foundation** - Fix tmux line joining, expand HIDDEN patterns, fix GSD banner matching (completed 2026-04-04)
 - [x] **Phase 34: Feedback Pipeline** - DB schema, API endpoints, reclassify logic for user corrections (completed 2026-04-04)
-- [ ] **Phase 35: Feedback UI + Send Experience** - Context menu for corrections, send confirmation, working status reliability
+- [x] **Phase 35: Feedback UI + Send Experience** - Context menu for corrections, send confirmation, working status reliability (completed 2026-04-04)
 - [ ] **Phase 36: Message Rendering + New Types** - Markdown in chat bubbles, terminal text preservation, NEXT_UP type
 
 ## Phase Details
@@ -58,7 +58,7 @@ Plans:
   3. Session state visibly changes to "Working" within 1 second of sending a command (optimistic status)
   4. Working indicator displays actual tmux status text (e.g. "Working... 1m 17s . 304 tokens") instead of generic label
   5. Status updates reflect Claude starting/stopping work within 3 seconds
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 35-01-PLAN.md — Radix context menu on chat messages for classifier feedback corrections
@@ -85,5 +85,5 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 33. Classifier Foundation | 1/1 | Complete    | 2026-04-04 | - |
 | 34. Feedback Pipeline | 1/1 | Complete    | 2026-04-04 | - |
-| 35. Feedback UI + Send Experience | 1/2 | In Progress|  | - |
+| 35. Feedback UI + Send Experience | 2/2 | Complete   | 2026-04-04 | - |
 | 36. Message Rendering + New Types | v4.1 | 0/0 | Not started | - |
