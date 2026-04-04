@@ -1098,6 +1098,7 @@ export function GSD() {
                       sessionState={selectedProj?.sessionState ?? null}
                       sessionUpdatedAt={selectedProj?.sessionUpdatedAt ?? null}
                       contextTokens={selectedProj?.contextTokens ?? null}
+                      statusText={selectedProj?.statusText ?? null}
                       tmuxActive={selectedProj?.tmuxActive ?? false}
                       onBack={() => setChatView({ view: 'list' })}
                       onOpenTerminal={() => handleOpenTerminal(chatView.project!)}
@@ -1198,6 +1199,7 @@ export function GSD() {
             sessionState={proj?.sessionState ?? null}
             sessionUpdatedAt={proj?.sessionUpdatedAt ?? null}
             contextTokens={proj?.contextTokens ?? null}
+            statusText={proj?.statusText ?? null}
             tmuxActive={proj?.tmuxActive ?? false}
             onBack={() => { setChatView({ view: 'list' }); setSelectedProject(null); }}
             onOpenTerminal={() => handleOpenTerminal(chatView.project!)}

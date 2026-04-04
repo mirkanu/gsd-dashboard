@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 interface WorkingIndicatorProps {
   sessionUpdatedAt: string | null;
   contextTokens: number | null;
+  statusText?: string | null;
 }
 
 function formatElapsed(ms: number): string {
@@ -14,7 +15,7 @@ function formatElapsed(ms: number): string {
 
 const CONTEXT_WINDOW = 200_000;
 
-export function WorkingIndicator({ sessionUpdatedAt, contextTokens }: WorkingIndicatorProps) {
+export function WorkingIndicator({ sessionUpdatedAt, contextTokens, statusText }: WorkingIndicatorProps) {
   const [elapsed, setElapsed] = useState("");
 
   useEffect(() => {
@@ -34,9 +35,9 @@ export function WorkingIndicator({ sessionUpdatedAt, contextTokens }: WorkingInd
   const hue = Math.round(120 * (1 - pct)); // green (120) -> red (0)
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 border-b border-emerald-500/20 shrink-0">
+    <div className="flex items-center gap-3 px-4 py-2 bg-emerald-500/5 border-t border-emerald-500/20 shrink-0">
       <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-      <span className="text-xs text-emerald-400">Working... {elapsed}</span>
+      <span className="text-xs text-emerald-400">{statusText || `Working... ${elapsed}`}</span>
       {contextTokens != null && (
         <div className="flex items-center gap-2 ml-auto">
           <div className="w-16 h-2 rounded-full bg-surface-3 overflow-hidden">
