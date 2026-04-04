@@ -29,10 +29,10 @@
   1. Long Claude output lines no longer appear as duplicate or fragmented messages in chat
   2. Tool calls (Update, Read collapsed summaries), task tree lines, selection UI chrome, session rating prompts, and background notifications no longer appear as visible TEXT messages
   3. GSD workflow banners with heavy horizontal rules and `GSD` prefix are classified as STAGE_BANNER, not TEXT
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 33-01: TBD
+- [ ] 33-01-PLAN.md — Fix tmux -J flag, expand HIDDEN patterns, add GSD banner STAGE_BANNER patterns
 
 ### Phase 34: Feedback Pipeline
 **Goal**: Server can receive, store, and serve classifier corrections so the UI has a working backend to talk to
@@ -82,7 +82,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 33. Classifier Foundation | v4.1 | 0/0 | Not started | - |
+| 33. Classifier Foundation | v4.1 | 0/1 | Not started | - |
 | 34. Feedback Pipeline | v4.1 | 0/0 | Not started | - |
 | 35. Feedback UI + Send Experience | v4.1 | 0/0 | Not started | - |
 | 36. Message Rendering + New Types | v4.1 | 0/0 | Not started | - |
