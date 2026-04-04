@@ -1178,21 +1178,46 @@ export function GSD() {
         );
       })()}
 
-      {/* Chat placeholder — selected project */}
-      {!loading && !error && chatView.view === 'chat' && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 py-20 text-gray-500">
-          <p className="text-sm">Chat view for <span className="font-semibold text-gray-300">{chatView.project}</span> -- coming in Phase 30</p>
-          <button
-            onClick={() => {
-              setChatView({ view: 'list' });
-              setSelectedProject(null);
-            }}
-            className="px-4 py-2 rounded-lg text-sm border border-border text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors"
-          >
-            Back to list
-          </button>
-        </div>
-      )}
+      {/* Chat placeholder — selected project (Phase 30 will replace with real chat) */}
+      {!loading && !error && chatView.view === 'chat' && (() => {
+        const proj = projects.find((p) => p.name === chatView.project);
+        return (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 py-20 text-gray-500">
+            <p className="text-sm">Chat view for <span className="font-semibold text-gray-300">{chatView.project}</span> — coming in Phase 30</p>
+            <div className="flex gap-3">
+              {proj?.tmuxActive && (
+                <button
+                  onClick={() => {
+                    setTerminalProject(chatView.project!);
+                    setTerminalInitialValue("");
+                  }}
+                  className="px-4 py-2 rounded-lg text-sm border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                >
+                  Open Terminal
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  const p = projects.find((pr) => pr.name === chatView.project) ?? null;
+                  setSelectedProject(p);
+                }}
+                className="px-4 py-2 rounded-lg text-sm border border-border text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors"
+              >
+                Project Details
+              </button>
+              <button
+                onClick={() => {
+                  setChatView({ view: 'list' });
+                  setSelectedProject(null);
+                }}
+                className="px-4 py-2 rounded-lg text-sm border border-border text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors"
+              >
+                Back to list
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {selectedProject && (
         <GsdDrawer
