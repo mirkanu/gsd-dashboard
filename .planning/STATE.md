@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Chat-First Dashboard
 status: executing
-stopped_at: Completed 30-02-PLAN.md
-last_updated: "2026-04-04T09:19:32.757Z"
+stopped_at: Completed quick-21 3-column desktop layout
+last_updated: "2026-04-04T14:04:30.350Z"
 last_activity: 2026-04-04 — Completed 30-02 custom message renderers and send box
 progress:
   total_phases: 8
@@ -78,6 +78,7 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [30-02]: CommandChips insert into textarea without auto-sending per ACT-01 design
 - [30-02]: Native textarea for send box instead of chatscope MessageInput (known bugs)
 - [30-02]: HSL hue rotation for context gauge color (green-to-red)
+- [Phase quick-21]: 3-column desktop layout: 20% chat list, 50% chat, 30% details using CSS grid at >=1024px
 
 ### Pending Todos
 
@@ -98,8 +99,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T09:03:13Z
-Stopped at: Completed 30-02-PLAN.md
+Last session: 2026-04-04T14:04:12.095Z
+Stopped at: Completed quick-21 3-column desktop layout
 Resume file: None
 Next action: Continue with Phase 31
 
