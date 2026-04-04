@@ -527,7 +527,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue }: Ter
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ zIndex: 70, bottom: bottomOffset > 0 ? bottomOffset : undefined, overscrollBehavior: 'contain', background: getTermTheme().overlay }}
+      style={{ zIndex: 70, bottom: bottomOffset > 0 ? bottomOffset : undefined, overscrollBehavior: 'none', background: getTermTheme().overlay }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header bar */}
@@ -962,6 +962,23 @@ export function GSD() {
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
   const [terminalInitialValue, setTerminalInitialValue] = useState<string>("");
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Lock body scroll when terminal overlay is open (prevents background scroll on mobile)
+  useEffect(() => {
+    if (terminalProject) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.top = `-${window.scrollY}px`;
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+  }, [terminalProject]);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const TAB_TITLES: Record<string, string> = {
@@ -1284,17 +1301,11 @@ export function GSD() {
           onClose={() => setFullScreen(null)}
         />
       )}
-      {terminalProject && (() => {
-        // Lock body scroll while terminal is open (prevents chat list scroll-through on mobile)
-        document.body.style.overflow = 'hidden';
-        return null;
-      })()}
       {terminalProject && (
         <TerminalOverlay
           projectName={terminalProject}
           wsBase={terminalWsBase}
           onClose={() => {
-            document.body.style.overflow = '';
             setTerminalProject(null);
             setTerminalInitialValue("");
             // Polling burst: refresh card state every 500ms for 2s after terminal closes.
