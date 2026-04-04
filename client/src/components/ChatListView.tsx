@@ -1,7 +1,6 @@
 import {
   ConversationList,
   Conversation,
-  Avatar,
 } from "@chatscope/chat-ui-kit-react";
 import { timeAgo } from "../lib/timeAgo";
 import type { GsdProject, SessionState } from "../lib/types";
@@ -64,9 +63,7 @@ export function ChatListView({ projects, onSelectProject, activeProject, unreadC
               lastActivityTime={timeAgo(p.sessionUpdatedAt)}
               unreadCnt={unreadCounts?.[p.name] || 0}
               onClick={() => onSelectProject(p.name)}
-            >
-              <Avatar name={displayName} />
-            </Conversation>
+            />
           </div>
         );
       })}
