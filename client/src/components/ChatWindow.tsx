@@ -24,6 +24,7 @@ interface ChatWindowProps {
   sessionState: SessionState | null;
   sessionUpdatedAt: string | null;
   contextTokens: number | null;
+  statusText?: string | null;
   tmuxActive: boolean;
   onBack: () => void;
   onOpenTerminal: () => void;
@@ -64,6 +65,7 @@ export function ChatWindow({
   sessionState,
   sessionUpdatedAt,
   contextTokens,
+  statusText,
   tmuxActive,
   onBack,
   onOpenTerminal,
@@ -249,14 +251,6 @@ export function ChatWindow({
         </div>
       </div>
 
-      {/* Working indicator */}
-      {sessionState === "working" && (
-        <WorkingIndicator
-          sessionUpdatedAt={sessionUpdatedAt}
-          contextTokens={contextTokens}
-        />
-      )}
-
       {/* Message area — plain scrollable div (chatscope MessageList has scroll bugs) */}
       <div className="flex-1 min-h-0 overflow-y-auto bg-surface-1" ref={scrollContainerRef}>
         {loading ? (
@@ -278,6 +272,15 @@ export function ChatWindow({
           </div>
         )}
       </div>
+
+      {/* Working indicator — typing indicator position */}
+      {sessionState === "working" && (
+        <WorkingIndicator
+          sessionUpdatedAt={sessionUpdatedAt}
+          contextTokens={contextTokens}
+          statusText={statusText}
+        />
+      )}
 
       {/* Command chips when waiting */}
       {sessionState === "waiting" && (

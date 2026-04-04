@@ -52,6 +52,7 @@ export interface GsdProject {
   sessionUpdatedAt: string | null;
   sessionState: SessionState;
   lastMessage: { content: string; message_type: string; created_at: string } | null;
+  statusText: string | null;
 }
 
 export type MessageType = 'text' | 'stage_banner' | 'checkpoint' | 'completion' | 'error' | 'hidden';
