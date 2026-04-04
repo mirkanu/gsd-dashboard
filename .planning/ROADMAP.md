@@ -130,7 +130,10 @@ Plans:
   3. Each row has a colored left border matching the project's session state (yellow=waiting, green=working, red=paused, grey=archived)
   4. Filter tabs (All, Waiting, Working, Paused, Archived) appear above the list, each showing a count, and tapping one filters the list
   5. Chatscope components render correctly in both light and dark themes with CSS variable overrides
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 29-01-PLAN.md — Chatscope theme CSS + timeAgo utility + lastMessage endpoint
+- [ ] 29-02-PLAN.md — ChatListView + ChatListFilters + GSD.tsx view switching
 
 ### Phase 30: Chat Window + Message Rendering
 **Goal**: Users can view a full conversation history for any project and send messages, with tmux output rendered as styled chat bubbles by type
@@ -201,8 +204,8 @@ Plans:
 | 25. Autopilot Core | v3.0 | 3/3 | Complete | 2026-04-01 |
 | 26. Cost Intelligence | v3.0 | 0/3 | Deferred | - |
 | 27. Card UX Polish | v3.0 | 0/3 | Deferred | - |
-| 28. Schema + Classifier Foundation | 2/2 | Complete    | 2026-04-03 | - |
-| 29. Chat List View | v4.0 | 0/? | Not started | - |
+| 28. Schema + Classifier Foundation | v4.0 | 2/2 | Complete | 2026-04-03 |
+| 29. Chat List View | v4.0 | 0/2 | Not started | - |
 | 30. Chat Window + Message Rendering | v4.0 | 0/? | Not started | - |
 | 31. Interactivity + Real-Time Streaming | v4.0 | 0/? | Not started | - |
 | 32. Project Detail Panel | v4.0 | 0/? | Not started | - |
