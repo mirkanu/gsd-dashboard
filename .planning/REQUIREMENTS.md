@@ -18,19 +18,19 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 ### Chat Window
 
 - [x] **CHAT-06**: Full chat history with messages parsed from tmux output, displayed as chat bubbles
-- [ ] **CHAT-07**: Message input box that sends text to tmux via send-keys on submit
-- [ ] **CHAT-08**: Working indicator: pulsing "Working... 14m 18s · 5.8k tokens · Context: 45%" with gauge
+- [x] **CHAT-07**: Message input box that sends text to tmux via send-keys on submit
+- [x] **CHAT-08**: Working indicator: pulsing "Working... 14m 18s · 5.8k tokens · Context: 45%" with gauge
 - [ ] **CHAT-09**: Paused/archived projects show full chat history; sending triggers "Reopen session?" confirmation
 - [x] **CHAT-10**: Back button returns to chat list
 
 ### Message Classification
 
 - [x] **MSG-01**: Server-side tmux output classifier that parses terminal text into typed messages
-- [ ] **MSG-02**: GSD stage banners rendered as system messages (centered, styled)
-- [ ] **MSG-03**: Checkpoints/AskUserQuestion prompts rendered with tappable option buttons
-- [ ] **MSG-04**: Next Up blocks rendered with tappable command chips
-- [ ] **MSG-05**: Completion summaries rendered as Claude messages
-- [ ] **MSG-06**: Critical errors rendered as red-bordered messages; minor warnings collapsed
+- [x] **MSG-02**: GSD stage banners rendered as system messages (centered, styled)
+- [x] **MSG-03**: Checkpoints/AskUserQuestion prompts rendered with tappable option buttons
+- [x] **MSG-04**: Next Up blocks rendered with tappable command chips
+- [x] **MSG-05**: Completion summaries rendered as Claude messages
+- [x] **MSG-06**: Critical errors rendered as red-bordered messages; minor warnings collapsed
 - [x] **MSG-07**: Tool calls, code output, and verbose working output hidden completely
 
 ### Interactivity
@@ -89,16 +89,16 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 | CHAT-04 | Phase 29 | Complete |
 | CHAT-05 | Phase 29 | Complete |
 | CHAT-06 | Phase 30 | Complete |
-| CHAT-07 | Phase 30 | Pending |
-| CHAT-08 | Phase 30 | Pending |
+| CHAT-07 | Phase 30 | Complete |
+| CHAT-08 | Phase 30 | Complete |
 | CHAT-09 | Phase 32 | Pending |
 | CHAT-10 | Phase 30 | Complete |
 | MSG-01 | Phase 28 | Complete |
-| MSG-02 | Phase 30 | Pending |
-| MSG-03 | Phase 30 | Pending |
-| MSG-04 | Phase 30 | Pending |
-| MSG-05 | Phase 30 | Pending |
-| MSG-06 | Phase 30 | Pending |
+| MSG-02 | Phase 30 | Complete |
+| MSG-03 | Phase 30 | Complete |
+| MSG-04 | Phase 30 | Complete |
+| MSG-05 | Phase 30 | Complete |
+| MSG-06 | Phase 30 | Complete |
 | MSG-07 | Phase 28 | Complete |
 | ACT-01 | Phase 31 | Pending |
 | ACT-02 | Phase 31 | Pending |
