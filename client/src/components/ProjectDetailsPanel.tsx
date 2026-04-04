@@ -3,8 +3,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Maximize2 } from "lucide-react";
 import { api } from "../lib/api";
-import type { GsdProject, GsdMessage } from "../lib/types";
+import type { GsdProject, GsdMessage, AutopilotRun } from "../lib/types";
 import { TasksTab } from "./TasksTab";
+import { ProjectControls } from "./ProjectControls";
+import { ProjectMetadata } from "./ProjectMetadata";
 
 type TabId = "tasks" | "messages" | "state" | "roadmap" | "requirements" | "plan";
 
@@ -72,10 +74,16 @@ function MessageLog({ projectName }: { projectName: string }) {
 
 interface ProjectDetailsPanelProps {
   project: GsdProject;
+  autopilotRun: AutopilotRun | null;
+  onPauseSession: () => void;
+  onArchive: () => void;
+  onUnarchive: () => void;
+  onOpenTerminal: () => void;
+  onReopenTmux: () => void;
   onExpand?: (content: string, tabId: string) => void;
 }
 
-export function ProjectDetailsPanel({ project, onExpand }: ProjectDetailsPanelProps) {
+export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onArchive, onUnarchive, onOpenTerminal, onReopenTmux, onExpand }: ProjectDetailsPanelProps) {
   const [activeTab, setActiveTab] = useState<TabId>("tasks");
   const [content, setContent]     = useState<string | null>(null);
   const [loading, setLoading]     = useState(false);
@@ -108,6 +116,19 @@ export function ProjectDetailsPanel({ project, onExpand }: ProjectDetailsPanelPr
           </span>
         )}
       </div>
+
+      {/* Metadata + Controls */}
+      <ProjectMetadata project={project} />
+      <ProjectControls
+        project={project}
+        autopilotRun={autopilotRun}
+        onPauseSession={onPauseSession}
+        onArchive={onArchive}
+        onUnarchive={onUnarchive}
+        onOpenTerminal={onOpenTerminal}
+        onReopenTmux={onReopenTmux}
+      />
+      <div className="border-b border-border" />
 
       {/* Tab strip */}
       <div className="flex gap-1 border-b border-border px-3 shrink-0">
