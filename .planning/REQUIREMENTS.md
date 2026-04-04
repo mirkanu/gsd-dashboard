@@ -11,9 +11,9 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 
 - [x] **CHAT-01**: Projects displayed as chat rows sorted by most recent activity
 - [x] **CHAT-02**: Each row shows project name, last message preview, timestamp, and unread count
-- [ ] **CHAT-03**: State-colored left border (yellow=waiting, green=working, red=paused, grey=archived)
-- [ ] **CHAT-04**: Filter tabs along top (All, Waiting, Working, Paused, Archived) with project counts
-- [ ] **CHAT-05**: Tapping a chat row opens the per-project chat window
+- [x] **CHAT-03**: State-colored left border (yellow=waiting, green=working, red=paused, grey=archived)
+- [x] **CHAT-04**: Filter tabs along top (All, Waiting, Working, Paused, Archived) with project counts
+- [x] **CHAT-05**: Tapping a chat row opens the per-project chat window
 
 ### Chat Window
 
@@ -85,9 +85,9 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 |-------------|-------|--------|
 | CHAT-01 | Phase 29 | Complete |
 | CHAT-02 | Phase 29 | Complete |
-| CHAT-03 | Phase 29 | Pending |
-| CHAT-04 | Phase 29 | Pending |
-| CHAT-05 | Phase 29 | Pending |
+| CHAT-03 | Phase 29 | Complete |
+| CHAT-04 | Phase 29 | Complete |
+| CHAT-05 | Phase 29 | Complete |
 | CHAT-06 | Phase 30 | Pending |
 | CHAT-07 | Phase 30 | Pending |
 | CHAT-08 | Phase 30 | Pending |

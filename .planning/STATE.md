@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Chat-First Dashboard
 status: executing
-stopped_at: Completed 29-01-PLAN.md
-last_updated: "2026-04-04T02:45:07.742Z"
-last_activity: 2026-04-04 — Completed 29-01 chat list view foundation
+stopped_at: Completed 29-02-PLAN.md
+last_updated: "2026-04-04T08:06:05.598Z"
+last_activity: 2026-04-04 — Completed 29-02 chat list view UI
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 3
-  percent: 88
+  completed_plans: 4
+  percent: 92
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 29 of 32 (Chat List View)
-Plan: 1 of 2 complete
+Plan: 2 of 2 complete
 Status: Executing
-Last activity: 2026-04-04 — Completed 29-01 chat list view foundation
+Last activity: 2026-04-04 — Completed 29-02 chat list view UI
 
-Progress: [█████████░] 88%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [█████████░] 88%
 | 28 | P01 | 15min | 3 | 7 |
 | 28 | P02 | 16min | 2 | 3 |
 | 29 | P01 | 13min | 2 | 6 |
+| 29 | P02 | 45min | 3 | 4 |
 
 ## Accumulated Context
 
@@ -67,6 +68,8 @@ See .planning/PROJECT.md Key Decisions table for full history.
 - [28-02]: Priority-ordered pattern matching: hidden > banners > errors > completions > checkpoints > working
 - [Phase 29]: CSS specificity via :root prefix instead of !important for chatscope overrides
 - [Phase 29]: lastMessage uses MAX(id) subquery, content truncated to 100 chars server-side
+- [Phase 29]: Default filter set to Waiting for most actionable view
+- [Phase 29]: Mobile terminal opens in new tab instead of overlay to avoid DOM conflicts
 
 ### Pending Todos
 
@@ -85,8 +88,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T02:45:07.739Z
-Stopped at: Completed 29-01-PLAN.md
+Last session: 2026-04-04T08:06:05.593Z
+Stopped at: Completed 29-02-PLAN.md
 Resume file: None
-Next action: Continue with 29-02
+Next action: Continue with Phase 30
 
