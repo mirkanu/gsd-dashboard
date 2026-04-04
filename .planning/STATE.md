@@ -1,92 +1,56 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: Chat-First Dashboard
-status: executing
-stopped_at: Completed quick-23
-last_updated: "2026-04-04T17:59:31.501Z"
-last_activity: 2026-04-04 — Completed 32-01 project controls and metadata in detail panel
+milestone: v4.1
+milestone_name: Chat Polish
+status: defining_requirements
+last_updated: "2026-04-04T19:00:00Z"
+last_activity: "2026-04-04 — Milestone v4.1 started"
 progress:
-  total_phases: 8
-  completed_phases: 5
-  total_plans: 11
-  completed_plans: 9
-  percent: 93
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-03)
+See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** v4.0 Phase 31 — Chat Enhancements (next)
+**Current focus:** v4.1 — Chat Polish
 
 ## Current Position
 
-Phase: 32 of 32 (Project Detail Panel)
-Plan: 1 of 2 complete
-Status: Executing
-Last activity: 2026-04-04 — Completed 32-01 project controls and metadata in detail panel
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-04 — Milestone v4.1 started
 
-Progress: [█████████░] 93%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **v1.0 velocity:** 9 plans, 3 phases, 1 day (2026-03-18)
 **v1.1 velocity:** 7 plans, 3 phases, 1 day (2026-03-21)
-**v1.2 velocity:** 4 plans, 2 phases, 2 days (2026-03-22 - 2026-03-23)
-**v2.0 velocity:** 6 plans, 3 phases, 2 days (2026-03-24 - 2026-03-25)
-**v2.1 velocity:** 11 plans, 5 phases, 3 days (2026-03-26 - 2026-03-28)
-**v2.2 velocity:** ~6 plans, 4 phases (2026-03-28 - 2026-03-29)
+**v1.2 velocity:** 4 plans, 2 phases, 2 days (2026-03-22 – 2026-03-23)
+**v2.0 velocity:** 6 plans, 3 phases, 2 days (2026-03-24 – 2026-03-25)
+**v2.1 velocity:** 11 plans, 5 phases, 3 days (2026-03-26 – 2026-03-28)
+**v2.2 velocity:** ~6 plans, 4 phases (2026-03-28 – 2026-03-29)
 **v2.3 velocity:** ~5 plans, 3 phases, 1 day (2026-03-30)
-**v3.0 velocity:** 20 plans, 11 phases + 18 quick tasks, 4 days (2026-03-31 - 2026-04-03)
-
-| Phase | Plan | Duration | Tasks | Files |
-|-------|------|----------|-------|-------|
-| 28 | P01 | 15min | 3 | 7 |
-| 28 | P02 | 16min | 2 | 3 |
-| 29 | P01 | 13min | 2 | 6 |
-| 29 | P02 | 45min | 3 | 4 |
-| 30 | P01 | 12min | 2 | 7 |
-| 30 | P02 | 5min | 2 | 10 |
-| Phase 32 P02 | 3min | 1 tasks | 1 files |
-| Phase 32 P01 | 10min | 2 tasks | 6 files |
-| Phase 31 P01 | 14min | 2 tasks | 3 files |
+**v3.0 velocity:** 20 plans, 11 phases + 18 quick tasks, 4 days (2026-03-31 – 2026-04-03)
+**v4.0 velocity:** 9 plans, 5 phases + 5 quick tasks, 1 day (2026-04-04)
 
 ## Accumulated Context
 
 ### Decisions
 
-See .planning/PROJECT.md Key Decisions table for full history.
-- [v4.0]: Adopt @chatscope/chat-ui-kit-react for chat UI components
-- [v4.0]: Chat visible messages: stage banners, checkpoints/questions, next-up blocks, completion summaries
-- [v4.0]: Tool calls/code output hidden completely from chat
-- [v4.0]: Critical errors visible, minor warnings collapsed
-- [v4.0]: Working indicator includes context window gauge
-- [v4.0]: Paused/archived projects keep full chat history; sending triggers reopen confirmation
-- [28-01]: chatscope CSS loaded before Tailwind so utility classes can override defaults
-- [28-01]: message_type/metadata optional in TypeScript for backward compatibility
-- [28-01]: Hidden message filtering at SQL query level for performance
-- [28-02]: VERIFY: prefix classified as checkpoint (user action), not stage_banner
-- [28-02]: Priority-ordered pattern matching: hidden > banners > errors > completions > checkpoints > working
-- [Phase 29]: CSS specificity via :root prefix instead of !important for chatscope overrides
-- [Phase 29]: lastMessage uses MAX(id) subquery, content truncated to 100 chars server-side
-- [Phase 29]: Default filter set to Waiting for most actionable view
-- [Phase 29]: Mobile terminal opens in new tab instead of overlay to avoid DOM conflicts
-- [30-01]: Messages endpoint upgraded to listVisibleGsdMessages for classified message support
-- [30-01]: Consecutive text chunks grouped into single messages to reduce DB writes
-- [30-01]: Error cards collapsible when >3 lines to prevent stack traces dominating chat
-- [30-02]: CommandChips insert into textarea without auto-sending per ACT-01 design
-- [30-02]: Native textarea for send box instead of chatscope MessageInput (known bugs)
-- [30-02]: HSL hue rotation for context gauge color (green-to-red)
-- [Phase quick-21]: 3-column desktop layout: 20% chat list, 50% chat, 30% details using CSS grid at >=1024px
-- [Phase 32]: Force flag parameter on handleSend for confirmation bypass in paused/archived chat sends
-- [Phase 32]: Extracted AutopilotControls without padding wrapper for reuse in multiple layout contexts
-- [Phase 31]: Checkpoint buttons insert into textarea (not auto-send) matching command chip behavior
-- [Phase 31]: Unread counts tracked via eventBus with activeProjectRef to avoid stale closures
-- [Phase quick-23]: Status text from tmux displayed as-is in working indicator; indicator moved to bottom of chat
+- [v4.1]: Classifier feedback applies to all projects (patterns are universal)
+- [v4.1]: Auto-fix on feedback submission (not store-only or batch)
+- [v4.1]: Send confirmation = immediate echo + status change to Working
+- [v4.1]: Main reasons for terminal: garbled messages, limited input, unreliable working status
 
 ### Pending Todos
 
@@ -94,24 +58,17 @@ None.
 
 ### Blockers/Concerns
 
-- Tmux output classifier complexity — parsing raw terminal text into typed messages (Phase 28 risk)
-- chatscope theming integration with existing light/dark CSS variables (Phase 29 risk)
-- Scroll-to-bottom behavior with mixed auto-generated and user messages (Phase 30 risk)
+- Classifier auto-fix complexity: updating regex patterns at runtime from user feedback is non-trivial
+- Working status depends on tmux capture-pane polling interval (currently 2.5s)
 
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
-| 19 | Fix chat window: timestamps, scroll, sticky header with controls | 2026-04-04 | 870d1c9 | [19-fix-chat-window-timestamps-scroll-sticky](./quick/19-fix-chat-window-timestamps-scroll-sticky/) |
-| 20 | Sticky chat header + disable scroll-to-bottom animation | 2026-04-04 | 347f77e | [20-sticky-chat-header-disable-scroll-to-bo](./quick/20-sticky-chat-header-disable-scroll-to-bo/) |
-| 21 | 3-column desktop layout: chat list, chat window, project details | 2026-04-04 | 03e41a8 | [21-3-column-desktop-layout-chat-list-chat-w](./quick/21-3-column-desktop-layout-chat-list-chat-w/) |
-| 22 | Fix terminal close on project switch, scroll isolation, chat scroll-to-bottom | 2026-04-04 | 1042c32 | [22-fix-terminal-close-on-project-switch-ter](./quick/22-fix-terminal-close-on-project-switch-ter/) |
-| 23 | Working indicator + classifier accuracy improvements | 2026-04-04 | 01088c2 | [23-working-indicator-classifier-accuracy-im](./quick/23-working-indicator-classifier-accuracy-im/) |
 
 ## Session Continuity
 
-Last session: 2026-04-04T17:48:24.276Z
-Stopped at: Completed quick-23
+Last session: 2026-04-04T19:00:00Z
+Stopped at: Milestone v4.1 initialized
 Resume file: None
-Next action: Continue with Phase 31
-
+Next action: Define requirements and create roadmap

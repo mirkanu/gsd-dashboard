@@ -40,7 +40,10 @@ At a glance, see where every GSD project stands and interact with any session �
 
 ### Active
 
-(None — milestone complete, planning next)
+- [ ] Classifier accuracy: user feedback loop with auto-fix, major pattern improvements (v4.1)
+- [ ] Send confirmation: immediate visual feedback after sending a message (echo + status change to Working) (v4.1)
+- [ ] Working status reliability: instant status updates, accurate state detection (v4.1)
+- [ ] Message feedback UI: right-click/long-press on chat messages to flag classifier errors (v4.1)
 
 ### Future
 
@@ -89,17 +92,15 @@ User is a non-coder using vibe coding — wants maximum automation and hands-off
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
-## Current Milestone: v4.0 Chat-First Dashboard — SHIPPED
+## Current Milestone: v4.1 Chat Polish
 
-**Shipped:** 2026-04-04
-**Phases:** 28-32 (5 phases, 9 plans) + quick tasks 19-23
+**Goal:** Make the chat experience reliable enough that the terminal is rarely needed — fix classifier accuracy, add user feedback loop, ensure working status is instant and accurate.
 
-**Delivered:**
-- WhatsApp/Telegram-style chat interface replacing kanban board
-- 3-column desktop layout (chat list / chat / project details)
-- Tmux output classifier with typed message rendering
-- Working indicator, tappable actions, unread badges
-- Project detail panel with autopilot controls and file tabs
+**Target features:**
+- Classifier feedback: right-click messages to flag errors, stored with original content, auto-reclassify
+- Send confirmation: immediate echo + status change when sending commands
+- Working status: reliable, instant updates with actual Claude status text
+- Pattern improvements: overhaul classifier patterns based on real usage
 
 ---
-*Last updated: 2026-04-04 after v4.0 milestone complete*
+*Last updated: 2026-04-04 after v4.1 milestone start*
