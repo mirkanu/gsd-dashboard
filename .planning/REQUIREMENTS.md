@@ -35,9 +35,9 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 
 ### Interactivity
 
-- [ ] **ACT-01**: Tapping a suggested command/action inserts it into reply box (not auto-send)
-- [ ] **ACT-02**: Multi-choice answers from GSD rendered as tappable buttons that insert the choice
-- [ ] **ACT-03**: Unread badge on chat rows when new messages arrive while not viewing that chat
+- [x] **ACT-01**: Tapping a suggested command/action inserts it into reply box (not auto-send)
+- [x] **ACT-02**: Multi-choice answers from GSD rendered as tappable buttons that insert the choice
+- [x] **ACT-03**: Unread badge on chat rows when new messages arrive while not viewing that chat
 
 ### Project Detail Panel
 
@@ -51,7 +51,7 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 
 - [x] **INF-01**: Adopt @chatscope/chat-ui-kit-react for UI components
 - [x] **INF-02**: Extend gsd_messages table schema for typed messages (type, metadata columns)
-- [ ] **INF-03**: WebSocket streaming of classified messages for real-time chat updates
+- [x] **INF-03**: WebSocket streaming of classified messages for real-time chat updates
 - [x] **INF-04**: Light/dark theme support for chatscope components (CSS variable overrides)
 
 ## Future Requirements
@@ -100,9 +100,9 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 | MSG-05 | Phase 30 | Complete |
 | MSG-06 | Phase 30 | Complete |
 | MSG-07 | Phase 28 | Complete |
-| ACT-01 | Phase 31 | Pending |
-| ACT-02 | Phase 31 | Pending |
-| ACT-03 | Phase 31 | Pending |
+| ACT-01 | Phase 31 | Complete |
+| ACT-02 | Phase 31 | Complete |
+| ACT-03 | Phase 31 | Complete |
 | DET-01 | Phase 32 | Complete |
 | DET-02 | Phase 32 | Complete |
 | DET-03 | Phase 32 | Complete |
@@ -110,7 +110,7 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 | DET-05 | Phase 32 | Complete |
 | INF-01 | Phase 28 | Complete |
 | INF-02 | Phase 28 | Complete |
-| INF-03 | Phase 31 | Pending |
+| INF-03 | Phase 31 | Complete |
 | INF-04 | Phase 29 | Complete |
 
 **Coverage:**
