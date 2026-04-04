@@ -17,11 +17,11 @@ Requirements for Chat-First Dashboard milestone. Each maps to roadmap phases.
 
 ### Chat Window
 
-- [ ] **CHAT-06**: Full chat history with messages parsed from tmux output, displayed as chat bubbles
+- [x] **CHAT-06**: Full chat history with messages parsed from tmux output, displayed as chat bubbles
 - [ ] **CHAT-07**: Message input box that sends text to tmux via send-keys on submit
 - [ ] **CHAT-08**: Working indicator: pulsing "Working... 14m 18s · 5.8k tokens · Context: 45%" with gauge
 - [ ] **CHAT-09**: Paused/archived projects show full chat history; sending triggers "Reopen session?" confirmation
-- [ ] **CHAT-10**: Back button returns to chat list
+- [x] **CHAT-10**: Back button returns to chat list
 
 ### Message Classification
 
@@ -88,11 +88,11 @@ Deferred from v3.0 and earlier. Tracked but not in current roadmap.
 | CHAT-03 | Phase 29 | Complete |
 | CHAT-04 | Phase 29 | Complete |
 | CHAT-05 | Phase 29 | Complete |
-| CHAT-06 | Phase 30 | Pending |
+| CHAT-06 | Phase 30 | Complete |
 | CHAT-07 | Phase 30 | Pending |
 | CHAT-08 | Phase 30 | Pending |
 | CHAT-09 | Phase 32 | Pending |
-| CHAT-10 | Phase 30 | Pending |
+| CHAT-10 | Phase 30 | Complete |
 | MSG-01 | Phase 28 | Complete |
 | MSG-02 | Phase 30 | Pending |
 | MSG-03 | Phase 30 | Pending |
