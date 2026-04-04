@@ -69,6 +69,24 @@ router.get("/projects", async (_req, res) => {
     `);
     const IDLE_PAUSED_MS = 48 * 60 * 60 * 1000;
     const now = Date.now();
+    // Get last visible message per project for chat list preview
+    const lastMessages = db.prepare(`
+      SELECT project, content, message_type, created_at
+      FROM gsd_messages m1
+      WHERE m1.id = (
+        SELECT MAX(m2.id) FROM gsd_messages m2
+        WHERE m2.project = m1.project AND (m2.message_type IS NULL OR m2.message_type != 'hidden')
+      )
+    `).all();
+    const lastMsgMap = new Map();
+    for (const msg of lastMessages) {
+      lastMsgMap.set(msg.project, {
+        content: msg.content && msg.content.length > 100 ? msg.content.slice(0, 100) : msg.content,
+        message_type: msg.message_type,
+        created_at: msg.created_at,
+      });
+    }
+
     const data = projects.map(({ name, root, tmux_session, archived, display_name }) => {
       const row = sessionQuery.get(root);
       let sessionState = archived
@@ -109,6 +127,7 @@ router.get("/projects", async (_req, res) => {
         sessionState,
         contextTokens: row?.context_tokens ?? null,
         sessionUpdatedAt: row?.updated_at ?? null,
+        lastMessage: lastMsgMap.get(name) || null,
       };
     });
 

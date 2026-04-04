@@ -37,6 +37,7 @@ export interface GsdRequirements {
 export interface GsdProject {
   name: string;
   root: string;
+  display_name: string | null;
   state: GsdState | null;
   roadmap: { phases: GsdPhase[] } | null;
   requirements: GsdRequirements | null;
@@ -50,6 +51,7 @@ export interface GsdProject {
   contextTokens: number | null;
   sessionUpdatedAt: string | null;
   sessionState: SessionState;
+  lastMessage: { content: string; message_type: string; created_at: string } | null;
 }
 
 export type MessageType = 'text' | 'stage_banner' | 'checkpoint' | 'completion' | 'error' | 'hidden';
