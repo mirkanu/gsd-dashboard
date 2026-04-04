@@ -7,6 +7,7 @@ import { WorkingIndicator } from "./WorkingIndicator";
 import { CommandChips } from "./CommandChips";
 import type {
   GsdMessage,
+  MessageType,
   SessionState,
   GsdChatMessageEvent,
 } from "../lib/types";
@@ -109,13 +110,45 @@ export function ChatWindow({
   // Subscribe to real-time messages
   useEffect(() => {
     const unsub = eventBus.subscribe((msg) => {
-      if (msg.type !== "gsd_chat_message") return;
-      const evt = msg.data as GsdChatMessageEvent;
-      if (evt.project !== projectName) return;
-      setMessages((prev) => [...prev, evt.message]);
+      if (msg.type === "gsd_chat_message") {
+        const evt = msg.data as GsdChatMessageEvent;
+        if (evt.project !== projectName) return;
+        setMessages((prev) => [...prev, evt.message]);
+      } else if (msg.type === "gsd_message_updated") {
+        const evt = msg.data as GsdChatMessageEvent;
+        if (evt.project !== projectName) return;
+        setMessages((prev) => {
+          if (evt.message.message_type === "hidden") {
+            return prev.filter((m) => m.id !== evt.message.id);
+          }
+          return prev.map((m) =>
+            m.id === evt.message.id ? { ...m, ...evt.message } : m
+          );
+        });
+      }
     });
     return unsub;
   }, [projectName]);
+
+  // Feedback handler — optimistic update + API call
+  const handleFeedback = useCallback(
+    async (messageId: number, correctType: string) => {
+      setMessages((prev) => {
+        if (correctType === "hidden") return prev.filter((m) => m.id !== messageId);
+        return prev.map((m) =>
+          m.id === messageId ? { ...m, message_type: correctType as MessageType } : m
+        );
+      });
+      try {
+        await api.gsd.feedback(messageId, correctType);
+      } catch {
+        // Revert on error — refetch messages
+        const res = await api.gsd.messages(projectName, 100, 0);
+        setMessages(res.messages.reverse());
+      }
+    },
+    [projectName]
+  );
 
   // Reset scroll flag when project changes
   const initialScrollDone = useRef(false);
@@ -266,6 +299,7 @@ export function ChatWindow({
                 key={msg.id}
                 msg={msg}
                 onAction={handleChipSelect}
+                onFeedback={handleFeedback}
               />
             ))}
             <div ref={bottomRef} />

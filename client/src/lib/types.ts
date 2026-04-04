@@ -208,7 +208,7 @@ export interface GsdChatMessageEvent {
 }
 
 export interface WSMessage {
-  type: "session_created" | "session_updated" | "agent_created" | "agent_updated" | "new_event" | "autopilot_progress" | "gsd_chat_message";
+  type: "session_created" | "session_updated" | "agent_created" | "agent_updated" | "new_event" | "autopilot_progress" | "gsd_chat_message" | "gsd_message_updated";
   data: Session | Agent | DashboardEvent | AutopilotProgressEvent | GsdChatMessageEvent;
   timestamp: string;
 }

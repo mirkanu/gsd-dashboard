@@ -137,6 +137,11 @@ export const api = {
       request<{ messages: import("./types").GsdMessage[]; total: number }>(
         `/gsd/projects/${encodeURIComponent(projectName)}/messages?limit=${limit}&offset=${offset}`
       ),
+    feedback: (messageId: number, correctType: string) =>
+      request<{ ok: boolean; override_id: number | null; message: { id: number; message_type: string } }>(
+        `/gsd/messages/${messageId}/feedback`,
+        { method: "POST", body: JSON.stringify({ correct_type: correctType }) }
+      ),
     tasks: {
       list: (projectKey: string, archived = false) =>
         request<{ tasks: GsdTask[] }>(
