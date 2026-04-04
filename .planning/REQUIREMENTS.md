@@ -19,7 +19,7 @@ Requirements for Chat Polish milestone. Each maps to roadmap phases.
 - [x] **FBK-01**: `gsd_message_feedback` SQLite table stores corrections (message_id, old_type, new_type, content snapshot, timestamp)
 - [x] **FBK-02**: POST endpoint to submit feedback and immediately reclassify the message in DB
 - [x] **FBK-03**: GET endpoint to retrieve feedback history for pattern improvement sessions
-- [ ] **FBK-04**: Right-click (desktop) / long-press (mobile) context menu on chat messages to submit type corrections via Radix UI
+- [x] **FBK-04**: Right-click (desktop) / long-press (mobile) context menu on chat messages to submit type corrections via Radix UI
 - [x] **FBK-05**: Corrections apply to all projects — patterns are universal
 
 ### Send Experience
@@ -73,7 +73,7 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | FBK-01 | Phase 34 | Complete |
 | FBK-02 | Phase 34 | Complete |
 | FBK-03 | Phase 34 | Complete |
-| FBK-04 | Phase 35 | Pending |
+| FBK-04 | Phase 35 | Complete |
 | FBK-05 | Phase 34 | Complete |
 | SEND-01 | Phase 35 | Pending |
 | SEND-02 | Phase 35 | Pending |
