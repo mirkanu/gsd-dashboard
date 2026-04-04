@@ -302,6 +302,39 @@ try {
   db.exec(`CREATE INDEX IF NOT EXISTS idx_gsd_messages_type ON gsd_messages(project, message_type)`);
 }
 
+// Migrate: add classifier feedback + overrides tables (Phase 34)
+try {
+  db.prepare("SELECT 1 FROM classifier_feedback LIMIT 1").get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS classifier_feedback (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      message_id INTEGER NOT NULL,
+      original_type TEXT NOT NULL,
+      corrected_type TEXT NOT NULL,
+      content_snapshot TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      FOREIGN KEY (message_id) REFERENCES gsd_messages(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_feedback_message ON classifier_feedback(message_id);
+    CREATE INDEX IF NOT EXISTS idx_feedback_created ON classifier_feedback(created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS classifier_overrides (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      pattern TEXT NOT NULL,
+      target_type TEXT NOT NULL CHECK(target_type IN ('text','stage_banner','checkpoint','completion','error','hidden')),
+      priority INTEGER NOT NULL DEFAULT 0,
+      source TEXT NOT NULL DEFAULT 'feedback' CHECK(source IN ('feedback','manual')),
+      enabled INTEGER NOT NULL DEFAULT 1,
+      hit_count INTEGER NOT NULL DEFAULT 0,
+      feedback_id INTEGER,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      FOREIGN KEY (feedback_id) REFERENCES classifier_feedback(id) ON DELETE SET NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_overrides_enabled ON classifier_overrides(enabled, priority DESC);
+  `);
+}
+
 // Startup cleanup: mark stale active sessions as completed.
 // Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
 // so they stay "active" forever. Complete any active session whose last event is older than
@@ -537,6 +570,29 @@ const stmts = {
     SELECT ROUND(CAST(COUNT(*) AS REAL) / MAX(1, (SELECT COUNT(*) FROM sessions)), 1) as avg
     FROM events
   `),
+
+  // Classifier feedback + overrides (Phase 34)
+  getGsdMessage: db.prepare('SELECT * FROM gsd_messages WHERE id = ?'),
+  updateMessageType: db.prepare('UPDATE gsd_messages SET message_type = ? WHERE id = ?'),
+  insertFeedback: db.prepare(
+    `INSERT INTO classifier_feedback (message_id, original_type, corrected_type, content_snapshot)
+     VALUES (?, ?, ?, ?)`
+  ),
+  listFeedback: db.prepare(
+    'SELECT * FROM classifier_feedback ORDER BY created_at DESC LIMIT ? OFFSET ?'
+  ),
+  listOverrides: db.prepare(
+    'SELECT * FROM classifier_overrides WHERE enabled = 1 ORDER BY priority DESC, id DESC'
+  ),
+  insertOverride: db.prepare(
+    `INSERT INTO classifier_overrides (pattern, target_type, feedback_id) VALUES (?, ?, ?)`
+  ),
+  disableOverride: db.prepare(
+    'UPDATE classifier_overrides SET enabled = 0 WHERE id = ?'
+  ),
+  bumpOverrideHitCount: db.prepare(
+    'UPDATE classifier_overrides SET hit_count = hit_count + 1 WHERE id = ?'
+  ),
 
   // Project tasks
   insertTask: db.prepare(
