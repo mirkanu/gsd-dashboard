@@ -100,7 +100,7 @@
 - [x] **Phase 29: Chat List View** - Project conversation list replacing the kanban board as primary navigation (completed 2026-04-04)
 - [x] **Phase 30: Chat Window + Message Rendering** - Per-project chat with classified message bubbles and send box (completed 2026-04-04)
 - [ ] **Phase 31: Interactivity + Real-Time Streaming** - Tappable actions, unread badges, and WebSocket chat updates
-- [ ] **Phase 32: Project Detail Panel** - Header-tap access to all controls, file tabs, and project metadata
+- [x] **Phase 32: Project Detail Panel** - Header-tap access to all controls, file tabs, and project metadata (completed 2026-04-04)
 
 ---
 
@@ -214,7 +214,7 @@ Plans:
 | 29. Chat List View | 2/2 | Complete    | 2026-04-04 | - |
 | 30. Chat Window + Message Rendering | 2/2 | Complete    | 2026-04-04 | - |
 | 31. Interactivity + Real-Time Streaming | v4.0 | 0/? | Not started | - |
-| 32. Project Detail Panel | 1/2 | In Progress|  | - |
+| 32. Project Detail Panel | 2/2 | Complete   | 2026-04-04 | - |
 
 ---
 
