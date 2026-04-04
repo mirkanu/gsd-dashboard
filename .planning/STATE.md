@@ -93,6 +93,7 @@ None.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
+| 19 | Fix chat window: timestamps, scroll, sticky header with controls | 2026-04-04 | 870d1c9 | [19-fix-chat-window-timestamps-scroll-sticky](./quick/19-fix-chat-window-timestamps-scroll-sticky/) |
 
 ## Session Continuity
 
