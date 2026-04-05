@@ -320,7 +320,12 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
     terminal.loadAddon(fitAddon);
     terminal.open(containerRef.current);
     fitAddon.fit();
-    terminal.focus(); // give keyboard focus to terminal on open
+    // On desktop, auto-focus so keyboard input goes to terminal immediately.
+    // On mobile (touch devices), skip auto-focus to prevent iOS keyboard from
+    // opening on load — user can tap terminal to focus when ready.
+    if (!window.matchMedia('(pointer: coarse)').matches) {
+      terminal.focus();
+    }
     termRef.current = terminal;
     fitAddonRef.current = fitAddon;
 
@@ -1158,7 +1163,10 @@ export function GSD() {
         initialSendValue=""
         onInfo={() => {
           const proj = projects.find((p) => p.name === selectedProject);
-          if (proj) setDrawerProject(proj);
+          if (proj) {
+            setSelectedProject(null); // close terminal
+            setDrawerProject(proj);   // open drawer
+          }
         }}
       />
     )}
