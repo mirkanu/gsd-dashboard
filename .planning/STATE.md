@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 Phase: 36 (4 of 4) — Message Rendering New Types
 Plan: 02 of 02 DONE
 Status: Complete
-Last activity: 2026-04-05 - Completed quick task 24: Lazy-load chat history for faster chat/project switching
+Last activity: 2026-04-05 - Completed quick task 25: Fix dashboard performance - slow chat/terminal load and laggy terminal input
 
 Progress: [██████████] 100%
 
