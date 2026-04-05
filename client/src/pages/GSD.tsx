@@ -6,20 +6,19 @@ import {
   MapPin,
   ExternalLink,
   X,
-  ClipboardPaste,
   Sun,
   Moon,
+  Info,
 } from "lucide-react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { api } from "../lib/api";
-import type { GsdProject, SessionState, GsdChatMessageEvent } from "../lib/types";
+import type { GsdProject, SessionState } from "../lib/types";
 import { GsdDrawer } from "../components/GsdDrawer";
 import { MarkdownViewer } from "../components/MarkdownViewer";
 import { ChatListView } from "../components/ChatListView";
 import { ChatListFilters } from "../components/ChatListFilters";
-import { ChatWindow } from "../components/ChatWindow";
 import { ProjectDetailsPanel } from "../components/ProjectDetailsPanel";
 import { AutopilotControls } from "../components/AutopilotControls";
 
@@ -268,9 +267,10 @@ interface TerminalOverlayProps {
   onClose: () => void;
   initialSendValue: string;
   inline?: boolean;
+  onInfo?: () => void;
 }
 
-function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inline = false }: TerminalOverlayProps) {
+function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inline = false, onInfo }: TerminalOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -573,6 +573,15 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
               {selectMode ? 'Done' : 'Select'}
             </button>
           )}
+          {onInfo && (
+            <button
+              onClick={onInfo}
+              className="p-1 rounded hover:bg-surface-3 text-gray-400 hover:text-white transition-colors"
+              aria-label="Project info"
+            >
+              <Info className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={onClose}
             className="p-1 rounded hover:bg-surface-3 text-gray-400 hover:text-white transition-colors"
@@ -778,34 +787,30 @@ export function GSD() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<GsdProject | null>(null);
-  const [chatView, setChatView] = useState<{ view: 'list' | 'chat'; project?: string }>({ view: 'list' });
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<SessionState | null>("waiting");
 
-  // Derive the selected project object for the right panel from chatView
-  const selectedProj = chatView.project
-    ? projects.find((p) => p.name === chatView.project) ?? null
+  // Derive the selected project object from selectedProject name
+  const selectedProj = selectedProject
+    ? projects.find((p) => p.name === selectedProject) ?? null
     : null;
   const [autopilotRuns, setAutopilotRuns] = useState<Map<string, import('../lib/types').AutopilotRun>>(new Map());
   const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
-  const [terminalProject, setTerminalProject] = useState<string | null>(null);
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
-  const [terminalInitialValue, setTerminalInitialValue] = useState<string>("");
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
-  const activeProjectRef = useRef<string | undefined>();
-  activeProjectRef.current = chatView.project;
+  // Mobile info drawer uses a GsdProject object
+  const [drawerProject, setDrawerProject] = useState<GsdProject | null>(null);
   // Ref to track selected project name in the load() callback (which has [] deps)
   const selectedProjRef = useRef<string | null>(null);
 
   // Lock body scroll when terminal overlay is open (prevents background scroll on mobile)
   // On desktop, terminal is inline in the grid so no body lock needed.
   useEffect(() => {
-    if (terminalProject && !isDesktop) {
+    if (selectedProject && !isDesktop) {
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
       document.body.style.top = `-${window.scrollY}px`;
-    } else if (!terminalProject) {
+    } else if (!selectedProject) {
       const scrollY = document.body.style.top;
       document.body.style.overflow = '';
       document.body.style.position = '';
@@ -813,9 +818,8 @@ export function GSD() {
       document.body.style.top = '';
       window.scrollTo(0, parseInt(scrollY || '0') * -1);
     }
-  }, [terminalProject, isDesktop]);
+  }, [selectedProject, isDesktop]);
   const TAB_TITLES: Record<string, string> = {
-    messages: "Messages",
     state: "State",
     roadmap: "Roadmap",
     requirements: "Requirements",
@@ -888,8 +892,8 @@ export function GSD() {
 
   // Keep selectedProjRef in sync so load() can use it without stale closure
   useEffect(() => {
-    selectedProjRef.current = selectedProj?.name ?? null;
-  }, [selectedProj]);
+    selectedProjRef.current = selectedProject;
+  }, [selectedProject]);
 
   // Subscribe to autopilot_progress WS messages via eventBus
   useEffect(() => {
@@ -923,20 +927,6 @@ export function GSD() {
     return unsub;
   }, []);
 
-  // Subscribe to chat messages for unread badge counts (ACT-03)
-  useEffect(() => {
-    const unsub = eventBus.subscribe((msg) => {
-      if (msg.type !== 'gsd_chat_message') return;
-      const evt = msg.data as GsdChatMessageEvent;
-      if (evt.project === activeProjectRef.current) return;
-      setUnreadCounts(prev => ({
-        ...prev,
-        [evt.project]: (prev[evt.project] || 0) + 1,
-      }));
-    });
-    return unsub;
-  }, []);
-
   // Live countdown for rate-limit reset
   const [rateLimitCountdown, setRateLimitCountdown] = useState<string | null>(null);
   useEffect(() => {
@@ -963,19 +953,9 @@ export function GSD() {
     : projects.filter((p) => p.sessionState === activeFilter);
 
   const handleTerminalClose = useCallback(() => {
-    setTerminalProject(null);
-    setTerminalInitialValue("");
+    setSelectedProject(null);
     load(false); // single refresh — WebSocket delivers real-time state changes
   }, [load]);
-
-  const handleOpenTerminal = useCallback((projectName: string) => {
-    if (window.matchMedia('(pointer: coarse)').matches) {
-      window.open(`/terminal/${encodeURIComponent(projectName)}`, '_blank');
-    } else {
-      setTerminalProject(projectName);
-      setTerminalInitialValue("");
-    }
-  }, []);
 
   // ─── Header (shared between layouts) ─────────────────────────────────────────
   const headerEl = (
@@ -1047,7 +1027,7 @@ export function GSD() {
 
           {!loading && !error && (
             <div className="grid grid-cols-[20%_1fr_30%] flex-1 min-h-0 border border-border rounded-xl overflow-hidden">
-              {/* Left: chat list + filters — always visible */}
+              {/* Left: project list + filters — always visible */}
               <div className="flex flex-col border-r border-border overflow-hidden bg-surface-1">
                 <ChatListFilters
                   projects={projects}
@@ -1057,49 +1037,25 @@ export function GSD() {
                 <div className="flex-1 overflow-y-auto">
                   <ChatListView
                     projects={filteredProjects}
-                    activeProject={chatView.project}
-                    unreadCounts={unreadCounts}
-                    onSelectProject={(name) => {
-                      setChatView({ view: 'chat', project: name });
-                      setUnreadCounts(prev => ({ ...prev, [name]: 0 }));
-                      setTerminalProject(null); // close terminal when switching projects
-                    }}
+                    activeProject={selectedProject ?? undefined}
+                    onSelectProject={(name) => setSelectedProject(name)}
                   />
                 </div>
               </div>
 
-              {/* Middle: chat window OR terminal OR empty state */}
+              {/* Middle: terminal (always shown when project selected) */}
               <div className="flex flex-col overflow-hidden" style={{ overscrollBehavior: 'contain' }}>
-                {chatView.project ? (
-                  terminalProject ? (
-                    <TerminalOverlay
-                      projectName={terminalProject}
-                      wsBase={terminalWsBase}
-                      onClose={handleTerminalClose}
-                      initialSendValue={terminalInitialValue}
-                      inline={true}
-                    />
-                  ) : (
-                    <ChatWindow
-                      projectName={chatView.project}
-                      displayName={selectedProj?.display_name || chatView.project}
-                      sessionState={selectedProj?.sessionState ?? null}
-                      sessionUpdatedAt={selectedProj?.sessionUpdatedAt ?? null}
-                      contextTokens={selectedProj?.contextTokens ?? null}
-                      statusText={selectedProj?.statusText ?? null}
-                      tmuxActive={selectedProj?.tmuxActive ?? false}
-                      onBack={() => setChatView({ view: 'list' })}
-                      onOpenTerminal={() => handleOpenTerminal(chatView.project!)}
-                      onOpenDetails={() => {}}
-                      onSendStateChange={(working) => { if (working) load(); }}
-                      hideBackButton={false}
-                      hideDetailsButton={true}
-                      fillParent={true}
-                    />
-                  )
+                {selectedProject ? (
+                  <TerminalOverlay
+                    projectName={selectedProject}
+                    wsBase={terminalWsBase}
+                    onClose={() => setSelectedProject(null)}
+                    initialSendValue=""
+                    inline={true}
+                  />
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-500 text-sm">
-                    Select a project to start chatting
+                    Select a project to view its terminal
                   </div>
                 )}
               </div>
@@ -1113,7 +1069,7 @@ export function GSD() {
                     onPauseSession={() => pauseSession(selectedProj.name)}
                     onArchive={() => archiveProject(selectedProj.name)}
                     onUnarchive={() => unarchiveProject(selectedProj.name)}
-                    onOpenTerminal={() => handleOpenTerminal(selectedProj.name)}
+                    onOpenTerminal={() => {}}
                     onReopenTmux={() => load()}
                     onExpand={(content, tabId) => setFullScreen({ content, title: TAB_TITLES[tabId] ?? tabId })}
                   />
@@ -1138,10 +1094,10 @@ export function GSD() {
     );
   }
 
-  // ─── Mobile layout (<1024px) — unchanged single-column view switching ────────
+  // ─── Mobile layout (<1024px) — terminal-first, info button opens drawer ────────
   return (
     <>
-    <div className={`space-y-6 animate-fade-in ${terminalProject ? 'invisible h-0 overflow-hidden' : ''}`}>
+    <div className={`space-y-6 animate-fade-in ${selectedProject ? 'invisible h-0 overflow-hidden' : ''}`}>
       {headerEl}
       {rateLimitBanner}
 
@@ -1158,8 +1114,8 @@ export function GSD() {
         </div>
       )}
 
-      {/* Chat list view */}
-      {!loading && !error && chatView.view === 'list' && (
+      {/* Project list view */}
+      {!loading && !error && (
         <div className="bg-surface-1 rounded-xl border border-border overflow-hidden">
           <ChatListFilters
             projects={projects}
@@ -1168,46 +1124,21 @@ export function GSD() {
           />
           <ChatListView
             projects={filteredProjects}
-            unreadCounts={unreadCounts}
-            onSelectProject={(name) => {
-              setChatView({ view: 'chat', project: name });
-              setUnreadCounts(prev => ({ ...prev, [name]: 0 }));
-              setTerminalProject(null);
-            }}
+            onSelectProject={(name) => setSelectedProject(name)}
           />
         </div>
       )}
 
-      {/* Chat window — selected project */}
-      {!loading && !error && chatView.view === 'chat' && (() => {
-        const proj = projects.find((p) => p.name === chatView.project);
-        return (
-          <ChatWindow
-            projectName={chatView.project!}
-            displayName={proj?.display_name || chatView.project || ''}
-            sessionState={proj?.sessionState ?? null}
-            sessionUpdatedAt={proj?.sessionUpdatedAt ?? null}
-            contextTokens={proj?.contextTokens ?? null}
-            statusText={proj?.statusText ?? null}
-            tmuxActive={proj?.tmuxActive ?? false}
-            onBack={() => { setChatView({ view: 'list' }); setSelectedProject(null); }}
-            onOpenTerminal={() => handleOpenTerminal(chatView.project!)}
-            onOpenDetails={() => setSelectedProject(proj ?? null)}
-            onSendStateChange={(working) => { if (working) load(); }}
-          />
-        );
-      })()}
-
-      {selectedProject && (
+      {drawerProject && (
         <GsdDrawer
-          project={selectedProject}
-          autopilotRun={autopilotRuns.get(selectedProject.name) ?? null}
-          onPauseSession={() => pauseSession(selectedProject.name)}
-          onArchive={() => { archiveProject(selectedProject.name); setSelectedProject(null); }}
-          onUnarchive={() => unarchiveProject(selectedProject.name)}
-          onOpenTerminal={() => handleOpenTerminal(selectedProject.name)}
+          project={drawerProject}
+          autopilotRun={autopilotRuns.get(drawerProject.name) ?? null}
+          onPauseSession={() => pauseSession(drawerProject.name)}
+          onArchive={() => { archiveProject(drawerProject.name); setDrawerProject(null); setSelectedProject(null); }}
+          onUnarchive={() => unarchiveProject(drawerProject.name)}
+          onOpenTerminal={() => {}}
           onReopenTmux={() => load()}
-          onClose={() => setSelectedProject(null)}
+          onClose={() => setDrawerProject(null)}
           onExpand={(content, tabId) => setFullScreen({ content, title: TAB_TITLES[tabId] ?? tabId })}
         />
       )}
@@ -1219,12 +1150,16 @@ export function GSD() {
         />
       )}
     </div>
-    {terminalProject && (
+    {selectedProject && (
       <TerminalOverlay
-        projectName={terminalProject}
+        projectName={selectedProject}
         wsBase={terminalWsBase}
         onClose={handleTerminalClose}
-        initialSendValue={terminalInitialValue}
+        initialSendValue=""
+        onInfo={() => {
+          const proj = projects.find((p) => p.name === selectedProject);
+          if (proj) setDrawerProject(proj);
+        }}
       />
     )}
     </>
