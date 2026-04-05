@@ -17,7 +17,7 @@ const MESSAGE_TYPES = {
 
 /**
  * Priority-ordered pattern groups. First match wins.
- * Order: hidden tool calls > hidden code > stage banners > errors > completions > checkpoints > hidden working
+ * Order: hidden tool calls > hidden code > next_up > stage banners > errors > completions > checkpoints > hidden working
  */
 const PATTERNS = [
   // Hidden: tool calls (highest priority)
@@ -67,6 +67,18 @@ const PATTERNS = [
       /^\s*\d+\s*\|/,
     ],
   },
+  // Next Up: GSD command suggestions and related blocks (before stage banners for priority)
+  {
+    type: MESSAGE_TYPES.NEXT_UP,
+    patterns: [
+      /^[►▶]\s*Next\s/i,                    // triangle-right Next Up header line
+      /^\*\*Also available:\*\*/,            // Also available block header
+      /\/clear\s+first/,                     // Clear reminder line
+      /^(?:Execute|Plan|Research|Verify|Quick):\s*`\/gsd:/,  // GSD command suggestion lines
+      /`\/gsd:[^`]+`/,                       // Any backtick-wrapped /gsd: command
+      /^[-•]\s*`\/gsd:/,                     // Bullet list items with /gsd commands
+    ],
+  },
   // Stage banners
   {
     type: MESSAGE_TYPES.STAGE_BANNER,
@@ -81,18 +93,6 @@ const PATTERNS = [
       /^●\s*Step\s+\d+/,                    // ● Step 7: Commit and Tag
       /^[\u2554\u255A\u2557\u255D\u2551\u2550]{2,}/,  // Checkpoint/error box borders
       /^[\u2500]{10,}$/,                     // Light horizontal rule (Next Up separator)
-    ],
-  },
-  // Next Up: GSD command suggestions and related blocks
-  {
-    type: MESSAGE_TYPES.NEXT_UP,
-    patterns: [
-      /^[►▶]\s*Next\s/i,                    // triangle-right Next Up header line
-      /^\*\*Also available:\*\*/,            // Also available block header
-      /\/clear\s+first/,                     // Clear reminder line
-      /^(?:Execute|Plan|Research|Verify|Quick):\s*`\/gsd:/,  // GSD command suggestion lines
-      /`\/gsd:\S+`/,                         // Any backtick-wrapped /gsd: command
-      /^[-•]\s*`\/gsd:/,                     // Bullet list items with /gsd commands
     ],
   },
   // Errors

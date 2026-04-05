@@ -115,6 +115,48 @@ describe('classifyChunks', () => {
   });
 });
 
+describe('NEXT_UP classification', () => {
+  it('classifies "► Next Up" line as next_up', () => {
+    const result = classifyLine('► Next Up');
+    assert.equal(result.msg_type, MESSAGE_TYPES.NEXT_UP);
+  });
+
+  it('classifies "▶ Next Up" line as next_up', () => {
+    const result = classifyLine('▶ Next Up');
+    assert.equal(result.msg_type, MESSAGE_TYPES.NEXT_UP);
+  });
+
+  it('classifies backtick-wrapped /gsd command as next_up', () => {
+    const result = classifyLine('Run `\/gsd:execute-phase 36` to continue');
+    assert.equal(result.msg_type, MESSAGE_TYPES.NEXT_UP);
+  });
+
+  it('classifies "**Also available:**" line as next_up', () => {
+    const result = classifyLine('**Also available:**');
+    assert.equal(result.msg_type, MESSAGE_TYPES.NEXT_UP);
+  });
+
+  it('classifies "/clear first" line as next_up', () => {
+    const result = classifyLine('Run /clear first to reset context');
+    assert.equal(result.msg_type, MESSAGE_TYPES.NEXT_UP);
+  });
+
+  it('classifies bullet with /gsd command as next_up', () => {
+    const result = classifyLine('- `\/gsd:quick fix bug`');
+    assert.equal(result.msg_type, MESSAGE_TYPES.NEXT_UP);
+  });
+
+  it('plain text with "next" is NOT classified as next_up', () => {
+    const result = classifyLine('The next update will include new features');
+    assert.equal(result.msg_type, MESSAGE_TYPES.TEXT);
+  });
+
+  it('classifies "Execute: `/gsd:execute-phase 2`" as next_up', () => {
+    const result = classifyLine('Execute: `\/gsd:execute-phase 2`');
+    assert.equal(result.msg_type, MESSAGE_TYPES.NEXT_UP);
+  });
+});
+
 describe('fixture validation', () => {
   it('Test 14: all hidden tool call samples classified as hidden', () => {
     for (const sample of hiddenToolCallSamples) {
