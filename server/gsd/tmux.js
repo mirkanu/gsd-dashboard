@@ -1,7 +1,10 @@
 'use strict';
 
-const { execFileSync } = require('child_process');
+const { execFileSync, execFile } = require('child_process');
+const { promisify } = require('util');
 const stripAnsi = require('strip-ansi');
+
+const execFileAsync = promisify(execFile);
 
 /**
  * Check whether a named tmux session exists and is running.
@@ -248,4 +251,79 @@ function extractStatusLine(rawText) {
   return null;
 }
 
-module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, _testDetectFromOutput, waitForIdle, _testWaitForIdle };
+/**
+ * Async variant of capturePaneText. Returns null on any error.
+ * Uses execFile (non-blocking) instead of execFileSync.
+ * @param {string} sessionName
+ * @returns {Promise<string|null>}
+ */
+async function capturePaneTextAsync(sessionName) {
+  try {
+    const { stdout } = await execFileAsync('tmux', ['capture-pane', '-p', '-J', '-t', sessionName], { encoding: 'utf8', timeout: 2000 });
+    return stdout;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Async variant of detectSessionState. Returns the same string literals.
+ * Uses capturePaneTextAsync to avoid blocking the event loop.
+ * @param {string|null|undefined} sessionName
+ * @returns {Promise<'archived'|'waiting'|'paused'|'working'>}
+ */
+async function detectSessionStateAsync(sessionName) {
+  if (!sessionName) return 'archived';
+  if (!isTmuxSessionActive(sessionName)) return 'paused';
+
+  const output = await capturePaneTextAsync(sessionName);
+  if (output === null) return 'paused';
+
+  const timerPatterns = [
+    /\(\s*\d+[ms]+\s*·\s*↓/,
+    /·\s*↓\s*[\d.]+/,
+    /·\s*↑\s*\d+.*·\s*↓/,
+    /\(\s*thinking\s*\)/,
+    /·\s*thinking\)/,
+  ];
+  for (const pattern of timerPatterns) {
+    if (pattern.test(output)) return 'working';
+  }
+
+  const waitingPatterns = [
+    />\s+\d+\./,
+    /\[y\/n\]/i,
+    /\(y\/n\)/i,
+    /Press Enter/i,
+    /Select an option/i,
+    /^Choice\s+\(/mi,
+  ];
+  for (const pattern of waitingPatterns) {
+    if (pattern.test(output)) return 'waiting';
+  }
+
+  return 'waiting';
+}
+
+/**
+ * Async variant of detectRateLimit. Uses capturePaneTextAsync to avoid blocking.
+ * @param {string[]} sessionNames
+ * @returns {Promise<{ active: boolean, resetAt: string|null }>}
+ */
+async function detectRateLimitAsync(sessionNames) {
+  for (const name of sessionNames) {
+    if (!name || !isTmuxSessionActive(name)) continue;
+    const text = await capturePaneTextAsync(name);
+    if (!text) continue;
+    const recent = text.split('\n').slice(-10).join('\n');
+    for (const pattern of RATE_LIMIT_PATTERNS) {
+      if (pattern.test(recent)) {
+        const resetAt = parseResetTime(recent);
+        return { active: true, resetAt: resetAt ? resetAt.toISOString() : null };
+      }
+    }
+  }
+  return { active: false, resetAt: null };
+}
+
+module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync };

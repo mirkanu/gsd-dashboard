@@ -3,13 +3,17 @@ const path = require("path");
 const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
-const { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine } = require('../gsd/tmux');
+const { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
 const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED: telegramEnabled } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
 
 const router = express.Router();
 
 const previousStates = new Map(); // project name → previous sessionState
+
+let projectsCache = null;
+let projectsCacheExpiry = 0;
+const PROJECTS_CACHE_TTL = 5000; // 5 seconds
 
 const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
 
@@ -59,6 +63,13 @@ router.get("/projects", async (_req, res) => {
   }
   try {
     const { projects } = loadConfig();
+    const now = Date.now();
+
+    // Serve from cache if still fresh
+    if (projectsCache && now < projectsCacheExpiry) {
+      return res.json(projectsCache);
+    }
+
     const sessionQuery = db.prepare(`
       SELECT s.updated_at,
         (SELECT MAX(tu.last_input_tokens) FROM token_usage tu WHERE tu.session_id = s.id) as context_tokens
@@ -68,14 +79,14 @@ router.get("/projects", async (_req, res) => {
       LIMIT 1
     `);
     const IDLE_PAUSED_MS = 48 * 60 * 60 * 1000;
-    const now = Date.now();
-    // Get last visible message per project for chat list preview
+    // Get last visible message per project for chat list preview (fast GROUP BY MAX)
     const lastMessages = db.prepare(`
       SELECT project, content, message_type, created_at
-      FROM gsd_messages m1
-      WHERE m1.id = (
-        SELECT MAX(m2.id) FROM gsd_messages m2
-        WHERE m2.project = m1.project AND (m2.message_type IS NULL OR m2.message_type != 'hidden')
+      FROM gsd_messages
+      WHERE id IN (
+        SELECT MAX(id) FROM gsd_messages
+        WHERE message_type IS NULL OR message_type != 'hidden'
+        GROUP BY project
       )
     `).all();
     const lastMsgMap = new Map();
@@ -87,11 +98,11 @@ router.get("/projects", async (_req, res) => {
       });
     }
 
-    const data = projects.map(({ name, root, tmux_session, archived, display_name }) => {
+    const data = await Promise.all(projects.map(async ({ name, root, tmux_session, archived, display_name }) => {
       const row = sessionQuery.get(root);
       let sessionState = archived
         ? 'archived'
-        : detectSessionState(tmux_session ?? null);
+        : await detectSessionStateAsync(tmux_session ?? null);
       // Promote waiting → paused if last activity was >48h ago
       if (sessionState === 'waiting' && row?.updated_at) {
         const idleMs = now - new Date(row.updated_at).getTime();
@@ -106,7 +117,7 @@ router.get("/projects", async (_req, res) => {
           // working → waiting/paused: Claude stopped, user input may be needed
           if (prevState === 'working' && (sessionState === 'waiting' || sessionState === 'paused')) {
             if (shouldNotify(name)) {
-              const paneText = capturePaneText(tmux_session);
+              const paneText = await capturePaneTextAsync(tmux_session);
               const options = paneText ? parseOptions(paneText) : [];
               const label = sessionState === 'waiting' ? 'is waiting for your input' : 'has paused';
               const cleanText = paneText ? formatForTelegram(paneText) : '';
@@ -119,6 +130,10 @@ router.get("/projects", async (_req, res) => {
         }
       }
 
+      const statusText = sessionState === 'working'
+        ? (extractStatusLine(await capturePaneTextAsync(tmux_session)) || null)
+        : null;
+
       return {
         ...readProject(name, root),
         display_name: display_name || null,
@@ -128,14 +143,17 @@ router.get("/projects", async (_req, res) => {
         contextTokens: row?.context_tokens ?? null,
         sessionUpdatedAt: row?.updated_at ?? null,
         lastMessage: lastMsgMap.get(name) || null,
-        statusText: sessionState === 'working' ? (extractStatusLine(capturePaneText(tmux_session)) || null) : null,
+        statusText,
       };
-    });
+    }));
 
     const tmuxSessions = projects.map(p => p.tmux_session).filter(Boolean);
-    const rateLimit = detectRateLimit(tmuxSessions);
+    const rateLimit = await detectRateLimitAsync(tmuxSessions);
 
-    res.json({ projects: data, rateLimit });
+    const result = { projects: data, rateLimit };
+    projectsCache = result;
+    projectsCacheExpiry = Date.now() + PROJECTS_CACHE_TTL;
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: "Failed to read project data", detail: err.message });
   }
