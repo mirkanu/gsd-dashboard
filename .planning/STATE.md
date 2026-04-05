@@ -75,11 +75,12 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 24 | Lazy-load chat history for faster chat/project switching | 2026-04-05 | d86c91b | [24-lazy-load-chat-history-for-faster-chat-p](./quick/24-lazy-load-chat-history-for-faster-chat-p/) |
+| 25 | Fix dashboard performance: slow chat, terminal lag | 2026-04-05 | 47dc479 | [25-fix-dashboard-performance-slow-chat-term](./quick/25-fix-dashboard-performance-slow-chat-term/) |
 
 ## Session Continuity
 
-Last session: 2026-04-05T00:32:00.000Z
-Stopped at: Completed 36-02-PLAN.md
+Last session: 2026-04-05T21:28:00.000Z
+Stopped at: Completed quick task 25
 Resume file: None
 Next action: v4.1 milestone complete - all phases done
 | Phase 34 P01 | 9min | 2 tasks | 5 files |
