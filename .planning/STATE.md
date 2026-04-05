@@ -5,7 +5,7 @@ milestone_name: Chat Polish
 status: completed
 stopped_at: Completed 36-02-PLAN.md
 last_updated: "2026-04-05T00:45:41.229Z"
-last_activity: 2026-04-05 — Completed 36-02 Rich Message Rendering
+last_activity: 2026-04-05 — Completed quick task 29: Reduce terminal and project info load latency
 progress:
   total_phases: 4
   completed_phases: 4
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 Phase: 36 (4 of 4) — Message Rendering New Types
 Plan: 02 of 02 DONE
 Status: Complete
-Last activity: 2026-04-05 - Completed quick task 28: Fix mobile terminal UX
+Last activity: 2026-04-05 - Completed quick task 29: Reduce terminal and project info load latency
 
 Progress: [██████████] 100%
 
@@ -78,6 +78,7 @@ None.
 | 25 | Fix dashboard performance: slow chat, terminal lag | 2026-04-05 | 47dc479 | [25-fix-dashboard-performance-slow-chat-term](./quick/25-fix-dashboard-performance-slow-chat-term/) |
 | 27 | Remove chat window, make terminal the primary view | 2026-04-05 | 25255b4 | [27-remove-chat-window-make-terminal-the-pri](./quick/27-remove-chat-window-make-terminal-the-pri/) |
 | 28 | Fix mobile terminal: no auto-keyboard, info closes terminal | 2026-04-05 | 2154b6c | [28-fix-mobile-terminal-no-auto-keyboard-on-](./quick/28-fix-mobile-terminal-no-auto-keyboard-on-/) |
+| 29 | Reduce terminal and project info load latency | 2026-04-05 | 0cbcd4c | [29-reduce-terminal-and-project-info-load-la](./quick/29-reduce-terminal-and-project-info-load-la/) |
 
 ## Session Continuity
 
