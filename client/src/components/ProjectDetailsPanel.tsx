@@ -1,18 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Maximize2 } from "lucide-react";
 import { api } from "../lib/api";
-import type { GsdProject, GsdMessage, AutopilotRun } from "../lib/types";
+import type { GsdProject, AutopilotRun } from "../lib/types";
 import { TasksTab } from "./TasksTab";
 import { ProjectControls } from "./ProjectControls";
 import { ProjectMetadata } from "./ProjectMetadata";
 
-type TabId = "tasks" | "messages" | "state" | "roadmap" | "requirements" | "plan";
+type TabId = "tasks" | "state" | "roadmap" | "requirements" | "plan";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "tasks",        label: "Tasks"    },
-  { id: "messages",     label: "Messages" },
   { id: "state",        label: "State"    },
   { id: "roadmap",      label: "Roadmap"  },
   { id: "requirements", label: "Reqs"     },
@@ -25,52 +24,6 @@ const SESSION_STATE_STYLE: Record<string, string> = {
   paused: "bg-red-500/20 text-red-400",
   archived: "bg-gray-600/20 text-gray-500",
 };
-
-function MessageLog({ projectName }: { projectName: string }) {
-  const [messages, setMessages] = useState<GsdMessage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    api.gsd.messages(projectName)
-      .then(({ messages }) => { if (!cancelled) { setMessages(messages); setLoading(false); } })
-      .catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [projectName]);
-
-  useEffect(() => {
-    if (!loading && messages.length > 0) {
-      endRef.current?.scrollIntoView({ behavior: 'instant' as ScrollBehavior });
-    }
-  }, [loading, messages.length]);
-
-  if (loading) return <p className="text-sm text-gray-500 py-4">Loading messages...</p>;
-  if (messages.length === 0) return <p className="text-sm text-gray-600 py-4">No messages yet.</p>;
-
-  const sorted = [...messages].reverse();
-
-  return (
-    <div className="space-y-2">
-      {sorted.map((msg) => (
-        <div key={msg.id} className={`flex ${msg.direction === "outbound" ? "justify-end" : "justify-start"}`}>
-          <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${
-            msg.direction === "outbound"
-              ? "bg-accent/10 text-accent border border-accent/20"
-              : "bg-surface-3 text-gray-300 border border-border"
-          }`}>
-            <p className="font-mono whitespace-pre-wrap break-all">{msg.content}</p>
-            <p className={`text-[10px] mt-1 ${msg.direction === "outbound" ? "text-accent/50" : "text-gray-600"}`}>
-              {msg.direction === "outbound" ? "Sent" : "Received"} · {new Date(msg.created_at).toLocaleString()}
-            </p>
-          </div>
-        </div>
-      ))}
-      <div ref={endRef} />
-    </div>
-  );
-}
 
 interface ProjectDetailsPanelProps {
   project: GsdProject;
@@ -90,7 +43,7 @@ export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onA
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (activeTab === "messages" || activeTab === "tasks") return;
+    if (activeTab === "tasks") return;
     let cancelled = false;
     setContent(null);
     setFetchError(null);
@@ -146,7 +99,7 @@ export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onA
           </button>
         ))}
         {/* Expand button for markdown content tabs */}
-        {content !== null && onExpand && activeTab !== "messages" && activeTab !== "tasks" && (
+        {content !== null && onExpand && activeTab !== "tasks" && (
           <button
             onClick={() => onExpand(content, activeTab)}
             className="ml-auto px-2 py-2 text-gray-500 hover:text-gray-300 transition-colors"
@@ -162,8 +115,6 @@ export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onA
       <div className="flex-1 overflow-y-auto px-4 py-3">
         {activeTab === "tasks" ? (
           <TasksTab projectKey={project.name} />
-        ) : activeTab === "messages" ? (
-          <MessageLog projectName={project.name} />
         ) : (
           <>
             {loading && (
