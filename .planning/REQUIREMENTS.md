@@ -12,7 +12,7 @@ Requirements for Chat Polish milestone. Each maps to roadmap phases.
 - [x] **CLS-01**: tmux capture-pane uses `-J` flag to join soft-wrapped lines, eliminating duplicate/fragmented messages
 - [x] **CLS-02**: 10+ missing HIDDEN patterns added (Update() calls, collapsed read summaries, task tree lines, selection UI chrome, session rating prompts, background notifications)
 - [x] **CLS-03**: GSD banner format correctly matched — heavy horizontal rules (`━━━`) with `GSD ►` prefix, not just markdown headings
-- [ ] **CLS-04**: NEXT_UP blocks recognized as distinct type with tappable command rendering (▶ Next Up sections with `/gsd:` commands)
+- [x] **CLS-04**: NEXT_UP blocks recognized as distinct type with tappable command rendering (▶ Next Up sections with `/gsd:` commands)
 
 ### Feedback System
 
@@ -69,7 +69,7 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | CLS-01 | Phase 33 | Complete |
 | CLS-02 | Phase 33 | Complete |
 | CLS-03 | Phase 33 | Complete |
-| CLS-04 | Phase 36 | Pending |
+| CLS-04 | Phase 36 | Complete |
 | FBK-01 | Phase 34 | Complete |
 | FBK-02 | Phase 34 | Complete |
 | FBK-03 | Phase 34 | Complete |
