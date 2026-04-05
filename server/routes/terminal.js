@@ -65,8 +65,24 @@ function attachTerminalWS(server) {
         return;
       }
 
+      // 16ms PTY output batching — accumulate output into a buffer and flush once per frame (60fps).
+      // This prevents xterm.js from receiving one write per byte which causes input lag.
+      let ptyBuffer = '';
+      let flushTimer = null;
+
+      const flushPty = () => {
+        if (ptyBuffer && ws.readyState === 1) {
+          ws.send(ptyBuffer);
+          ptyBuffer = '';
+        }
+        flushTimer = null;
+      };
+
       pty.onData((data) => {
-        if (ws.readyState === 1) ws.send(data);
+        ptyBuffer += data;
+        if (!flushTimer) {
+          flushTimer = setTimeout(flushPty, 16);
+        }
       });
 
       // Line buffer to capture typed commands for message log
@@ -109,10 +125,12 @@ function attachTerminalWS(server) {
       });
 
       pty.onExit(() => {
+        if (flushTimer) { clearTimeout(flushTimer); flushPty(); }
         if (ws.readyState === 1) ws.close(1000, 'pty exited');
       });
 
       ws.on('close', () => {
+        if (flushTimer) { clearTimeout(flushTimer); flushPty(); }
         try { pty.kill(); } catch {}
       });
     });
