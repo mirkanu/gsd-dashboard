@@ -1,8 +1,11 @@
 import * as ContextMenu from "@radix-ui/react-context-menu";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { StageBanner } from "./StageBanner";
 import { CheckpointPrompt } from "./CheckpointPrompt";
 import { CompletionCard } from "./CompletionCard";
 import { ErrorCard } from "./ErrorCard";
+import { NextUpCard } from "./NextUpCard";
 import type { GsdMessage } from "../lib/types";
 
 interface ChatMessageRendererProps {
@@ -75,6 +78,18 @@ function MessageContextMenu({
   );
 }
 
+function looksLikeTerminal(text: string): boolean {
+  const lines = text.split('\n');
+  if (lines.length < 2) return false;
+  // Box-drawing characters (─ │ ┌ ┐ └ ┘ ├ ┤ etc.)
+  const boxChars = lines.filter(l => /[─│┌┐└┘├┤┬┴┼═║╔╗╚╝╠╣╦╩╬]/.test(l)).length;
+  if (boxChars >= 2) return true;
+  // Indentation-heavy: >60% of lines start with 2+ spaces
+  const indented = lines.filter(l => /^ {2,}\S/.test(l)).length;
+  if (lines.length >= 3 && indented / lines.length > 0.6) return true;
+  return false;
+}
+
 export function ChatMessageRenderer({ msg, onAction, onFeedback }: ChatMessageRendererProps) {
   const msgType = msg.message_type || "text";
 
@@ -107,8 +122,29 @@ export function ChatMessageRenderer({ msg, onAction, onFeedback }: ChatMessageRe
           <ErrorCard content={msg.content} />
         </MessageContextMenu>
       );
+    case "next_up":
+      return (
+        <MessageContextMenu msg={msg} onFeedback={onFeedback}>
+          <NextUpCard content={msg.content} onAction={onAction} />
+        </MessageContextMenu>
+      );
     default: {
       const isOutbound = msg.direction === "outbound";
+      const renderContent = () => {
+        if (isOutbound) {
+          return <>{msg.content}</>;
+        }
+        if (looksLikeTerminal(msg.content)) {
+          return (
+            <pre className="text-sm font-mono whitespace-pre-wrap break-words text-gray-200">{msg.content}</pre>
+          );
+        }
+        return (
+          <div className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-pre:bg-black/30 prose-pre:rounded prose-code:text-emerald-300 prose-table:text-xs prose-th:px-2 prose-td:px-2">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+          </div>
+        );
+      };
       return (
         <MessageContextMenu msg={msg} onFeedback={onFeedback}>
           <div className={`flex flex-col ${isOutbound ? 'items-end' : 'items-start'}`}>
@@ -119,7 +155,7 @@ export function ChatMessageRenderer({ msg, onAction, onFeedback }: ChatMessageRe
                   : 'bg-surface-3 text-gray-200'
               }`}
             >
-              {msg.content}
+              {renderContent()}
             </div>
             <Timestamp time={msg.created_at} />
           </div>
