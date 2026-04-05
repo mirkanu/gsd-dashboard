@@ -781,6 +781,11 @@ export function GSD() {
   const [selectedProject, setSelectedProject] = useState<GsdProject | null>(null);
   const [chatView, setChatView] = useState<{ view: 'list' | 'chat'; project?: string }>({ view: 'list' });
   const [activeFilter, setActiveFilter] = useState<SessionState | null>("waiting");
+
+  // Derive the selected project object for the right panel from chatView
+  const selectedProj = chatView.project
+    ? projects.find((p) => p.name === chatView.project) ?? null
+    : null;
   const [autopilotRuns, setAutopilotRuns] = useState<Map<string, import('../lib/types').AutopilotRun>>(new Map());
   const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
   const [terminalProject, setTerminalProject] = useState<string | null>(null);
@@ -956,11 +961,6 @@ export function GSD() {
     const t = setInterval(tick, 1_000);
     return () => clearInterval(t);
   }, [rateLimit]);
-
-  // Derive the selected project object for the right panel from chatView
-  const selectedProj = chatView.project
-    ? projects.find((p) => p.name === chatView.project) ?? null
-    : null;
 
   // Filtered projects for chat list
   const filteredProjects = activeFilter === null
