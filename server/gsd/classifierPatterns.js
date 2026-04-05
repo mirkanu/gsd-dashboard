@@ -7,6 +7,7 @@ const stripAnsi = require('strip-ansi');
  */
 const MESSAGE_TYPES = {
   STAGE_BANNER: 'stage_banner',
+  NEXT_UP: 'next_up',
   CHECKPOINT: 'checkpoint',
   COMPLETION: 'completion',
   ERROR: 'error',
@@ -80,6 +81,18 @@ const PATTERNS = [
       /^●\s*Step\s+\d+/,                    // ● Step 7: Commit and Tag
       /^[\u2554\u255A\u2557\u255D\u2551\u2550]{2,}/,  // Checkpoint/error box borders
       /^[\u2500]{10,}$/,                     // Light horizontal rule (Next Up separator)
+    ],
+  },
+  // Next Up: GSD command suggestions and related blocks
+  {
+    type: MESSAGE_TYPES.NEXT_UP,
+    patterns: [
+      /^[►▶]\s*Next\s/i,                    // triangle-right Next Up header line
+      /^\*\*Also available:\*\*/,            // Also available block header
+      /\/clear\s+first/,                     // Clear reminder line
+      /^(?:Execute|Plan|Research|Verify|Quick):\s*`\/gsd:/,  // GSD command suggestion lines
+      /`\/gsd:\S+`/,                         // Any backtick-wrapped /gsd: command
+      /^[-•]\s*`\/gsd:/,                     // Bullet list items with /gsd commands
     ],
   },
   // Errors

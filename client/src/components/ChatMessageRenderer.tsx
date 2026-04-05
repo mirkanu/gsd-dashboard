@@ -27,6 +27,7 @@ const MESSAGE_TYPE_LABELS: Record<string, string> = {
   text: "Text",
   hidden: "Hidden",
   stage_banner: "Stage Banner",
+  next_up: "Next Up",
   checkpoint: "Checkpoint",
   completion: "Completion",
   error: "Error",
