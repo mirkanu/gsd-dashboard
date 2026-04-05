@@ -87,4 +87,4 @@ Plans:
 | 33. Classifier Foundation | 1/1 | Complete    | 2026-04-04 | - |
 | 34. Feedback Pipeline | 1/1 | Complete    | 2026-04-04 | - |
 | 35. Feedback UI + Send Experience | 2/2 | Complete    | 2026-04-05 | - |
-| 36. Message Rendering + New Types | 2/2 | Complete   | 2026-04-05 | - |
+| 36. Message Rendering + New Types | 2/2 | Complete    | 2026-04-05 | - |
