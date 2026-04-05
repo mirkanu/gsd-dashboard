@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Chat Polish
-status: completed
-stopped_at: Completed 35-02-PLAN.md
-last_updated: "2026-04-05T00:01:55.214Z"
-last_activity: 2026-04-04 — Completed 35-02 Send + Working Status Experience
+status: executing
+stopped_at: Completed 36-01-PLAN.md
+last_updated: "2026-04-05T00:24:46.668Z"
+last_activity: 2026-04-05 — Completed 36-01 NEXT_UP Classifier Type
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_plans: 6
+  completed_plans: 5
+  percent: 91
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** v4.1 Phase 35 — Feedback UI & Send Experience
+**Current focus:** v4.1 Phase 36 — Message Rendering New Types
 
 ## Current Position
 
-Phase: 35 (3 of 4) — Feedback UI & Send Experience
-Plan: 02 of 02 DONE
-Status: Phase Complete
-Last activity: 2026-04-04 — Completed 35-02 Send + Working Status Experience
+Phase: 36 (4 of 4) — Message Rendering New Types
+Plan: 01 of 02 DONE
+Status: In Progress
+Last activity: 2026-04-05 — Completed 36-01 NEXT_UP Classifier Type
 
-Progress: [██████████] 100%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [██████████] 100%
 - [Phase 34]: PatternManager uses own db.prepare() for hot-path hit_count; override dedup via find+disable pattern
 - [35-02]: effectiveState pattern merges optimistic and real state locally in ChatWindow
 - [35-02]: Adaptive polling: 3s when working, 30s otherwise for balance of responsiveness and load
+- [Phase 36-01]: NEXT_UP patterns placed before STAGE_BANNER for correct priority ordering
 
 ### Pending Todos
 
@@ -74,8 +75,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T23:53:04Z
-Stopped at: Completed 35-02-PLAN.md
+Last session: 2026-04-05T00:24:46.664Z
+Stopped at: Completed 36-01-PLAN.md
 Resume file: None
 Next action: Phase 35 complete, proceed to next phase
 | Phase 34 P01 | 9min | 2 tasks | 5 files |

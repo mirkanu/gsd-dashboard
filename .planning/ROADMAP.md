@@ -72,7 +72,7 @@ Plans:
   1. Chat messages containing markdown (headers, bold, lists, code blocks, tables) render as formatted HTML, not raw text
   2. Terminal-formatted content (ASCII tables, indented output) is preserved or converted to readable format in chat bubbles
   3. "Next Up" blocks with `/gsd:` commands are recognized as NEXT_UP type and render with tappable command chips
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 36-01-PLAN.md — NEXT_UP classifier patterns, TypeScript types, and classifier tests
@@ -87,4 +87,4 @@ Plans:
 | 33. Classifier Foundation | 1/1 | Complete    | 2026-04-04 | - |
 | 34. Feedback Pipeline | 1/1 | Complete    | 2026-04-04 | - |
 | 35. Feedback UI + Send Experience | 2/2 | Complete    | 2026-04-05 | - |
-| 36. Message Rendering + New Types | v4.1 | 0/2 | Not started | - |
+| 36. Message Rendering + New Types | 1/2 | In Progress|  | - |
