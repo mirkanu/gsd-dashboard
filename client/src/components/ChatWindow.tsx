@@ -79,6 +79,9 @@ export function ChatWindow({
 }: ChatWindowProps) {
   const [messages, setMessages] = useState<GsdMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [showReopenConfirm, setShowReopenConfirm] = useState(false);
@@ -108,11 +111,13 @@ export function ChatWindow({
     setLoading(true);
 
     api.gsd
-      .messages(projectName, 100, 0)
+      .messages(projectName, 50, 0)
       .then((res) => {
         if (cancelled) return;
         // API returns DESC, reverse for chronological
         setMessages(res.messages.reverse());
+        setTotal(res.total);
+        setOffset(0);
         setLoading(false);
       })
       .catch(() => {
@@ -147,6 +152,33 @@ export function ChatWindow({
     return unsub;
   }, [projectName]);
 
+  // Load older messages
+  const loadMore = useCallback(async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    const nextOffset = offset + 50;
+    const scrollContainer = scrollContainerRef.current;
+    const prevScrollHeight = scrollContainer?.scrollHeight ?? 0;
+    try {
+      const res = await api.gsd.messages(projectName, 50, nextOffset);
+      // API returns DESC (newest first) — reverse for chronological, then prepend
+      const older = res.messages.reverse();
+      setMessages((prev) => [...older, ...prev]);
+      setOffset(nextOffset);
+      // Restore scroll position after DOM update so user doesn't jump
+      requestAnimationFrame(() => {
+        if (scrollContainer) {
+          const newScrollHeight = scrollContainer.scrollHeight;
+          scrollContainer.scrollTop = newScrollHeight - prevScrollHeight;
+        }
+      });
+    } catch {
+      // silent
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [projectName, offset, loadingMore]);
+
   // Feedback handler — optimistic update + API call
   const handleFeedback = useCallback(
     async (messageId: number, correctType: string) => {
@@ -160,8 +192,10 @@ export function ChatWindow({
         await api.gsd.feedback(messageId, correctType);
       } catch {
         // Revert on error — refetch messages
-        const res = await api.gsd.messages(projectName, 100, 0);
+        const res = await api.gsd.messages(projectName, 50, 0);
         setMessages(res.messages.reverse());
+        setTotal(res.total);
+        setOffset(0);
       }
     },
     [projectName]
@@ -185,10 +219,12 @@ export function ChatWindow({
     if (!loading) scrollToBottom();
   }, [messages.length, loading, scrollToBottom]);
 
-  // Clear reopen confirmation when switching projects
+  // Clear reopen confirmation and pagination state when switching projects
   useEffect(() => {
     setShowReopenConfirm(false);
     setPendingMessage(null);
+    setOffset(0);
+    setTotal(0);
   }, [projectName]);
 
   // Send message handler
@@ -252,6 +288,8 @@ export function ChatWindow({
     }
   };
 
+  const hasMore = total > messages.length;
+
   const handleChipSelect = (cmd: string) => {
     setInputText(cmd);
     textareaRef.current?.focus();
@@ -313,6 +351,17 @@ export function ChatWindow({
           </div>
         ) : (
           <div className="flex flex-col gap-1 p-3">
+            {hasMore && (
+              <div className="flex justify-center pt-2 pb-1">
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="text-xs px-3 py-1.5 rounded-full border border-border text-gray-400 hover:text-gray-200 hover:bg-surface-3 disabled:opacity-40 transition-colors"
+                >
+                  {loadingMore ? "Loading..." : "Load older messages"}
+                </button>
+              </div>
+            )}
             {messages.map((msg) => (
               <ChatMessageRenderer
                 key={msg.id}
