@@ -55,7 +55,7 @@ export interface GsdProject {
   statusText: string | null;
 }
 
-export type MessageType = 'text' | 'stage_banner' | 'checkpoint' | 'completion' | 'error' | 'hidden';
+export type MessageType = 'text' | 'stage_banner' | 'next_up' | 'checkpoint' | 'completion' | 'error' | 'hidden';
 
 export interface GsdMessage {
   id: number;
