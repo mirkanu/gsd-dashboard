@@ -362,7 +362,8 @@ export function ChatWindow({
                 </button>
               </div>
             )}
-            {messages.map((msg) => (
+            {/* Windowed rendering: only render the most recent 80 messages to avoid DOM thrash */}
+            {(messages.length > 80 ? messages.slice(-80) : messages).map((msg) => (
               <ChatMessageRenderer
                 key={msg.id}
                 msg={msg}

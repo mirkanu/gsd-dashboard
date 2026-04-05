@@ -794,7 +794,8 @@ export function GSD() {
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const activeProjectRef = useRef<string | undefined>();
   activeProjectRef.current = chatView.project;
-  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Ref to track selected project name in the load() callback (which has [] deps)
+  const selectedProjRef = useRef<string | null>(null);
 
   // Lock body scroll when terminal overlay is open (prevents background scroll on mobile)
   // On desktop, terminal is inline in the grid so no body lock needed.
@@ -813,8 +814,6 @@ export function GSD() {
       window.scrollTo(0, parseInt(scrollY || '0') * -1);
     }
   }, [terminalProject, isDesktop]);
-  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const TAB_TITLES: Record<string, string> = {
     messages: "Messages",
     state: "State",
@@ -831,20 +830,18 @@ export function GSD() {
       setRateLimit(data.rateLimit ?? { active: false, resetAt: null });
       setError(null);
 
-      // Fetch autopilot status for all non-archived projects
-      const nonArchived = data.projects.filter((p: GsdProject) => p.sessionState !== 'archived');
-      const statuses = await Promise.all(
-        nonArchived.map((p: GsdProject) => api.autopilot.status(p.name).catch(() => null))
-      );
-      setAutopilotRuns(prev => {
-        const next = new Map(prev);
-        statuses.forEach((s) => {
-          if (s && s.runId && s.status !== 'idle') {
+      // Fetch autopilot status for selected project only (scoped to avoid N HTTP requests per poll)
+      const currentProjName = selectedProjRef.current;
+      if (currentProjName) {
+        const s = await api.autopilot.status(currentProjName).catch(() => null);
+        if (s && s.runId && s.status !== 'idle') {
+          setAutopilotRuns(prev => {
+            const next = new Map(prev);
             next.set(s.projectName, s);
-          }
-        });
-        return next;
-      });
+            return next;
+          });
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load GSD data");
     } finally {
@@ -879,22 +876,20 @@ export function GSD() {
     api.gsd.wsBase().then(({ wsBase }) => setTerminalWsBase(wsBase ?? null)).catch(() => {});
   }, []);
 
-  // Auto-load on mount + adaptive polling: 3s when active project is working, 30s otherwise (VIEW-06, WORK-02)
+  // Auto-load on mount + adaptive polling: 10s when active project is working, 60s otherwise (VIEW-06, WORK-02)
+  // Chat window receives real-time messages via WebSocket; poll is just for project list metadata.
   useEffect(() => {
     load();
     const isWorking = selectedProj?.sessionState === 'working';
-    const ms = isWorking ? 3_000 : 30_000;
+    const ms = isWorking ? 10_000 : 60_000;
     const interval = setInterval(() => load(), ms);
     return () => clearInterval(interval);
   }, [load, selectedProj?.sessionState]);
 
-  // Cleanup polling burst refs on unmount (UX-02)
+  // Keep selectedProjRef in sync so load() can use it without stale closure
   useEffect(() => {
-    return () => {
-      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
-    };
-  }, []);
+    selectedProjRef.current = selectedProj?.name ?? null;
+  }, [selectedProj]);
 
   // Subscribe to autopilot_progress WS messages via eventBus
   useEffect(() => {
@@ -970,16 +965,7 @@ export function GSD() {
   const handleTerminalClose = useCallback(() => {
     setTerminalProject(null);
     setTerminalInitialValue("");
-    // Polling burst: refresh card state every 500ms for 2s after terminal closes.
-    if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
-    refreshIntervalRef.current = setInterval(() => load(false), 500);
-    refreshTimeoutRef.current = setTimeout(() => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-        refreshIntervalRef.current = null;
-      }
-    }, 2000);
+    load(false); // single refresh — WebSocket delivers real-time state changes
   }, [load]);
 
   const handleOpenTerminal = useCallback((projectName: string) => {
