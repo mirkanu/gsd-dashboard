@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Chat Polish
 status: executing
-stopped_at: Completed 36-01-PLAN.md
-last_updated: "2026-04-05T00:24:46.668Z"
-last_activity: 2026-04-05 — Completed 36-01 NEXT_UP Classifier Type
+stopped_at: Completed 36-02-PLAN.md
+last_updated: "2026-04-05T00:32:00.000Z"
+last_activity: 2026-04-05 — Completed 36-02 Rich Message Rendering
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 91
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Position
 
 Phase: 36 (4 of 4) — Message Rendering New Types
-Plan: 01 of 02 DONE
-Status: In Progress
-Last activity: 2026-04-05 — Completed 36-01 NEXT_UP Classifier Type
+Plan: 02 of 02 DONE
+Status: Complete
+Last activity: 2026-04-05 — Completed 36-02 Rich Message Rendering
 
-Progress: [█████████░] 91%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -58,6 +58,8 @@ Progress: [█████████░] 91%
 - [35-02]: effectiveState pattern merges optimistic and real state locally in ChatWindow
 - [35-02]: Adaptive polling: 3s when working, 30s otherwise for balance of responsiveness and load
 - [Phase 36-01]: NEXT_UP patterns placed before STAGE_BANNER for correct priority ordering
+- [Phase 36-02]: Terminal detection uses box-drawing chars and indentation ratio heuristic before markdown fallback
+- [Phase 36-02]: Outbound messages stay plain text; only inbound gets markdown rendering
 
 ### Pending Todos
 
@@ -75,10 +77,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-05T00:24:46.664Z
-Stopped at: Completed 36-01-PLAN.md
+Last session: 2026-04-05T00:32:00.000Z
+Stopped at: Completed 36-02-PLAN.md
 Resume file: None
-Next action: Phase 35 complete, proceed to next phase
+Next action: v4.1 milestone complete - all phases done
 | Phase 34 P01 | 9min | 2 tasks | 5 files |
 | Phase 35 P01 | 6min | 2 tasks | 5 files |
 | Phase 35 P02 | 5min | 1 task | 2 files |

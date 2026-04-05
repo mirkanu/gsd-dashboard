@@ -34,8 +34,8 @@ Requirements for Chat Polish milestone. Each maps to roadmap phases.
 
 ### Message Rendering
 
-- [ ] **REND-01**: Chat messages render markdown content (tables, headers, bold, code blocks, lists) using react-markdown or similar
-- [ ] **REND-02**: Terminal-formatted text (ASCII tables, indentation) preserved or converted to readable format in chat bubbles
+- [x] **REND-01**: Chat messages render markdown content (tables, headers, bold, code blocks, lists) using react-markdown or similar
+- [x] **REND-02**: Terminal-formatted text (ASCII tables, indentation) preserved or converted to readable format in chat bubbles
 
 ## Future Requirements
 
@@ -79,8 +79,8 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | SEND-02 | Phase 35 | Complete |
 | WORK-01 | Phase 35 | Complete |
 | WORK-02 | Phase 35 | Complete |
-| REND-01 | Phase 36 | Pending |
-| REND-02 | Phase 36 | Pending |
+| REND-01 | Phase 36 | Complete |
+| REND-02 | Phase 36 | Complete |
 
 **Coverage:**
 - v4.1 requirements: 15 total
