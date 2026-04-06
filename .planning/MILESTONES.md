@@ -1,5 +1,23 @@
 # Milestones
 
+## v4.1 Chat Polish → Terminal-First (Shipped: 2026-04-06)
+
+**Phases:** 33-36 (4 phases, 6 plans + 7 quick tasks)
+**Timeline:** 2026-04-04 → 2026-04-06 (2 days)
+
+**Key accomplishments:**
+- Terminal-first dashboard: replaced chat window with always-on xterm terminal as primary view (auto-connects on project select)
+- Performance overhaul: async tmux calls with Promise.all, 5s API cache, PTY output batching (API response 5-15s → <500ms)
+- Mobile terminal UX: no auto-keyboard on load, info button opens project drawer, send bar for mobile input
+- Live tmux status: project list shows current task from tmux (e.g. "planning Phase 31") instead of stale chat messages
+- Dead code cleanup: removed classifier, feedback pipeline, message storage — 11 dead files, eliminated 2.5s CPU polling loop
+
+**Architectural pivot:** Phases 33-36 originally built chat features (classifier, feedback, message rendering). User testing revealed the chat view was unreliable and slow — messages were often misclassified, poorly formatted, and not the latest. Quick tasks 27-30 pivoted to a terminal-first approach, removing the chat window entirely and making the raw terminal the primary interaction surface. This proved significantly faster and more reliable.
+
+**Last phase number:** 36
+
+---
+
 ## v4.0 Chat-First Dashboard (Shipped: 2026-04-04)
 
 **Phases:** 28-32 (5 phases, 9 plans + 5 quick tasks)
