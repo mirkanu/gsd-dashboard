@@ -13,7 +13,7 @@ const previousStates = new Map(); // project name → previous sessionState
 
 let projectsCache = null;
 let projectsCacheExpiry = 0;
-const PROJECTS_CACHE_TTL = 5000; // 5 seconds
+const PROJECTS_CACHE_TTL = 10000; // 10 seconds — matches minimum client poll interval
 
 const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
 
@@ -52,11 +52,20 @@ router.get("/config", (_req, res) => {
 // GET /api/gsd/projects — return parsed planning data for all configured projects
 router.get("/projects", async (_req, res) => {
   if (GSD_DATA_URL) {
+    // Proxy mode (Railway): cache upstream response to avoid tunnel latency on every poll
+    const now = Date.now();
+    if (projectsCache && now < projectsCacheExpiry) {
+      return res.json(projectsCache);
+    }
     try {
       const upstream = await fetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) });
       const data = await upstream.json();
+      projectsCache = data;
+      projectsCacheExpiry = Date.now() + PROJECTS_CACHE_TTL;
       res.json(data);
     } catch (err) {
+      // Serve stale cache if tunnel is down
+      if (projectsCache) return res.json(projectsCache);
       res.status(502).json({ error: "Failed to reach GSD data source", detail: err.message });
     }
     return;
