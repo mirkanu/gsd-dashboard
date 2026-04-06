@@ -69,6 +69,7 @@ None.
 | 30 | Remove dead v4.1 chat code, replace lastMessage with statusText | 2026-04-05 | ca3dfaf | [30-remove-dead-v4-1-chat-code-replace-lastm](./quick/30-remove-dead-v4-1-chat-code-replace-lastm/) |
 | 31 | Fix remaining dashboard and terminal load blockers (async tmux) | 2026-04-06 | b7445cb | [31-fix-remaining-dashboard-and-terminal-loa](./quick/31-fix-remaining-dashboard-and-terminal-loa/) |
 | 32 | Proxy-side stale-while-revalidate cache for /api/gsd/projects | 2026-04-06 | 96f3aa7 | [32-add-proxy-side-cache-for-api-gsd-project](./quick/32-add-proxy-side-cache-for-api-gsd-project/) |
+| 33 | Fix mobile special key buttons stealing terminal focus | 2026-04-06 | 41715fa | [33-fix-mobile-special-key-buttons-stealing-](./quick/33-fix-mobile-special-key-buttons-stealing-/) |
 
 ## Session Continuity
 
