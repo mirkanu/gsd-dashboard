@@ -124,7 +124,6 @@ async function sendNotification(projectName, text, options) {
     };
   }
   await apiCall('sendMessage', payload);
-  try { getStmts()?.insertGsdMessage?.run(projectName, 'outbound', `[Telegram] ${text}`); } catch { /* non-blocking */ }
 }
 
 /**
@@ -143,8 +142,6 @@ function injectTmux(sessionName, text) {
   if (!isTmuxSessionActive(sessionName)) return false;
   try {
     execFileSync('tmux', ['send-keys', '-t', sessionName, text, 'Enter'], { stdio: 'ignore', timeout: 5000 });
-    // Log inbound message
-    try { getStmts()?.insertGsdMessage?.run(sessionName, 'inbound', text); } catch { /* non-blocking */ }
     return true;
   } catch {
     return false;
