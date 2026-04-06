@@ -291,7 +291,7 @@ async function capturePaneTextAsync(sessionName) {
  */
 async function detectSessionStateAsync(sessionName) {
   if (!sessionName) return 'archived';
-  if (!isTmuxSessionActive(sessionName)) return 'paused';
+  if (!(await isTmuxSessionActiveAsync(sessionName))) return 'paused';
 
   const output = await capturePaneTextAsync(sessionName);
   if (output === null) return 'paused';

@@ -3,7 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 const { WebSocketServer } = require('ws');
-const { isTmuxSessionActive } = require('../gsd/tmux');
+const { isTmuxSessionActiveAsync } = require('../gsd/tmux');
 
 function loadConfig() {
   const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../../gsd-projects.json');
@@ -14,7 +14,7 @@ function loadConfig() {
 function attachTerminalWS(server) {
   const wss = new WebSocketServer({ noServer: true });
 
-  server.on('upgrade', (req, socket, head) => {
+  server.on('upgrade', async (req, socket, head) => {
     if (!req.url.startsWith('/ws/terminal/')) {
       // Not our path — let other upgrade handlers deal with it
       return;
@@ -43,7 +43,7 @@ function attachTerminalWS(server) {
 
     const session = project.tmux_session;
 
-    if (!isTmuxSessionActive(session)) {
+    if (!(await isTmuxSessionActiveAsync(session))) {
       wss.handleUpgrade(req, socket, head, (ws) => {
         ws.close(4004, 'session inactive');
       });
