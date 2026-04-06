@@ -113,18 +113,7 @@ function startServer(app, port) {
 if (require.main === module) {
   const PORT = parseInt(process.env.PORT || process.env.DASHBOARD_PORT || "4820", 10);
 
-  // Initialize classifier early so app.locals can reference patternManager before server starts
-  const { TmuxClassifier } = require('./gsd/classifier');
-  const { isTmuxSessionActive: isActive } = require('./gsd/tmux');
-  const classifierDb = require('./db');
-  const { broadcast: classifierBroadcast } = require('./websocket');
-  const { PatternManager } = require('./gsd/patternManager');
-  const patternManager = new PatternManager(classifierDb.db);
-  const classifier = new TmuxClassifier(classifierDb.stmts, classifierBroadcast, patternManager);
-
   const app = createApp();
-  app.locals.patternManager = patternManager;
-  app.locals.broadcast = classifierBroadcast;
   startServer(app, PORT).then(() => {
     if (telegramEnabled) startReplyPoller();
   });
@@ -201,35 +190,6 @@ if (require.main === module) {
     },
     2 * 60 * 1000
   );
-
-  // TmuxClassifier: poll active projects every 2.5s, classify output, persist + broadcast
-  function loadGsdConfig() {
-    try {
-      const configPath = process.env.GSD_PROJECTS_PATH || require('path').resolve(__dirname, '../gsd-projects.json');
-      return JSON.parse(require('fs').readFileSync(configPath, 'utf8'));
-    } catch {
-      return { projects: [] };
-    }
-  }
-
-  setInterval(() => {
-    try {
-      const { projects } = loadGsdConfig();
-      for (const project of projects) {
-        if (project.archived) continue;
-        const session = project.tmux_session;
-        if (!session) continue;
-        if (!isActive(session)) continue;
-        try {
-          classifier.poll(project.name, session);
-        } catch (err) {
-          console.error(`[classifier] Error polling ${project.name}:`, err.message);
-        }
-      }
-    } catch (err) {
-      console.error('[classifier] Error in poll loop:', err.message);
-    }
-  }, 2500);
 
   // Event loop liveness watchdog — exit if event loop is blocked for >30s
   // Node --watch will auto-restart the process on exit
