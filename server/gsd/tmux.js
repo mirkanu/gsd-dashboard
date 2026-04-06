@@ -22,6 +22,23 @@ function isTmuxSessionActive(sessionName) {
 }
 
 /**
+ * Async variant of isTmuxSessionActive. Never blocks the event loop.
+ * Returns false for falsy input or any error (tmux not found, session absent, etc.).
+ * Never throws.
+ * @param {string} sessionName
+ * @returns {Promise<boolean>}
+ */
+async function isTmuxSessionActiveAsync(sessionName) {
+  if (!sessionName) return false;
+  try {
+    await execFileAsync('tmux', ['has-session', '-t', sessionName], { stdio: 'ignore', timeout: 2000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Capture raw pane text for a session. Returns null on any error.
  * @param {string} sessionName
  * @returns {string|null}
@@ -311,19 +328,23 @@ async function detectSessionStateAsync(sessionName) {
  * @returns {Promise<{ active: boolean, resetAt: string|null }>}
  */
 async function detectRateLimitAsync(sessionNames) {
-  for (const name of sessionNames) {
-    if (!name || !isTmuxSessionActive(name)) continue;
-    const text = await capturePaneTextAsync(name);
-    if (!text) continue;
-    const recent = text.split('\n').slice(-10).join('\n');
-    for (const pattern of RATE_LIMIT_PATTERNS) {
-      if (pattern.test(recent)) {
-        const resetAt = parseResetTime(recent);
-        return { active: true, resetAt: resetAt ? resetAt.toISOString() : null };
+  const results = await Promise.all(
+    sessionNames.filter(Boolean).map(async (name) => {
+      if (!(await isTmuxSessionActiveAsync(name))) return null;
+      const text = await capturePaneTextAsync(name);
+      if (!text) return null;
+      const recent = text.split('\n').slice(-10).join('\n');
+      for (const pattern of RATE_LIMIT_PATTERNS) {
+        if (pattern.test(recent)) {
+          const resetAt = parseResetTime(recent);
+          return { active: true, resetAt: resetAt ? resetAt.toISOString() : null };
+        }
       }
-    }
-  }
-  return { active: false, resetAt: null };
+      return null;
+    })
+  );
+  const hit = results.find(Boolean);
+  return hit ?? { active: false, resetAt: null };
 }
 
-module.exports = { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync };
+module.exports = { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync };
