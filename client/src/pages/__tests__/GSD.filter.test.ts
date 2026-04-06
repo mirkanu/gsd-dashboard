@@ -34,7 +34,6 @@ function makeProject(name: string, sessionState: SessionState): GsdProject {
     sessionUpdatedAt: null,
     sessionState,
     display_name: null,
-    lastMessage: null,
     statusText: null,
   };
 }

@@ -1,71 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { X, Maximize2 } from "lucide-react";
 import { api } from "../lib/api";
-import type { GsdProject, GsdMessage, AutopilotRun } from "../lib/types";
+import type { GsdProject, AutopilotRun } from "../lib/types";
 import { TasksTab } from "./TasksTab";
 import { ProjectControls } from "./ProjectControls";
 import { ProjectMetadata } from "./ProjectMetadata";
 
-type TabId = "tasks" | "messages" | "state" | "roadmap" | "requirements" | "plan";
+type TabId = "tasks" | "state" | "roadmap" | "requirements" | "plan";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "tasks",        label: "Tasks"    },
-  { id: "messages",     label: "Messages" },
   { id: "state",        label: "State"    },
   { id: "roadmap",      label: "Roadmap"  },
   { id: "requirements", label: "Reqs"     },
   { id: "plan",         label: "Plan"     },
 ];
-
-function MessageLog({ projectName }: { projectName: string }) {
-  const [messages, setMessages] = useState<GsdMessage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    api.gsd.messages(projectName)
-      .then(({ messages }) => { if (!cancelled) { setMessages(messages); setLoading(false); } })
-      .catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [projectName]);
-
-  // Scroll to newest message after load
-  useEffect(() => {
-    if (!loading && messages.length > 0) {
-      endRef.current?.scrollIntoView({ behavior: 'instant' as ScrollBehavior });
-    }
-  }, [loading, messages.length]);
-
-  if (loading) return <p className="text-sm text-gray-500 py-4">Loading messages...</p>;
-  if (messages.length === 0) return <p className="text-sm text-gray-600 py-4">No messages yet. Send a command from the terminal to see it here.</p>;
-
-  // Reverse to show oldest first (API returns newest first)
-  const sorted = [...messages].reverse();
-
-  return (
-    <div className="space-y-2">
-      {sorted.map((msg) => (
-        <div key={msg.id} className={`flex ${msg.direction === "outbound" ? "justify-end" : "justify-start"}`}>
-          <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${
-            msg.direction === "outbound"
-              ? "bg-accent/10 text-accent border border-accent/20"
-              : "bg-surface-3 text-gray-300 border border-border"
-          }`}>
-            <p className="font-mono whitespace-pre-wrap break-all">{msg.content}</p>
-            <p className={`text-[10px] mt-1 ${msg.direction === "outbound" ? "text-accent/50" : "text-gray-600"}`}>
-              {msg.direction === "outbound" ? "Sent" : "Received"} · {new Date(msg.created_at).toLocaleString()}
-            </p>
-          </div>
-        </div>
-      ))}
-      <div ref={endRef} />
-    </div>
-  );
-}
 
 interface GsdDrawerProps {
   project: GsdProject;
@@ -86,7 +37,7 @@ export function GsdDrawer({ project, autopilotRun, onPauseSession, onArchive, on
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (activeTab === "messages" || activeTab === "tasks") return;
+    if (activeTab === "tasks") return;
     let cancelled = false;
     setContent(null);
     setFetchError(null);
@@ -155,8 +106,8 @@ export function GsdDrawer({ project, autopilotRun, onPauseSession, onArchive, on
                 {tab.label}
               </button>
             ))}
-            {/* Expand button -- only shown when content is loaded and not on messages or tasks tab */}
-            {content !== null && onExpand && activeTab !== "messages" && activeTab !== "tasks" && (
+            {/* Expand button -- only shown when content is loaded and not on tasks tab */}
+            {content !== null && onExpand && activeTab !== "tasks" && (
               <button
                 onClick={() => onExpand(content, activeTab)}
                 className="ml-auto px-2 py-2 text-gray-500 hover:text-gray-300 transition-colors"
@@ -172,8 +123,6 @@ export function GsdDrawer({ project, autopilotRun, onPauseSession, onArchive, on
           <div className="flex-1 overflow-y-auto">
             {activeTab === "tasks" ? (
               <TasksTab projectKey={project.name} />
-            ) : activeTab === "messages" ? (
-              <MessageLog projectName={project.name} />
             ) : (
               <>
                 {loading && (

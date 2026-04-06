@@ -51,20 +51,7 @@ export interface GsdProject {
   contextTokens: number | null;
   sessionUpdatedAt: string | null;
   sessionState: SessionState;
-  lastMessage: { content: string; message_type: string; created_at: string } | null;
   statusText: string | null;
-}
-
-export type MessageType = 'text' | 'stage_banner' | 'next_up' | 'checkpoint' | 'completion' | 'error' | 'hidden';
-
-export interface GsdMessage {
-  id: number;
-  project: string;
-  direction: "outbound" | "inbound";
-  content: string;
-  message_type?: MessageType;
-  metadata?: Record<string, unknown> | null;
-  created_at: string;
 }
 
 export interface GsdTask {
@@ -202,14 +189,9 @@ export interface CostResult {
   breakdown: CostBreakdown[];
 }
 
-export interface GsdChatMessageEvent {
-  project: string;
-  message: GsdMessage;
-}
-
 export interface WSMessage {
-  type: "session_created" | "session_updated" | "agent_created" | "agent_updated" | "new_event" | "autopilot_progress" | "gsd_chat_message" | "gsd_message_updated";
-  data: Session | Agent | DashboardEvent | AutopilotProgressEvent | GsdChatMessageEvent;
+  type: "session_created" | "session_updated" | "agent_created" | "agent_updated" | "new_event" | "autopilot_progress";
+  data: Session | Agent | DashboardEvent | AutopilotProgressEvent;
   timestamp: string;
 }
 
