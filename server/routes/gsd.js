@@ -13,7 +13,9 @@ const previousStates = new Map(); // project name → previous sessionState
 
 let projectsCache = null;
 let projectsCacheExpiry = 0;
-const PROJECTS_CACHE_TTL = 10000; // 10 seconds — matches minimum client poll interval
+let projectsCacheRefreshing = false;
+const PROJECTS_CACHE_TTL = 30000; // 30 seconds — longer than poll interval so users always hit cache
+const PROJECTS_CACHE_STALE = 5000; // after 5s, serve from cache but refresh in background
 
 const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
 
@@ -52,11 +54,27 @@ router.get("/config", (_req, res) => {
 // GET /api/gsd/projects — return parsed planning data for all configured projects
 router.get("/projects", async (_req, res) => {
   if (GSD_DATA_URL) {
-    // Proxy mode (Railway): cache upstream response to avoid tunnel latency on every poll
+    // Proxy mode (Railway): stale-while-revalidate pattern.
+    // Always serve from cache if available. Refresh in background when stale.
     const now = Date.now();
-    if (projectsCache && now < projectsCacheExpiry) {
+    if (projectsCache) {
+      if (now >= projectsCacheExpiry - (PROJECTS_CACHE_TTL - PROJECTS_CACHE_STALE)) {
+        // Cache is older than STALE threshold — trigger background refresh
+        if (!projectsCacheRefreshing) {
+          projectsCacheRefreshing = true;
+          fetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) })
+            .then(r => r.json())
+            .then(data => {
+              projectsCache = data;
+              projectsCacheExpiry = Date.now() + PROJECTS_CACHE_TTL;
+            })
+            .catch(() => {}) // Keep serving stale on failure
+            .finally(() => { projectsCacheRefreshing = false; });
+        }
+      }
       return res.json(projectsCache);
     }
+    // No cache yet — blocking fetch (only happens on first request before warm completes)
     try {
       const upstream = await fetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) });
       const data = await upstream.json();
@@ -64,8 +82,6 @@ router.get("/projects", async (_req, res) => {
       projectsCacheExpiry = Date.now() + PROJECTS_CACHE_TTL;
       res.json(data);
     } catch (err) {
-      // Serve stale cache if tunnel is down
-      if (projectsCache) return res.json(projectsCache);
       res.status(502).json({ error: "Failed to reach GSD data source", detail: err.message });
     }
     return;
