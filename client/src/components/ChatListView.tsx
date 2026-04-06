@@ -48,9 +48,9 @@ export function ChatListView({ projects, onSelectProject, activeProject, unreadC
     <ConversationList>
       {sorted.map((p) => {
         const displayName = p.display_name || capitalize(p.name);
-        const info = p.lastMessage
-          ? truncate(p.lastMessage.content, 80)
-          : "No messages yet";
+        const info = p.statusText
+          ? truncate(p.statusText, 80)
+          : capitalize(p.sessionState);
 
         return (
           <div
