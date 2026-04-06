@@ -116,6 +116,13 @@ if (require.main === module) {
   const app = createApp();
   startServer(app, PORT).then(() => {
     if (telegramEnabled) startReplyPoller();
+
+    // Warm the projects cache on startup so the first client request is instant.
+    // Hit our own endpoint which populates the in-memory cache.
+    fetch(`http://localhost:${PORT}/api/gsd/projects`, { signal: AbortSignal.timeout(15000) })
+      .then(r => r.json())
+      .then(() => console.log("[cache] Projects cache warmed"))
+      .catch(() => console.log("[cache] Projects cache warm failed"));
   });
 
   process.on('SIGTERM', () => {
