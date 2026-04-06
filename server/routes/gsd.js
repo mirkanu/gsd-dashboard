@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
-const { isTmuxSessionActive, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
+const { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
 const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED: telegramEnabled } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
 
@@ -119,7 +119,7 @@ router.get("/projects", async (_req, res) => {
       return {
         ...readProject(name, root),
         display_name: display_name || null,
-        tmuxActive: isTmuxSessionActive(tmux_session),
+        tmuxActive: await isTmuxSessionActiveAsync(tmux_session),
         tmuxSession: tmux_session ?? null,
         sessionState,
         contextTokens: row?.context_tokens ?? null,
