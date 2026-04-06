@@ -70,11 +70,12 @@ None.
 | 31 | Fix remaining dashboard and terminal load blockers (async tmux) | 2026-04-06 | b7445cb | [31-fix-remaining-dashboard-and-terminal-loa](./quick/31-fix-remaining-dashboard-and-terminal-loa/) |
 | 32 | Proxy-side stale-while-revalidate cache for /api/gsd/projects | 2026-04-06 | 96f3aa7 | [32-add-proxy-side-cache-for-api-gsd-project](./quick/32-add-proxy-side-cache-for-api-gsd-project/) |
 | 33 | Fix mobile special key buttons stealing terminal focus | 2026-04-06 | 41715fa | [33-fix-mobile-special-key-buttons-stealing-](./quick/33-fix-mobile-special-key-buttons-stealing-/) |
+| 34 | Terminal still takes 2-3 seconds sometimes — eliminate startup delay | 2026-04-06 | be2b1a3 | [34-terminal-still-takes-2-3-seconds-sometim](./quick/34-terminal-still-takes-2-3-seconds-sometim/) |
 
 ## Session Continuity
 
-Last session: 2026-04-05T21:28:00.000Z
-Stopped at: Completed quick task 31
+Last session: 2026-04-06T17:47:00.000Z
+Stopped at: Completed quick task 34
 Resume file: None
 Next action: v4.1 milestone complete - all phases done
 | Phase 34 P01 | 9min | 2 tasks | 5 files |
