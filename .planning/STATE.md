@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 Phase: 36 (4 of 4) — Message Rendering New Types
 Plan: 02 of 02 DONE
 Status: Complete
-Last activity: 2026-04-05 - Completed quick task 29: Reduce terminal and project info load latency
+Last activity: 2026-04-06 - Completed quick task 30: Remove dead v4.1 chat code, replace lastMessage with statusText
 
 Progress: [██████████] 100%
 
