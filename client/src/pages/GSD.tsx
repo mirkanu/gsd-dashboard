@@ -216,7 +216,9 @@ function SpecialKeyBar({
       const btn = (e.target as HTMLElement).closest('button');
       if (!btn) return;
       e.preventDefault();
-      specialKeyPressRef.current = false;
+      // Delay clearing the flag so the blur handler (which may fire after touchEnd
+      // on iOS) still sees specialKeyPressRef=true and refocuses the terminal.
+      setTimeout(() => { specialKeyPressRef.current = false; }, 150);
     };
 
     bar.addEventListener('touchstart', onTouchStart, { passive: false });
@@ -234,6 +236,7 @@ function SpecialKeyBar({
         <button
           key={key.label}
           data-idx={i}
+          tabIndex={-1}
           onMouseDown={(e) => e.preventDefault()}
           className="text-[11px] px-2.5 py-1.5 rounded border border-border bg-surface-3 text-gray-400 active:bg-accent/20 active:text-accent active:border-accent/30 transition-colors select-none"
         >
