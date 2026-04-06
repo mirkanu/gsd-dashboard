@@ -5,7 +5,7 @@ milestone_name: Chat Polish
 status: completed
 stopped_at: Completed 36-02-PLAN.md
 last_updated: "2026-04-05T00:45:41.229Z"
-last_activity: 2026-04-05 — Completed quick task 29: Reduce terminal and project info load latency
+last_activity: 2026-04-05 — Completed quick task 30: Remove dead v4.1 chat code, replace lastMessage with statusText
 progress:
   total_phases: 4
   completed_phases: 4
@@ -52,6 +52,7 @@ Progress: [██████████] 100%
 - [v4.1]: Auto-fix on feedback submission (not store-only or batch)
 - [v4.1]: Send confirmation = immediate echo + status change to Working
 - [v4.1]: Main reasons for terminal: garbled messages, limited input, unreliable working status
+- [quick-30]: Removed all v4.1 chat infrastructure (classifier, gsd_messages, feedback routes) — superseded by terminal-first approach (quick tasks 27-30). ChatListView now shows statusText (tmux task) instead of lastMessage.
 - [33-01]: Used specific tree chars instead of box-drawing range to avoid banner pattern conflicts
 - [33-01]: GSD banner patterns in STAGE_BANNER group; bullet tool pattern requires ( so Step lines fall through correctly
 - [Phase 34]: PatternManager uses own db.prepare() for hot-path hit_count; override dedup via find+disable pattern
@@ -67,8 +68,7 @@ None.
 
 ### Blockers/Concerns
 
-- Classifier auto-fix complexity: updating regex patterns at runtime from user feedback is non-trivial
-- Working status depends on tmux capture-pane polling interval (currently 2.5s)
+None.
 
 ### Quick Tasks Completed
 
@@ -79,6 +79,7 @@ None.
 | 27 | Remove chat window, make terminal the primary view | 2026-04-05 | 25255b4 | [27-remove-chat-window-make-terminal-the-pri](./quick/27-remove-chat-window-make-terminal-the-pri/) |
 | 28 | Fix mobile terminal: no auto-keyboard, info closes terminal | 2026-04-05 | 2154b6c | [28-fix-mobile-terminal-no-auto-keyboard-on-](./quick/28-fix-mobile-terminal-no-auto-keyboard-on-/) |
 | 29 | Reduce terminal and project info load latency | 2026-04-05 | 0cbcd4c | [29-reduce-terminal-and-project-info-load-la](./quick/29-reduce-terminal-and-project-info-load-la/) |
+| 30 | Remove dead v4.1 chat code, replace lastMessage with statusText | 2026-04-05 | ca3dfaf | [30-remove-dead-v4-1-chat-code-replace-lastm](./quick/30-remove-dead-v4-1-chat-code-replace-lastm/) |
 
 ## Session Continuity
 
