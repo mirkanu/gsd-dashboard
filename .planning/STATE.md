@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Chat Polish
 status: completed
-stopped_at: Completed 36-02-PLAN.md
-last_updated: "2026-04-05T00:45:41.229Z"
-last_activity: 2026-04-05 — Completed quick task 30: Remove dead v4.1 chat code, replace lastMessage with statusText
+stopped_at: Completed quick task 25
+last_updated: "2026-04-06T08:58:11.260Z"
+last_activity: "2026-04-06 - Completed quick task 30: Remove dead v4.1 chat code, replace lastMessage with statusText"
 progress:
   total_phases: 4
   completed_phases: 4
@@ -18,19 +18,16 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-04)
+See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** v4.1 Phase 36 — Message Rendering New Types
+**Current focus:** v4.1 complete — planning next milestone
 
 ## Current Position
 
-Phase: 36 (4 of 4) — Message Rendering New Types
-Plan: 02 of 02 DONE
-Status: Complete
-Last activity: 2026-04-06 - Completed quick task 30: Remove dead v4.1 chat code, replace lastMessage with statusText
-
-Progress: [██████████] 100%
+Milestone: v4.1 Chat Polish → Terminal-First — SHIPPED 2026-04-06
+Status: Complete — ready for /gsd:new-milestone
+Last activity: 2026-04-06 - Completed v4.1 milestone archival
 
 ## Performance Metrics
 
@@ -48,19 +45,9 @@ Progress: [██████████] 100%
 
 ### Decisions
 
-- [v4.1]: Classifier feedback applies to all projects (patterns are universal)
-- [v4.1]: Auto-fix on feedback submission (not store-only or batch)
-- [v4.1]: Send confirmation = immediate echo + status change to Working
-- [v4.1]: Main reasons for terminal: garbled messages, limited input, unreliable working status
-- [quick-30]: Removed all v4.1 chat infrastructure (classifier, gsd_messages, feedback routes) — superseded by terminal-first approach (quick tasks 27-30). ChatListView now shows statusText (tmux task) instead of lastMessage.
-- [33-01]: Used specific tree chars instead of box-drawing range to avoid banner pattern conflicts
-- [33-01]: GSD banner patterns in STAGE_BANNER group; bullet tool pattern requires ( so Step lines fall through correctly
-- [Phase 34]: PatternManager uses own db.prepare() for hot-path hit_count; override dedup via find+disable pattern
-- [35-02]: effectiveState pattern merges optimistic and real state locally in ChatWindow
-- [35-02]: Adaptive polling: 3s when working, 30s otherwise for balance of responsiveness and load
-- [Phase 36-01]: NEXT_UP patterns placed before STAGE_BANNER for correct priority ordering
-- [Phase 36-02]: Terminal detection uses box-drawing chars and indentation ratio heuristic before markdown fallback
-- [Phase 36-02]: Outbound messages stay plain text; only inbound gets markdown rendering
+- [v4.1]: Terminal-first approach beats chat classifier — raw terminal is more reliable, faster, and always accurate
+- [v4.1]: Async tmux + API caching critical for responsiveness (sync calls blocked event loop 5-15s)
+- [v4.1]: Project list shows live tmux statusText instead of lastMessage from gsd_messages
 
 ### Pending Todos
 

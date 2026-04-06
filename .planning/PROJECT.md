@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A web dashboard for managing multiple Claude Code GSD projects from a single interface. Forked from Claude Code Agent Monitor, it adds a GSD layer that reads `.planning/` files, shows phase progress and session states, provides live terminal access to tmux sessions, sends Telegram notifications when input is needed, and prevents OOM crashes on the shared container. Built for a single developer managing several concurrent AI-assisted projects.
+A terminal-first web dashboard for managing multiple Claude Code GSD projects from a single interface. Forked from Claude Code Agent Monitor, it adds a GSD layer that reads `.planning/` files, shows phase progress and session states, provides live terminal access to tmux sessions via xterm.js, sends Telegram notifications when input is needed, and prevents OOM crashes on the shared container. Built for a single developer managing several concurrent AI-assisted projects.
 
 ## Core Value
 
@@ -30,20 +30,14 @@ At a glance, see where every GSD project stands and interact with any session �
 - ✓ Pause card: pause button kills tmux session, reopen auto-launches Claude — v3.0
 - ✓ Light/dark mode toggle — v3.0
 - ✓ pm2 process management with health check watchdog — v3.0
-- ✓ Chat-first UI: WhatsApp-style chat list and per-project chat windows — v4.0
-- ✓ Tmux output classifier: regex pipeline classifying terminal output into typed messages — v4.0
-- ✓ Tappable actions: command chips and checkpoint buttons insert into reply box — v4.0
 - ✓ Project detail panel: controls, file tabs, metadata in 3-column desktop layout — v4.0
-- ✓ Unread indicators and real-time chat streaming via WebSocket — v4.0
-- ✓ 3-column desktop layout: chat list / chat window / project details — v4.0
 - ✓ Working indicator with live tmux status text — v4.0
+- ✓ Terminal-first layout: always-on xterm terminal replaces chat window as primary view — v4.1
+- ✓ Live tmux status in project list: shows current task (e.g. "planning Phase 31") — v4.1
+- ✓ Performance: async tmux calls, 5s API cache, PTY output batching (API <500ms) — v4.1
+- ✓ Mobile terminal UX: no auto-keyboard, info button opens drawer, send bar — v4.1
 
 ### Active
-
-- [ ] Classifier accuracy: user feedback loop with auto-fix, major pattern improvements (v4.1)
-- [ ] Send confirmation: immediate visual feedback after sending a message (echo + status change to Working) (v4.1)
-- [ ] Working status reliability: instant status updates, accurate state detection (v4.1)
-- [ ] Message feedback UI: right-click/long-press on chat messages to flag classifier errors (v4.1)
 
 ### Future
 
@@ -52,8 +46,6 @@ At a glance, see where every GSD project stands and interact with any session �
 - [ ] New project creation: one-click directory + tmux + Claude launch from dashboard (deferred)
 - [ ] Email receipt parsing pipeline for automated cost tracking (deferred)
 - [ ] GitHub issues link on project cards (deferred from v3.0)
-- [ ] Dynamic shortcuts: next GSD command suggestions (subsumed by chat tappable actions in v4.0)
-- [ ] Message tab styling: subsumed by v4.0 chat redesign
 - [ ] Task Archive All: suggest bulk archive after Copy (deferred from v3.0)
 
 ### Out of Scope
@@ -62,15 +54,18 @@ At a glance, see where every GSD project stands and interact with any session �
 - Session recording / playback
 - Offline mode — live data is the core value
 - Mobile app — PWA-capable web dashboard is sufficient
+- Chat-based message view — tried in v4.0-4.1, replaced by terminal-first approach (classifier unreliable, latency too high)
+- Message classifier / feedback pipeline — removed in v4.1 pivot
 
 ## Context
 
-Shipped v2.3 with kanban board, mobile terminal polish, MCP server, and 11 quick tasks.
+Shipped v4.1 with terminal-first layout, async performance, and dead chat code cleanup.
 Tech stack: React + Vite, Express, SQLite, WebSocket, xterm.js, node-pty.
 Deployed on Railway with cloudflared tunnel to local machine.
 6 tracked projects: josie, gsddashboard, debates, reforma + others.
-GSD Autopilot fork (github.com/jamoeight/get-shit-done-autopilot) provides reference architecture for autonomous execution: plan-all → autopilot loop → progress watcher → failure learning → circuit breaker.
+GSD Autopilot fork (github.com/jamoeight/get-shit-done-autopilot) provides reference architecture for autonomous execution.
 User is a non-coder using vibe coding — wants maximum automation and hands-off execution.
+v4.1 lesson: raw terminal output is more reliable than any classifier/formatter layer on top of it.
 
 ## Key Decisions
 
@@ -84,6 +79,9 @@ User is a non-coder using vibe coding — wants maximum automation and hands-off
 | Session state via tmux capture-pane | No extra scripts; pattern matching on last 50 lines | ✅ Correct |
 | Telegram bot merged into server process | No separate repo/process; env var config, no-op when unset | ✅ Correct |
 | OOM: heap cap + watchdog + orphan cleanup | Three-layer defense for shared container with 4+ sessions | ✅ Correct |
+| Terminal-first over chat view | Chat classifier was unreliable, slow, and required constant fixing | ✅ Correct — faster, simpler, always accurate |
+| Async tmux + API cache | Sync execFileSync blocked event loop 5-15s per request | ✅ Correct — <500ms now |
+| Remove classifier + feedback pipeline | Dead code after chat removal; 2.5s polling loop wasting CPU | ✅ Correct — cleaner codebase |
 
 ## Constraints
 
@@ -92,15 +90,9 @@ User is a non-coder using vibe coding — wants maximum automation and hands-off
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
-## Current Milestone: v4.1 Chat Polish
+## Current Milestone: Planning next
 
-**Goal:** Make the chat experience reliable enough that the terminal is rarely needed — fix classifier accuracy, add user feedback loop, ensure working status is instant and accurate.
-
-**Target features:**
-- Classifier feedback: right-click messages to flag errors, stored with original content, auto-reclassify
-- Send confirmation: immediate echo + status change when sending commands
-- Working status: reliable, instant updates with actual Claude status text
-- Pattern improvements: overhaul classifier patterns based on real usage
+v4.1 completed. Ready for `/gsd:new-milestone`.
 
 ---
-*Last updated: 2026-04-04 after v4.1 milestone start*
+*Last updated: 2026-04-06 after v4.1 milestone completion*
