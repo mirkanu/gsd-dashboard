@@ -5,7 +5,7 @@ milestone_name: Chat Polish
 status: completed
 stopped_at: Completed quick task 25
 last_updated: "2026-04-06T08:58:11.260Z"
-last_activity: "2026-04-06 - Completed quick task 30: Remove dead v4.1 chat code, replace lastMessage with statusText"
+last_activity: "2026-04-06 - Completed quick task 31: Fix remaining dashboard and terminal load blockers (async tmux)"
 progress:
   total_phases: 4
   completed_phases: 4
@@ -67,11 +67,12 @@ None.
 | 28 | Fix mobile terminal: no auto-keyboard, info closes terminal | 2026-04-05 | 2154b6c | [28-fix-mobile-terminal-no-auto-keyboard-on-](./quick/28-fix-mobile-terminal-no-auto-keyboard-on-/) |
 | 29 | Reduce terminal and project info load latency | 2026-04-05 | 0cbcd4c | [29-reduce-terminal-and-project-info-load-la](./quick/29-reduce-terminal-and-project-info-load-la/) |
 | 30 | Remove dead v4.1 chat code, replace lastMessage with statusText | 2026-04-05 | ca3dfaf | [30-remove-dead-v4-1-chat-code-replace-lastm](./quick/30-remove-dead-v4-1-chat-code-replace-lastm/) |
+| 31 | Fix remaining dashboard and terminal load blockers (async tmux) | 2026-04-06 | b7445cb | [31-fix-remaining-dashboard-and-terminal-loa](./quick/31-fix-remaining-dashboard-and-terminal-loa/) |
 
 ## Session Continuity
 
 Last session: 2026-04-05T21:28:00.000Z
-Stopped at: Completed quick task 25
+Stopped at: Completed quick task 31
 Resume file: None
 Next action: v4.1 milestone complete - all phases done
 | Phase 34 P01 | 9min | 2 tasks | 5 files |
