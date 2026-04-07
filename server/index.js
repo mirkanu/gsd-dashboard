@@ -17,6 +17,7 @@ const pricingRouter = require("./routes/pricing");
 const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
 const autopilotRouter = require("./routes/autopilot");
+const servicesRouter = require("./routes/services");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
 const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
@@ -72,6 +73,7 @@ function createApp() {
   app.use("/api/settings", settingsRouter);
   app.use("/api/gsd", gsdRouter);
   app.use("/api/autopilot", autopilotRouter);
+  app.use("/api/services", servicesRouter);
   app.use("/mcp", mcpRemote);
 
   app.get("/api/health", (_req, res) => {
