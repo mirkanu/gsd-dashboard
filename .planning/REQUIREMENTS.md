@@ -21,8 +21,8 @@ Requirements for Cost Intelligence, Auth & UX Polish milestone. Each maps to roa
 
 ### Terminal Reliability
 
-- [ ] **TERM-01**: Terminal WebSocket connection stays alive when idle for 10+ minutes (no timeout disconnect)
-- [ ] **TERM-02**: If connection drops, terminal auto-reconnects without user intervention
+- [x] **TERM-01**: Terminal WebSocket connection stays alive when idle for 10+ minutes (no timeout disconnect)
+- [x] **TERM-02**: If connection drops, terminal auto-reconnects without user intervention
 - [ ] **TERM-03**: In light mode, text selection highlight is clearly visible against the white background
 - [ ] **TERM-04**: GSD selection query title text is legible in light mode (not white-on-white)
 
@@ -75,8 +75,8 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | COST-04 | Phase 41 | Pending |
 | AUTH-01 | Phase 37 | Pending |
 | AUTH-02 | Phase 37 | Pending |
-| TERM-01 | Phase 37 | Pending |
-| TERM-02 | Phase 37 | Pending |
+| TERM-01 | Phase 37 | Complete |
+| TERM-02 | Phase 37 | Complete |
 | TERM-03 | Phase 38 | Pending |
 | TERM-04 | Phase 38 | Pending |
 | UX-01 | Phase 39 | Pending |
