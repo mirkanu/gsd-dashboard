@@ -4,7 +4,7 @@ milestone: v4.2
 milestone_name: Cost Intelligence, Auth & UX Polish
 status: planning
 stopped_at: Completed 37-auth-terminal-reliability/37-01-PLAN.md
-last_updated: "2026-04-07T17:46:59.060Z"
+last_updated: "2026-04-07T18:01:37.424Z"
 last_activity: 2026-04-07 — Roadmap created, 18 requirements mapped across 6 phases
 progress:
   total_phases: 6
