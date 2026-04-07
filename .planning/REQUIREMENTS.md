@@ -69,30 +69,30 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COST-01 | TBD | Pending |
-| COST-02 | TBD | Pending |
-| COST-03 | TBD | Pending |
-| COST-04 | TBD | Pending |
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| TERM-01 | TBD | Pending |
-| TERM-02 | TBD | Pending |
-| TERM-03 | TBD | Pending |
-| TERM-04 | TBD | Pending |
-| UX-01 | TBD | Pending |
-| UX-02 | TBD | Pending |
-| UX-03 | TBD | Pending |
-| CFG-01 | TBD | Pending |
-| CFG-02 | TBD | Pending |
-| CFG-03 | TBD | Pending |
-| NOTIF-01 | TBD | Pending |
-| NOTIF-02 | TBD | Pending |
+| COST-01 | Phase 40 | Pending |
+| COST-02 | Phase 40 | Pending |
+| COST-03 | Phase 41 | Pending |
+| COST-04 | Phase 41 | Pending |
+| AUTH-01 | Phase 37 | Pending |
+| AUTH-02 | Phase 37 | Pending |
+| TERM-01 | Phase 37 | Pending |
+| TERM-02 | Phase 37 | Pending |
+| TERM-03 | Phase 38 | Pending |
+| TERM-04 | Phase 38 | Pending |
+| UX-01 | Phase 39 | Pending |
+| UX-02 | Phase 39 | Pending |
+| UX-03 | Phase 38 | Pending |
+| CFG-01 | Phase 42 | Pending |
+| CFG-02 | Phase 42 | Pending |
+| CFG-03 | Phase 42 | Pending |
+| NOTIF-01 | Phase 42 | Pending |
+| NOTIF-02 | Phase 42 | Pending |
 
 **Coverage:**
 - v4.2 requirements: 18 total
-- Mapped to phases: 0
-- Unmapped: 18 (awaiting roadmap)
+- Mapped to phases: 18
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-07*
-*Last updated: 2026-04-07 after initial definition*
+*Last updated: 2026-04-07 — traceability complete, all 18 requirements mapped to phases 37-42*
