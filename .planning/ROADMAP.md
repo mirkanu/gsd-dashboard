@@ -68,7 +68,10 @@ Plans:
   2. GSD selection query title text is readable in light mode (not white-on-white)
   3. Waiting status badge displays in blue
   4. Paused status badge displays in orange
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 38-01-PLAN.md — xterm selectionBackground + terminal header button hover + blue/orange status badges
 
 ### Phase 39: Resizable Columns
 **Goal**: Users can resize the 3-column desktop layout and their preferences stick
@@ -120,7 +123,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 37. Auth & Terminal Reliability | 2/2 | Complete    | 2026-04-07 | - |
-| 38. Terminal Light Mode & Status Colors | v4.2 | 0/TBD | Not started | - |
+| 38. Terminal Light Mode & Status Colors | v4.2 | 0/1 | Not started | - |
 | 39. Resizable Columns | v4.2 | 0/TBD | Not started | - |
 | 40. External Services Dashboard | v4.2 | 0/TBD | Not started | - |
 | 41. Claude Usage Tracking | v4.2 | 0/TBD | Not started | - |
