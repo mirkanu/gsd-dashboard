@@ -81,7 +81,10 @@ Plans:
   1. Drag handles are visible between each column on the desktop layout
   2. User can drag a handle to widen or narrow a column
   3. Column widths are preserved after a page reload
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 39-01-PLAN.md — useResizableColumns hook + drag handle wiring in GSD.tsx
 
 ### Phase 40: External Services Dashboard
 **Goal**: Users can see all external services used by each project with live status on a dedicated page
@@ -124,7 +127,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 37. Auth & Terminal Reliability | 2/2 | Complete    | 2026-04-07 | - |
 | 38. Terminal Light Mode & Status Colors | 1/1 | Complete    | 2026-04-07 | - |
-| 39. Resizable Columns | v4.2 | 0/TBD | Not started | - |
+| 39. Resizable Columns | v4.2 | 0/1 | Not started | - |
 | 40. External Services Dashboard | v4.2 | 0/TBD | Not started | - |
 | 41. Claude Usage Tracking | v4.2 | 0/TBD | Not started | - |
 | 42. Configuration UI | v4.2 | 0/TBD | Not started | - |
