@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: Cost Intelligence, Auth & UX Polish
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-04-07T00:00:00.000Z"
-last_activity: "2026-04-07 - Roadmap created for v4.2 (phases 37-42)"
+status: planning
+stopped_at: Completed 37-auth-terminal-reliability-37-02-PLAN.md
+last_updated: "2026-04-07T17:37:55.248Z"
+last_activity: 2026-04-07 — Roadmap created, 18 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -50,6 +50,8 @@ Progress: [░░░░░░░░░░] 0% (0/6 phases complete)
 - [v4.1]: Terminal-first approach beats chat classifier — raw terminal is more reliable, faster, and always accurate
 - [v4.1]: Async tmux + API caching critical for responsiveness (sync calls blocked event loop 5-15s)
 - [v4.2]: Phases 37-38 are foundational fixes (auth, terminal reliability, light mode) — do before new features
+- [Phase 37-auth-terminal-reliability]: 20s ping interval on terminal WS (vs 30s main WS) — terminal proxies are less tolerant of idle
+- [Phase 37-auth-terminal-reliability]: Terminal reconnect reuses xterm Terminal instance — preserves scrollback and avoids re-init flicker
 
 ### Pending Todos
 
@@ -61,7 +63,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-07
-Stopped at: Roadmap created for v4.2 — 6 phases defined, 18 requirements mapped
+Last session: 2026-04-07T17:37:55.245Z
+Stopped at: Completed 37-auth-terminal-reliability-37-02-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 37`
