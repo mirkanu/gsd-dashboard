@@ -349,37 +349,63 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
       termRef.current = terminal;
       fitAddonRef.current = fitAddon;
 
-      // Connect WebSocket
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        // Send initial size
-        ws.send(JSON.stringify({ type: 'resize', cols: terminal.cols, rows: terminal.rows }));
-      };
+      // Auto-reconnect state (TERM-02)
+      const retryCountRef = { current: 0 };
+      const MAX_RETRIES = 10;
 
       // Strip mouse-mode enable/disable sequences from pty output so xterm.js
       // never enters mouse reporting mode. This keeps local text selection and
       // scroll working. Tmux sends these when `set -g mouse on` is active.
       const MOUSE_MODE_RE = /\x1b\[\?(?:1000|1002|1003|1006|1015)[hl]/g;
-      ws.onmessage = (event) => {
-        const data = typeof event.data === 'string' ? event.data.replace(MOUSE_MODE_RE, '') : event.data;
-        terminal.write(data);
-      };
 
-      ws.onclose = (event) => {
-        if (event.code === 4004) {
-          terminal.write('\r\n\x1b[31mSession is not active.\x1b[0m\r\n');
-        } else if (event.code === 4005) {
-          terminal.write('\r\n\x1b[31mTerminal backend unavailable (node-pty not installed).\x1b[0m\r\n');
-        } else if (event.code !== 1000) {
-          terminal.write(`\r\n\x1b[31mConnection closed (${event.code}).\x1b[0m\r\n`);
-        }
-      };
+      // Connect WebSocket — extracted so it can be called on initial mount and on reconnect.
+      function connectWs(term: InstanceType<typeof Terminal>, url: string) {
+        const ws = new WebSocket(url);
+        wsRef.current = ws;
 
-      ws.onerror = () => {
-        terminal.write('\r\n\x1b[31mFailed to connect to terminal backend.\x1b[0m\r\n');
-      };
+        ws.onopen = () => {
+          retryCountRef.current = 0;
+          setConnected(true);
+          ws.send(JSON.stringify({ type: 'resize', cols: term.cols, rows: term.rows }));
+        };
+
+        ws.onmessage = (event) => {
+          const data = typeof event.data === 'string' ? event.data.replace(MOUSE_MODE_RE, '') : event.data;
+          term.write(data);
+        };
+
+        ws.onclose = (event) => {
+          setConnected(false);
+          if (event.code === 4004) {
+            term.write('\r\n\x1b[31mSession is not active.\x1b[0m\r\n');
+            return;
+          }
+          if (event.code === 4005) {
+            term.write('\r\n\x1b[31mTerminal backend unavailable (node-pty not installed).\x1b[0m\r\n');
+            return;
+          }
+          if (event.code === 1000) return; // clean close (e.g. user navigated away)
+          if (cancelled) return; // component unmounted
+          if (retryCountRef.current >= MAX_RETRIES) {
+            term.write('\r\n\x1b[31mReconnect failed after 10 attempts.\x1b[0m\r\n');
+            return;
+          }
+          retryCountRef.current += 1;
+          term.write(`\r\n\x1b[33mReconnecting... (attempt ${retryCountRef.current})\x1b[0m\r\n`);
+          setTimeout(() => {
+            if (!cancelled) connectWs(term, url);
+          }, 2000);
+        };
+
+        ws.onerror = () => {
+          // Let onclose handle it — onerror always precedes onclose
+        };
+
+        return ws;
+      }
+
+      // Initial WebSocket connection
+      connectWs(terminal, wsUrl);
 
       // Forward keystrokes to WS — selectively filter mouse sequences.
       // We strip mouse-mode enable from pty output (above) so xterm.js does local
@@ -389,7 +415,8 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
       // On desktop, block click/drag (buttons 0-2, 32-34) but allow scroll through.
       const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
       terminal.onData((data) => {
-        if (ws.readyState !== WebSocket.OPEN) return;
+        const activeWs = wsRef.current;
+        if (!activeWs || activeWs.readyState !== WebSocket.OPEN) return;
         if (data.startsWith('\x1b[M')) return; // X10 — always block
         if (data.startsWith('\x1b[<')) {
           if (isTouchDevice) return; // mobile — block all SGR
@@ -397,7 +424,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
           const btn = parseInt(data.slice(3), 10);
           if (isNaN(btn) || btn < 64) return;
         }
-        ws.send(data);
+        activeWs.send(data);
       });
 
       // Copy selected text to clipboard automatically when selection changes
@@ -409,8 +436,9 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
       // Handle window resize
       const handleResize = () => {
         fitAddon.fit();
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: 'resize', cols: terminal.cols, rows: terminal.rows }));
+        const activeWs = wsRef.current;
+        if (activeWs?.readyState === WebSocket.OPEN) {
+          activeWs.send(JSON.stringify({ type: 'resize', cols: terminal.cols, rows: terminal.rows }));
         }
       };
       window.addEventListener('resize', handleResize);
@@ -427,10 +455,11 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
       // Returning false prevents xterm.js from processing the event at all.
       const container = containerRef.current;
       terminal.attachCustomWheelEventHandler((ev) => {
-        if (ws.readyState !== WebSocket.OPEN) return false;
+        const activeWs = wsRef.current;
+        if (!activeWs || activeWs.readyState !== WebSocket.OPEN) return false;
         const lines = Math.max(1, Math.round(Math.abs(ev.deltaY) / ((terminal.options.fontSize as number) ?? 14)));
         const seq = ev.deltaY > 0 ? '\x1b[<65;1;1M' : '\x1b[<64;1;1M';
-        for (let i = 0; i < lines; i++) ws.send(seq);
+        for (let i = 0; i < lines; i++) activeWs.send(seq);
         return false;
       });
 
@@ -462,8 +491,9 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         const fontSize = (terminal.options.fontSize as number) ?? 10;
         const lines = Math.max(1, Math.abs(Math.round(dy / (fontSize * SCROLL_DAMPING))));
         const seq = dy > 0 ? '\x1b[<64;1;1M' : '\x1b[<65;1;1M';
+        const activeWs = wsRef.current;
         for (let i = 0; i < lines; i++) {
-          if (ws.readyState === WebSocket.OPEN) ws.send(seq);
+          if (activeWs?.readyState === WebSocket.OPEN) activeWs.send(seq);
         }
       };
       // Tap to focus: call terminal.focus() on touchend when no scroll intent
@@ -506,7 +536,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         xtermTextarea?.removeEventListener('focus', handleXtermFocus);
         xtermTextarea?.removeEventListener('blur', handleXtermBlur);
         clearTimeout(blurTimer);
-        ws.close();
+        wsRef.current?.close();
         terminal.dispose();
       };
     })();
