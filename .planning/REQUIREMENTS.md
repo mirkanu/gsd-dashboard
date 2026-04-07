@@ -23,14 +23,14 @@ Requirements for Cost Intelligence, Auth & UX Polish milestone. Each maps to roa
 
 - [x] **TERM-01**: Terminal WebSocket connection stays alive when idle for 10+ minutes (no timeout disconnect)
 - [x] **TERM-02**: If connection drops, terminal auto-reconnects without user intervention
-- [ ] **TERM-03**: In light mode, text selection highlight is clearly visible against the white background
-- [ ] **TERM-04**: GSD selection query title text is legible in light mode (not white-on-white)
+- [x] **TERM-03**: In light mode, text selection highlight is clearly visible against the white background
+- [x] **TERM-04**: GSD selection query title text is legible in light mode (not white-on-white)
 
 ### UX Polish
 
 - [ ] **UX-01**: Desktop 3-column layout has drag handles allowing user to resize column widths
 - [ ] **UX-02**: Column width preferences persist across page reloads
-- [ ] **UX-03**: Waiting status displays in blue, Paused status displays in orange
+- [x] **UX-03**: Waiting status displays in blue, Paused status displays in orange
 
 ### Configuration
 
@@ -77,11 +77,11 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | AUTH-02 | Phase 37 | Complete |
 | TERM-01 | Phase 37 | Complete |
 | TERM-02 | Phase 37 | Complete |
-| TERM-03 | Phase 38 | Pending |
-| TERM-04 | Phase 38 | Pending |
+| TERM-03 | Phase 38 | Complete |
+| TERM-04 | Phase 38 | Complete |
 | UX-01 | Phase 39 | Pending |
 | UX-02 | Phase 39 | Pending |
-| UX-03 | Phase 38 | Pending |
+| UX-03 | Phase 38 | Complete |
 | CFG-01 | Phase 42 | Pending |
 | CFG-02 | Phase 42 | Pending |
 | CFG-03 | Phase 42 | Pending |
