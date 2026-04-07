@@ -35,7 +35,7 @@ Quick tasks: #24 lazy-load, #25 perf fixes, #27 terminal-first layout, #28 mobil
 
 ## Phase Summary
 
-- [ ] **Phase 37: Auth & Terminal Reliability** - Persistent login and keep-alive terminal connection
+- [x] **Phase 37: Auth & Terminal Reliability** - Persistent login and keep-alive terminal connection (completed 2026-04-07)
 - [ ] **Phase 38: Terminal Light Mode & Status Colors** - Fix invisible text and wrong status colors in light mode
 - [ ] **Phase 39: Resizable Columns** - Drag handles for desktop 3-column layout with persisted widths
 - [ ] **Phase 40: External Services Dashboard** - New page listing all external services with live status
@@ -119,7 +119,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 37. Auth & Terminal Reliability | 1/2 | In Progress|  | - |
+| 37. Auth & Terminal Reliability | 2/2 | Complete   | 2026-04-07 | - |
 | 38. Terminal Light Mode & Status Colors | v4.2 | 0/TBD | Not started | - |
 | 39. Resizable Columns | v4.2 | 0/TBD | Not started | - |
 | 40. External Services Dashboard | v4.2 | 0/TBD | Not started | - |
