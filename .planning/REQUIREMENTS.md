@@ -16,8 +16,8 @@ Requirements for Cost Intelligence, Auth & UX Polish milestone. Each maps to roa
 
 ### Authentication
 
-- [ ] **AUTH-01**: User authenticates once and the browser session persists across reloads for at least 30 days
-- [ ] **AUTH-02**: Login uses a secure token/cookie instead of a modal prompt on every page load
+- [x] **AUTH-01**: User authenticates once and the browser session persists across reloads for at least 30 days
+- [x] **AUTH-02**: Login uses a secure token/cookie instead of a modal prompt on every page load
 
 ### Terminal Reliability
 
@@ -73,8 +73,8 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | COST-02 | Phase 40 | Pending |
 | COST-03 | Phase 41 | Pending |
 | COST-04 | Phase 41 | Pending |
-| AUTH-01 | Phase 37 | Pending |
-| AUTH-02 | Phase 37 | Pending |
+| AUTH-01 | Phase 37 | Complete |
+| AUTH-02 | Phase 37 | Complete |
 | TERM-01 | Phase 37 | Complete |
 | TERM-02 | Phase 37 | Complete |
 | TERM-03 | Phase 38 | Pending |
