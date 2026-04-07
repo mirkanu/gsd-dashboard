@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: Cost Intelligence, Auth & UX Polish
-status: planning
-stopped_at: Completed 38-terminal-light-mode-status-colors/38-01-PLAN.md
-last_updated: "2026-04-07T19:13:07.382Z"
-last_activity: 2026-04-07 — Roadmap created, 18 requirements mapped across 6 phases
+status: in_progress
+stopped_at: Completed 39-resizable-columns/39-01-PLAN.md
+last_updated: "2026-04-06T21:46:00Z"
+last_activity: 2026-04-06 — Completed 39-01 resizable columns (UX-01, UX-02)
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
-  percent: 0
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
+  percent: 50
 ---
 
 # Project State
@@ -26,12 +26,12 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 ## Current Position
 
 Milestone: v4.2 Cost Intelligence, Auth & UX Polish
-Phase: 37 of 42 (Auth & Terminal Reliability) — ready to plan
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-04-07 — Roadmap created, 18 requirements mapped across 6 phases
+Phase: 39 of 42 (Resizable Columns) — complete
+Plan: 39-01 complete
+Status: Phase complete
+Last activity: 2026-04-06 — Completed 39-01 resizable columns (UX-01, UX-02)
 
-Progress: [░░░░░░░░░░] 0% (0/6 phases complete)
+Progress: [█████░░░░░] 50% (3/6 phases complete)
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0% (0/6 phases complete)
 - [Phase 38]: xterm selectionBackground uses indigo rgba(99,102,241) to match ::selection CSS override
 - [Phase 38]: Terminal header buttons use hover:text-gray-900 instead of hover:text-white — visible in both light and dark mode
 - [Phase 38]: Status colors: waiting=blue-500, paused=orange-500 per UX-03 spec across all 4 views
+- [Phase 39]: Flex layout over grid for resizable columns — grid can't accommodate drag handle dividers as siblings; middle uses flex-1 not explicit width to avoid floating-point sum edge cases
 
 ### Pending Todos
 
@@ -73,10 +74,11 @@ None.
 | 35 | Fix auth blocking dashboard access - AUTH_REQUIRED error | 2026-04-07 | 7ba51c5 | [35-fix-auth-blocking-dashboard-access-auth-](./quick/35-fix-auth-blocking-dashboard-access-auth-/) |
 | 36 | Add GSD MCP tools and disable dashboard_ tools | 2026-04-07 | 023ed67 | [36-add-gsd-mcp-tools-and-disable-dashboard-](./quick/36-add-gsd-mcp-tools-and-disable-dashboard-/) |
 | Phase 38-terminal-light-mode-status-colors P01 | 3m31s | 2 tasks | 4 files |
+| Phase 39-resizable-columns P01 | 15min | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-04-07T19:05:48.865Z
-Stopped at: Completed 38-terminal-light-mode-status-colors/38-01-PLAN.md
+Last session: 2026-04-06T21:46:00Z
+Stopped at: Completed 39-resizable-columns/39-01-PLAN.md
 Resume file: None
-Next action: `/gsd:plan-phase 37`
+Next action: Continue with next v4.2 phase
