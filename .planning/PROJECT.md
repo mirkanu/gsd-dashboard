@@ -39,10 +39,18 @@ At a glance, see where every GSD project stands and interact with any session â€
 
 ### Active
 
+- [ ] External services dashboard: page showing Railway, Vercel, Resend, GitHub, etc. per project with status and costs
+- [ ] Claude Max usage tracking: session and weekly token consumption with limits display
+- [ ] Autopilot cost gate: configurable cost limits for autonomous execution
+- [ ] Persistent auth: long-lived browser session replacing modal login on every reload
+- [ ] Terminal timeout fix: prevent disconnect after ~3 minutes idle
+- [ ] Terminal light mode colors: fix invisible selection highlight and white-on-white text
+- [ ] Resizable 3-column layout: drag handles between columns in desktop view
+- [ ] Status color changes: waiting=blue, paused=orange
+- [ ] CLAUDE.md editor: view/edit global and per-project CLAUDE.md files from dashboard
+
 ### Future
 
-- [ ] Usage & cost tracking: Claude Max session/weekly limits, external service costs (deferred from v3.0)
-- [ ] External services page: Railway, GitHub, Claude, OpenAI status/cost with receipt ingestion (deferred from v3.0)
 - [ ] New project creation: one-click directory + tmux + Claude launch from dashboard (deferred)
 - [ ] Email receipt parsing pipeline for automated cost tracking (deferred)
 - [ ] GitHub issues link on project cards (deferred from v3.0)
@@ -90,9 +98,19 @@ v4.1 lesson: raw terminal output is more reliable than any classifier/formatter 
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
-## Current Milestone: Planning next
+## Current Milestone: v4.2 Cost Intelligence, Auth & UX Polish
 
-v4.1 completed. Ready for `/gsd:new-milestone`.
+**Goal:** Add cost/service tracking, fix auth and terminal reliability, and polish the desktop UX with resizable columns and configurable CLAUDE.md editing.
+
+**Target features:**
+- External services dashboard page (Railway, Vercel, Resend, GitHub per project)
+- Claude Max token usage tracking with weekly limits
+- Persistent auth (remember browser, stop re-entering on every reload)
+- Terminal timeout fix (stays alive beyond 3 minutes idle)
+- Terminal light mode color fixes (selection highlight, white-on-white text)
+- Resizable 3-column desktop layout (drag handles)
+- Status color changes (waiting=blue, paused=orange)
+- CLAUDE.md editor (view/edit global + per-project files from dashboard)
 
 ---
-*Last updated: 2026-04-06 after v4.1 milestone completion*
+*Last updated: 2026-04-07 after v4.2 milestone start*
