@@ -62,7 +62,7 @@ Progress: [█████░░░░░] 50% (3/6 phases complete)
 
 ### Pending Todos
 
-None.
+- Simplify cookieAuth: skip all `/api/` paths and rely on client-side auth gate only (single-user dashboard doesn't need per-route server auth)
 
 ### Blockers/Concerns
 
