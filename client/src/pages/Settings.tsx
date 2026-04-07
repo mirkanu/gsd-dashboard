@@ -171,7 +171,7 @@ function Toggle({
 
 // ─── Main component ───
 
-export function Settings() {
+export function Settings({ logout }: { logout?: () => Promise<void> }) {
   const [pricing, setPricing] = useState<ModelPricing[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingPattern, setEditingPattern] = useState<string | null>(null);
@@ -1126,6 +1126,26 @@ export function Settings() {
           <p className="text-xs text-gray-500">Loading server info...</p>
         )}
       </section>
+
+      {/* Sign out */}
+      {logout && (
+        <section>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-200">Session</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Sign out of the dashboard</p>
+            </div>
+            <button
+              onClick={() => void logout()}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700
+                text-sm text-gray-300 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/10
+                transition-colors active:scale-[0.97]"
+            >
+              Sign out
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
