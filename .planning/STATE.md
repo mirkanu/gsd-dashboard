@@ -68,6 +68,7 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 35 | Fix auth blocking dashboard access - AUTH_REQUIRED error | 2026-04-07 | 7ba51c5 | [35-fix-auth-blocking-dashboard-access-auth-](./quick/35-fix-auth-blocking-dashboard-access-auth-/) |
+| 36 | Add GSD MCP tools and disable dashboard_ tools | 2026-04-07 | 023ed67 | [36-add-gsd-mcp-tools-and-disable-dashboard-](./quick/36-add-gsd-mcp-tools-and-disable-dashboard-/) |
 
 ## Session Continuity
 
