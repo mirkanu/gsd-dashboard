@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.1
-milestone_name: Chat Polish
-status: completed
-stopped_at: Completed quick task 25
-last_updated: "2026-04-06T08:58:11.260Z"
-last_activity: "2026-04-06 - Completed quick task 31: Fix remaining dashboard and terminal load blockers (async tmux)"
+milestone: v4.2
+milestone_name: Cost Intelligence, Auth & UX Polish
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-07T00:00:00.000Z"
+last_activity: "2026-04-07 - Milestone v4.2 started"
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,13 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** v4.1 complete — planning next milestone
+**Current focus:** v4.2 — Cost Intelligence, Auth & UX Polish
 
 ## Current Position
 
-Milestone: v4.1 Chat Polish → Terminal-First — SHIPPED 2026-04-06
-Status: Complete — ready for /gsd:new-milestone
-Last activity: 2026-04-06 - Completed v4.1 milestone archival
+Milestone: v4.2 Cost Intelligence, Auth & UX Polish
+Phase: Not started (defining requirements)
+Status: Defining requirements
+Last activity: 2026-04-07 — Milestone v4.2 started
 
 ## Performance Metrics
 
