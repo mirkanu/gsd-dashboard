@@ -94,7 +94,10 @@ Plans:
   1. A services page is accessible from the main navigation
   2. The services page lists all configured external services (Railway, Vercel, Resend, GitHub, Claude, OpenAI) grouped by project
   3. Each service entry shows a live status indicator (up/down/degraded) fetched from the service's status API
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 40-01-PLAN.md — Server status endpoint + ServicesPage component + sidebar nav entry
 
 ### Phase 41: Claude Usage Tracking
 **Goal**: Users can see Claude Max token consumption per session and over the rolling week
@@ -128,6 +131,6 @@ Plans:
 | 37. Auth & Terminal Reliability | 2/2 | Complete    | 2026-04-07 | - |
 | 38. Terminal Light Mode & Status Colors | 1/1 | Complete    | 2026-04-07 | - |
 | 39. Resizable Columns | 1/1 | Complete    | 2026-04-07 | - |
-| 40. External Services Dashboard | v4.2 | 0/TBD | Not started | - |
+| 40. External Services Dashboard | v4.2 | 0/1 | Not started | - |
 | 41. Claude Usage Tracking | v4.2 | 0/TBD | Not started | - |
 | 42. Configuration UI | v4.2 | 0/TBD | Not started | - |
