@@ -127,7 +127,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 37. Auth & Terminal Reliability | 2/2 | Complete    | 2026-04-07 | - |
 | 38. Terminal Light Mode & Status Colors | 1/1 | Complete    | 2026-04-07 | - |
-| 39. Resizable Columns | 1/1 | Complete   | 2026-04-07 | - |
+| 39. Resizable Columns | 1/1 | Complete    | 2026-04-07 | - |
 | 40. External Services Dashboard | v4.2 | 0/TBD | Not started | - |
 | 41. Claude Usage Tracking | v4.2 | 0/TBD | Not started | - |
 | 42. Configuration UI | v4.2 | 0/TBD | Not started | - |
