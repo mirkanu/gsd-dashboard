@@ -28,8 +28,8 @@ Requirements for Cost Intelligence, Auth & UX Polish milestone. Each maps to roa
 
 ### UX Polish
 
-- [ ] **UX-01**: Desktop 3-column layout has drag handles allowing user to resize column widths
-- [ ] **UX-02**: Column width preferences persist across page reloads
+- [x] **UX-01**: Desktop 3-column layout has drag handles allowing user to resize column widths
+- [x] **UX-02**: Column width preferences persist across page reloads
 - [x] **UX-03**: Waiting status displays in blue, Paused status displays in orange
 
 ### Configuration
@@ -79,8 +79,8 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | TERM-02 | Phase 37 | Complete |
 | TERM-03 | Phase 38 | Complete |
 | TERM-04 | Phase 38 | Complete |
-| UX-01 | Phase 39 | Pending |
-| UX-02 | Phase 39 | Pending |
+| UX-01 | Phase 39 | Complete |
+| UX-02 | Phase 39 | Complete |
 | UX-03 | Phase 38 | Complete |
 | CFG-01 | Phase 42 | Pending |
 | CFG-02 | Phase 42 | Pending |
