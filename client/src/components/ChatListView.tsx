@@ -14,8 +14,8 @@ interface ChatListViewProps {
 
 const STATE_BORDER: Record<SessionState, string> = {
   working: "border-l-emerald-500",
-  waiting: "border-l-amber-400",
-  paused: "border-l-red-500",
+  waiting: "border-l-blue-500",
+  paused: "border-l-orange-500",
   archived: "border-l-gray-600",
 };
 
