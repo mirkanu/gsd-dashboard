@@ -38,7 +38,7 @@ Quick tasks: #24 lazy-load, #25 perf fixes, #27 terminal-first layout, #28 mobil
 - [x] **Phase 37: Auth & Terminal Reliability** - Persistent login and keep-alive terminal connection (completed 2026-04-07)
 - [x] **Phase 38: Terminal Light Mode & Status Colors** - Fix invisible text and wrong status colors in light mode (completed 2026-04-07)
 - [x] **Phase 39: Resizable Columns** - Drag handles for desktop 3-column layout with persisted widths (completed 2026-04-07)
-- [ ] **Phase 40: External Services Dashboard** - New page listing all external services with live status
+- [x] **Phase 40: External Services Dashboard** - New page listing all external services with live status (completed 2026-04-07)
 - [ ] **Phase 41: Claude Usage Tracking** - Token usage data layer, SQLite persistence, and usage UI
 - [ ] **Phase 42: Configuration UI** - CLAUDE.md editor, verbosity settings, and Telegram notification config
 
@@ -131,6 +131,6 @@ Plans:
 | 37. Auth & Terminal Reliability | 2/2 | Complete    | 2026-04-07 | - |
 | 38. Terminal Light Mode & Status Colors | 1/1 | Complete    | 2026-04-07 | - |
 | 39. Resizable Columns | 1/1 | Complete    | 2026-04-07 | - |
-| 40. External Services Dashboard | v4.2 | 0/1 | Not started | - |
+| 40. External Services Dashboard | 1/1 | Complete   | 2026-04-07 | - |
 | 41. Claude Usage Tracking | v4.2 | 0/TBD | Not started | - |
 | 42. Configuration UI | v4.2 | 0/TBD | Not started | - |
