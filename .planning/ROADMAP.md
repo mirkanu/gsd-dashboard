@@ -119,7 +119,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 37. Auth & Terminal Reliability | 2/2 | Complete   | 2026-04-07 | - |
+| 37. Auth & Terminal Reliability | 2/2 | Complete    | 2026-04-07 | - |
 | 38. Terminal Light Mode & Status Colors | v4.2 | 0/TBD | Not started | - |
 | 39. Resizable Columns | v4.2 | 0/TBD | Not started | - |
 | 40. External Services Dashboard | v4.2 | 0/TBD | Not started | - |
