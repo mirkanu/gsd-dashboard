@@ -16,11 +16,13 @@ import {
   Bot,
   ChevronDown,
   ChevronRight,
+  Server,
 } from "lucide-react";
 
 // ─── Primary nav (always visible at top) ─────────────────────────────────────
 const PRIMARY_ITEMS = [
   { to: "/gsd", icon: MapPin, label: "GSD Projects" },
+  { to: "/services", icon: Server, label: "Services" },
 ] as const;
 
 // ─── Agent Dashboard submenu ──────────────────────────────────────────────────
