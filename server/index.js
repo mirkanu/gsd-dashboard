@@ -20,8 +20,9 @@ const autopilotRouter = require("./routes/autopilot");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
 const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
+const { authRouter, isValidToken } = require("./routes/auth");
 
-function basicAuth(req, res, next) {
+function cookieAuth(req, res, next) {
   // Skip auth for localhost and internal hook events
   const host = req.hostname || "";
   if (host === "localhost" || host === "127.0.0.1") return next();
@@ -35,29 +36,29 @@ function basicAuth(req, res, next) {
   if (req.path.startsWith("/api/stats")) return next();
   if (req.path.startsWith("/api/analytics")) return next();
   if (req.path === "/api/health") return next();
+  if (req.path.startsWith("/api/auth")) return next(); // login/logout are public
 
-  const user = process.env.DASHBOARD_USER || "admin";
   const pass = process.env.DASHBOARD_PASS;
   if (!pass) return next(); // no password set = no auth
 
-  const header = req.headers["authorization"] || "";
-  const b64 = header.startsWith("Basic ") ? header.slice(6) : "";
-  const [u, p] = Buffer.from(b64, "base64").toString().split(":");
-  if (u === user && p === pass) return next();
+  const cookieHeader = req.headers.cookie || "";
+  const match = cookieHeader.split(";").map(s => s.trim()).find(s => s.startsWith("gsd_token="));
+  const token = match ? match.slice("gsd_token=".length) : "";
+  if (isValidToken(token)) return next();
 
-  res.set("WWW-Authenticate", 'Basic realm="GSD Dashboard"');
-  res.status(401).send("Authentication required");
+  res.status(401).json({ error: "Unauthorized", code: "AUTH_REQUIRED" });
 }
 
 function createApp() {
   const app = express();
   const gsdDataUrl = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
 
-  app.use(basicAuth);
+  app.use(cookieAuth);
   app.use(cors());
   app.use(express.json({ limit: "1mb" }));
   app.use(createAgentProxy(gsdDataUrl));
 
+  app.use("/api/auth", authRouter);
   app.use("/api/sessions", sessionsRouter);
   app.use("/api/agents", agentsRouter);
   app.use("/api/events", eventsRouter);
