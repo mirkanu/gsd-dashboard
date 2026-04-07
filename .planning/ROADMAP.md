@@ -53,7 +53,11 @@ Quick tasks: #24 lazy-load, #25 perf fixes, #27 terminal-first layout, #28 mobil
   2. The login modal does not appear on page reload when the session is still valid
   3. A terminal session left idle for 10+ minutes does not disconnect
   4. If the terminal WebSocket drops, it reconnects automatically without any user action
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 37-01-PLAN.md — Cookie-based auth: login/logout endpoint + client gate
+- [ ] 37-02-PLAN.md — Terminal WebSocket keepalive + auto-reconnect
 
 ### Phase 38: Terminal Light Mode & Status Colors
 **Goal**: Terminal is fully legible in light mode and status badges use the correct colors
@@ -115,7 +119,7 @@ Quick tasks: #24 lazy-load, #25 perf fixes, #27 terminal-first layout, #28 mobil
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 37. Auth & Terminal Reliability | v4.2 | 0/TBD | Not started | - |
+| 37. Auth & Terminal Reliability | v4.2 | 0/2 | Not started | - |
 | 38. Terminal Light Mode & Status Colors | v4.2 | 0/TBD | Not started | - |
 | 39. Resizable Columns | v4.2 | 0/TBD | Not started | - |
 | 40. External Services Dashboard | v4.2 | 0/TBD | Not started | - |
