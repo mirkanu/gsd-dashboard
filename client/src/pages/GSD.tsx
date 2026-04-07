@@ -20,6 +20,7 @@ import { ChatListView } from "../components/ChatListView";
 import { ChatListFilters } from "../components/ChatListFilters";
 import { ProjectDetailsPanel } from "../components/ProjectDetailsPanel";
 import { AutopilotControls } from "../components/AutopilotControls";
+import { useResizableColumns } from "../hooks/useResizableColumns";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() =>
@@ -850,6 +851,7 @@ function ProjectCard({
 
 export function GSD() {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const { widths, startDragLeft, startDragRight, isDragging } = useResizableColumns();
   const [projects, setProjects] = useState<GsdProject[]>([]);
   const [rateLimit, setRateLimit] = useState<{ active: boolean; resetAt: string | null }>({ active: false, resetAt: null });
   const [loading, setLoading] = useState(true);
@@ -1094,9 +1096,12 @@ export function GSD() {
           )}
 
           {!loading && !error && (
-            <div className="grid grid-cols-[20%_1fr_30%] flex-1 min-h-0 border border-border rounded-xl overflow-hidden">
+            <div className={`flex flex-1 min-h-0 border border-border rounded-xl overflow-hidden ${isDragging ? 'select-none cursor-col-resize' : ''}`}>
               {/* Left: project list + filters — always visible */}
-              <div className="flex flex-col border-r border-border overflow-hidden bg-surface-1">
+              <div
+                className="flex flex-col border-r border-border overflow-hidden bg-surface-1 flex-shrink-0"
+                style={{ width: `${widths.left}%` }}
+              >
                 <ChatListFilters
                   projects={projects}
                   activeFilter={activeFilter}
@@ -1111,8 +1116,15 @@ export function GSD() {
                 </div>
               </div>
 
+              {/* Drag handle: left | middle */}
+              <div
+                onMouseDown={startDragLeft}
+                className={`w-1 flex-shrink-0 cursor-col-resize bg-border hover:bg-accent/60 transition-colors ${isDragging ? 'bg-accent/60' : ''}`}
+                title="Drag to resize"
+              />
+
               {/* Middle: terminal (always shown when project selected) */}
-              <div className="flex flex-col overflow-hidden" style={{ overscrollBehavior: 'contain' }}>
+              <div className="flex flex-col overflow-hidden flex-1 min-w-0" style={{ overscrollBehavior: 'contain' }}>
                 {selectedProject ? (
                   <TerminalOverlay
                     projectName={selectedProject}
@@ -1128,8 +1140,18 @@ export function GSD() {
                 )}
               </div>
 
+              {/* Drag handle: middle | right */}
+              <div
+                onMouseDown={startDragRight}
+                className={`w-1 flex-shrink-0 cursor-col-resize bg-border hover:bg-accent/60 transition-colors ${isDragging ? 'bg-accent/60' : ''}`}
+                title="Drag to resize"
+              />
+
               {/* Right: project details panel */}
-              <div className="overflow-hidden">
+              <div
+                className="overflow-hidden flex-shrink-0"
+                style={{ width: `${widths.right}%` }}
+              >
                 {selectedProj ? (
                   <ProjectDetailsPanel
                     project={selectedProj}
