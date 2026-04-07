@@ -2,22 +2,48 @@
   "projects": [
     {
       "name": "josie",
-      "root": "/data/home/josie"
+      "root": "/data/home/josie",
+      "services": [
+        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
+        { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
+        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+      ]
     },
     {
       "name": "gsddashboard",
       "root": "/data/home/gsddashboard",
-      "tmux_session": "gsddashboard"
+      "tmux_session": "gsddashboard",
+      "services": [
+        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
+        { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
+        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" },
+        { "name": "Vercel", "statusUrl": "https://www.vercel-status.com/api/v2/status.json" }
+      ]
     },
     {
       "name": "debates",
       "root": "/data/home/debates",
-      "tmux_session": "debates"
+      "tmux_session": "debates",
+      "services": [
+        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
+        { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
+        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" },
+        { "name": "Vercel", "statusUrl": "https://www.vercel-status.com/api/v2/status.json" }
+      ]
     },
     {
       "name": "reforma",
       "root": "/data/home/reforma",
-      "tmux_session": "reforma"
+      "tmux_session": "reforma",
+      "services": [
+        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
+        { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
+        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+      ]
     },
     {
       "name": "gsdTelegram",
@@ -28,19 +54,37 @@
     {
       "name": "ynab",
       "root": "/data/home/ynab",
-      "tmux_session": "ynab"
+      "tmux_session": "ynab",
+      "services": [
+        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
+        { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
+        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+      ]
     },
     {
       "name": "prc",
       "display_name": "PRC",
       "root": "/data/home/prc",
-      "tmux_session": "PRC"
+      "tmux_session": "PRC",
+      "services": [
+        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
+        { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
+        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+      ]
     },
     {
       "name": "KidAI",
       "display_name": "KidsAI",
       "root": "/data/home/KidAI",
-      "tmux_session": "KidAI"
+      "tmux_session": "KidAI",
+      "services": [
+        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
+        { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
+        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+      ]
     }
   ]
 }
