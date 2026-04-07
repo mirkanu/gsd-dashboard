@@ -38,6 +38,9 @@ function cookieAuth(req, res, next) {
   if (req.path === "/api/health") return next();
   if (req.path.startsWith("/api/auth")) return next(); // login/logout are public
 
+  // Allow static assets and SPA routes through — client-side auth gate handles UI access
+  if (!req.path.startsWith("/api/")) return next();
+
   const pass = process.env.DASHBOARD_PASS;
   if (!pass) return next(); // no password set = no auth
 
