@@ -49,8 +49,8 @@ function classifyStatus(status: string | null): StatusLevel {
 
 const SESSION_STATE_CONFIG: Record<import("../lib/types").SessionState, { border: string; label: string; labelCls: string }> = {
   working:  { border: "border-l-4 border-l-emerald-500",  label: "Working",  labelCls: "text-emerald-400" },
-  waiting:  { border: "border-l-4 border-l-amber-400",    label: "Waiting",  labelCls: "text-amber-400"   },
-  paused:   { border: "border-l-4 border-l-red-500",      label: "Paused",   labelCls: "text-red-400"     },
+  waiting:  { border: "border-l-4 border-l-blue-500",     label: "Waiting",  labelCls: "text-blue-400"    },
+  paused:   { border: "border-l-4 border-l-orange-500",   label: "Paused",   labelCls: "text-orange-400"  },
   archived: { border: "border-l-4 border-l-gray-600",     label: "Archived", labelCls: "text-gray-500"    },
 };
 
@@ -253,8 +253,8 @@ function isLightMode() {
 }
 
 const TERM_THEMES = {
-  dark:  { background: '#0d1117', foreground: '#c9d1d9', overlay: 'rgba(0,0,0,0.9)', overlayText: 'rgba(13,17,23,0.92)' },
-  light: { background: '#f5f5f5', foreground: '#24292e', overlay: 'rgba(255,255,255,0.92)', overlayText: 'rgba(245,245,245,0.95)' },
+  dark:  { background: '#0d1117', foreground: '#c9d1d9', selectionBackground: 'rgba(99, 102, 241, 0.4)', overlay: 'rgba(0,0,0,0.9)', overlayText: 'rgba(13,17,23,0.92)' },
+  light: { background: '#f5f5f5', foreground: '#24292e', selectionBackground: 'rgba(99, 102, 241, 0.35)', overlay: 'rgba(255,255,255,0.92)', overlayText: 'rgba(245,245,245,0.95)' },
 } as const;
 
 function getTermTheme() {
@@ -333,7 +333,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         cursorBlink: true,
         fontSize: window.matchMedia('(pointer: coarse)').matches ? 10 : 14,
         fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-        theme: { background: tt.background, foreground: tt.foreground },
+        theme: { background: tt.background, foreground: tt.foreground, selectionBackground: tt.selectionBackground },
       });
       const fitAddon = new FitAddon();
       terminal.loadAddon(fitAddon);
@@ -616,7 +616,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
           {isMobile && (
             <button
               onClick={handlePaste}
-              className="text-xs px-2 py-1 rounded border transition-colors select-none bg-surface-3 text-gray-400 border-border hover:text-white"
+              className="text-xs px-2 py-1 rounded border transition-colors select-none bg-surface-3 text-gray-400 border-border hover:text-gray-900"
               aria-label="Paste clipboard into terminal"
             >
               {pasteLabel}
@@ -628,7 +628,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
               className={`text-xs px-2 py-1 rounded border transition-colors select-none ${
                 selectMode
                   ? 'bg-accent/20 text-accent border-accent/30'
-                  : 'bg-surface-3 text-gray-400 border-border hover:text-white'
+                  : 'bg-surface-3 text-gray-400 border-border hover:text-gray-900'
               }`}
               aria-label={selectMode ? 'Exit select mode' : 'Enter select mode to copy text'}
             >
@@ -638,7 +638,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
           {onInfo && (
             <button
               onClick={onInfo}
-              className="p-1 rounded hover:bg-surface-3 text-gray-400 hover:text-white transition-colors"
+              className="p-1 rounded hover:bg-surface-3 text-gray-400 hover:text-gray-900 transition-colors"
               aria-label="Project info"
             >
               <Info className="w-4 h-4" />
@@ -646,7 +646,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
           )}
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-surface-3 text-gray-400 hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-surface-3 text-gray-400 hover:text-gray-900 transition-colors"
             aria-label="Close terminal"
           >
             <X className="w-4 h-4" />
