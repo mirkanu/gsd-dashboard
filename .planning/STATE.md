@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: Cost Intelligence, Auth & UX Polish
 status: planning
-stopped_at: Completed 37-auth-terminal-reliability/37-01-PLAN.md
-last_updated: "2026-04-07T18:01:37.424Z"
+stopped_at: Completed 38-terminal-light-mode-status-colors/38-01-PLAN.md
+last_updated: "2026-04-07T19:05:48.869Z"
 last_activity: 2026-04-07 — Roadmap created, 18 requirements mapped across 6 phases
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 2
+  total_plans: 3
+  completed_plans: 3
   percent: 0
 ---
 
@@ -54,6 +54,9 @@ Progress: [░░░░░░░░░░] 0% (0/6 phases complete)
 - [Phase 37-auth-terminal-reliability]: Terminal reconnect reuses xterm Terminal instance — preserves scrollback and avoids re-init flicker
 - [Phase 37]: Cookie auth over JWT: simpler, no secret management, single-user dashboard
 - [Phase 37]: In-memory token store: sufficient for single-user local dashboard
+- [Phase 38]: xterm selectionBackground uses indigo rgba(99,102,241) to match ::selection CSS override
+- [Phase 38]: Terminal header buttons use hover:text-gray-900 instead of hover:text-white — visible in both light and dark mode
+- [Phase 38]: Status colors: waiting=blue-500, paused=orange-500 per UX-03 spec across all 4 views
 
 ### Pending Todos
 
@@ -69,10 +72,11 @@ None.
 |---|-------------|------|--------|-----------|
 | 35 | Fix auth blocking dashboard access - AUTH_REQUIRED error | 2026-04-07 | 7ba51c5 | [35-fix-auth-blocking-dashboard-access-auth-](./quick/35-fix-auth-blocking-dashboard-access-auth-/) |
 | 36 | Add GSD MCP tools and disable dashboard_ tools | 2026-04-07 | 023ed67 | [36-add-gsd-mcp-tools-and-disable-dashboard-](./quick/36-add-gsd-mcp-tools-and-disable-dashboard-/) |
+| Phase 38-terminal-light-mode-status-colors P01 | 3m31s | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-04-07T17:46:59.057Z
-Stopped at: Completed 37-auth-terminal-reliability/37-01-PLAN.md
+Last session: 2026-04-07T19:05:48.865Z
+Stopped at: Completed 38-terminal-light-mode-status-colors/38-01-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 37`
