@@ -51,6 +51,17 @@ function attachTerminalWS(server) {
     }
 
     wss.handleUpgrade(req, socket, head, (ws) => {
+      // Keepalive: ping every 20s to prevent proxy idle-connection kills (TERM-01)
+      ws.isAlive = true;
+      ws.on('pong', () => { ws.isAlive = true; });
+
+      const keepalive = setInterval(() => {
+        if (ws.readyState !== ws.OPEN) { clearInterval(keepalive); return; }
+        if (!ws.isAlive) { ws.terminate(); clearInterval(keepalive); return; }
+        ws.isAlive = false;
+        ws.ping();
+      }, 20000);
+
       let pty;
       try {
         pty = require('node-pty').spawn('tmux', ['attach-session', '-t', session], {
@@ -60,6 +71,7 @@ function attachTerminalWS(server) {
           cwd: process.env.HOME || '/',
         });
       } catch {
+        clearInterval(keepalive);
         ws.close(4005, 'node-pty unavailable');
         return;
       }
@@ -101,11 +113,13 @@ function attachTerminalWS(server) {
       });
 
       pty.onExit(() => {
+        clearInterval(keepalive);
         if (flushTimer) { clearTimeout(flushTimer); flushPty(); }
         if (ws.readyState === 1) ws.close(1000, 'pty exited');
       });
 
       ws.on('close', () => {
+        clearInterval(keepalive);
         if (flushTimer) { clearTimeout(flushTimer); flushPty(); }
         try { pty.kill(); } catch {}
       });
