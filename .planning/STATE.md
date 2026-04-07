@@ -63,6 +63,12 @@ None.
 
 None.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 35 | Fix auth blocking dashboard access - AUTH_REQUIRED error | 2026-04-07 | 7ba51c5 | [35-fix-auth-blocking-dashboard-access-auth-](./quick/35-fix-auth-blocking-dashboard-access-auth-/) |
+
 ## Session Continuity
 
 Last session: 2026-04-07T17:46:59.057Z
