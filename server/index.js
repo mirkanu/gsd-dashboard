@@ -36,6 +36,7 @@ function cookieAuth(req, res, next) {
   if (req.path.startsWith("/api/events")) return next();
   if (req.path.startsWith("/api/stats")) return next();
   if (req.path.startsWith("/api/analytics")) return next();
+  if (req.path.startsWith("/api/services")) return next();
   if (req.path === "/api/health") return next();
   if (req.path.startsWith("/api/auth")) return next(); // login/logout are public
 
