@@ -2,8 +2,8 @@ import type { GsdProject } from "../lib/types";
 
 const SESSION_STATE_STYLE: Record<string, string> = {
   working: "bg-emerald-500/20 text-emerald-400",
-  waiting: "bg-amber-400/20 text-amber-400",
-  paused: "bg-red-500/20 text-red-400",
+  waiting: "bg-blue-500/20 text-blue-400",
+  paused: "bg-orange-500/20 text-orange-400",
   archived: "bg-gray-600/20 text-gray-500",
 };
 
