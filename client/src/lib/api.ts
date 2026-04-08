@@ -7,6 +7,8 @@ import type {
   ModelPricing,
   Session,
   Stats,
+  UsageHistory,
+  UsageWindow,
 } from "./types";
 
 const BASE = "/api";
@@ -199,10 +201,7 @@ export const api = {
     totalCost: () => request<CostResult>("/pricing/cost"),
     sessionCost: (sessionId: string) =>
       request<CostResult>(`/pricing/cost/${encodeURIComponent(sessionId)}`),
-    window: () =>
-      request<{
-        daily: { cost: number; from: string; hours_until_reset: number };
-        weekly: { cost: number; from: string; hours_until_reset: number };
-      }>("/pricing/window"),
+    window: () => request<UsageWindow>("/pricing/window"),
+    usageHistory: () => request<UsageHistory>("/pricing/usage-history"),
   },
 };
