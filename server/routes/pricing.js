@@ -158,6 +158,26 @@ router.get("/window", (_req, res) => {
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysToNextMonday)
   );
 
+  // Per-project breakdown for the weekly window
+  const weeklyByProject = db
+    .prepare(
+      `SELECT s.cwd,
+        SUM(tu.input_tokens + tu.baseline_input) as input_tokens,
+        SUM(tu.output_tokens + tu.baseline_output) as output_tokens,
+        SUM(tu.cache_read_tokens + tu.baseline_cache_read) as cache_read_tokens,
+        SUM(tu.cache_write_tokens + tu.baseline_cache_write) as cache_write_tokens
+      FROM token_usage tu
+      JOIN sessions s ON tu.session_id = s.id
+      WHERE s.started_at >= ?
+      GROUP BY s.cwd`
+    )
+    .all(weekStart);
+
+  const byProject = weeklyByProject.map((row) => ({
+    cwd: row.cwd,
+    cost: calculateCost([row], rules).total_cost,
+  }));
+
   res.json({
     daily: {
       cost: dailyResult.total_cost,
@@ -168,8 +188,40 @@ router.get("/window", (_req, res) => {
       cost: weeklyResult.total_cost,
       from: weekStart,
       hours_until_reset: Math.round(((nextMonday - now) / 3600000) * 10) / 10,
+      by_project: byProject,
     },
   });
 });
 
-module.exports = router;
+// GET /api/pricing/usage-history - Daily token usage for the past 7 days
+router.get("/usage-history", (_req, res) => {
+  const rules = stmts.listPricing.all();
+
+  const dailyRows = db
+    .prepare(
+      `SELECT DATE(s.started_at) as date,
+        SUM(tu.input_tokens + tu.baseline_input) as input_tokens,
+        SUM(tu.output_tokens + tu.baseline_output) as output_tokens,
+        SUM(tu.cache_read_tokens + tu.baseline_cache_read) as cache_read_tokens,
+        SUM(tu.cache_write_tokens + tu.baseline_cache_write) as cache_write_tokens
+      FROM token_usage tu
+      JOIN sessions s ON tu.session_id = s.id
+      WHERE s.started_at >= DATE('now', '-6 days')
+      GROUP BY DATE(s.started_at)
+      ORDER BY date ASC`
+    )
+    .all();
+
+  const days = dailyRows.map((row) => ({
+    date: row.date,
+    cost: calculateCost([row], rules).total_cost,
+    input_tokens: row.input_tokens,
+    output_tokens: row.output_tokens,
+    cache_read_tokens: row.cache_read_tokens,
+    cache_write_tokens: row.cache_write_tokens,
+  }));
+
+  res.json({ days });
+});
+
+module.exports = { router, calculateCost };

@@ -6,6 +6,7 @@ const { resolveFile } = require("../gsd/fileResolver");
 const { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
 const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED: telegramEnabled } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
+const { calculateCost } = require('./pricing');
 
 const router = express.Router();
 
@@ -96,7 +97,7 @@ router.get("/projects", async (_req, res) => {
     }
 
     const sessionQuery = db.prepare(`
-      SELECT s.updated_at,
+      SELECT s.id as session_id, s.updated_at,
         (SELECT MAX(tu.last_input_tokens) FROM token_usage tu WHERE tu.session_id = s.id) as context_tokens
       FROM sessions s
       WHERE s.cwd = ?
@@ -104,6 +105,7 @@ router.get("/projects", async (_req, res) => {
       LIMIT 1
     `);
     const IDLE_PAUSED_MS = 48 * 60 * 60 * 1000;
+    const pricingRules = stmts.listPricing.all();
 
     const data = await Promise.all(projects.map(async ({ name, root, tmux_session, archived, display_name }) => {
       const row = sessionQuery.get(root);
@@ -141,6 +143,15 @@ router.get("/projects", async (_req, res) => {
         ? (extractStatusLine(await capturePaneTextAsync(tmux_session)) || null)
         : null;
 
+      // Calculate session cost for the most recent session
+      let sessionCost = null;
+      if (row?.session_id) {
+        const tokenRows = stmts.getTokensBySession.all(row.session_id);
+        if (tokenRows.length > 0) {
+          sessionCost = calculateCost(tokenRows, pricingRules).total_cost;
+        }
+      }
+
       return {
         ...readProject(name, root),
         display_name: display_name || null,
@@ -150,6 +161,7 @@ router.get("/projects", async (_req, res) => {
         contextTokens: row?.context_tokens ?? null,
         sessionUpdatedAt: row?.updated_at ?? null,
         statusText,
+        sessionCost,
       };
     }));
 
