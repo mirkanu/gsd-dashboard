@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: Cost Intelligence, Auth & UX Polish
 status: completed
-stopped_at: Completed 40-external-services-dashboard/40-01-PLAN.md
-last_updated: "2026-04-07T21:30:27.798Z"
-last_activity: 2026-04-06 — Completed 39-01 resizable columns (UX-01, UX-02)
+stopped_at: Completed 41-claude-usage-tracking/41-02-PLAN.md
+last_updated: "2026-04-08T08:15:24.088Z"
+last_activity: 2026-04-08 — Completed 41-02 usage tracking UI (COST-03, COST-04)
 progress:
   total_phases: 6
-  completed_phases: 4
-  total_plans: 5
-  completed_plans: 5
-  percent: 50
+  completed_phases: 5
+  total_plans: 7
+  completed_plans: 7
+  percent: 94
 ---
 
 # Project State
@@ -26,12 +26,12 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 ## Current Position
 
 Milestone: v4.2 Cost Intelligence, Auth & UX Polish
-Phase: 41 of 42 (Claude Usage Tracking) — in progress
-Plan: 41-01 complete, 41-02 next
-Status: Plan 41-01 complete
-Last activity: 2026-04-08 — Completed 41-01 usage tracking API endpoints (COST-03, COST-04)
+Phase: 41 of 42 (Claude Usage Tracking) — complete
+Plan: 41-02 complete (2/2 plans done)
+Status: Phase 41 complete
+Last activity: 2026-04-08 — Completed 41-02 usage tracking UI (COST-03, COST-04)
 
-Progress: [██████░░░░] 58% (3.5/6 phases)
+Progress: [█████████░] 94% (34/36 plans)
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Progress: [██████░░░░] 58% (3.5/6 phases)
 - [Phase 39]: Flex layout over grid for resizable columns — grid can't accommodate drag handle dividers as siblings; middle uses flex-1 not explicit width to avoid floating-point sum edge cases
 - [Phase 40-external-services-dashboard]: Services feature: Promise.allSettled + AbortSignal.timeout(5000) for parallel fetch with graceful fallback to unknown status
 - [Phase 41-claude-usage-tracking]: Export calculateCost as named export from pricing.js for cross-route reuse; sessionCost is null (not 0) when no data exists
+- [Phase 41]: UsagePanel self-fetches data (no props) since it shows global usage; 0 weekly limit constant; error hides panel silently
 
 ### Pending Todos
 
@@ -80,10 +81,11 @@ None.
 | Phase 39-resizable-columns P01 | 15min | 2 tasks | 3 files |
 | Phase 40-external-services-dashboard P01 | 468 | 2 tasks | 6 files |
 | Phase 41-claude-usage-tracking P01 | 9min | 1 task | 3 files |
+| Phase 41 P02 | 8min | 2 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-04-08T07:59:39Z
-Stopped at: Completed 41-claude-usage-tracking/41-01-PLAN.md
+Last session: 2026-04-08T08:15:24.085Z
+Stopped at: Completed 41-claude-usage-tracking/41-02-PLAN.md
 Resume file: None
 Next action: Execute 41-02-PLAN.md (UI components for usage tracking)
