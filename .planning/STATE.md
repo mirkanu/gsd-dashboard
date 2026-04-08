@@ -63,6 +63,7 @@ Progress: [█████░░░░░] 50% (3/6 phases complete)
 ### Pending Todos
 
 - Simplify cookieAuth: skip all `/api/` paths and rely on client-side auth gate only (single-user dashboard doesn't need per-route server auth)
+- Plan + execute Phase 41 (Claude Usage Tracking) — blocked by API overload on 2026-04-08, resume with `/gsd:plan-phase 41`
 
 ### Blockers/Concerns
 
