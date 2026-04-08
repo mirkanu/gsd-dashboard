@@ -7,6 +7,7 @@ import type { GsdProject, AutopilotRun } from "../lib/types";
 import { TasksTab } from "./TasksTab";
 import { ProjectControls } from "./ProjectControls";
 import { ProjectMetadata } from "./ProjectMetadata";
+import { UsagePanel } from "./UsagePanel";
 
 type TabId = "tasks" | "state" | "roadmap" | "requirements" | "plan";
 
@@ -72,6 +73,9 @@ export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onA
 
       {/* Metadata + Controls */}
       <ProjectMetadata project={project} />
+      <div className="px-4 py-2 border-b border-border">
+        <UsagePanel />
+      </div>
       <ProjectControls
         project={project}
         autopilotRun={autopilotRun}

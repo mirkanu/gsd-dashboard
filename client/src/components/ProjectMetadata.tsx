@@ -1,4 +1,10 @@
+import { DollarSign } from "lucide-react";
 import type { GsdProject } from "../lib/types";
+
+function formatCost(cost: number): string {
+  if (cost < 0.01) return "< $0.01";
+  return `$${cost.toFixed(2)}`;
+}
 
 const SESSION_STATE_STYLE: Record<string, string> = {
   working: "bg-emerald-500/20 text-emerald-400",
@@ -69,6 +75,15 @@ export function ProjectMetadata({ project }: { project: GsdProject }) {
       {/* Context window gauge */}
       {project.contextTokens != null && project.contextTokens > 0 && (
         <ContextGauge tokens={project.contextTokens} />
+      )}
+
+      {/* Session cost */}
+      {project.sessionCost != null && project.sessionCost > 0 && (
+        <div className="flex items-center gap-1">
+          <DollarSign className="w-3 h-3 text-gray-500" />
+          <span className="text-[10px] text-gray-500">Session</span>
+          <span className="text-[10px] text-gray-400 ml-auto">{formatCost(project.sessionCost)}</span>
+        </div>
       )}
 
       {/* Phase progress bar */}
