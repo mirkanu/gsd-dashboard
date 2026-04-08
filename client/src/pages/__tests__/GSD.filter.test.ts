@@ -35,6 +35,7 @@ function makeProject(name: string, sessionState: SessionState): GsdProject {
     sessionState,
     display_name: null,
     statusText: null,
+    sessionCost: null,
   };
 }
 

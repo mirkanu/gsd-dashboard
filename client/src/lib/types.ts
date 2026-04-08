@@ -52,6 +52,30 @@ export interface GsdProject {
   sessionUpdatedAt: string | null;
   sessionState: SessionState;
   statusText: string | null;
+  sessionCost: number | null;
+}
+
+export interface UsageDay {
+  date: string;
+  cost: number;
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens: number;
+  cache_write_tokens: number;
+}
+
+export interface UsageHistory {
+  days: UsageDay[];
+}
+
+export interface UsageWindow {
+  daily: { cost: number; from: string; hours_until_reset: number };
+  weekly: {
+    cost: number;
+    from: string;
+    hours_until_reset: number;
+    by_project?: Array<{ cwd: string; cost: number }>;
+  };
 }
 
 export interface GsdTask {

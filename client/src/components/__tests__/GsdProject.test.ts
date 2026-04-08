@@ -18,6 +18,10 @@ describe("GsdProject type shape", () => {
       contextTokens: null,
       sessionUpdatedAt: null,
       sessionState: "working",
+      display_name: null,
+      tmuxSession: null,
+      statusText: null,
+      sessionCost: null,
     };
     expect(project.version).toBe("v1");
   });
@@ -38,6 +42,10 @@ describe("GsdProject type shape", () => {
       contextTokens: null,
       sessionUpdatedAt: null,
       sessionState: "working",
+      display_name: null,
+      tmuxSession: null,
+      statusText: null,
+      sessionCost: null,
     };
     expect(project.version).toBeNull();
   });
@@ -58,6 +66,10 @@ describe("GsdProject type shape", () => {
       contextTokens: null,
       sessionUpdatedAt: null,
       sessionState: "working",
+      display_name: null,
+      tmuxSession: null,
+      statusText: null,
+      sessionCost: null,
     };
     expect(project.liveUrl).toBe("https://example.com");
   });
@@ -78,6 +90,10 @@ describe("GsdProject type shape", () => {
       contextTokens: null,
       sessionUpdatedAt: null,
       sessionState: "working",
+      display_name: null,
+      tmuxSession: null,
+      statusText: null,
+      sessionCost: null,
     };
     expect(project.liveUrl).toBeNull();
   });
@@ -98,6 +114,10 @@ describe("GsdProject type shape", () => {
       contextTokens: null,
       sessionUpdatedAt: null,
       sessionState: "working",
+      display_name: null,
+      tmuxSession: null,
+      statusText: null,
+      sessionCost: null,
     };
     expect(project.velocity).toBe(3);
     expect(project.streak).toBe(2);
@@ -120,6 +140,10 @@ describe("GsdProject type shape", () => {
       contextTokens: null,
       sessionUpdatedAt: null,
       sessionState: "working",
+      display_name: null,
+      tmuxSession: null,
+      statusText: null,
+      sessionCost: null,
     };
     expect(active.tmuxActive).toBe(true);
 
@@ -143,6 +167,10 @@ describe("GsdProject type shape", () => {
       contextTokens: null,
       sessionUpdatedAt: null,
       sessionState: "working",
+      display_name: null,
+      tmuxSession: null,
+      statusText: null,
+      sessionCost: null,
     };
     expect(project.velocity).toBe(0);
     expect(project.streak).toBe(0);
@@ -166,6 +194,10 @@ describe("tmuxActive terminal button contract", () => {
     contextTokens: null,
     sessionUpdatedAt: null,
     sessionState: "working",
+    display_name: null,
+    tmuxSession: null,
+    statusText: null,
+    sessionCost: null,
   };
 
   it("tmuxActive true enables terminal button", () => {
