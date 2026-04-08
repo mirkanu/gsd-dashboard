@@ -11,8 +11,8 @@ Requirements for Cost Intelligence, Auth & UX Polish milestone. Each maps to roa
 
 - [x] **COST-01**: User can view a services page listing all external services (Railway, Vercel, Resend, GitHub, Claude, OpenAI) used by each project
 - [x] **COST-02**: Services page shows live status (up/down/degraded) for each external service
-- [ ] **COST-03**: User can see Claude Max token usage per session and weekly aggregate with limits display
-- [ ] **COST-04**: Usage data persists in SQLite and displays historical trends
+- [x] **COST-03**: User can see Claude Max token usage per session and weekly aggregate with limits display
+- [x] **COST-04**: Usage data persists in SQLite and displays historical trends
 
 ### Authentication
 
@@ -71,8 +71,8 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 |-------------|-------|--------|
 | COST-01 | Phase 40 | Complete |
 | COST-02 | Phase 40 | Complete |
-| COST-03 | Phase 41 | Pending |
-| COST-04 | Phase 41 | Pending |
+| COST-03 | Phase 41 | Complete |
+| COST-04 | Phase 41 | Complete |
 | AUTH-01 | Phase 37 | Complete |
 | AUTH-02 | Phase 37 | Complete |
 | TERM-01 | Phase 37 | Complete |
