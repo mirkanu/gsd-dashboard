@@ -108,7 +108,11 @@ Plans:
   2. A weekly aggregate of token usage is displayed with a limit indicator
   3. Usage data survives server restarts (persisted in SQLite)
   4. Historical usage trend is visible (at minimum a simple count over past sessions)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 41-01-PLAN.md — Server APIs: per-project session cost, usage history, enhanced window endpoint
+- [ ] 41-02-PLAN.md — Client UI: session cost on metadata, weekly gauge, 7-day trend sparkline
 
 ### Phase 42: Configuration UI
 **Goal**: Users can view and edit CLAUDE.md files and configure notifications from the dashboard
@@ -132,5 +136,5 @@ Plans:
 | 38. Terminal Light Mode & Status Colors | 1/1 | Complete    | 2026-04-07 | - |
 | 39. Resizable Columns | 1/1 | Complete    | 2026-04-07 | - |
 | 40. External Services Dashboard | 1/1 | Complete    | 2026-04-07 | - |
-| 41. Claude Usage Tracking | v4.2 | 0/TBD | Not started | - |
+| 41. Claude Usage Tracking | v4.2 | 0/2 | Not started | - |
 | 42. Configuration UI | v4.2 | 0/TBD | Not started | - |
