@@ -158,10 +158,10 @@ router.get("/window", (_req, res) => {
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysToNextMonday)
   );
 
-  // Per-project breakdown for the weekly window
-  const weeklyByProject = db
+  // Per-project breakdown for the weekly window (group by cwd AND model so calculateCost can match)
+  const weeklyByProjectModel = db
     .prepare(
-      `SELECT s.cwd,
+      `SELECT s.cwd, tu.model,
         SUM(tu.input_tokens + tu.baseline_input) as input_tokens,
         SUM(tu.output_tokens + tu.baseline_output) as output_tokens,
         SUM(tu.cache_read_tokens + tu.baseline_cache_read) as cache_read_tokens,
@@ -169,13 +169,19 @@ router.get("/window", (_req, res) => {
       FROM token_usage tu
       JOIN sessions s ON tu.session_id = s.id
       WHERE s.started_at >= ?
-      GROUP BY s.cwd`
+      GROUP BY s.cwd, tu.model`
     )
     .all(weekStart);
 
-  const byProject = weeklyByProject.map((row) => ({
-    cwd: row.cwd,
-    cost: calculateCost([row], rules).total_cost,
+  // Aggregate per-model costs into per-project totals
+  const projectCostMap = {};
+  for (const row of weeklyByProjectModel) {
+    const cost = calculateCost([row], rules).total_cost;
+    projectCostMap[row.cwd] = (projectCostMap[row.cwd] || 0) + cost;
+  }
+  const byProject = Object.entries(projectCostMap).map(([cwd, cost]) => ({
+    cwd,
+    cost: Math.round(cost * 10000) / 10000,
   }));
 
   res.json({
@@ -197,9 +203,10 @@ router.get("/window", (_req, res) => {
 router.get("/usage-history", (_req, res) => {
   const rules = stmts.listPricing.all();
 
-  const dailyRows = db
+  // Group by date AND model so calculateCost can match pricing rules
+  const dailyModelRows = db
     .prepare(
-      `SELECT DATE(s.started_at) as date,
+      `SELECT DATE(s.started_at) as date, tu.model,
         SUM(tu.input_tokens + tu.baseline_input) as input_tokens,
         SUM(tu.output_tokens + tu.baseline_output) as output_tokens,
         SUM(tu.cache_read_tokens + tu.baseline_cache_read) as cache_read_tokens,
@@ -207,18 +214,26 @@ router.get("/usage-history", (_req, res) => {
       FROM token_usage tu
       JOIN sessions s ON tu.session_id = s.id
       WHERE s.started_at >= DATE('now', '-6 days')
-      GROUP BY DATE(s.started_at)
+      GROUP BY DATE(s.started_at), tu.model
       ORDER BY date ASC`
     )
     .all();
 
-  const days = dailyRows.map((row) => ({
-    date: row.date,
-    cost: calculateCost([row], rules).total_cost,
-    input_tokens: row.input_tokens,
-    output_tokens: row.output_tokens,
-    cache_read_tokens: row.cache_read_tokens,
-    cache_write_tokens: row.cache_write_tokens,
+  // Aggregate per-model costs into per-day totals
+  const dayMap = {};
+  for (const row of dailyModelRows) {
+    if (!dayMap[row.date]) {
+      dayMap[row.date] = { date: row.date, cost: 0, input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_write_tokens: 0 };
+    }
+    dayMap[row.date].cost += calculateCost([row], rules).total_cost;
+    dayMap[row.date].input_tokens += row.input_tokens;
+    dayMap[row.date].output_tokens += row.output_tokens;
+    dayMap[row.date].cache_read_tokens += row.cache_read_tokens;
+    dayMap[row.date].cache_write_tokens += row.cache_write_tokens;
+  }
+  const days = Object.values(dayMap).map((d) => ({
+    ...d,
+    cost: Math.round(d.cost * 10000) / 10000,
   }));
 
   res.json({ days });
