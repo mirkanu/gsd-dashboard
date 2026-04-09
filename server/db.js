@@ -283,6 +283,20 @@ try {
   ).run();
 }
 
+// Migrate: add project_settings table (Phase 42 — Configuration UI)
+try {
+  db.prepare("SELECT 1 FROM project_settings LIMIT 1").get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS project_settings (
+      project_key TEXT PRIMARY KEY,
+      verbosity TEXT NOT NULL DEFAULT 'normal' CHECK(verbosity IN ('verbose','normal','quiet')),
+      telegram_alerts TEXT NOT NULL DEFAULT '{}',
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+  `);
+}
+
 // Startup cleanup: mark stale active sessions as completed.
 // Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
 // so they stay "active" forever. Complete any active session whose last event is older than
@@ -520,6 +534,22 @@ const stmts = {
        archived = COALESCE(?, archived)
      WHERE id = ?
      RETURNING *`
+  ),
+
+  // Project settings (Phase 42 — Configuration UI)
+  getProjectSettings: db.prepare(
+    `SELECT * FROM project_settings WHERE project_key = ?`
+  ),
+  upsertProjectSettings: db.prepare(
+    `INSERT INTO project_settings (project_key, verbosity, telegram_alerts, updated_at)
+     VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+     ON CONFLICT(project_key) DO UPDATE SET
+       verbosity = excluded.verbosity,
+       telegram_alerts = excluded.telegram_alerts,
+       updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`
+  ),
+  listProjectSettings: db.prepare(
+    `SELECT * FROM project_settings ORDER BY project_key ASC`
   ),
 };
 
