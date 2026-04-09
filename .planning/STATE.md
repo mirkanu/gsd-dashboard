@@ -82,10 +82,11 @@ None.
 | Phase 40-external-services-dashboard P01 | 468 | 2 tasks | 6 files |
 | Phase 41-claude-usage-tracking P01 | 9min | 1 task | 3 files |
 | Phase 41 P02 | 8min | 2 tasks | 5 files |
+| 37 | Add dedicated Usage page with cross-project breakdown | 2026-04-09 | c75ec36 | [37-add-dedicated-usage-page-with-cross-proj](./quick/37-add-dedicated-usage-page-with-cross-proj/) |
 
 ## Session Continuity
 
-Last session: 2026-04-08T08:15:24.085Z
-Stopped at: Completed 41-claude-usage-tracking/41-02-PLAN.md
+Last session: 2026-04-09T18:37:00Z
+Stopped at: Completed quick-37 (dedicated Usage page)
 Resume file: None
-Next action: Execute 41-02-PLAN.md (UI components for usage tracking)
+Next action: None
