@@ -82,6 +82,7 @@ None.
 | Phase 40-external-services-dashboard P01 | 468 | 2 tasks | 6 files |
 | Phase 41-claude-usage-tracking P01 | 9min | 1 task | 3 files |
 | Phase 41 P02 | 8min | 2 tasks | 5 files |
+| 37 | Add dedicated Usage page with cross-project cost summary | 2026-04-09 | b6db8bc | [37-add-dedicated-usage-page-with-cross-proj](./quick/37-add-dedicated-usage-page-with-cross-proj/) |
 | 37 | Add dedicated Usage page with cross-project breakdown | 2026-04-09 | c75ec36 | [37-add-dedicated-usage-page-with-cross-proj](./quick/37-add-dedicated-usage-page-with-cross-proj/) |
 
 ## Session Continuity
