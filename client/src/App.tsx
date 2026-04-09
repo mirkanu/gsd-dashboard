@@ -9,6 +9,7 @@ import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
 import { GSD, TerminalPage } from "./pages/GSD";
 import { ServicesPage } from "./pages/ServicesPage";
+import { UsagePage } from "./pages/UsagePage";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/Login";
 import { useWebSocket } from "./hooks/useWebSocket";
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="settings" element={<Settings logout={logout} />} />
           <Route path="gsd" element={<GSD />} />
           <Route path="services" element={<ServicesPage />} />
+          <Route path="usage" element={<UsagePage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
