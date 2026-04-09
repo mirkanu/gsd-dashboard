@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: Cost Intelligence, Auth & UX Polish
 status: completed
-stopped_at: Completed 41-claude-usage-tracking/41-02-PLAN.md
-last_updated: "2026-04-08T08:28:32.415Z"
-last_activity: 2026-04-08 — Completed 41-02 usage tracking UI (COST-03, COST-04)
+stopped_at: Completed 42-configuration-ui/42-01-PLAN.md
+last_updated: "2026-04-09T22:41:10.779Z"
+last_activity: 2026-04-09 — Completed 42-01 config API (CFG-01 through NOTIF-02)
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 7
-  completed_plans: 7
-  percent: 94
+  total_plans: 9
+  completed_plans: 8
+  percent: 92
 ---
 
 # Project State
@@ -26,12 +26,12 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 ## Current Position
 
 Milestone: v4.2 Cost Intelligence, Auth & UX Polish
-Phase: 41 of 42 (Claude Usage Tracking) — complete
-Plan: 41-02 complete (2/2 plans done)
-Status: Phase 41 complete
-Last activity: 2026-04-08 — Completed 41-02 usage tracking UI (COST-03, COST-04)
+Phase: 42 of 42 (Configuration UI) — in progress
+Plan: 42-01 complete (1/2 plans done)
+Status: Phase 42 in progress
+Last activity: 2026-04-09 — Completed 42-01 config API (CFG-01, CFG-02, CFG-03, NOTIF-01, NOTIF-02)
 
-Progress: [█████████░] 94% (34/36 plans)
+Progress: [█████████░] 92% (35/38 plans)
 
 ## Performance Metrics
 
@@ -61,6 +61,8 @@ Progress: [█████████░] 94% (34/36 plans)
 - [Phase 40-external-services-dashboard]: Services feature: Promise.allSettled + AbortSignal.timeout(5000) for parallel fetch with graceful fallback to unknown status
 - [Phase 41-claude-usage-tracking]: Export calculateCost as named export from pricing.js for cross-route reuse; sessionCost is null (not 0) when no data exists
 - [Phase 41]: UsagePanel self-fetches data (no props) since it shows global usage; 0 weekly limit constant; error hides panel silently
+- [Phase 42]: Reused loadConfig() pattern from gsd.js for config routes rather than extracting shared module
+- [Phase 42]: telegram_alerts stored as JSON string in SQLite, parsed on read
 
 ### Pending Todos
 
@@ -84,10 +86,11 @@ None.
 | Phase 41 P02 | 8min | 2 tasks | 5 files |
 | 37 | Add dedicated Usage page with cross-project cost summary | 2026-04-09 | b6db8bc | [37-add-dedicated-usage-page-with-cross-proj](./quick/37-add-dedicated-usage-page-with-cross-proj/) |
 | 37 | Add dedicated Usage page with cross-project breakdown | 2026-04-09 | c75ec36 | [37-add-dedicated-usage-page-with-cross-proj](./quick/37-add-dedicated-usage-page-with-cross-proj/) |
+| Phase 42 P01 | 9min | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-04-09T18:37:00Z
-Stopped at: Completed quick-37 (dedicated Usage page)
+Last session: 2026-04-09T22:41:10.776Z
+Stopped at: Completed 42-configuration-ui/42-01-PLAN.md
 Resume file: None
 Next action: None

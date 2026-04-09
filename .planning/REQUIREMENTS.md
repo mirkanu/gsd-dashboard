@@ -34,14 +34,14 @@ Requirements for Cost Intelligence, Auth & UX Polish milestone. Each maps to roa
 
 ### Configuration
 
-- [ ] **CFG-01**: User can view global CLAUDE.md and per-project CLAUDE.md files from the dashboard
-- [ ] **CFG-02**: User can edit and save CLAUDE.md files directly from the dashboard
-- [ ] **CFG-03**: User can configure Claude session verbosity settings per project
+- [x] **CFG-01**: User can view global CLAUDE.md and per-project CLAUDE.md files from the dashboard
+- [x] **CFG-02**: User can edit and save CLAUDE.md files directly from the dashboard
+- [x] **CFG-03**: User can configure Claude session verbosity settings per project
 
 ### Notifications
 
-- [ ] **NOTIF-01**: User can configure Telegram alert preferences per-project from the dashboard
-- [ ] **NOTIF-02**: Notification settings persist in SQLite (not just env vars)
+- [x] **NOTIF-01**: User can configure Telegram alert preferences per-project from the dashboard
+- [x] **NOTIF-02**: Notification settings persist in SQLite (not just env vars)
 
 ## Future Requirements
 
@@ -82,11 +82,11 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | UX-01 | Phase 39 | Complete |
 | UX-02 | Phase 39 | Complete |
 | UX-03 | Phase 38 | Complete |
-| CFG-01 | Phase 42 | Pending |
-| CFG-02 | Phase 42 | Pending |
-| CFG-03 | Phase 42 | Pending |
-| NOTIF-01 | Phase 42 | Pending |
-| NOTIF-02 | Phase 42 | Pending |
+| CFG-01 | Phase 42 | Complete |
+| CFG-02 | Phase 42 | Complete |
+| CFG-03 | Phase 42 | Complete |
+| NOTIF-01 | Phase 42 | Complete |
+| NOTIF-02 | Phase 42 | Complete |
 
 **Coverage:**
 - v4.2 requirements: 18 total
