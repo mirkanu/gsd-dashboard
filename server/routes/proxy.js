@@ -4,6 +4,7 @@ const AGENT_PREFIXES = [
   '/api/events',
   '/api/stats',
   '/api/analytics',
+  '/api/pricing',
 ];
 
 function createAgentProxy(gsdDataUrl) {
