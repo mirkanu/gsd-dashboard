@@ -124,7 +124,11 @@ Plans:
   3. User can set Claude session verbosity (e.g., verbose/normal/quiet) per project from the dashboard
   4. User can configure which Telegram alerts fire per project from the dashboard
   5. Notification and verbosity settings are stored in SQLite and survive server restarts
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 42-01-PLAN.md — Server APIs: CLAUDE.md read/write endpoints + project_settings SQLite table
+- [ ] 42-02-PLAN.md — Client UI: ConfigPage with CLAUDE.md editor, verbosity select, notification toggles
 
 ## Progress
 
@@ -137,4 +141,4 @@ Plans:
 | 39. Resizable Columns | 1/1 | Complete    | 2026-04-07 | - |
 | 40. External Services Dashboard | 1/1 | Complete    | 2026-04-07 | - |
 | 41. Claude Usage Tracking | 2/2 | Complete    | 2026-04-08 | - |
-| 42. Configuration UI | v4.2 | 0/TBD | Not started | - |
+| 42. Configuration UI | v4.2 | 0/2 | Not started | - |
