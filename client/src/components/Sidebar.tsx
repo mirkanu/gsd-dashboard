@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Server,
   Coins,
+  Wrench,
 } from "lucide-react";
 
 // ─── Primary nav (always visible at top) ─────────────────────────────────────
@@ -25,6 +26,7 @@ const PRIMARY_ITEMS = [
   { to: "/gsd", icon: MapPin, label: "GSD Projects" },
   { to: "/services", icon: Server, label: "Services" },
   { to: "/usage", icon: Coins, label: "Usage" },
+  { to: "/config", icon: Wrench, label: "Config" },
 ] as const;
 
 // ─── Agent Dashboard submenu ──────────────────────────────────────────────────

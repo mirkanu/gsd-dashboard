@@ -105,6 +105,20 @@ export interface AutopilotProgressEvent {
   pendingCommand?: string;
 }
 
+// ─── Config Types ────────────────────────────────────────────────────────────
+
+export interface ProjectSettings {
+  project_key: string;
+  verbosity: 'verbose' | 'normal' | 'quiet';
+  telegram_alerts: Record<string, boolean>;
+  updated_at?: string;
+}
+
+export interface ClaudeMdResponse {
+  content: string;
+  path: string;
+}
+
 // ─── Agent/Session Types ──────────────────────────────────────────────────────
 
 export type SessionStatus = "active" | "completed" | "error" | "abandoned";
