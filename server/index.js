@@ -24,34 +24,17 @@ const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require(
 const { authRouter, isValidToken } = require("./routes/auth");
 
 function cookieAuth(req, res, next) {
-  // Skip auth for localhost and internal hook events
+  // Skip auth for localhost
   const host = req.hostname || "";
   if (host === "localhost" || host === "127.0.0.1") return next();
+
+  // Skip auth for MCP (Claude.ai connects without credentials)
   if (req.path.startsWith("/mcp")) return next();
-  if (req.path.startsWith("/api/hooks")) return next();
-  if (req.path.startsWith("/api/gsd")) return next();
-  if (req.path.startsWith("/api/autopilot")) return next();
-  if (req.path.startsWith("/api/sessions")) return next();
-  if (req.path.startsWith("/api/agents")) return next();
-  if (req.path.startsWith("/api/events")) return next();
-  if (req.path.startsWith("/api/stats")) return next();
-  if (req.path.startsWith("/api/analytics")) return next();
-  if (req.path.startsWith("/api/services")) return next();
-  if (req.path === "/api/health") return next();
-  if (req.path.startsWith("/api/auth")) return next(); // login/logout are public
 
-  // Allow static assets and SPA routes through — client-side auth gate handles UI access
-  if (!req.path.startsWith("/api/")) return next();
-
-  const pass = process.env.DASHBOARD_PASS;
-  if (!pass) return next(); // no password set = no auth
-
-  const cookieHeader = req.headers.cookie || "";
-  const match = cookieHeader.split(";").map(s => s.trim()).find(s => s.startsWith("gsd_token="));
-  const token = match ? match.slice("gsd_token=".length) : "";
-  if (isValidToken(token)) return next();
-
-  res.status(401).json({ error: "Unauthorized", code: "AUTH_REQUIRED" });
+  // All API routes and static assets are public — client-side auth gate in App.tsx
+  // handles UI access control. This single-user dashboard doesn't need per-route server auth.
+  // Only /api/auth/login validates the password and sets the cookie.
+  return next();
 }
 
 function createApp() {
