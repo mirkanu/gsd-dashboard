@@ -1,10 +1,12 @@
 import type {
   Agent,
   Analytics,
+  ClaudeMdResponse,
   CostResult,
   DashboardEvent,
   GsdTask,
   ModelPricing,
+  ProjectSettings,
   Session,
   Stats,
   UsageHistory,
@@ -185,6 +187,24 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ projectName }),
       }),
+  },
+
+  config: {
+    getClaudeMd: (project: string) =>
+      request<ClaudeMdResponse>(`/config/claude-md?project=${encodeURIComponent(project)}`),
+    saveClaudeMd: (project: string, content: string) =>
+      request<{ ok: boolean; path: string }>('/config/claude-md', {
+        method: 'PUT',
+        body: JSON.stringify({ project, content }),
+      }),
+    getProjectSettings: (project: string) =>
+      request<ProjectSettings>(`/config/project-settings/${encodeURIComponent(project)}`),
+    saveProjectSettings: (project: string, settings: Partial<ProjectSettings>) =>
+      request<{ ok: boolean; settings: ProjectSettings }>(
+        `/config/project-settings/${encodeURIComponent(project)}`,
+        { method: 'PUT', body: JSON.stringify(settings) },
+      ),
+    listProjectSettings: () => request<ProjectSettings[]>('/config/project-settings'),
   },
 
   pricing: {
