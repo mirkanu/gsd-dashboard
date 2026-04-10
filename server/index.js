@@ -75,11 +75,18 @@ function startServer(app, port) {
   initWebSocket(server);
   attachTerminalWS(server);
 
-  // Non-proxy mode only: poll tmux state every ~2s and push transitions over WS.
-  // Proxy mode (GSD_DATA_URL set — e.g. Railway) forwards upstream snapshots
-  // via the existing projects cache, so it must NOT run its own poller.
-  if (!process.env.GSD_DATA_URL) {
-    const { broadcast } = require("./websocket");
+  // State broadcaster — pushes `project_state_change` messages over WebSocket
+  // when a project transitions state. Two modes:
+  //   - Local (no GSD_DATA_URL): poll tmux directly every ~2s.
+  //   - Proxy (GSD_DATA_URL set — Railway): poll upstream /api/gsd/projects
+  //     every ~2s and diff sessionState against the previous snapshot. This is
+  //     required because Railway WS clients can't reach the local broadcaster.
+  const { broadcast } = require("./websocket");
+  if (process.env.GSD_DATA_URL) {
+    const { startProxyStateBroadcaster } = require("./gsd/proxyStateBroadcaster");
+    const upstream = process.env.GSD_DATA_URL.replace(/\/$/, "");
+    startProxyStateBroadcaster(upstream, broadcast);
+  } else {
     const loadProjectsLocal = () => {
       const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, "../gsd-projects.json");
       const fs = require("fs");
