@@ -316,6 +316,44 @@ function extractStatusLine(rawText) {
 }
 
 /**
+ * Extract a meaningful "current task" preview line from a tmux capture-pane buffer.
+ * Scans from bottom up in the last 20 lines, skips UI chrome (prompts, shortcuts,
+ * box drawing, numeric selection menus, known Claude Code footer), strips leading
+ * marker characters, and returns the first meaningful line (>= 4 chars after cleanup).
+ * Returns null if no such line is found. Max 120 chars; longer lines truncated with "…".
+ *
+ * Intended for STAT-04 task preview — different from extractStatusLine (which looks
+ * specifically for ✻/✶ spinner lines).
+ *
+ * @param {string|null|undefined} rawText
+ * @returns {string|null}
+ */
+function extractCurrentTask(rawText) {
+  if (!rawText) return null;
+  const lines = rawText.split('\n').slice(-20);
+  const chromePatterns = [
+    /esc\s+to\s+interrupt/i,
+    /\?\s+for\s+shortcuts/i,
+    /^\s*\(y\/n\)/i,
+    /Bypassing\s+Permissions/i,
+    /^[-─═\s]+$/,
+    /^\s*>?\s*\d+\.\s/,                 // numeric menu "1. Option" / "> 1. Option"
+    /^[✻✶]/,                             // status spinner lines (extractStatusLine handles those)
+  ];
+  for (let i = lines.length - 1; i >= 0; i--) {
+    let clean = stripAnsi(lines[i]).trim();
+    if (!clean) continue;
+    if (chromePatterns.some((p) => p.test(clean))) continue;
+    // Strip leading marker characters (box-drawing, pipes, prompts, tool indicators)
+    clean = clean.replace(/^[│|>·⏺\s]+/, '').trim();
+    if (clean.length < 4) continue;
+    if (clean.length > 120) clean = clean.slice(0, 119) + '…';
+    return clean;
+  }
+  return null;
+}
+
+/**
  * Async variant of capturePaneText. Returns null on any error.
  * Uses execFile (non-blocking) instead of execFileSync.
  * @param {string} sessionName
@@ -415,4 +453,4 @@ async function detectRateLimitAsync(sessionNames) {
   return hit ?? { active: false, resetAt: null };
 }
 
-module.exports = { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync, _testDetectWithChangeHeuristic, _resetPaneHashCache };
+module.exports = { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync, _testDetectWithChangeHeuristic, _resetPaneHashCache };

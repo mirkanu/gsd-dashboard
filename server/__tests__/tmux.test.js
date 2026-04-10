@@ -156,3 +156,58 @@ test('STAT-02 heuristic: stale prev (> 3s ago) with differing hash → still wor
   // A change since last capture counts as working regardless of the prev timestamp.
   assert.strictEqual(result, 'working');
 });
+
+// ─── STAT-04: extractCurrentTask ──────────────────────────────────────────────
+
+const { extractCurrentTask } = require('../gsd/tmux.js');
+
+test('STAT-04 extractCurrentTask: null input returns null', () => {
+  assert.strictEqual(extractCurrentTask(null), null);
+});
+
+test('STAT-04 extractCurrentTask: empty string returns null', () => {
+  assert.strictEqual(extractCurrentTask(''), null);
+});
+
+test('STAT-04 extractCurrentTask: returns first meaningful line (bottom-up)', () => {
+  const input = '~/foo git:(main)\n> planning phase 14 UI integration\n\n';
+  assert.strictEqual(extractCurrentTask(input), 'planning phase 14 UI integration');
+});
+
+test('STAT-04 extractCurrentTask: strips leading marker chars (│, >)', () => {
+  assert.strictEqual(
+    extractCurrentTask('│ > ask the user to clarify the spec'),
+    'ask the user to clarify the spec'
+  );
+});
+
+test('STAT-04 extractCurrentTask: skips UI chrome lines', () => {
+  const input = [
+    'the real task we care about',
+    '────────────────',
+    'esc to interrupt',
+    '? for shortcuts',
+    '(y/n)',
+    '---',
+  ].join('\n');
+  assert.strictEqual(extractCurrentTask(input), 'the real task we care about');
+});
+
+test('STAT-04 extractCurrentTask: returns null when no meaningful line found', () => {
+  const input = 'esc to interrupt\n? for shortcuts\n────\n(y/n)\n> 1. Option A';
+  assert.strictEqual(extractCurrentTask(input), null);
+});
+
+test('STAT-04 extractCurrentTask: strips ANSI color codes before matching', () => {
+  // red-colored text: "refactoring auth module"
+  const input = '\x1b[31mrefactoring auth module\x1b[0m';
+  assert.strictEqual(extractCurrentTask(input), 'refactoring auth module');
+});
+
+test('STAT-04 extractCurrentTask: truncates lines longer than 120 chars with ellipsis', () => {
+  const longLine = 'a'.repeat(200);
+  const result = extractCurrentTask(longLine);
+  assert.ok(result !== null, 'should return a value');
+  assert.strictEqual(result.length, 120);
+  assert.ok(result.endsWith('…'), 'should end with ellipsis');
+});
