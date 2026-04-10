@@ -10,9 +10,9 @@ Requirements for Optimisation & Cost Intelligence milestone.
 ### Project Status Accuracy
 
 - [ ] **STAT-01**: Project card status updates in real-time via WebSocket push (no polling delay)
-- [ ] **STAT-02**: Status detection correctly identifies "Working" vs "Waiting" state (fix current false "Waiting" reports)
+- [x] **STAT-02**: Status detection correctly identifies "Working" vs "Waiting" state (fix current false "Waiting" reports)
 - [ ] **STAT-03**: Project cards show elapsed time in current state (e.g., "Working 2m 30s" / "Waiting 5m")
-- [ ] **STAT-04**: Project list shows current task preview instead of "Chat" placeholder (e.g., "planning phase 14 UI integration")
+- [x] **STAT-04**: Project list shows current task preview instead of "Chat" placeholder (e.g., "planning phase 14 UI integration")
 
 ### Usage & Cost Display
 
@@ -71,9 +71,9 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | STAT-01 | Phase 43 | Pending |
-| STAT-02 | Phase 43 | Pending |
+| STAT-02 | Phase 43 | Complete |
 | STAT-03 | Phase 43 | Pending |
-| STAT-04 | Phase 43 | Pending |
+| STAT-04 | Phase 43 | Complete |
 | USG-01 | Phase 44 | Pending |
 | USG-02 | Phase 44 | Pending |
 | USG-03 | Phase 44 | Pending |

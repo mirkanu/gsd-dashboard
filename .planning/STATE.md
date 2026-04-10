@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
-status: roadmap_complete
-stopped_at: null
-last_updated: "2026-04-10T11:00:00.000Z"
-last_activity: 2026-04-10 — v4.3 roadmap created (Phases 43-47)
+status: in_progress
+stopped_at: Completed 43-01-PLAN.md
+last_updated: "2026-04-06T00:00:00.000Z"
+last_activity: 2026-04-06 — Phase 43 Plan 01 complete (tmux detection primitives)
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -26,11 +26,13 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 ## Current Position
 
 Milestone: v4.3 Optimisation & Cost Intelligence
-Phase: 43 — Project Status Accuracy (not started)
-Status: Roadmap complete, ready for `/gsd:plan-phase 43`
-Last activity: 2026-04-10 — v4.3 roadmap created (Phases 43-47, 21 requirements mapped)
+Phase: 43 — Project Status Accuracy (in progress)
+Current Plan: 2 of 3
+Total Plans in Phase: 3
+Status: Plan 01 complete — tmux detection primitives (STAT-02 + STAT-04 fixed at the primitive layer). Ready for Plan 02 (background poller).
+Last activity: 2026-04-06 — Phase 43 Plan 01 complete
 
-Progress: [░░░░░░░░░░] 0% (0/5 phases)
+Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases)
 
 ## Performance Metrics
 
@@ -70,6 +72,9 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases)
 - [v4.3 roadmap]: Credentials (Railway PAT, OpenAI admin key, Vercel token) stored in SQLite settings table, not env vars — survives redeploy, editable via UI
 - [v4.3 roadmap]: Manual CLAUDE.md textarea removed entirely in Phase 47; replaced by AI-guided chat + diff approval
 - [v4.3 roadmap]: Phase 47 requires user-testing checkpoint because AI integration is novel
+- [Phase 43]: 3s change-heuristic window tuned to Claude Code tool-call streaming cadence (1-2s bursts)
+- [Phase 43]: paneHashCache kept in-memory only — no DB writes, honors backend transaction boundaries rule
+- [Phase 43]: extractCurrentTask is additive; extractStatusLine untouched (different purpose, still used for statusText)
 
 ### Pending Todos
 
@@ -95,10 +100,11 @@ None.
 | 39 | Reduce mobile terminal scroll sensitivity | 2026-04-10 | 0691942 | [39-reduce-mobile-terminal-scroll-sensitivit](./quick/39-reduce-mobile-terminal-scroll-sensitivit/) |
 | 40 | Add copy button to each task row beside Archive | 2026-04-10 | 75f96ca | [40-add-copy-single-task-button-beside-archi](./quick/40-add-copy-single-task-button-beside-archi/) |
 | 41 | Add Archive All + icon-only All: group | 2026-04-10 | (pending) | [41-add-archive-all-button-icon-only-all-pre](./quick/41-add-archive-all-button-icon-only-all-pre/) |
+| Phase 43 P01 | 25min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-04-10T11:00:00.000Z
-Stopped at: v4.3 roadmap created (Phases 43-47)
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-10T16:05:33.748Z
+Stopped at: Completed 43-01-PLAN.md
+Resume file: None
 Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans
