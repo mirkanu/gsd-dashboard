@@ -36,18 +36,22 @@ At a glance, see where every GSD project stands and interact with any session �
 - ✓ Live tmux status in project list: shows current task (e.g. "planning Phase 31") — v4.1
 - ✓ Performance: async tmux calls, 5s API cache, PTY output batching (API <500ms) — v4.1
 - ✓ Mobile terminal UX: no auto-keyboard, info button opens drawer, send bar — v4.1
+- ✓ Cookie-based persistent auth: 30-day session, login page, bypasses reload modal — v4.2
+- ✓ Terminal WebSocket keepalive + auto-reconnect: 20s ping, 10-retry client reconnect — v4.2
+- ✓ Terminal light mode fixes: xterm selectionBackground, header button visibility — v4.2
+- ✓ Status badge colors: waiting=blue, paused=orange across all views — v4.2
+- ✓ Resizable 3-column desktop layout: drag handles with localStorage persistence — v4.2
+- ✓ External services dashboard: page listing Railway/Vercel/GitHub/Claude/OpenAI status per project — v4.2
+- ✓ Claude usage tracking: session cost on metadata, weekly gauge with $50 limit, 7-day sparkline — v4.2
+- ✓ Dedicated Usage page: cross-project cost summary with weekly gauge, trend chart, breakdown table — v4.2 (quick task 37)
+- ✓ CLAUDE.md editor: view/edit global + per-project CLAUDE.md from dashboard — v4.2
+- ✓ Per-project config: verbosity settings + Telegram alert toggles, SQLite persistence — v4.2
+- ✓ Global default settings with apply-to-all: global verbosity + Telegram defaults, bulk apply to existing projects — v4.2 (quick task 38)
+- ✓ MCP GSD tools: gsd_list_projects, gsd_get_all_project_status, gsd_read_planning_file, gsd_list_tasks — v4.2 (quick task 36)
 
 ### Active
 
-- [ ] External services dashboard: page showing Railway, Vercel, Resend, GitHub, etc. per project with status and costs
-- [ ] Claude Max usage tracking: session and weekly token consumption with limits display
-- [ ] Autopilot cost gate: configurable cost limits for autonomous execution
-- [ ] Persistent auth: long-lived browser session replacing modal login on every reload
-- [ ] Terminal timeout fix: prevent disconnect after ~3 minutes idle
-- [ ] Terminal light mode colors: fix invisible selection highlight and white-on-white text
-- [ ] Resizable 3-column layout: drag handles between columns in desktop view
-- [ ] Status color changes: waiting=blue, paused=orange
-- [ ] CLAUDE.md editor: view/edit global and per-project CLAUDE.md files from dashboard
+(None — ready for next milestone)
 
 ### Future
 
@@ -67,13 +71,16 @@ At a glance, see where every GSD project stands and interact with any session �
 
 ## Context
 
-Shipped v4.1 with terminal-first layout, async performance, and dead chat code cleanup.
+Shipped v4.2 with cost intelligence, persistent auth, terminal reliability, and configuration UI.
 Tech stack: React + Vite, Express, SQLite, WebSocket, xterm.js, node-pty.
 Deployed on Railway with cloudflared tunnel to local machine.
-6 tracked projects: josie, gsddashboard, debates, reforma + others.
+7 tracked projects: josie, gsddashboard, debates, reforma, KidAI, ynab + others.
 GSD Autopilot fork (github.com/jamoeight/get-shit-done-autopilot) provides reference architecture for autonomous execution.
 User is a non-coder using vibe coding — wants maximum automation and hands-off execution.
-v4.1 lesson: raw terminal output is more reliable than any classifier/formatter layer on top of it.
+v4.2 lessons:
+- Every /api/ route was individually bypassed in cookieAuth; simpler to skip auth entirely server-side and rely on client-side gate
+- Anything that needs local filesystem/SQLite data must go through the tunnel proxy (not just GSD routes); PUT/POST bodies need to be forwarded
+- Group-by queries need to include model field for calculateCost() to match pricing rules
 
 ## Key Decisions
 
@@ -90,6 +97,12 @@ v4.1 lesson: raw terminal output is more reliable than any classifier/formatter 
 | Terminal-first over chat view | Chat classifier was unreliable, slow, and required constant fixing | ✅ Correct — faster, simpler, always accurate |
 | Async tmux + API cache | Sync execFileSync blocked event loop 5-15s per request | ✅ Correct — <500ms now |
 | Remove classifier + feedback pipeline | Dead code after chat removal; 2.5s polling loop wasting CPU | ✅ Correct — cleaner codebase |
+| Cookie auth over JWT | Simpler, no secret management, single-user dashboard | ✅ Correct — works, 30-day sessions |
+| Skip all /api/ routes in cookieAuth | Every route was individually bypassed anyway; client-side gate handles UI access | ✅ Correct — single-user dashboard |
+| Proxy /api/pricing, /api/config through tunnel | Data and files live locally; Railway server has no access | ✅ Correct — needed for Usage + Config pages |
+| Reuse project_settings table for global defaults | Reserved `__global__` key avoids new migration | ✅ Correct — fallback read inherits on first access |
+| Per-project services in gsd-projects.json | Extends existing config; Atlassian Statuspage format covers most providers | ✅ Correct |
+| $50 weekly Claude Max limit (constant) | No public API for actual limits; user can mentally calibrate | ⚠️ Revisit — if usage grows may need configurable |
 
 ## Constraints
 
@@ -98,19 +111,9 @@ v4.1 lesson: raw terminal output is more reliable than any classifier/formatter 
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
-## Current Milestone: v4.2 Cost Intelligence, Auth & UX Polish
+## Current Milestone: Planning next
 
-**Goal:** Add cost/service tracking, fix auth and terminal reliability, and polish the desktop UX with resizable columns and configurable CLAUDE.md editing.
-
-**Target features:**
-- External services dashboard page (Railway, Vercel, Resend, GitHub per project)
-- Claude Max token usage tracking with weekly limits
-- Persistent auth (remember browser, stop re-entering on every reload)
-- Terminal timeout fix (stays alive beyond 3 minutes idle)
-- Terminal light mode color fixes (selection highlight, white-on-white text)
-- Resizable 3-column desktop layout (drag handles)
-- Status color changes (waiting=blue, paused=orange)
-- CLAUDE.md editor (view/edit global + per-project files from dashboard)
+v4.2 completed. Ready for `/gsd:new-milestone`.
 
 ---
-*Last updated: 2026-04-07 after v4.2 milestone start*
+*Last updated: 2026-04-10 after v4.2 milestone completion*

@@ -1,5 +1,14 @@
 # Milestones
 
+## v4.2 Cost Intelligence, Auth & UX Polish (Shipped: 2026-04-10)
+
+**Phases completed:** 6 phases, 9 plans, 0 tasks
+
+**Key accomplishments:**
+- (none recorded)
+
+---
+
 ## v4.1 Chat Polish → Terminal-First (Shipped: 2026-04-06)
 
 **Phases:** 33-36 (4 phases, 6 plans + 7 quick tasks)
