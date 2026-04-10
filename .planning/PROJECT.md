@@ -111,9 +111,16 @@ v4.2 lessons:
 - **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
 - **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
 
-## Current Milestone: Planning next
+## Current Milestone: v4.3 Optimisation & Cost Intelligence
 
-v4.2 completed. Ready for `/gsd:new-milestone`.
+**Goal:** Fix project status accuracy, optimise the new pages (Services/Usage/Config), add comprehensive services cost tracking, and replace manual CLAUDE.md editing with an AI-guided workflow.
+
+**Target features:**
+- Real-time project status via WebSocket push (fix Working/Waiting false states)
+- Project cards show elapsed time + current task preview
+- Usage page: token counts, editable per-model pricing, model breakdown
+- Services page: uptime sparklines + comprehensive cost tracking (email + APIs)
+- AI-guided CLAUDE.md editor with diff preview
 
 ---
-*Last updated: 2026-04-10 after v4.2 milestone completion*
+*Last updated: 2026-04-10 after v4.3 milestone start*

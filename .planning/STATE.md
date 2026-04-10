@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.2
-milestone_name: Cost Intelligence, Auth & UX Polish
-status: completed
-stopped_at: Completed 42-configuration-ui/42-02-PLAN.md
-last_updated: "2026-04-10T08:50:40.680Z"
-last_activity: 2026-04-09 — Completed 42-02 Configuration UI (CFG-01..03, NOTIF-01..02)
+milestone: v4.3
+milestone_name: Optimisation & Cost Intelligence
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-10T10:00:00.000Z"
+last_activity: 2026-04-10 — Milestone v4.3 started
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 9
-  completed_plans: 9
-  percent: 95
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,17 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-07)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** v4.2 — Cost Intelligence, Auth & UX Polish (Phase 37)
+**Current focus:** v4.3 — Optimisation & Cost Intelligence
 
 ## Current Position
 
-Milestone: v4.2 Cost Intelligence, Auth & UX Polish
-Phase: 42 of 42 (Configuration UI) — complete
-Plan: 42-02 complete (2/2 plans done)
-Status: Phase 42 complete; v4.2 milestone done
-Last activity: 2026-04-09 — Completed 42-02 Configuration UI (CFG-01..03, NOTIF-01..02)
+Milestone: v4.3 Optimisation & Cost Intelligence
+Phase: Not started (defining requirements)
+Status: Defining requirements
+Last activity: 2026-04-10 — Milestone v4.3 started
 
-Progress: [██████████] 95% (36/38 plans)
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
