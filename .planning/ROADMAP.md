@@ -68,7 +68,10 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
   2. A session actively producing output reports "Working" (never "Waiting") — the current false-waiting bug is gone and verified on the live Railway URL
   3. Each project card shows elapsed time in the current state (e.g., "Working 2m 30s", "Waiting 5m") and the timer advances live
   4. Each project in the list shows a preview of the current task from tmux (e.g., "planning phase 14 UI integration") instead of the generic "Chat" placeholder
-**Plans**: TBD
+**Plans:** 3 plans
+- [ ] 43-01-PLAN.md — Fix tmux state detection (output-change heuristic) + extractCurrentTask helper
+- [ ] 43-02-PLAN.md — Server background broadcaster + project_state_change WebSocket push + stateEnteredAt/currentTask API fields
+- [ ] 43-03-PLAN.md — Client WS handler + live elapsed tick + currentTask card render + deploy + human verify
 
 ### Phase 44: Usage Display Enhancements
 **Goal**: User can see not just dollar costs but token counts, per-model breakdowns, and edit pricing rules directly from the Usage page.
@@ -122,7 +125,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 43. Project Status Accuracy | 0/0 | Not started | - |
+| 43. Project Status Accuracy | 0/3 | Not started | - |
 | 44. Usage Display Enhancements | 0/0 | Not started | - |
 | 45. Services Cost Tracking Foundation | 0/0 | Not started | - |
 | 46. Services API Integrations | 0/0 | Not started | - |
