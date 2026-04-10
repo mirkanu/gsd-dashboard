@@ -476,7 +476,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         touchStartX = e.touches[0].clientX;
         scrollIntent = false;
       };
-      const SCROLL_DAMPING = 3; // pixels of drag per tmux scroll line (higher = slower/more deliberate)
+      const SCROLL_DAMPING = 6; // pixels of drag per tmux scroll line (higher = slower/more deliberate)
       const handleTouchMove = (e: TouchEvent) => {
         if (selectModeRef.current) return; // let xterm.js handle in select mode
         const dy = touchStartY - e.touches[0].clientY;

@@ -92,6 +92,7 @@ None.
 | Phase 42 P01 | 9min | 2 tasks | 3 files |
 | Phase 42-configuration-ui P02 | 25min | 2 tasks | 5 files |
 | 38 | Add global default settings with apply-to-all prompt | 2026-04-10 | 282e867 | [38-add-global-default-settings-with-apply-t](./quick/38-add-global-default-settings-with-apply-t/) |
+| 39 | Reduce mobile terminal scroll sensitivity | 2026-04-10 | (pending) | [39-reduce-mobile-terminal-scroll-sensitivit](./quick/39-reduce-mobile-terminal-scroll-sensitivit/) |
 
 ## Session Continuity
 
