@@ -13,7 +13,8 @@ import {
 import type { Terminal } from "@xterm/xterm";
 import type { FitAddon } from "@xterm/addon-fit";
 import { api } from "../lib/api";
-import type { GsdProject, SessionState } from "../lib/types";
+import type { GsdProject, SessionState, ProjectStateChangeEvent } from "../lib/types";
+import { formatElapsed } from "../lib/format";
 import { GsdDrawer } from "../components/GsdDrawer";
 import { MarkdownViewer } from "../components/MarkdownViewer";
 import { ChatListView } from "../components/ChatListView";
@@ -700,12 +701,32 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
   );
 }
 
+// ─── Pure reducer for WebSocket project_state_change patches ─────────────────
+// Exported for unit testing (see __tests__/patchProjectsOnStateChange.test.ts).
+export function patchProjectsOnStateChange(
+  projects: GsdProject[],
+  evt: ProjectStateChangeEvent
+): GsdProject[] {
+  const idx = projects.findIndex((p) => p.name === evt.project);
+  if (idx === -1) return projects;
+  const next = projects.slice();
+  next[idx] = {
+    ...projects[idx],
+    sessionState: evt.sessionState,
+    statusText: evt.statusText,
+    currentTask: evt.currentTask,
+    stateEnteredAt: evt.stateEnteredAt,
+  };
+  return next;
+}
+
 // ─── Project card ─────────────────────────────────────────────────────────────
 
-function ProjectCard({
-  project, onSelect, onOpenTerminal, onArchive, onUnarchive, onPauseSession, onReopenTmux, autopilotRun
+export function ProjectCard({
+  project, nowMs, onSelect, onOpenTerminal, onArchive, onUnarchive, onPauseSession, onReopenTmux, autopilotRun
 }: {
   project: GsdProject;
+  nowMs: number;
   onSelect: (project: GsdProject) => void;
   onOpenTerminal: (initialValue: string) => void;
   onArchive: () => void;
@@ -735,6 +756,11 @@ function ProjectCard({
           <div className="flex items-center gap-1.5 min-w-0 flex-shrink overflow-hidden">
             <span className={`text-[11px] font-medium flex-shrink-0 ${stateConf.labelCls}`}>
               {stateConf.label}
+              {project.stateEnteredAt && project.sessionState !== 'archived' && (
+                <span className="ml-1 text-gray-500 font-normal">
+                  {formatElapsed(project.stateEnteredAt, nowMs)}
+                </span>
+              )}
             </span>
             {state?.blockers && state.blockers.length > 0 && (
               <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/20 flex-shrink-0">
@@ -762,6 +788,11 @@ function ProjectCard({
             <ExternalLink className="w-3 h-3 inline mr-1 align-middle" />
             {project.liveUrl}
           </a>
+        )}
+        {project.currentTask && (project.sessionState === 'working' || project.sessionState === 'waiting') && (
+          <p className="text-xs text-gray-400 truncate pl-6 mt-0.5" title={project.currentTask}>
+            {project.currentTask}
+          </p>
         )}
       </div>
 
@@ -965,6 +996,27 @@ export function GSD() {
     selectedProjRef.current = selectedProject;
   }, [selectedProject]);
 
+  // Subscribe to project_state_change WS messages via eventBus
+  // Patches the matching project in place — no refetch — for sub-second
+  // visible updates to sessionState, statusText, currentTask, stateEnteredAt.
+  useEffect(() => {
+    const unsub = eventBus.subscribe((msg) => {
+      if (msg.type === 'project_state_change') {
+        const evt = msg.data as ProjectStateChangeEvent;
+        setProjects((prev) => patchProjectsOnStateChange(prev, evt));
+      }
+    });
+    return unsub;
+  }, []);
+
+  // 1-second "now" tick for live-ticking elapsed-time labels. A single
+  // useState<number> is cheap — React reconciles ~10 cards efficiently.
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
   // Subscribe to autopilot_progress WS messages via eventBus
   useEffect(() => {
     const unsub = eventBus.subscribe((msg) => {
@@ -1112,6 +1164,7 @@ export function GSD() {
                     projects={filteredProjects}
                     activeProject={selectedProject ?? undefined}
                     onSelectProject={(name) => setSelectedProject(name)}
+                    nowMs={nowMs}
                   />
                 </div>
               </div>
@@ -1215,6 +1268,7 @@ export function GSD() {
           <ChatListView
             projects={filteredProjects}
             onSelectProject={(name) => setSelectedProject(name)}
+            nowMs={nowMs}
           />
         </div>
       )}

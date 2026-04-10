@@ -3,6 +3,7 @@ import {
   Conversation,
 } from "@chatscope/chat-ui-kit-react";
 import { timeAgo } from "../lib/timeAgo";
+import { formatElapsed } from "../lib/format";
 import type { GsdProject, SessionState } from "../lib/types";
 
 interface ChatListViewProps {
@@ -10,6 +11,8 @@ interface ChatListViewProps {
   onSelectProject: (name: string) => void;
   activeProject?: string;
   unreadCounts?: Record<string, number>;
+  /** Monotonic now timestamp (ms) used to render live elapsed-time labels. */
+  nowMs?: number;
 }
 
 const STATE_BORDER: Record<SessionState, string> = {
@@ -27,7 +30,7 @@ function truncate(s: string, max: number): string {
   return s.length > max ? s.slice(0, max) + "..." : s;
 }
 
-export function ChatListView({ projects, onSelectProject, activeProject, unreadCounts }: ChatListViewProps) {
+export function ChatListView({ projects, onSelectProject, activeProject, unreadCounts, nowMs }: ChatListViewProps) {
   // Sort by sessionUpdatedAt descending (newest first), nulls to bottom
   const sorted = [...projects].sort((a, b) => {
     if (!a.sessionUpdatedAt && !b.sessionUpdatedAt) return 0;
@@ -48,9 +51,23 @@ export function ChatListView({ projects, onSelectProject, activeProject, unreadC
     <ConversationList>
       {sorted.map((p) => {
         const displayName = p.display_name || capitalize(p.name);
-        const info = p.statusText
-          ? truncate(p.statusText, 80)
-          : capitalize(p.sessionState);
+        // Prefer the live currentTask preview (from tmux) over the generic
+        // statusText fallback — STAT-04. Falls back gracefully when null.
+        const baseInfo = p.currentTask
+          ? truncate(p.currentTask, 80)
+          : p.statusText
+            ? truncate(p.statusText, 80)
+            : capitalize(p.sessionState);
+        // Live-ticking elapsed label (STAT-03). Prefix with the state so
+        // users see "Working 2m 30s" / "Waiting 5m" next to the task preview.
+        const elapsed =
+          nowMs !== undefined && p.stateEnteredAt && p.sessionState !== "archived"
+            ? formatElapsed(p.stateEnteredAt, nowMs)
+            : "";
+        const stateLabel = capitalize(p.sessionState);
+        const info = elapsed
+          ? `${stateLabel} ${elapsed} · ${baseInfo}`
+          : baseInfo;
 
         return (
           <div
