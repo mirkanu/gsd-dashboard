@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 3
 status: completed
-stopped_at: Completed 43-02-PLAN.md
-last_updated: "2026-04-10T16:17:10.937Z"
+stopped_at: Completed 43-03-PLAN.md (awaiting human verify)
+last_updated: "2026-04-10T16:37:40.205Z"
 last_activity: 2026-04-10
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 6
 ---
 
@@ -80,6 +80,9 @@ Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases
 - [Phase 43]: 2s poll interval, recursive setTimeout prevents overlapping ticks
 - [Phase 43]: Proxy mode (GSD_DATA_URL) never runs the poller; Railway forwards upstream snapshots through existing cache
 - [Phase 43]: Route-level snapshot-preferred merge keeps projects API and WebSocket messages consistent while degrading safely on cold start
+- [Phase 43]: Plan 03: Updated ChatListView alongside ProjectCard — live UI path renders via ChatListView (@chatscope), ProjectCard is dead code kept in sync
+- [Phase 43]: Plan 03: Single nowMs useState + 1s setInterval drives elapsed-time ticks across all cards — cheap React reconciliation at ~10 cards
+- [Phase 43]: Plan 03: patchProjectsOnStateChange returns input array by reference on unknown project — avoids spurious re-renders during cold-start races
 
 ### Pending Todos
 
@@ -107,10 +110,11 @@ None.
 | 41 | Add Archive All + icon-only All: group | 2026-04-10 | (pending) | [41-add-archive-all-button-icon-only-all-pre](./quick/41-add-archive-all-button-icon-only-all-pre/) |
 | Phase 43 P01 | 25min | 2 tasks | 2 files |
 | Phase 43 P02 | 15min | 2 tasks | 4 files |
+| Phase 43 P03 | ~13min | 3 tasks | 7 files |
 
 ## Session Continuity
 
-Last session: 2026-04-10T16:17:10.933Z
-Stopped at: Completed 43-02-PLAN.md
+Last session: 2026-04-10T16:37:19.906Z
+Stopped at: Completed 43-03-PLAN.md (awaiting human verify)
 Resume file: None
 Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans
