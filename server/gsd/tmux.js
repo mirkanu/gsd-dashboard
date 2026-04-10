@@ -24,6 +24,70 @@ function _resetPaneHashCache() {
 }
 
 /**
+ * Strip the user-input box and footer status bar from a tmux capture so that
+ * hashing only reflects Claude's output area. Without this, the output-change
+ * heuristic fires when the user types into the input box (false-working).
+ *
+ * Claude Code's input region is anchored at the bottom of the pane. Two
+ * common layouts:
+ *   1. Box-drawing bordered: `╭─...─╮` / `│ > ... │` / `╰─...─╯`
+ *   2. Horizontal-rule bordered: `─────` / `❯ ...` / `─────`
+ *
+ * Both are followed by a status bar ("⬆ /command", "⏵⏵ bypass permissions", etc).
+ *
+ * Strategy: Drop everything from the last non-empty line up through the first
+ * horizontal separator (─) we hit while walking upward. This effectively
+ * removes the entire input region regardless of which layout is used.
+ */
+function stripInputBoxForHash(output) {
+  if (!output) return '';
+  const lines = output.split('\n');
+  // Drop trailing empty lines
+  while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
+
+  // Walk upward stripping: footer chrome → bottom rule → input line → top rule.
+  // Stop after we pass the SECOND separator rule (the top of the input box).
+  const maxStrip = 20;
+  let rulesSeen = 0;
+  let stripped = 0;
+  const isRule = (s) => /^[─━═]{3,}/.test(s) || /^[─━═╭╰╮╯│\s]+$/.test(s);
+  const isBoxSide = (s) => /^[│]/.test(s) || /[│]$/.test(s);
+
+  while (lines.length > 0 && stripped < maxStrip) {
+    const line = stripAnsi(lines[lines.length - 1]).trim();
+
+    if (rulesSeen === 0) {
+      // Still in footer chrome — pop everything until we hit a rule
+      if (isRule(line) || isBoxSide(line)) {
+        rulesSeen = 1;
+        lines.pop();
+        stripped++;
+        continue;
+      }
+      // Footer chrome line (status bar, permissions, etc) — pop
+      lines.pop();
+      stripped++;
+      continue;
+    }
+
+    if (rulesSeen === 1) {
+      // Between bottom rule and top rule — this is the input line (or multi-line input)
+      lines.pop();
+      stripped++;
+      if (isRule(line) || isBoxSide(line)) {
+        rulesSeen = 2;
+      }
+      continue;
+    }
+
+    // rulesSeen >= 2: we've passed both rules, done stripping
+    break;
+  }
+
+  return lines.join('\n');
+}
+
+/**
  * Pure helper for the output-change heuristic. No tmux calls, no pattern
  * matching, no module state. Returns 'working' if the capture indicates the
  * session is actively producing output, or null if the heuristic has no
@@ -35,7 +99,8 @@ function _resetPaneHashCache() {
  * @returns {'working'|null}
  */
 function _testDetectWithChangeHeuristic(prev, currentOutput, nowMs) {
-  const hash = crypto.createHash('sha1').update(currentOutput).digest('hex').slice(0, 16);
+  const stripped = stripInputBoxForHash(currentOutput);
+  const hash = crypto.createHash('sha1').update(stripped).digest('hex').slice(0, 16);
   if (prev && prev.hash !== hash) return 'working';
   if (prev && prev.hash === hash && (nowMs - prev.lastChangedAt) < CHANGE_HEURISTIC_WINDOW_MS) {
     return 'working';
@@ -437,7 +502,11 @@ async function detectSessionStateAsync(sessionName) {
   // capture (or has recently changed within CHANGE_HEURISTIC_WINDOW_MS), the
   // session is actively producing output even when the timer UI isn't visible
   // (tool use, file edits, etc.). Fixes the STAT-02 false-"Waiting" bug.
-  const hash = crypto.createHash('sha1').update(output).digest('hex').slice(0, 16);
+  //
+  // We strip the input box + footer before hashing so user typing into the
+  // input field doesn't count as "working" output.
+  const strippedForHash = stripInputBoxForHash(output);
+  const hash = crypto.createHash('sha1').update(strippedForHash).digest('hex').slice(0, 16);
   const prev = paneHashCache.get(sessionName);
   const nowMs = Date.now();
   if (prev && prev.hash !== hash) {
