@@ -482,6 +482,24 @@ async function detectSessionStateAsync(sessionName) {
   const output = await capturePaneTextAsync(sessionName);
   if (output === null) return 'paused';
 
+  // Check the last 12 lines only (the active Claude Code UI region, not scrollback).
+  // Timer patterns, rating UI, and current state all appear here.
+  const recentLines = output.split('\n').slice(-12).join('\n');
+
+  // "Done" signals take priority — if the session rating UI is visible,
+  // Claude has finished and is waiting for the user to dismiss or input a new task.
+  // Without this check, old timer patterns in scrollback match as "working".
+  const donePatterns = [
+    /●\s+How is Claude doing this session/i,
+    /Rate this session/i,
+    /^\s*1:\s+Bad\s+2:\s+Fine\s+3:\s+Good/mi,
+  ];
+  for (const pattern of donePatterns) {
+    if (pattern.test(recentLines)) return 'waiting';
+  }
+
+  // Timer patterns — ONLY check the recent UI region, not the whole scrollback.
+  // Old timer outputs from previous tasks remain visible and caused false working.
   const timerPatterns = [
     /\(\s*\d+[ms]+\s*·\s*↓/,
     /·\s*↓\s*[\d.]+/,
@@ -495,7 +513,7 @@ async function detectSessionStateAsync(sessionName) {
     /\d+\s*tokens?\s+(?:used|·)/i,
   ];
   for (const pattern of timerPatterns) {
-    if (pattern.test(output)) return 'working';
+    if (pattern.test(recentLines)) return 'working';
   }
 
   // Output-change heuristic: if capture-pane content differs from the last
