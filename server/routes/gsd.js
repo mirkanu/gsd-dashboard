@@ -3,7 +3,8 @@ const path = require("path");
 const fs = require("fs");
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
-const { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
+const { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
+const { getProjectStateSnapshot } = require('../gsd/stateBroadcaster');
 const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED: telegramEnabled } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
 const { calculateCost } = require('./pricing');
@@ -96,6 +97,9 @@ router.get("/projects", async (_req, res) => {
       return res.json(projectsCache);
     }
 
+    // Snapshot from background poller — canonical source for stateEnteredAt + currentTask
+    const stateSnapshot = getProjectStateSnapshot();
+
     const sessionQuery = db.prepare(`
       SELECT s.id as session_id, s.updated_at,
         (SELECT MAX(tu.last_input_tokens) FROM token_usage tu WHERE tu.session_id = s.id) as context_tokens
@@ -143,6 +147,22 @@ router.get("/projects", async (_req, res) => {
         ? (extractStatusLine(await capturePaneTextAsync(tmux_session)) || null)
         : null;
 
+      // Resolve stateEnteredAt + currentTask — prefer broadcaster snapshot when
+      // its sessionState matches what we just detected (snapshot carries canonical
+      // transition timestamp). Otherwise fall back to a fresh capture and treat
+      // now as the entry moment.
+      const snap = stateSnapshot[name];
+      let stateEnteredAt = null;
+      let currentTask = null;
+      if (snap && snap.sessionState === sessionState) {
+        stateEnteredAt = snap.stateEnteredAt;
+        currentTask = snap.currentTask;
+      } else {
+        stateEnteredAt = new Date().toISOString();
+        const paneFallback = await capturePaneTextAsync(tmux_session);
+        currentTask = extractCurrentTask(paneFallback);
+      }
+
       // Calculate session cost for the most recent session
       let sessionCost = null;
       if (row?.session_id) {
@@ -161,6 +181,8 @@ router.get("/projects", async (_req, res) => {
         contextTokens: row?.context_tokens ?? null,
         sessionUpdatedAt: row?.updated_at ?? null,
         statusText,
+        stateEnteredAt,
+        currentTask,
         sessionCost,
       };
     }));

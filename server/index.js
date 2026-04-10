@@ -6,6 +6,7 @@ const path = require("path");
 const http = require("http");
 const { initWebSocket } = require("./websocket");
 const { attachTerminalWS } = require("./routes/terminal");
+const { startStateBroadcaster } = require("./gsd/stateBroadcaster");
 
 const sessionsRouter = require("./routes/sessions");
 const agentsRouter = require("./routes/agents");
@@ -73,6 +74,19 @@ function startServer(app, port) {
   const server = http.createServer(app);
   initWebSocket(server);
   attachTerminalWS(server);
+
+  // Non-proxy mode only: poll tmux state every ~2s and push transitions over WS.
+  // Proxy mode (GSD_DATA_URL set — e.g. Railway) forwards upstream snapshots
+  // via the existing projects cache, so it must NOT run its own poller.
+  if (!process.env.GSD_DATA_URL) {
+    const { broadcast } = require("./websocket");
+    const loadProjectsLocal = () => {
+      const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, "../gsd-projects.json");
+      const fs = require("fs");
+      return JSON.parse(fs.readFileSync(configPath, "utf8"));
+    };
+    startStateBroadcaster(loadProjectsLocal, broadcast);
+  }
 
   const isProduction = process.env.NODE_ENV === "production";
   if (isProduction) {
