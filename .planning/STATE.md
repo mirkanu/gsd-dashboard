@@ -2,16 +2,17 @@
 gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
-status: in_progress
-stopped_at: Completed 43-01-PLAN.md
-last_updated: "2026-04-06T00:00:00.000Z"
-last_activity: 2026-04-06 — Phase 43 Plan 01 complete (tmux detection primitives)
+current_plan: 3
+status: completed
+stopped_at: Completed 43-02-PLAN.md
+last_updated: "2026-04-10T16:17:10.937Z"
+last_activity: 2026-04-10
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 6
 ---
 
 # Project State
@@ -27,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 
 Milestone: v4.3 Optimisation & Cost Intelligence
 Phase: 43 — Project Status Accuracy (in progress)
-Current Plan: 2 of 3
+Current Plan: 3
 Total Plans in Phase: 3
 Status: Plan 01 complete — tmux detection primitives (STAT-02 + STAT-04 fixed at the primitive layer). Ready for Plan 02 (background poller).
-Last activity: 2026-04-06 — Phase 43 Plan 01 complete
+Last activity: 2026-04-10
 
 Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases)
 
@@ -75,6 +76,10 @@ Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases
 - [Phase 43]: 3s change-heuristic window tuned to Claude Code tool-call streaming cadence (1-2s bursts)
 - [Phase 43]: paneHashCache kept in-memory only — no DB writes, honors backend transaction boundaries rule
 - [Phase 43]: extractCurrentTask is additive; extractStatusLine untouched (different purpose, still used for statusText)
+- [Phase 43]: Silent initial seed — first poll never broadcasts, avoids boot-time broadcast storms
+- [Phase 43]: 2s poll interval, recursive setTimeout prevents overlapping ticks
+- [Phase 43]: Proxy mode (GSD_DATA_URL) never runs the poller; Railway forwards upstream snapshots through existing cache
+- [Phase 43]: Route-level snapshot-preferred merge keeps projects API and WebSocket messages consistent while degrading safely on cold start
 
 ### Pending Todos
 
@@ -101,10 +106,11 @@ None.
 | 40 | Add copy button to each task row beside Archive | 2026-04-10 | 75f96ca | [40-add-copy-single-task-button-beside-archi](./quick/40-add-copy-single-task-button-beside-archi/) |
 | 41 | Add Archive All + icon-only All: group | 2026-04-10 | (pending) | [41-add-archive-all-button-icon-only-all-pre](./quick/41-add-archive-all-button-icon-only-all-pre/) |
 | Phase 43 P01 | 25min | 2 tasks | 2 files |
+| Phase 43 P02 | 15min | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-04-10T16:05:33.748Z
-Stopped at: Completed 43-01-PLAN.md
+Last session: 2026-04-10T16:17:10.933Z
+Stopped at: Completed 43-02-PLAN.md
 Resume file: None
 Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans
