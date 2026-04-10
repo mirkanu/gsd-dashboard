@@ -482,24 +482,12 @@ async function detectSessionStateAsync(sessionName) {
   const output = await capturePaneTextAsync(sessionName);
   if (output === null) return 'paused';
 
-  // Check the last 12 lines only (the active Claude Code UI region, not scrollback).
-  // Timer patterns, rating UI, and current state all appear here.
-  const recentLines = output.split('\n').slice(-12).join('\n');
+  // Check the last 15 lines only (active Claude Code UI region, not scrollback).
+  const recentLines = output.split('\n').slice(-15).join('\n');
 
-  // "Done" signals take priority — if the session rating UI is visible,
-  // Claude has finished and is waiting for the user to dismiss or input a new task.
-  // Without this check, old timer patterns in scrollback match as "working".
-  const donePatterns = [
-    /●\s+How is Claude doing this session/i,
-    /Rate this session/i,
-    /^\s*1:\s+Bad\s+2:\s+Fine\s+3:\s+Good/mi,
-  ];
-  for (const pattern of donePatterns) {
-    if (pattern.test(recentLines)) return 'waiting';
-  }
-
-  // Timer patterns — ONLY check the recent UI region, not the whole scrollback.
-  // Old timer outputs from previous tasks remain visible and caused false working.
+  // Active timer check FIRST — if Claude shows a live animated timer
+  // (e.g. "Architecting… (3m 13s · ↓ 5.0k tokens)"), it's actively working
+  // regardless of whether an old session-rating UI is still visible above it.
   const timerPatterns = [
     /\(\s*\d+[ms]+\s*·\s*↓/,
     /·\s*↓\s*[\d.]+/,
@@ -510,10 +498,20 @@ async function detectSessionStateAsync(sessionName) {
     /Bypassing\s+Permissions/i,
     /^⏺\s+\w+\(/m,
     /tokens?\s*·\s*esc/i,
-    /\d+\s*tokens?\s+(?:used|·)/i,
   ];
   for (const pattern of timerPatterns) {
     if (pattern.test(recentLines)) return 'working';
+  }
+
+  // No active timer — check "done" signals. Rating UI means Claude finished
+  // and is waiting for user dismissal or a new task.
+  const donePatterns = [
+    /●\s+How is Claude doing this session/i,
+    /Rate this session/i,
+    /^\s*1:\s+Bad\s+2:\s+Fine\s+3:\s+Good/mi,
+  ];
+  for (const pattern of donePatterns) {
+    if (pattern.test(recentLines)) return 'waiting';
   }
 
   // Output-change heuristic: if capture-pane content differs from the last
