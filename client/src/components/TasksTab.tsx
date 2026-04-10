@@ -161,6 +161,21 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function handleArchiveAll() {
+    if (tasks.length === 0) return;
+    const ids = tasks.map((t) => t.id);
+    // Optimistic clear
+    setTasks([]);
+    try {
+      await Promise.all(
+        ids.map((id) => api.gsd.tasks.update(projectKey, id, { archived: 1 }))
+      );
+    } catch {
+      // Revert on failure by re-fetching
+      api.gsd.tasks.list(projectKey, false).then(({ tasks }) => setTasks(tasks)).catch(() => {});
+    }
+  }
+
   async function handleArchive(taskId: number) {
     // Optimistic removal
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
@@ -238,14 +253,25 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
           {showArchived ? "Show open" : "Show archived"}
         </button>
         {!showArchived && !loading && tasks.length > 0 && (
-          <button
-            onClick={handleCopyAll}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
-            title="Copy all open tasks as markdown"
-          >
-            <ClipboardCopy className="w-3 h-3" />
-            {copied ? "Copied!" : "Copy all"}
-          </button>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <span>All:</span>
+            <button
+              onClick={handleCopyAll}
+              aria-label="Copy all open tasks"
+              className={`transition-colors ${copied ? "text-green-400" : "hover:text-gray-300"}`}
+              title={copied ? "Copied!" : "Copy all tasks as markdown"}
+            >
+              <ClipboardCopy className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleArchiveAll}
+              aria-label="Archive all open tasks"
+              className="hover:text-gray-300 transition-colors"
+              title="Archive all open tasks"
+            >
+              <Archive className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
       </div>
 
