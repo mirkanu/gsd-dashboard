@@ -16,6 +16,15 @@ function TaskRow({
   onUnarchive: (id: number) => void;
   onEdit: (task: GsdTask) => void;
 }) {
+  const [rowCopied, setRowCopied] = useState(false);
+  async function handleCopyRow() {
+    const text = task.description
+      ? `**${task.title}** — ${task.description}`
+      : `**${task.title}**`;
+    await navigator.clipboard.writeText(text);
+    setRowCopied(true);
+    setTimeout(() => setRowCopied(false), 1500);
+  }
   return (
     <div className="flex items-start justify-between gap-2 py-2 border-b border-border last:border-0">
       <button
@@ -31,25 +40,35 @@ function TaskRow({
           <p className="text-xs text-gray-500 mt-0.5 break-words">{task.description}</p>
         )}
       </button>
-      {!showArchived ? (
+      <div className="flex items-center gap-2 flex-shrink-0">
         <button
-          onClick={() => onArchive(task.id)}
-          aria-label="Archive task"
-          className="text-gray-500 hover:text-gray-300 flex-shrink-0 transition-colors"
-          title="Archive"
+          onClick={handleCopyRow}
+          aria-label="Copy task"
+          className={`flex-shrink-0 transition-colors ${rowCopied ? "text-green-400" : "text-gray-500 hover:text-gray-300"}`}
+          title={rowCopied ? "Copied!" : "Copy task"}
         >
-          <Archive className="w-3.5 h-3.5" />
+          <ClipboardCopy className="w-3.5 h-3.5" />
         </button>
-      ) : (
-        <button
-          onClick={() => onUnarchive(task.id)}
-          aria-label="Unarchive task"
-          className="text-gray-500 hover:text-gray-300 flex-shrink-0 transition-colors"
-          title="Unarchive"
-        >
-          <ArchiveRestore className="w-3.5 h-3.5" />
-        </button>
-      )}
+        {!showArchived ? (
+          <button
+            onClick={() => onArchive(task.id)}
+            aria-label="Archive task"
+            className="text-gray-500 hover:text-gray-300 flex-shrink-0 transition-colors"
+            title="Archive"
+          >
+            <Archive className="w-3.5 h-3.5" />
+          </button>
+        ) : (
+          <button
+            onClick={() => onUnarchive(task.id)}
+            aria-label="Unarchive task"
+            className="text-gray-500 hover:text-gray-300 flex-shrink-0 transition-colors"
+            title="Unarchive"
+          >
+            <ArchiveRestore className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
