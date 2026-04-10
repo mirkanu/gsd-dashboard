@@ -91,6 +91,7 @@ None.
 | 37 | Add dedicated Usage page with cross-project breakdown | 2026-04-09 | c75ec36 | [37-add-dedicated-usage-page-with-cross-proj](./quick/37-add-dedicated-usage-page-with-cross-proj/) |
 | Phase 42 P01 | 9min | 2 tasks | 3 files |
 | Phase 42-configuration-ui P02 | 25min | 2 tasks | 5 files |
+| 38 | Add global default settings with apply-to-all prompt | 2026-04-10 | 282e867 | [38-add-global-default-settings-with-apply-t](./quick/38-add-global-default-settings-with-apply-t/) |
 
 ## Session Continuity
 
