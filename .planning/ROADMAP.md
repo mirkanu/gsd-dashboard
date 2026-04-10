@@ -141,4 +141,4 @@ Plans:
 | 39. Resizable Columns | 1/1 | Complete    | 2026-04-07 | - |
 | 40. External Services Dashboard | 1/1 | Complete    | 2026-04-07 | - |
 | 41. Claude Usage Tracking | 2/2 | Complete    | 2026-04-08 | - |
-| 42. Configuration UI | 2/2 | Complete   | 2026-04-10 | - |
+| 42. Configuration UI | 2/2 | Complete    | 2026-04-10 | - |
