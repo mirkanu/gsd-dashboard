@@ -205,6 +205,10 @@ export const api = {
         { method: 'PUT', body: JSON.stringify(settings) },
       ),
     listProjectSettings: () => request<ProjectSettings[]>('/config/project-settings'),
+    applyGlobalSettings: () =>
+      request<{ ok: boolean; updated: number }>('/config/project-settings/apply-global', {
+        method: 'POST',
+      }),
   },
 
   pricing: {

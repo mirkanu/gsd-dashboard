@@ -108,7 +108,16 @@ export function ConfigPage() {
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState<string | null>(null);
 
+  // Apply-to-all confirmation dialog (Global tab only)
+  const [applyDialogOpen, setApplyDialogOpen] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [applyResult, setApplyResult] = useState<string | null>(null);
+
   const isGlobal = selectedProject === "global";
+
+  // The reserved DB key for global defaults — distinct from the UI tab id "global"
+  const GLOBAL_KEY = "__global__";
+  const settingsProjectKey = isGlobal ? GLOBAL_KEY : selectedProject;
 
   // ─── Load projects ───────────────────────────────────────────────────────
 
@@ -159,17 +168,15 @@ export function ConfigPage() {
   // ─── Load project settings when project changes ──────────────────────────
 
   const loadSettings = useCallback(async (project: string) => {
-    if (project === "global") {
-      setSettings(null);
-      return;
-    }
+    // For the "global" UI tab, load the reserved __global__ DB row.
+    const apiKey = project === "global" ? GLOBAL_KEY : project;
     setSettingsLoading(true);
     try {
-      const data = await api.config.getProjectSettings(project);
+      const data = await api.config.getProjectSettings(apiKey);
       setSettings(data);
     } catch {
       setSettings({
-        project_key: project,
+        project_key: apiKey,
         verbosity: "normal",
         telegram_alerts: {},
       });
@@ -211,16 +218,50 @@ export function ConfigPage() {
   ) => {
     if (!settings) return;
     try {
+      // Build the merged payload so PUT carries both fields (server validates both).
+      const merged: Partial<ProjectSettings> = {
+        verbosity: patch.verbosity ?? settings.verbosity,
+        telegram_alerts:
+          patch.telegram_alerts ?? settings.telegram_alerts ?? {},
+      };
       const result = await api.config.saveProjectSettings(
-        selectedProject,
-        patch
+        settingsProjectKey,
+        merged
       );
       setSettings(result.settings);
       setSettingsSaved(feedbackKey);
       setTimeout(() => setSettingsSaved(null), 2000);
+
+      // On the Global tab, prompt to apply to all existing projects after save.
+      if (isGlobal) {
+        // Coalesce: if dialog is already open, just leave it open with the new
+        // values already saved as the new global defaults.
+        setApplyDialogOpen(true);
+      }
     } catch {
       // Silently fail -- settings will retry on next change
     }
+  };
+
+  const handleApplyToAll = async () => {
+    setApplying(true);
+    setApplyResult(null);
+    try {
+      const res = await api.config.applyGlobalSettings();
+      setApplyResult(`Applied to ${res.updated} projects`);
+      setTimeout(() => setApplyResult(null), 3000);
+      setApplyDialogOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to apply";
+      setApplyResult(msg);
+      setTimeout(() => setApplyResult(null), 4000);
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const handleCancelApply = () => {
+    setApplyDialogOpen(false);
   };
 
   const handleVerbosityChange = (v: ProjectSettings["verbosity"]) => {
@@ -365,8 +406,13 @@ export function ConfigPage() {
         )}
       </div>
 
-      {/* Project Settings -- only for non-global */}
-      {!isGlobal && (
+      {/* Apply-to-all status pill */}
+      {applyResult && (
+        <div className="text-sm text-emerald-400 px-2">{applyResult}</div>
+      )}
+
+      {/* Project Settings -- shown for both global and per-project tabs */}
+      {(
         <>
           {/* Verbosity */}
           <div className="bg-surface-2 border border-border rounded-xl p-4 space-y-3">
@@ -437,6 +483,49 @@ export function ConfigPage() {
             )}
           </div>
         </>
+      )}
+
+      {/* Apply-to-all confirmation dialog */}
+      {applyDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="apply-dialog-title"
+        >
+          <div className="bg-surface-2 border border-border rounded-xl p-5 max-w-md w-full mx-4 shadow-2xl">
+            <h3
+              id="apply-dialog-title"
+              className="text-base font-semibold text-gray-100 mb-2"
+            >
+              Apply to all existing projects?
+            </h3>
+            <p className="text-sm text-gray-400 mb-5">
+              This will override the current verbosity and Telegram alert
+              settings for every existing project with your new global defaults.
+              This cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleCancelApply}
+                disabled={applying}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-surface-3 text-gray-300 hover:bg-surface-3/80 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyToAll}
+                disabled={applying}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-accent text-white hover:bg-accent/90 transition-colors disabled:opacity-50"
+              >
+                {applying && <Loader2 className="w-4 h-4 animate-spin" />}
+                Apply to all
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
