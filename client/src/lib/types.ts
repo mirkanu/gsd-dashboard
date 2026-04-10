@@ -53,6 +53,16 @@ export interface GsdProject {
   sessionState: SessionState;
   statusText: string | null;
   sessionCost: number | null;
+  stateEnteredAt: string | null;
+  currentTask: string | null;
+}
+
+export interface ProjectStateChangeEvent {
+  project: string;
+  sessionState: SessionState;
+  statusText: string | null;
+  currentTask: string | null;
+  stateEnteredAt: string;
 }
 
 export interface UsageDay {
@@ -228,8 +238,15 @@ export interface CostResult {
 }
 
 export interface WSMessage {
-  type: "session_created" | "session_updated" | "agent_created" | "agent_updated" | "new_event" | "autopilot_progress";
-  data: Session | Agent | DashboardEvent | AutopilotProgressEvent;
+  type:
+    | "session_created"
+    | "session_updated"
+    | "agent_created"
+    | "agent_updated"
+    | "new_event"
+    | "autopilot_progress"
+    | "project_state_change";
+  data: Session | Agent | DashboardEvent | AutopilotProgressEvent | ProjectStateChangeEvent;
   timestamp: string;
 }
 

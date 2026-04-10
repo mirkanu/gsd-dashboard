@@ -82,3 +82,27 @@ export function fmtCost(n: number): string {
 export function fmtCostFull(n: number, decimals = 2): string {
   return `$${n.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
 }
+
+/**
+ * Format elapsed time between an ISO start timestamp and a now-ms number.
+ * - < 60s:  "Ns"
+ * - < 1h:   "Nm Ns"
+ * - >= 1h:  "Nh Mm" (seconds dropped for readability)
+ * Returns '' for null/invalid input. Clamps negatives to 0.
+ * Pure function — safe to call on every render.
+ */
+export function formatElapsed(startIso: string | null, nowMs: number): string {
+  if (!startIso) return "";
+  const start = Date.parse(startIso);
+  if (Number.isNaN(start)) return "";
+  const secs = Math.max(0, Math.floor((nowMs - start) / 1000));
+  if (secs < 60) return `${secs}s`;
+  if (secs < 3600) {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}m ${s}s`;
+  }
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  return `${h}h ${m}m`;
+}
