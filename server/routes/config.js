@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { stmts } = require("../db");
+const { stmts, GLOBAL_SETTINGS_KEY, getGlobalSettings } = require("../db");
 
 const router = express.Router();
 
@@ -140,10 +140,24 @@ router.get("/project-settings/:project", async (req, res) => {
   try {
     const row = stmts.getProjectSettings.get(project);
     if (!row) {
+      // Fall back to global defaults for non-global projects with no row.
+      // Do NOT auto-create a row on read.
+      if (project !== GLOBAL_SETTINGS_KEY) {
+        const global = getGlobalSettings();
+        return res.json({
+          project_key: project,
+          verbosity: global.verbosity,
+          telegram_alerts: global.telegram_alerts,
+          updated_at: global.updated_at,
+        });
+      }
+      // The __global__ row itself is missing — return hardcoded defaults.
+      const global = getGlobalSettings();
       return res.json({
-        project_key: project,
-        verbosity: "normal",
-        telegram_alerts: {},
+        project_key: GLOBAL_SETTINGS_KEY,
+        verbosity: global.verbosity,
+        telegram_alerts: global.telegram_alerts,
+        updated_at: global.updated_at,
       });
     }
     res.json({
@@ -152,6 +166,39 @@ router.get("/project-settings/:project", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to get project settings", detail: err.message });
+  }
+});
+
+// POST /api/config/project-settings/apply-global — Bulk apply __global__ to all non-global rows
+router.post("/project-settings/apply-global", async (req, res) => {
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(`${GSD_DATA_URL}/api/config/project-settings/apply-global`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req.body || {}),
+        signal: AbortSignal.timeout(10000),
+      });
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: "Failed to reach GSD data source", detail: err.message });
+    }
+  }
+
+  try {
+    const globalRow = stmts.getProjectSettings.get(GLOBAL_SETTINGS_KEY);
+    if (!globalRow) {
+      return res.status(400).json({ error: "No global settings to apply" });
+    }
+    const result = stmts.applyGlobalSettings.run(
+      globalRow.verbosity,
+      globalRow.telegram_alerts || "{}",
+      new Date().toISOString()
+    );
+    res.json({ ok: true, updated: result.changes });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to apply global settings", detail: err.message });
   }
 });
 

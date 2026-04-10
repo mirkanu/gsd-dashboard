@@ -549,9 +549,45 @@ const stmts = {
        updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`
   ),
   listProjectSettings: db.prepare(
-    `SELECT * FROM project_settings ORDER BY project_key ASC`
+    `SELECT * FROM project_settings WHERE project_key != '__global__' ORDER BY project_key ASC`
+  ),
+  applyGlobalSettings: db.prepare(
+    `UPDATE project_settings
+     SET verbosity = ?, telegram_alerts = ?, updated_at = ?
+     WHERE project_key != '__global__'`
   ),
 };
+
+// Global project settings constants/helpers (Quick 38)
+const GLOBAL_SETTINGS_KEY = '__global__';
+const DEFAULT_GLOBAL_SETTINGS = {
+  verbosity: 'normal',
+  telegram_alerts: { taskComplete: false, waitingOnUser: false },
+};
+
+function getGlobalSettings() {
+  const row = stmts.getProjectSettings.get(GLOBAL_SETTINGS_KEY);
+  if (!row) {
+    return {
+      project_key: GLOBAL_SETTINGS_KEY,
+      verbosity: DEFAULT_GLOBAL_SETTINGS.verbosity,
+      telegram_alerts: { ...DEFAULT_GLOBAL_SETTINGS.telegram_alerts },
+      updated_at: null,
+      _isDefault: true,
+    };
+  }
+  let alerts = {};
+  try {
+    alerts = JSON.parse(row.telegram_alerts || '{}');
+  } catch {
+    alerts = {};
+  }
+  return {
+    ...row,
+    telegram_alerts: alerts,
+    _isDefault: false,
+  };
+}
 
 // Autopilot prepared statements (Phase 24)
 // Wrapped in try/catch: tables are created by migration above, but guard against
@@ -580,4 +616,4 @@ try {
   console.error('[db] Failed to prepare autopilot statements:', e.message);
 }
 
-module.exports = { db, stmts, DB_PATH };
+module.exports = { db, stmts, DB_PATH, GLOBAL_SETTINGS_KEY, getGlobalSettings, DEFAULT_GLOBAL_SETTINGS };
