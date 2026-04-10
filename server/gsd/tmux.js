@@ -330,23 +330,59 @@ function extractStatusLine(rawText) {
  */
 function extractCurrentTask(rawText) {
   if (!rawText) return null;
-  const lines = rawText.split('\n').slice(-20);
+  const lines = rawText.split('\n');
   const chromePatterns = [
     /esc\s+to\s+interrupt/i,
     /\?\s+for\s+shortcuts/i,
     /^\s*\(y\/n\)/i,
     /Bypassing\s+Permissions/i,
-    /^[-─═\s]+$/,
-    /^\s*>?\s*\d+\.\s/,                 // numeric menu "1. Option" / "> 1. Option"
-    /^[✻✶]/,                             // status spinner lines (extractStatusLine handles those)
+    /bypass\s+permissions\s+on/i,
+    /accept\s+edits\s+on/i,
+    /^[⏵▶►]+\s*/,                        // footer permission indicators
+    /^[-─═─\s]+$/,                       // separator lines
+    /^\s*>?\s*\d+\.\s/,                  // numeric menu "1. Option"
+    /^[✻✶⚡]/,                            // spinner/status lines
+    /^\s*\d+\s+shells?/i,                // "4 shells still running"
+    /context\s+left\s+until\s+auto/i,    // context usage footer
+    /Try\s+"claude/i,                    // welcome message
+    /^\s*╭|^\s*╰|^\s*│\s*$/,             // empty box-drawing lines
+    /(Opus|Sonnet|Haiku)\s+[\d.]+.*context/i,  // status bar "Opus 4.6 (1M context)"
+    /[█▓▒░]+/,                           // progress bar chars
+    /^\s*[⬆↑]\s*\/gsd:/,                 // status bar command prefix
+    /^\s*[⬆↑↓]\s+/,                      // other arrow-prefixed status lines
+    /^\s*\d+:\s+\w+\s+\d+:/,             // session rating UI "1: Bad 2: Fine 3: Good"
+    /Hashing…?/i,                        // tool progress (not user-visible task)
+    /^Rate this session/i,
+    /^Dismiss\s*$/i,
   ];
+
+  // Strategy 1: find the most recent user input line. Claude Code wraps user
+  // input in box-drawing chars like "│ > their request here │"
+  // Scan the ENTIRE buffer (not just last N) because after a task completes
+  // and a rating UI shows, the user input may be hundreds of lines back.
   for (let i = lines.length - 1; i >= 0; i--) {
-    let clean = stripAnsi(lines[i]).trim();
+    const clean = stripAnsi(lines[i]).trim();
+    const promptMatch = clean.match(/^[│|]\s*>\s+(.+?)(?:\s*[│|])?$/) || clean.match(/^>\s+(.+)$/);
+    if (promptMatch) {
+      let content = promptMatch[1].replace(/[│|]+$/, '').trim();
+      // Skip slash commands (they're not descriptive tasks)
+      if (content.startsWith('/')) continue;
+      if (content.length >= 4 && !chromePatterns.some((p) => p.test(content))) {
+        if (content.length > 120) content = content.slice(0, 119) + '…';
+        return content;
+      }
+    }
+  }
+
+  // Strategy 2: fall back to last meaningful non-chrome line in recent buffer
+  const recentLines = lines.slice(-30);
+  for (let i = recentLines.length - 1; i >= 0; i--) {
+    let clean = stripAnsi(recentLines[i]).trim();
     if (!clean) continue;
     if (chromePatterns.some((p) => p.test(clean))) continue;
-    // Strip leading marker characters (box-drawing, pipes, prompts, tool indicators)
-    clean = clean.replace(/^[│|>·⏺\s]+/, '').trim();
+    clean = clean.replace(/^[│|>·⏺⏵▶►\s]+/, '').replace(/[│|]+$/, '').trim();
     if (clean.length < 4) continue;
+    if (chromePatterns.some((p) => p.test(clean))) continue;
     if (clean.length > 120) clean = clean.slice(0, 119) + '…';
     return clean;
   }

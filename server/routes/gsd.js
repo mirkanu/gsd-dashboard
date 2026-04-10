@@ -147,21 +147,13 @@ router.get("/projects", async (_req, res) => {
         ? (extractStatusLine(await capturePaneTextAsync(tmux_session)) || null)
         : null;
 
-      // Resolve stateEnteredAt + currentTask — prefer broadcaster snapshot when
-      // its sessionState matches what we just detected (snapshot carries canonical
-      // transition timestamp). Otherwise fall back to a fresh capture and treat
-      // now as the entry moment.
+      // Resolve stateEnteredAt — prefer broadcaster snapshot when its sessionState
+      // matches what we just detected (carries canonical transition timestamp).
       const snap = stateSnapshot[name];
-      let stateEnteredAt = null;
-      let currentTask = null;
-      if (snap && snap.sessionState === sessionState) {
-        stateEnteredAt = snap.stateEnteredAt;
-        currentTask = snap.currentTask;
-      } else {
-        stateEnteredAt = new Date().toISOString();
-        const paneFallback = await capturePaneTextAsync(tmux_session);
-        currentTask = extractCurrentTask(paneFallback);
-      }
+      const stateEnteredAt =
+        snap && snap.sessionState === sessionState
+          ? snap.stateEnteredAt
+          : new Date().toISOString();
 
       // Calculate session cost for the most recent session
       let sessionCost = null;
@@ -172,8 +164,16 @@ router.get("/projects", async (_req, res) => {
         }
       }
 
+      const projectData = readProject(name, root);
+      // currentTask: prefer STATE.md's current_phase (semantic, e.g.
+      // "43 — Project Status Accuracy (in progress)"), fall back to last_activity.
+      const currentTask =
+        projectData?.state?.current_phase ||
+        projectData?.state?.last_activity ||
+        null;
+
       return {
-        ...readProject(name, root),
+        ...projectData,
         display_name: display_name || null,
         tmuxActive: await isTmuxSessionActiveAsync(tmux_session),
         tmuxSession: tmux_session ?? null,
