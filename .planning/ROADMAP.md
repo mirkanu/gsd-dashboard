@@ -40,7 +40,7 @@ Quick tasks: #24 lazy-load, #25 perf fixes, #27 terminal-first layout, #28 mobil
 - [x] **Phase 39: Resizable Columns** - Drag handles for desktop 3-column layout with persisted widths (completed 2026-04-07)
 - [x] **Phase 40: External Services Dashboard** - New page listing all external services with live status (completed 2026-04-07)
 - [x] **Phase 41: Claude Usage Tracking** - Token usage data layer, SQLite persistence, and usage UI (completed 2026-04-08)
-- [ ] **Phase 42: Configuration UI** - CLAUDE.md editor, verbosity settings, and Telegram notification config
+- [x] **Phase 42: Configuration UI** - CLAUDE.md editor, verbosity settings, and Telegram notification config (completed 2026-04-10)
 
 ## Phase Details
 
@@ -141,4 +141,4 @@ Plans:
 | 39. Resizable Columns | 1/1 | Complete    | 2026-04-07 | - |
 | 40. External Services Dashboard | 1/1 | Complete    | 2026-04-07 | - |
 | 41. Claude Usage Tracking | 2/2 | Complete    | 2026-04-08 | - |
-| 42. Configuration UI | 1/2 | In Progress|  | - |
+| 42. Configuration UI | 2/2 | Complete   | 2026-04-10 | - |
