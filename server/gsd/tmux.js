@@ -2,9 +2,46 @@
 
 const { execFileSync, execFile } = require('child_process');
 const { promisify } = require('util');
+const crypto = require('crypto');
 const stripAnsi = require('strip-ansi');
 
 const execFileAsync = promisify(execFile);
+
+// Module-level cache for the output-change heuristic. Maps sessionName to
+// { hash, lastChangedAt }. In-memory only — never persisted, does not survive
+// process restart. Keeps STAT-02 detection responsive without any DB writes.
+const paneHashCache = new Map();
+
+// Window within which a non-changing capture is still considered "working"
+// after the most recent content change. Tuned to 3s because:
+//   - Claude Code tool calls often hold the pane static for 1-2s
+//     between streaming bursts.
+//   - 3s is short enough to flip to 'waiting' quickly after true idle.
+const CHANGE_HEURISTIC_WINDOW_MS = 3000;
+
+function _resetPaneHashCache() {
+  paneHashCache.clear();
+}
+
+/**
+ * Pure helper for the output-change heuristic. No tmux calls, no pattern
+ * matching, no module state. Returns 'working' if the capture indicates the
+ * session is actively producing output, or null if the heuristic has no
+ * opinion and the caller should fall through to pattern matching.
+ *
+ * @param {{ hash: string, lastChangedAt: number } | null | undefined} prev
+ * @param {string} currentOutput
+ * @param {number} nowMs
+ * @returns {'working'|null}
+ */
+function _testDetectWithChangeHeuristic(prev, currentOutput, nowMs) {
+  const hash = crypto.createHash('sha1').update(currentOutput).digest('hex').slice(0, 16);
+  if (prev && prev.hash !== hash) return 'working';
+  if (prev && prev.hash === hash && (nowMs - prev.lastChangedAt) < CHANGE_HEURISTIC_WINDOW_MS) {
+    return 'working';
+  }
+  return null;
+}
 
 /**
  * Check whether a named tmux session exists and is running.
@@ -155,6 +192,11 @@ function detectSessionState(sessionName) {
     /·\s*↑\s*\d+.*·\s*↓/,      // "· ↑ 22 tokens · ↓ 539"
     /\(\s*thinking\s*\)/,        // "(thinking)"
     /·\s*thinking\)/,            // "· thinking)" existing variant
+    /esc\s+to\s+interrupt/i,      // modern Claude Code active-processing footer
+    /Bypassing\s+Permissions/i,    // visible during --dangerously-skip-permissions tool exec
+    /^⏺\s+\w+\(/m,                 // tool-call indicator line (Write/Read/Bash/Edit)
+    /tokens?\s*·\s*esc/i,          // token counter footer variant
+    /\d+\s*tokens?\s+(?:used|·)/i, // standalone token counter
   ];
   for (const pattern of timerPatterns) {
     if (pattern.test(output)) return 'working';
@@ -190,6 +232,11 @@ function _testDetectFromOutput(output) {
     /·\s*↑\s*\d+.*·\s*↓/,
     /\(\s*thinking\s*\)/,
     /·\s*thinking\)/,
+    /esc\s+to\s+interrupt/i,
+    /Bypassing\s+Permissions/i,
+    /^⏺\s+\w+\(/m,
+    /tokens?\s*·\s*esc/i,
+    /\d+\s*tokens?\s+(?:used|·)/i,
   ];
   const waitingPatterns = [
     />\s+\d+\./,
@@ -302,10 +349,31 @@ async function detectSessionStateAsync(sessionName) {
     /·\s*↑\s*\d+.*·\s*↓/,
     /\(\s*thinking\s*\)/,
     /·\s*thinking\)/,
+    /esc\s+to\s+interrupt/i,
+    /Bypassing\s+Permissions/i,
+    /^⏺\s+\w+\(/m,
+    /tokens?\s*·\s*esc/i,
+    /\d+\s*tokens?\s+(?:used|·)/i,
   ];
   for (const pattern of timerPatterns) {
     if (pattern.test(output)) return 'working';
   }
+
+  // Output-change heuristic: if capture-pane content differs from the last
+  // capture (or has recently changed within CHANGE_HEURISTIC_WINDOW_MS), the
+  // session is actively producing output even when the timer UI isn't visible
+  // (tool use, file edits, etc.). Fixes the STAT-02 false-"Waiting" bug.
+  const hash = crypto.createHash('sha1').update(output).digest('hex').slice(0, 16);
+  const prev = paneHashCache.get(sessionName);
+  const nowMs = Date.now();
+  if (prev && prev.hash !== hash) {
+    paneHashCache.set(sessionName, { hash, lastChangedAt: nowMs });
+    return 'working';
+  }
+  if (prev && prev.hash === hash && (nowMs - prev.lastChangedAt) < CHANGE_HEURISTIC_WINDOW_MS) {
+    return 'working';
+  }
+  if (!prev) paneHashCache.set(sessionName, { hash, lastChangedAt: nowMs });
 
   const waitingPatterns = [
     />\s+\d+\./,
@@ -347,4 +415,4 @@ async function detectRateLimitAsync(sessionNames) {
   return hit ?? { active: false, resetAt: null };
 }
 
-module.exports = { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync };
+module.exports = { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync, _testDetectWithChangeHeuristic, _resetPaneHashCache };

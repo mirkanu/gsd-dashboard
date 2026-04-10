@@ -82,3 +82,77 @@ test('waitForIdle: resolves immediately when sessionName is null', async () => {
     'should resolve immediately with no session'
   );
 });
+
+// ─── STAT-02: Expanded timerPatterns in _testDetectFromOutput ─────────────────
+
+test('STAT-02: "esc to interrupt" footer → working', () => {
+  assert.strictEqual(_testDetectFromOutput('Some output\nesc to interrupt'), 'working');
+});
+
+test('STAT-02: "Bypassing Permissions" banner → working', () => {
+  assert.strictEqual(_testDetectFromOutput('Bypassing Permissions...\nother line'), 'working');
+});
+
+test('STAT-02: tool-call indicator "⏺ Write(file.ts)" → working', () => {
+  assert.strictEqual(_testDetectFromOutput('⏺ Write(file.ts)'), 'working');
+});
+
+test('STAT-02: existing timer "(4m 19s · ↓ 539)" still → working', () => {
+  assert.strictEqual(_testDetectFromOutput('(4m 19s · ↓ 539)'), 'working');
+});
+
+test('STAT-02: numbered options still → waiting (regression guard)', () => {
+  assert.strictEqual(_testDetectFromOutput('> 1. Option A\n> 2. Option B'), 'waiting');
+});
+
+// ─── STAT-02: Output-change heuristic pure-function unit tests ────────────────
+
+const { _testDetectWithChangeHeuristic, _resetPaneHashCache } = require('../gsd/tmux.js');
+
+test('STAT-02 heuristic: hash differs within 3s window → working', () => {
+  const now = Date.now();
+  const result = _testDetectWithChangeHeuristic(
+    { hash: 'abc123', lastChangedAt: now - 500 },
+    'new output content that differs',
+    now
+  );
+  assert.strictEqual(result, 'working');
+});
+
+test('STAT-02 heuristic: hash same but recent change within 3s → working', () => {
+  const now = Date.now();
+  // Compute the hash of the output we'll pass so it matches
+  const crypto = require('crypto');
+  const output = 'stable output';
+  const sameHash = crypto.createHash('sha1').update(output).digest('hex').slice(0, 16);
+  const result = _testDetectWithChangeHeuristic(
+    { hash: sameHash, lastChangedAt: now - 1000 },
+    output,
+    now
+  );
+  assert.strictEqual(result, 'working');
+});
+
+test('STAT-02 heuristic: hash same and last change > 3s ago → null (stale, fall through)', () => {
+  const now = Date.now();
+  const crypto = require('crypto');
+  const output = 'stable output';
+  const sameHash = crypto.createHash('sha1').update(output).digest('hex').slice(0, 16);
+  const result = _testDetectWithChangeHeuristic(
+    { hash: sameHash, lastChangedAt: now - 5000 },
+    output,
+    now
+  );
+  assert.strictEqual(result, null);
+});
+
+test('STAT-02 heuristic: stale prev (> 3s ago) with differing hash → still working (content changed)', () => {
+  const now = Date.now();
+  const result = _testDetectWithChangeHeuristic(
+    { hash: 'oldhash', lastChangedAt: now - 10000 },
+    'completely different output',
+    now
+  );
+  // A change since last capture counts as working regardless of the prev timestamp.
+  assert.strictEqual(result, 'working');
+});
