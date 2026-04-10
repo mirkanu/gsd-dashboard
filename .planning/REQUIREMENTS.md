@@ -70,32 +70,32 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STAT-01 | TBD | Pending |
-| STAT-02 | TBD | Pending |
-| STAT-03 | TBD | Pending |
-| STAT-04 | TBD | Pending |
-| USG-01 | TBD | Pending |
-| USG-02 | TBD | Pending |
-| USG-03 | TBD | Pending |
-| USG-04 | TBD | Pending |
-| SVC-01 | TBD | Pending |
-| SVC-02 | TBD | Pending |
-| SVC-03 | TBD | Pending |
-| SVC-04 | TBD | Pending |
-| SVC-05 | TBD | Pending |
-| SVC-06 | TBD | Pending |
-| SVC-07 | TBD | Pending |
-| SVC-08 | TBD | Pending |
-| CFG-04 | TBD | Pending |
-| CFG-05 | TBD | Pending |
-| CFG-06 | TBD | Pending |
-| CFG-07 | TBD | Pending |
-| CFG-08 | TBD | Pending |
+| STAT-01 | Phase 43 | Pending |
+| STAT-02 | Phase 43 | Pending |
+| STAT-03 | Phase 43 | Pending |
+| STAT-04 | Phase 43 | Pending |
+| USG-01 | Phase 44 | Pending |
+| USG-02 | Phase 44 | Pending |
+| USG-03 | Phase 44 | Pending |
+| USG-04 | Phase 44 | Pending |
+| SVC-02 | Phase 45 | Pending |
+| SVC-06 | Phase 45 | Pending |
+| SVC-07 | Phase 45 | Pending |
+| SVC-08 | Phase 45 | Pending |
+| SVC-01 | Phase 46 | Pending |
+| SVC-03 | Phase 46 | Pending |
+| SVC-04 | Phase 46 | Pending |
+| SVC-05 | Phase 46 | Pending |
+| CFG-04 | Phase 47 | Pending |
+| CFG-05 | Phase 47 | Pending |
+| CFG-06 | Phase 47 | Pending |
+| CFG-07 | Phase 47 | Pending |
+| CFG-08 | Phase 47 | Pending |
 
 **Coverage:**
 - v4.3 requirements: 21 total
-- Mapped to phases: 0
-- Unmapped: 21 (awaiting roadmap)
+- Mapped to phases: 21
+- Unmapped: 0
 
 ---
-*Requirements defined: 2026-04-10*
+*Requirements defined: 2026-04-10 | Traceability updated: 2026-04-10*

@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
-status: defining_requirements
+status: roadmap_complete
 stopped_at: null
-last_updated: "2026-04-10T10:00:00.000Z"
-last_activity: 2026-04-10 — Milestone v4.3 started
+last_updated: "2026-04-10T11:00:00.000Z"
+last_activity: 2026-04-10 — v4.3 roadmap created (Phases 43-47)
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-07)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** v4.3 — Optimisation & Cost Intelligence
+**Current focus:** v4.3 — Optimisation & Cost Intelligence (roadmap complete, ready to plan Phase 43)
 
 ## Current Position
 
 Milestone: v4.3 Optimisation & Cost Intelligence
-Phase: Not started (defining requirements)
-Status: Defining requirements
-Last activity: 2026-04-10 — Milestone v4.3 started
+Phase: 43 — Project Status Accuracy (not started)
+Status: Roadmap complete, ready for `/gsd:plan-phase 43`
+Last activity: 2026-04-10 — v4.3 roadmap created (Phases 43-47, 21 requirements mapped)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 0% (0/5 phases)
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Progress: [░░░░░░░░░░] 0%
 **v2.1 velocity:** 11 plans, 5 phases, 3 days (2026-03-26 - 2026-03-28)
 **v3.0 velocity:** 20 plans, 11 phases + 18 quick tasks, 4 days (2026-03-31 - 2026-04-03)
 **v4.1 velocity:** 6 plans, 4 phases + 10 quick tasks, 2 days (2026-04-04 - 2026-04-06)
+**v4.2 velocity:** 9 plans, 6 phases + 5 quick tasks, 3 days (2026-04-07 - 2026-04-10)
 
 ## Accumulated Context
 
@@ -65,11 +66,19 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 42-configuration-ui]: Global tab shows only CLAUDE.md (no verbosity/telegram); global defaults deferred to follow-up quick task
 - [Phase 42-configuration-ui]: Auto-save on dropdown/toggle change; explicit Save button only for free-text CLAUDE.md editor
 - [Phase 42-configuration-ui]: Proxy required passthrough fix to forward /api/config and non-GET methods to backend
+- [v4.3 roadmap]: Status accuracy (Phase 43) first as foundational fix; Services foundation (Phase 45) before API integrations (Phase 46) because APIs populate the same `external_service_costs` table the email parser uses
+- [v4.3 roadmap]: Credentials (Railway PAT, OpenAI admin key, Vercel token) stored in SQLite settings table, not env vars — survives redeploy, editable via UI
+- [v4.3 roadmap]: Manual CLAUDE.md textarea removed entirely in Phase 47; replaced by AI-guided chat + diff approval
+- [v4.3 roadmap]: Phase 47 requires user-testing checkpoint because AI integration is novel
 
 ### Pending Todos
 
-- Simplify cookieAuth: skip all `/api/` paths and rely on client-side auth gate only (single-user dashboard doesn't need per-route server auth)
-- Plan + execute Phase 41 (Claude Usage Tracking) — blocked by API overload on 2026-04-08, resume with `/gsd:plan-phase 41`
+- Plan + execute Phase 43 (Project Status Accuracy) — run `/gsd:plan-phase 43`
+- Plan Phase 44 (Usage Display Enhancements)
+- Plan Phase 45 (Services Cost Tracking Foundation)
+- Plan Phase 46 (Services API Integrations)
+- Plan Phase 47 (AI-Guided CLAUDE.md Editor)
+- Simplify cookieAuth: skip all `/api/` paths and rely on client-side auth gate only (carried over from v4.2)
 
 ### Blockers/Concerns
 
@@ -81,15 +90,7 @@ None.
 |---|-------------|------|--------|-----------|
 | 35 | Fix auth blocking dashboard access - AUTH_REQUIRED error | 2026-04-07 | 7ba51c5 | [35-fix-auth-blocking-dashboard-access-auth-](./quick/35-fix-auth-blocking-dashboard-access-auth-/) |
 | 36 | Add GSD MCP tools and disable dashboard_ tools | 2026-04-07 | 023ed67 | [36-add-gsd-mcp-tools-and-disable-dashboard-](./quick/36-add-gsd-mcp-tools-and-disable-dashboard-/) |
-| Phase 38-terminal-light-mode-status-colors P01 | 3m31s | 2 tasks | 4 files |
-| Phase 39-resizable-columns P01 | 15min | 2 tasks | 3 files |
-| Phase 40-external-services-dashboard P01 | 468 | 2 tasks | 6 files |
-| Phase 41-claude-usage-tracking P01 | 9min | 1 task | 3 files |
-| Phase 41 P02 | 8min | 2 tasks | 5 files |
 | 37 | Add dedicated Usage page with cross-project cost summary | 2026-04-09 | b6db8bc | [37-add-dedicated-usage-page-with-cross-proj](./quick/37-add-dedicated-usage-page-with-cross-proj/) |
-| 37 | Add dedicated Usage page with cross-project breakdown | 2026-04-09 | c75ec36 | [37-add-dedicated-usage-page-with-cross-proj](./quick/37-add-dedicated-usage-page-with-cross-proj/) |
-| Phase 42 P01 | 9min | 2 tasks | 3 files |
-| Phase 42-configuration-ui P02 | 25min | 2 tasks | 5 files |
 | 38 | Add global default settings with apply-to-all prompt | 2026-04-10 | 282e867 | [38-add-global-default-settings-with-apply-t](./quick/38-add-global-default-settings-with-apply-t/) |
 | 39 | Reduce mobile terminal scroll sensitivity | 2026-04-10 | 0691942 | [39-reduce-mobile-terminal-scroll-sensitivit](./quick/39-reduce-mobile-terminal-scroll-sensitivit/) |
 | 40 | Add copy button to each task row beside Archive | 2026-04-10 | 75f96ca | [40-add-copy-single-task-button-beside-archi](./quick/40-add-copy-single-task-button-beside-archi/) |
@@ -97,7 +98,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-10T08:09:00.839Z
-Stopped at: Completed 42-configuration-ui/42-02-PLAN.md
-Resume file: None
-Next action: None
+Last session: 2026-04-10T11:00:00.000Z
+Stopped at: v4.3 roadmap created (Phases 43-47)
+Resume file: .planning/ROADMAP.md
+Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans
