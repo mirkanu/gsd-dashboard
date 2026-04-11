@@ -2,12 +2,19 @@ import { useState, useEffect, useCallback } from "react";
 import { RefreshCw } from "lucide-react";
 import { api } from "../lib/api";
 import type { UsageWindow, UsageHistory } from "../lib/types";
+import { PricingEditor } from "../components/PricingEditor";
 
 const WEEKLY_LIMIT = 50;
 
 function formatCost(cost: number): string {
   if (cost < 0.01) return "< $0.01";
   return `$${cost.toFixed(2)}`;
+}
+
+function formatTokens(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
 }
 
 function getGaugeColor(pct: number): string {
@@ -139,6 +146,8 @@ export function UsagePage() {
           </div>
           <SkeletonGauge />
           <SkeletonChart />
+          <SkeletonCard />
+          <SkeletonCard />
         </div>
       )}
 
@@ -172,6 +181,12 @@ export function UsagePage() {
               <div className="text-xs text-gray-500 mt-1">
                 Resets in {Math.round(windowData.weekly.hours_until_reset)}h
               </div>
+              <div className="text-[10px] text-gray-500 mt-1 space-x-2">
+                <span>in {formatTokens(windowData.weekly.input_tokens)}</span>
+                <span>out {formatTokens(windowData.weekly.output_tokens)}</span>
+                <span>cache r {formatTokens(windowData.weekly.cache_read_tokens)}</span>
+                <span>cache w {formatTokens(windowData.weekly.cache_write_tokens)}</span>
+              </div>
             </div>
 
             {/* Today's Spend */}
@@ -182,6 +197,12 @@ export function UsagePage() {
               </div>
               <div className="text-xs text-gray-500 mt-1">
                 Resets in {Math.round(windowData.daily.hours_until_reset)}h
+              </div>
+              <div className="text-[10px] text-gray-500 mt-1 space-x-2">
+                <span>in {formatTokens(windowData.daily.input_tokens)}</span>
+                <span>out {formatTokens(windowData.daily.output_tokens)}</span>
+                <span>cache r {formatTokens(windowData.daily.cache_read_tokens)}</span>
+                <span>cache w {formatTokens(windowData.daily.cache_write_tokens)}</span>
               </div>
             </div>
 
@@ -240,6 +261,51 @@ export function UsagePage() {
             </div>
           )}
 
+          {/* Model Breakdown */}
+          <div className="bg-surface-1 border border-border rounded-lg p-4">
+            <h2 className="text-sm font-medium text-gray-300 mb-3">Model Breakdown</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(["weekly", "daily"] as const).map((scope) => {
+                const models = windowData[scope].by_model;
+                const label = scope === "weekly" ? "This Week" : "Today";
+                return (
+                  <div key={scope}>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                      {label}
+                    </div>
+                    {models.length === 0 ? (
+                      <p className="text-sm text-gray-500">No usage recorded</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {models.map((m) => (
+                          <li
+                            key={m.model}
+                            className="border-b border-border/50 pb-2 last:border-0"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-200 truncate">
+                                {m.display_name}
+                              </span>
+                              <span className="text-sm text-gray-300">
+                                {formatCost(m.cost)}
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-gray-500 space-x-2 mt-0.5">
+                              <span>in {formatTokens(m.input_tokens)}</span>
+                              <span>out {formatTokens(m.output_tokens)}</span>
+                              <span>cache r {formatTokens(m.cache_read_tokens)}</span>
+                              <span>cache w {formatTokens(m.cache_write_tokens)}</span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Per-Project Breakdown */}
           <div className="bg-surface-1 border border-border rounded-lg p-4">
             <h2 className="text-sm font-medium text-gray-300 mb-3">Cost by Project</h2>
@@ -290,6 +356,9 @@ export function UsagePage() {
               </p>
             )}
           </div>
+
+          {/* Pricing Editor */}
+          <PricingEditor onChange={fetchData} />
         </div>
       )}
     </div>
