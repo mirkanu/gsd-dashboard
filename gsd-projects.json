@@ -4,10 +4,8 @@
       "name": "josie",
       "root": "/data/home/josie",
       "services": [
-        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
-        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
-        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" }
       ]
     },
     {
@@ -17,8 +15,7 @@
       "services": [
         { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
-        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
-        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" }
       ]
     },
     {
@@ -28,8 +25,7 @@
       "services": [
         { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
-        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
-        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" }
       ]
     },
     {
@@ -37,7 +33,7 @@
       "root": "/data/home/reforma",
       "tmux_session": "reforma",
       "services": [
-        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
+        { "name": "Vercel", "statusUrl": "https://www.vercel-status.com/api/v2/status.json" },
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
         { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
         { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
@@ -56,8 +52,7 @@
       "services": [
         { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
-        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
-        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" }
       ]
     },
     {
@@ -66,7 +61,7 @@
       "root": "/data/home/prc",
       "tmux_session": "PRC",
       "services": [
-        { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
+        { "name": "Vercel", "statusUrl": "https://www.vercel-status.com/api/v2/status.json" },
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
         { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
         { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
@@ -80,8 +75,7 @@
       "services": [
         { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
-        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
-        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" }
       ]
     }
   ]
