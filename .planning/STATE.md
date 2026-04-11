@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 3
 status: completed
-stopped_at: Completed 44-01-PLAN.md
-last_updated: "2026-04-11T00:34:17.020Z"
+stopped_at: Completed 44-03-PLAN.md
+last_updated: "2026-04-11T08:19:01.653Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 6
 ---
 
@@ -88,6 +88,8 @@ Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases
 - [Phase 44]: Plan 02: Inline tips always visible (not collapsible) in PricingEditor header so first-time users see the cost formula immediately
 - [Phase 44-usage-display-enhancements]: API evolution: /api/pricing/window kept fully additive - new token totals and by_model fields alongside existing cost/from/by_project, so UsagePanel and UsagePage keep working without changes
 - [Phase 44-usage-display-enhancements]: by_model sorted by cost desc server-side; unknown models fall back to display_name = raw model string and model_pattern = null
+- [Phase 44]: Plan 03: Parent-owned refetch pattern — PricingEditor calls props.onChange() after upsert, UsagePage passes fetchData directly so saving a rate triggers a single source-of-truth refetch
+- [Phase 44]: Plan 03: Railway proxy mode (GSD_DATA_URL) requires PM2 gsd-dashboard restart after backend-touching deploys — Railway alone doesn't refresh the upstream
 
 ### Pending Todos
 
@@ -118,10 +120,11 @@ None.
 | Phase 43 P03 | ~13min | 3 tasks | 7 files |
 | Phase 44 P02 | 4min | 2 tasks | 2 files |
 | Phase 44-usage-display-enhancements P01 | 8min | 2 tasks | 2 files |
+| Phase 44-usage-display-enhancements P03 | 12min | 3 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-04-11T00:34:17.017Z
-Stopped at: Completed 44-01-PLAN.md
+Last session: 2026-04-11T08:19:01.648Z
+Stopped at: Completed 44-03-PLAN.md
 Resume file: None
 Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans

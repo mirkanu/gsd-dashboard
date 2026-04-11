@@ -52,7 +52,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
 **Requirements:** 21 mapped (100% coverage)
 
 - [x] **Phase 43: Project Status Accuracy** — Real-time status push, correct working/waiting detection, elapsed time, task previews (completed 2026-04-10)
-- [ ] **Phase 44: Usage Display Enhancements** — Token counts, editable pricing editor, per-model breakdowns
+- [x] **Phase 44: Usage Display Enhancements** — Token counts, editable pricing editor, per-model breakdowns (completed 2026-04-11)
 - [ ] **Phase 45: Services Cost Tracking Foundation** — Email parser, manual entry, cost display, credentials storage
 - [ ] **Phase 46: Services API Integrations** — Uptime sparklines + Railway/OpenAI/Vercel API cost fetchers
 - [ ] **Phase 47: AI-Guided CLAUDE.md Editor** — Chat UI, diff preview, approval flow, AI review action
@@ -82,7 +82,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
   2. User can edit per-model pricing rules in the UI (reusing `/api/pricing`) and the costs recalculate after saving
   3. Pricing editor displays inline tips explaining what input, output, and cache tokens mean and how they drive cost per model
   4. Usage page renders a model breakdown (Opus vs Sonnet vs Haiku) for both weekly and daily timeframes
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 - [ ] 44-01-PLAN.md — Extend /api/pricing/window with tokens + by_model breakdown (backend)
 - [ ] 44-02-PLAN.md — Build PricingEditor component with inline tips (frontend, parallel)
 - [ ] 44-03-PLAN.md — Wire tokens, model breakdown, and PricingEditor into UsagePage + deploy + verify
@@ -129,7 +129,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 43. Project Status Accuracy | 3/3 | Complete    | 2026-04-10 |
-| 44. Usage Display Enhancements | 2/3 | In Progress|  |
+| 44. Usage Display Enhancements | 3/3 | Complete   | 2026-04-11 |
 | 45. Services Cost Tracking Foundation | 0/0 | Not started | - |
 | 46. Services API Integrations | 0/0 | Not started | - |
 | 47. AI-Guided CLAUDE.md Editor | 0/0 | Not started | - |
