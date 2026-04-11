@@ -53,7 +53,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
 
 - [x] **Phase 43: Project Status Accuracy** — Real-time status push, correct working/waiting detection, elapsed time, task previews (completed 2026-04-10)
 - [x] **Phase 44: Usage Display Enhancements** — Token counts, editable pricing editor, per-model breakdowns (completed 2026-04-11)
-- [ ] **Phase 45: Services Cost Tracking Foundation** — Email parser, manual entry, cost display, credentials storage
+- [x] **Phase 45: Services Cost Tracking Foundation** — Email parser, manual entry, cost display, credentials storage (completed 2026-04-11)
 - [ ] **Phase 46: Services API Integrations** — Uptime sparklines + Railway/OpenAI/Vercel API cost fetchers
 - [ ] **Phase 47: AI-Guided CLAUDE.md Editor** — Chat UI, diff preview, approval flow, AI review action
 
@@ -134,7 +134,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
 |-------|----------------|--------|-----------|
 | 43. Project Status Accuracy | 3/3 | Complete    | 2026-04-10 |
 | 44. Usage Display Enhancements | 3/3 | Complete    | 2026-04-11 |
-| 45. Services Cost Tracking Foundation | 3/4 | In Progress|  |
+| 45. Services Cost Tracking Foundation | 3/4 | Complete    | 2026-04-11 |
 | 46. Services API Integrations | 0/0 | Not started | - |
 | 47. AI-Guided CLAUDE.md Editor | 0/0 | Not started | - |
 
