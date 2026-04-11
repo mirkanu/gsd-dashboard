@@ -908,6 +908,64 @@ describe("Hook Event Processing", () => {
       assert.ok(data.weekly.by_model[i - 1].cost >= data.weekly.by_model[i].cost);
     }
   });
+
+  it("GET /api/pricing/window includes long-running sessions active in the window", async () => {
+    // Compute weekStart the same way pricing.js does (Monday midnight UTC)
+    const now = new Date();
+    const dow = now.getUTCDay();
+    const daysFromMonday = (dow + 6) % 7;
+    const weekStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysFromMonday)
+    );
+
+    // started_at clearly BEFORE weekStart (10 days ago)
+    const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 3600 * 1000).toISOString();
+    // updated_at clearly INSIDE the current week (now)
+    const nowIso = now.toISOString();
+
+    // Insert the long-running session, then backdate started_at while keeping updated_at = now
+    stmts.insertSession.run(
+      "longrun-sess",
+      "Long Runner",
+      "active",
+      "/tmp/longrun",
+      "claude-sonnet-4-6",
+      null
+    );
+    db.prepare("UPDATE sessions SET started_at = ?, updated_at = ? WHERE id = ?").run(
+      tenDaysAgo,
+      nowIso,
+      "longrun-sess"
+    );
+
+    // Distinctive token count so the assertion tolerates other sessions in the same DB
+    stmts.upsertTokenUsage.run("longrun-sess", "claude-sonnet-4-6", 777777, 0, 0, 0);
+
+    try {
+      const res = await fetch("/api/pricing/window");
+      assert.equal(res.status, 200);
+      const data = res.body;
+
+      const sonnetEntry = data.weekly.by_model.find(
+        (m) => m.model === "claude-sonnet-4-6"
+      );
+      assert.ok(
+        sonnetEntry,
+        "Expected claude-sonnet-4-6 to appear in weekly by_model for long-running session"
+      );
+      assert.ok(
+        sonnetEntry.input_tokens >= 777777,
+        `Expected weekly by_model sonnet input_tokens >= 777777, got ${sonnetEntry.input_tokens}`
+      );
+      assert.ok(
+        data.weekly.input_tokens >= 777777,
+        `Expected weekly.input_tokens >= 777777, got ${data.weekly.input_tokens}`
+      );
+    } finally {
+      db.prepare("DELETE FROM token_usage WHERE session_id = ?").run("longrun-sess");
+      db.prepare("DELETE FROM sessions WHERE id = ?").run("longrun-sess");
+    }
+  });
 });
 
 // ============================================================
