@@ -142,7 +142,7 @@ router.get("/window", (_req, res) => {
           SUM(tu.cache_write_tokens + tu.baseline_cache_write) as cache_write_tokens
         FROM token_usage tu
         JOIN sessions s ON tu.session_id = s.id
-        WHERE s.started_at >= ?
+        WHERE s.updated_at >= ?
         GROUP BY tu.model`
       )
       .all(since);
@@ -207,7 +207,7 @@ router.get("/window", (_req, res) => {
         SUM(tu.cache_write_tokens + tu.baseline_cache_write) as cache_write_tokens
       FROM token_usage tu
       JOIN sessions s ON tu.session_id = s.id
-      WHERE s.started_at >= ?
+      WHERE s.updated_at >= ?
       GROUP BY s.cwd, tu.model`
     )
     .all(weekStart);
