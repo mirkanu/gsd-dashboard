@@ -31,8 +31,8 @@ Requirements for Optimisation & Cost Intelligence milestone.
 - [ ] **SVC-03**: Railway GraphQL integration fetches current usage and cost via PAT
 - [ ] **SVC-04**: OpenAI admin API integration fetches daily usage via admin API key
 - [ ] **SVC-05**: Vercel API integration fetches team billing data (Pro tier)
-- [ ] **SVC-06**: Manual cost entry fallback — type fixed monthly costs for services without API or email
-- [ ] **SVC-07**: Services page displays cost alongside status — monthly total per service + per-project rollup
+- [x] **SVC-06**: Manual cost entry fallback — type fixed monthly costs for services without API or email
+- [x] **SVC-07**: Services page displays cost alongside status — monthly total per service + per-project rollup
 - [x] **SVC-08**: API credentials (Railway PAT, OpenAI admin key, Vercel token) stored in SQLite settings table, not env vars
 
 ### AI-Guided CLAUDE.md Editor
@@ -79,8 +79,8 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | USG-03 | Phase 44 | Complete |
 | USG-04 | Phase 44 | Complete |
 | SVC-02 | Phase 45 | Pending |
-| SVC-06 | Phase 45 | Pending |
-| SVC-07 | Phase 45 | Pending |
+| SVC-06 | Phase 45 | Complete |
+| SVC-07 | Phase 45 | Complete |
 | SVC-08 | Phase 45 | Complete |
 | SVC-01 | Phase 46 | Pending |
 | SVC-03 | Phase 46 | Pending |

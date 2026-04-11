@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 3
 status: completed
-stopped_at: Completed 45-01-PLAN.md
-last_updated: "2026-04-11T18:45:22.686Z"
+stopped_at: Completed 45-02-PLAN.md
+last_updated: "2026-04-11T19:05:22.356Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 8
   percent: 6
 ---
 
@@ -91,6 +91,9 @@ Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases
 - [Phase 44]: Plan 03: Parent-owned refetch pattern — PricingEditor calls props.onChange() after upsert, UsagePage passes fetchData directly so saving a rate triggers a single source-of-truth refetch
 - [Phase 44]: Plan 03: Railway proxy mode (GSD_DATA_URL) requires PM2 gsd-dashboard restart after backend-touching deploys — Railway alone doesn't refresh the upstream
 - [Phase 45]: Phase 45 Plan 01: base64 storage for AES-GCM ciphertext/IV/auth_tag (smaller than hex); source column is free-text with doc-comment enum; getSecret returns null on decrypt failure; listSecretKeys strips ciphertext to avoid leak
+- [Phase 45-services-cost-tracking-foundation]: Plan 02: sub-route mount order matters — /api/services/rules must mount BEFORE /api/services so the catch-all status router doesn't shadow it
+- [Phase 45-services-cost-tracking-foundation]: Plan 02: recurring cost materialization is on-read and guarded to current calendar month only — past months never backfill
+- [Phase 45-services-cost-tracking-foundation]: Plan 02: DELETE/PATCH uniformly keyed on external_service_costs.id; notes prefix (manual:/recurring:/email:) drives cascade behavior
 
 ### Pending Todos
 
@@ -126,10 +129,11 @@ None.
 | Phase 44-usage-display-enhancements P01 | 8min | 2 tasks | 2 files |
 | Phase 44-usage-display-enhancements P03 | 12min | 3 tasks | 2 files |
 | Phase 45 P01 | 23min | 2 tasks | 3 files |
+| Phase 45-services-cost-tracking-foundation P02 | 14min | 3 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-04-11T18:45:22.681Z
-Stopped at: Completed 45-01-PLAN.md
+Last session: 2026-04-11T19:05:22.347Z
+Stopped at: Completed 45-02-PLAN.md
 Resume file: None
 Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans
