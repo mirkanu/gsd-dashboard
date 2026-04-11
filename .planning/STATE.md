@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 3
 status: completed
-stopped_at: Completed 45-02-PLAN.md
-last_updated: "2026-04-11T19:05:22.356Z"
+stopped_at: Completed 45-03-PLAN.md
+last_updated: "2026-04-11T19:09:49.347Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 6
 ---
 
@@ -94,6 +94,7 @@ Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases
 - [Phase 45-services-cost-tracking-foundation]: Plan 02: sub-route mount order matters — /api/services/rules must mount BEFORE /api/services so the catch-all status router doesn't shadow it
 - [Phase 45-services-cost-tracking-foundation]: Plan 02: recurring cost materialization is on-read and guarded to current calendar month only — past months never backfill
 - [Phase 45-services-cost-tracking-foundation]: Plan 02: DELETE/PATCH uniformly keyed on external_service_costs.id; notes prefix (manual:/recurring:/email:) drives cascade behavior
+- [Phase 45]: Plan 03: whole-module require of parserModule enables test monkey-patching; await async parser BEFORE sync better-sqlite3 transaction; extractDate normalizes RFC 2822 to ISO with now() fallback
 
 ### Pending Todos
 
@@ -130,10 +131,11 @@ None.
 | Phase 44-usage-display-enhancements P03 | 12min | 3 tasks | 2 files |
 | Phase 45 P01 | 23min | 2 tasks | 3 files |
 | Phase 45-services-cost-tracking-foundation P02 | 14min | 3 tasks | 6 files |
+| Phase 45 P03 | ~18min | 3 tasks | 13 files |
 
 ## Session Continuity
 
-Last session: 2026-04-11T19:05:22.347Z
-Stopped at: Completed 45-02-PLAN.md
+Last session: 2026-04-11T19:09:49.344Z
+Stopped at: Completed 45-03-PLAN.md
 Resume file: None
 Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans

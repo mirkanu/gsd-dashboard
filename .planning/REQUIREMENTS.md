@@ -27,7 +27,7 @@ Requirements for Optimisation & Cost Intelligence milestone.
 
 ### Services Cost Tracking
 
-- [ ] **SVC-02**: Email billing parser — forward receipts from all services, extract amount/date/service into `external_service_costs` SQLite table (extends existing YNAB parser pattern)
+- [x] **SVC-02**: Email billing parser — forward receipts from all services, extract amount/date/service into `external_service_costs` SQLite table (extends existing YNAB parser pattern)
 - [ ] **SVC-03**: Railway GraphQL integration fetches current usage and cost via PAT
 - [ ] **SVC-04**: OpenAI admin API integration fetches daily usage via admin API key
 - [ ] **SVC-05**: Vercel API integration fetches team billing data (Pro tier)
@@ -78,7 +78,7 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | USG-02 | Phase 44 | Complete |
 | USG-03 | Phase 44 | Complete |
 | USG-04 | Phase 44 | Complete |
-| SVC-02 | Phase 45 | Pending |
+| SVC-02 | Phase 45 | Complete |
 | SVC-06 | Phase 45 | Complete |
 | SVC-07 | Phase 45 | Complete |
 | SVC-08 | Phase 45 | Complete |
