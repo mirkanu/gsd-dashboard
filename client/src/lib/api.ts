@@ -3,10 +3,14 @@ import type {
   Analytics,
   ClaudeMdResponse,
   CostResult,
+  CostsResponse,
+  CreateCostBody,
   DashboardEvent,
   GsdTask,
+  MappingRule,
   ModelPricing,
   ProjectSettings,
+  SecretKey,
   Session,
   Stats,
   UsageHistory,
@@ -208,6 +212,59 @@ export const api = {
     applyGlobalSettings: () =>
       request<{ ok: boolean; updated: number }>('/config/project-settings/apply-global', {
         method: 'POST',
+      }),
+  },
+
+  services: {
+    costs: {
+      get: (month?: string) =>
+        request<CostsResponse>(`/services/costs${month ? `?month=${month}` : ""}`),
+      create: (body: CreateCostBody) =>
+        request<{ ok: true; id: string | null; manual_id: string }>(`/services/costs`, {
+          method: "POST",
+          body: JSON.stringify(body),
+        }),
+      update: (id: string, body: Partial<CreateCostBody> & { source?: string }) =>
+        request<{ ok: true }>(`/services/costs/${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          body: JSON.stringify(body),
+        }),
+      delete: (id: string) =>
+        request<{ ok: true; deleted: number }>(`/services/costs/${encodeURIComponent(id)}`, {
+          method: "DELETE",
+        }),
+    },
+    rules: {
+      list: () => request<{ rules: MappingRule[] }>(`/services/rules`),
+      create: (body: Omit<MappingRule, "id" | "created_at">) =>
+        request<{ id: number }>(`/services/rules`, {
+          method: "POST",
+          body: JSON.stringify(body),
+        }),
+      update: (id: number, body: Partial<Omit<MappingRule, "id" | "created_at">>) =>
+        request<{ ok: true }>(`/services/rules/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(body),
+        }),
+      delete: (id: number) =>
+        request<{ ok: true }>(`/services/rules/${id}`, { method: "DELETE" }),
+    },
+  },
+
+  appSettings: {
+    list: () => request<{ keys: SecretKey[] }>(`/app-settings`),
+    get: (key: string) =>
+      request<{ key: string; set: true; updated_at: string }>(
+        `/app-settings/${encodeURIComponent(key)}`
+      ),
+    set: (key: string, value: string) =>
+      request<{ ok: true }>(`/app-settings/${encodeURIComponent(key)}`, {
+        method: "PUT",
+        body: JSON.stringify({ value }),
+      }),
+    delete: (key: string) =>
+      request<{ ok: true }>(`/app-settings/${encodeURIComponent(key)}`, {
+        method: "DELETE",
       }),
   },
 

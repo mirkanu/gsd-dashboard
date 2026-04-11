@@ -1,3 +1,74 @@
+// ─── Phase 45: Services Cost Tracking Types ──────────────────────────────────
+
+export type CostSource = 'manual' | 'email' | 'recurring' | 'unparsed' | 'api';
+
+export interface CostEntry {
+  id: string;
+  service: string;
+  cost_usd: number;
+  currency: string;
+  project_key: string | null;
+  source: CostSource;
+  description: string;
+  checked_at: string;
+  message_id: string | null;
+  notes: string | null;
+}
+
+export interface ServiceRollup {
+  service: string;
+  total_usd: number;
+  source_breakdown: Record<string, number>;
+}
+
+export interface ProjectRollup {
+  project_key: string | null;
+  total_usd: number;
+  services: Array<{ service: string; total_usd: number }>;
+}
+
+export interface NeedsReviewRow {
+  id: string;
+  service: string;
+  cost_usd: number;
+  raw_body: string | null;
+  checked_at: string;
+}
+
+export interface CostsResponse {
+  month: string;
+  services: ServiceRollup[];
+  projects: ProjectRollup[];
+  needs_review: NeedsReviewRow[];
+  entries: CostEntry[];
+}
+
+export interface CreateCostBody {
+  service: string;
+  project_key?: string | null;
+  cost_usd: number;
+  currency?: string;
+  start_date?: string;
+  recurring_monthly?: boolean;
+  notes?: string;
+  description?: string;
+}
+
+export interface MappingRule {
+  id: number;
+  pattern_type: 'sender' | 'subject_contains';
+  pattern_value: string;
+  project_key: string;
+  service: string | null;
+  created_at: string;
+}
+
+export interface SecretKey {
+  key: string;
+  updated_at: string;
+  set: true;
+}
+
 // ─── GSD Types ────────────────────────────────────────────────────────────────
 
 export type SessionState = "working" | "waiting" | "paused" | "archived";
