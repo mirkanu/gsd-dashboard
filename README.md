@@ -70,12 +70,26 @@ npm start       # runs server only on port 4820
 
 ## Remote Access
 
-If you want to access the dashboard from a remote host (e.g. Railway) while GSD data lives on your local machine:
+The dashboard runs locally (GSD data lives on your machine). To expose it to
+Railway (or any other remote host) so `/api/gsd/*` and the terminal WebSocket
+can be proxied through, we use **Tailscale Funnel** (no bandwidth caps, stable
+`*.ts.net` hostname, HTTPS terminated by Tailscale):
 
-1. Set `GSD_DATA_URL` env var to your local server's URL (e.g. via a cloudflared tunnel).
-2. The server proxies `/api/gsd/*` requests through to that URL automatically.
+1. Install Tailscale: `curl -fsSL https://tailscale.com/install.sh | sh`
+2. `sudo tailscale up` and approve the machine in your tailnet.
+3. Enable Funnel for the tailnet at
+   https://login.tailscale.com/admin/settings/features (or via ACL
+   `nodeAttrs` grant).
+4. Find your URL: `sudo tailscale status --json | grep DNSName`.
+5. Set `TAILSCALE_FUNNEL_URL=https://<host>.<tailnet>.ts.net` in `.env`.
+6. On Railway, set `GSD_DATA_URL` to the same URL.
+7. Start the supervisor: `pm2 restart gsd-tunnel` (runs `scripts/tunnel.sh`,
+   which starts `tailscaled` in userspace mode if needed and applies the
+   `tailscale serve` + `tailscale funnel` config idempotently).
 
-A self-healing tunnel script is included at `scripts/tunnel.sh` for cloudflared + s6-supervise.
+The server proxies `/api/gsd/*` requests and the terminal WebSocket through
+that URL. If the tunnel goes down, Railway serves cached snapshots until it's
+back.
 
 ---
 
