@@ -78,13 +78,38 @@ export interface UsageHistory {
   days: UsageDay[];
 }
 
+export interface ModelBreakdownEntry {
+  model: string;
+  model_pattern: string | null;
+  display_name: string;
+  cost: number;
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens: number;
+  cache_write_tokens: number;
+}
+
 export interface UsageWindow {
-  daily: { cost: number; from: string; hours_until_reset: number };
+  daily: {
+    cost: number;
+    from: string;
+    hours_until_reset: number;
+    input_tokens: number;
+    output_tokens: number;
+    cache_read_tokens: number;
+    cache_write_tokens: number;
+    by_model: ModelBreakdownEntry[];
+  };
   weekly: {
     cost: number;
     from: string;
     hours_until_reset: number;
     by_project?: Array<{ cwd: string; cost: number }>;
+    input_tokens: number;
+    output_tokens: number;
+    cache_read_tokens: number;
+    cache_write_tokens: number;
+    by_model: ModelBreakdownEntry[];
   };
 }
 
