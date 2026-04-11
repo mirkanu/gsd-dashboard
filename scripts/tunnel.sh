@@ -46,14 +46,34 @@ update_railway() {
   NEW_URL="$1"
   if ! command -v railway >/dev/null 2>&1; then
     log "railway CLI not found; skipping GSD_DATA_URL update"
-    return 0
+    return 1
   fi
   # Best-effort: don't fail the tunnel if Railway update errors.
   log "Updating Railway GSD_DATA_URL -> $NEW_URL"
   if (cd "$ROOT" && railway variables --set "GSD_DATA_URL=$NEW_URL" >>"$LOG_FILE" 2>&1); then
     log "Railway GSD_DATA_URL updated"
+    return 0
   else
-    log "Railway update failed (exit $?) — tunnel still live locally"
+    log "Railway update failed — tunnel still live locally"
+    return 1
+  fi
+}
+
+deploy_railway() {
+  # Trigger a fresh Railway deploy so the updated GSD_DATA_URL env var takes
+  # effect in the running container. `railway variables --set` alone only
+  # updates project config; the running container keeps the old value until
+  # the next deploy. cloudflared quick tunnels rotate URLs on every restart,
+  # so we always redeploy after a successful update_railway.
+  if ! command -v railway >/dev/null 2>&1; then
+    log "railway CLI not found; skipping redeploy"
+    return 0
+  fi
+  log "Triggering Railway redeploy (railway up --detach) so new GSD_DATA_URL takes effect"
+  if (cd "$ROOT" && railway up --detach >>"$LOG_FILE" 2>&1); then
+    log "Railway redeploy triggered"
+  else
+    log "Railway redeploy failed — tunnel still live locally, manual \`railway up --detach\` may be needed"
   fi
 }
 
@@ -97,7 +117,9 @@ printf '%s\n' "$URL" > "$URL_FILE"
 log "New tunnel URL: $URL"
 log "Wrote $URL_FILE"
 
-update_railway "$URL"
+if update_railway "$URL"; then
+  deploy_railway
+fi
 
 # Tail cloudflared raw log into the main log so PM2 logs show ongoing activity.
 tail -n 0 -F "$CF_RAW_LOG" >>"$LOG_FILE" 2>&1 &
