@@ -866,6 +866,48 @@ describe("Hook Event Processing", () => {
 
     fs.unlinkSync(transcriptPath);
   });
+
+  it("GET /api/pricing/window returns tokens and by_model breakdown", async () => {
+    const res = await fetch("/api/pricing/window");
+    assert.equal(res.status, 200);
+    const data = res.body;
+
+    // Backward-compat fields
+    assert.equal(typeof data.daily.cost, "number");
+    assert.equal(typeof data.daily.from, "string");
+    assert.equal(typeof data.daily.hours_until_reset, "number");
+    assert.ok(Array.isArray(data.weekly.by_project));
+    assert.equal(typeof data.weekly.cost, "number");
+
+    // New USG-01 token fields
+    assert.equal(typeof data.daily.input_tokens, "number");
+    assert.equal(typeof data.daily.output_tokens, "number");
+    assert.equal(typeof data.daily.cache_read_tokens, "number");
+    assert.equal(typeof data.daily.cache_write_tokens, "number");
+    assert.equal(typeof data.weekly.input_tokens, "number");
+    assert.equal(typeof data.weekly.output_tokens, "number");
+    assert.equal(typeof data.weekly.cache_read_tokens, "number");
+    assert.equal(typeof data.weekly.cache_write_tokens, "number");
+
+    // New USG-04 per-model breakdown
+    assert.ok(Array.isArray(data.daily.by_model));
+    assert.ok(Array.isArray(data.weekly.by_model));
+
+    // If there are token rows, each by_model entry has required shape
+    for (const entry of data.weekly.by_model) {
+      assert.ok("display_name" in entry);
+      assert.ok("cost" in entry);
+      assert.ok("input_tokens" in entry);
+      assert.ok("output_tokens" in entry);
+      assert.ok("cache_read_tokens" in entry);
+      assert.ok("cache_write_tokens" in entry);
+    }
+
+    // Sorted by cost descending
+    for (let i = 1; i < data.weekly.by_model.length; i++) {
+      assert.ok(data.weekly.by_model[i - 1].cost >= data.weekly.by_model[i].cost);
+    }
+  });
 });
 
 // ============================================================
