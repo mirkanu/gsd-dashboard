@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 3
 status: completed
-stopped_at: Completed 43-03-PLAN.md (awaiting human verify)
-last_updated: "2026-04-10T22:28:33.804Z"
-last_activity: 2026-04-10
+stopped_at: Completed 44-02-PLAN.md (PricingEditor + tests)
+last_updated: "2026-04-11T00:08:12.237Z"
+last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
   percent: 6
 ---
 
@@ -31,7 +31,7 @@ Phase: 43 — Project Status Accuracy (in progress)
 Current Plan: 3
 Total Plans in Phase: 3
 Status: Plan 01 complete — tmux detection primitives (STAT-02 + STAT-04 fixed at the primitive layer). Ready for Plan 02 (background poller).
-Last activity: 2026-04-10
+Last activity: 2026-04-11
 
 Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases)
 
@@ -83,6 +83,9 @@ Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases
 - [Phase 43]: Plan 03: Updated ChatListView alongside ProjectCard — live UI path renders via ChatListView (@chatscope), ProjectCard is dead code kept in sync
 - [Phase 43]: Plan 03: Single nowMs useState + 1s setInterval drives elapsed-time ticks across all cards — cheap React reconciliation at ~10 cards
 - [Phase 43]: Plan 03: patchProjectsOnStateChange returns input array by reference on unknown project — avoids spurious re-renders during cold-start races
+- [Phase 44]: Plan 02: PricingEditor kept self-contained — Plan 03 owns UsagePage wiring so both can land atomically
+- [Phase 44]: Plan 02: Per-row dirty/saving state + per-row Save button instead of global save — prevents accidental bulk writes
+- [Phase 44]: Plan 02: Inline tips always visible (not collapsible) in PricingEditor header so first-time users see the cost formula immediately
 
 ### Pending Todos
 
@@ -111,10 +114,11 @@ None.
 | Phase 43 P01 | 25min | 2 tasks | 2 files |
 | Phase 43 P02 | 15min | 2 tasks | 4 files |
 | Phase 43 P03 | ~13min | 3 tasks | 7 files |
+| Phase 44 P02 | 4min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-04-10T16:37:19.906Z
-Stopped at: Completed 43-03-PLAN.md (awaiting human verify)
+Last session: 2026-04-11T00:07:55.470Z
+Stopped at: Completed 44-02-PLAN.md (PricingEditor + tests)
 Resume file: None
 Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans

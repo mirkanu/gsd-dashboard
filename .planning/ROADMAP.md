@@ -82,7 +82,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
   2. User can edit per-model pricing rules in the UI (reusing `/api/pricing`) and the costs recalculate after saving
   3. Pricing editor displays inline tips explaining what input, output, and cache tokens mean and how they drive cost per model
   4. Usage page renders a model breakdown (Opus vs Sonnet vs Haiku) for both weekly and daily timeframes
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 - [ ] 44-01-PLAN.md — Extend /api/pricing/window with tokens + by_model breakdown (backend)
 - [ ] 44-02-PLAN.md — Build PricingEditor component with inline tips (frontend, parallel)
 - [ ] 44-03-PLAN.md — Wire tokens, model breakdown, and PricingEditor into UsagePage + deploy + verify
@@ -129,7 +129,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 43. Project Status Accuracy | 3/3 | Complete    | 2026-04-10 |
-| 44. Usage Display Enhancements | 0/3 | Planned     | - |
+| 44. Usage Display Enhancements | 1/3 | In Progress|  |
 | 45. Services Cost Tracking Foundation | 0/0 | Not started | - |
 | 46. Services API Integrations | 0/0 | Not started | - |
 | 47. AI-Guided CLAUDE.md Editor | 0/0 | Not started | - |
