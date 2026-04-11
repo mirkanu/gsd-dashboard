@@ -4,8 +4,8 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 3
 status: completed
-stopped_at: Completed 44-03-PLAN.md
-last_updated: "2026-04-11T08:24:07.463Z"
+stopped_at: Completed quick task 42 (fix-usage-window-filter)
+last_updated: "2026-04-11T09:45:00.000Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
@@ -115,6 +115,7 @@ None.
 | 39 | Reduce mobile terminal scroll sensitivity | 2026-04-10 | 0691942 | [39-reduce-mobile-terminal-scroll-sensitivit](./quick/39-reduce-mobile-terminal-scroll-sensitivit/) |
 | 40 | Add copy button to each task row beside Archive | 2026-04-10 | 75f96ca | [40-add-copy-single-task-button-beside-archi](./quick/40-add-copy-single-task-button-beside-archi/) |
 | 41 | Add Archive All + icon-only All: group | 2026-04-10 | (pending) | [41-add-archive-all-button-icon-only-all-pre](./quick/41-add-archive-all-button-icon-only-all-pre/) |
+| 42 | Fix usage window filter to include long-running sessions | 2026-04-11 | 38c2196 | [42-fix-usage-window-filter-to-include-long-](./quick/42-fix-usage-window-filter-to-include-long-/) |
 | Phase 43 P01 | 25min | 2 tasks | 2 files |
 | Phase 43 P02 | 15min | 2 tasks | 4 files |
 | Phase 43 P03 | ~13min | 3 tasks | 7 files |
