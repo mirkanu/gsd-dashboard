@@ -72,20 +72,25 @@ npm start       # runs server only on port 4820
 
 The dashboard runs locally (GSD data lives on your machine). To expose it to
 Railway (or any other remote host) so `/api/gsd/*` and the terminal WebSocket
-can be proxied through, we use **Tailscale Funnel** (no bandwidth caps, stable
-`*.ts.net` hostname, HTTPS terminated by Tailscale):
+can be proxied through, we use a **Cloudflare Tunnel** quick tunnel
+(`*.trycloudflare.com`, no bandwidth caps, ~100-170ms proxied request latency
+matching the previous ngrok baseline):
 
-1. Install Tailscale: `curl -fsSL https://tailscale.com/install.sh | sh`
-2. `sudo tailscale up` and approve the machine in your tailnet.
-3. Enable Funnel for the tailnet at
-   https://login.tailscale.com/admin/settings/features (or via ACL
-   `nodeAttrs` grant).
-4. Find your URL: `sudo tailscale status --json | grep DNSName`.
-5. Set `TAILSCALE_FUNNEL_URL=https://<host>.<tailnet>.ts.net` in `.env`.
-6. On Railway, set `GSD_DATA_URL` to the same URL.
-7. Start the supervisor: `pm2 restart gsd-tunnel` (runs `scripts/tunnel.sh`,
-   which starts `tailscaled` in userspace mode if needed and applies the
-   `tailscale serve` + `tailscale funnel` config idempotently).
+1. Install cloudflared:
+   ```sh
+   curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb \
+     -o /tmp/cloudflared.deb && sudo dpkg -i /tmp/cloudflared.deb
+   ```
+2. Authenticate the Railway CLI in this machine's shell so `tunnel.sh` can
+   sync the dynamic URL: `railway login` then `railway link`.
+3. Start the supervisor: `pm2 restart gsd-tunnel`.
+
+`scripts/tunnel.sh` runs `cloudflared tunnel --url http://localhost:4820`,
+parses the generated `https://<random>.trycloudflare.com` URL from cloudflared
+output, writes it to `.tunnel-url` (gitignored), and calls
+`railway variables --set GSD_DATA_URL=<url>` so the Railway-hosted server
+proxies through it. PM2 keeps cloudflared running; if it crashes, the next
+start generates a new URL and Railway is re-synced automatically.
 
 The server proxies `/api/gsd/*` requests and the terminal WebSocket through
 that URL. If the tunnel goes down, Railway serves cached snapshots until it's

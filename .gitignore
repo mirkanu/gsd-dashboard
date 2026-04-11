@@ -7,3 +7,5 @@ client/tsconfig.tsbuildinfo
 *.db-shm
 .env
 .vs/
+.tunnel-url
+logs/
