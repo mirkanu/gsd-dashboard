@@ -129,7 +129,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 43. Project Status Accuracy | 3/3 | Complete    | 2026-04-10 |
-| 44. Usage Display Enhancements | 3/3 | Complete   | 2026-04-11 |
+| 44. Usage Display Enhancements | 3/3 | Complete    | 2026-04-11 |
 | 45. Services Cost Tracking Foundation | 0/0 | Not started | - |
 | 46. Services API Integrations | 0/0 | Not started | - |
 | 47. AI-Guided CLAUDE.md Editor | 0/0 | Not started | - |
