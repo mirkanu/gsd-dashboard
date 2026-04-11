@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
-current_plan: 3
+current_plan: 4
 status: completed
-stopped_at: Completed 45-03-PLAN.md
-last_updated: "2026-04-11T19:09:49.347Z"
+stopped_at: Completed 45-04-PLAN.md
+last_updated: "2026-04-11T20:15:00.000Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 10
-  completed_plans: 9
-  percent: 6
+  completed_plans: 10
+  percent: 60
 ---
 
 # Project State
@@ -27,13 +27,13 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 ## Current Position
 
 Milestone: v4.3 Optimisation & Cost Intelligence
-Phase: 43 — Project Status Accuracy (in progress)
-Current Plan: 3
-Total Plans in Phase: 3
-Status: Plan 01 complete — tmux detection primitives (STAT-02 + STAT-04 fixed at the primitive layer). Ready for Plan 02 (background poller).
+Phase: 45 — Services Cost Tracking Foundation (complete)
+Current Plan: 4 (completed)
+Total Plans in Phase: 4
+Status: Phase 45 complete. All 4 plans executed. ServicesPage renders costs/rules/credentials/needs-review alongside Phase 40 status cards, deployed to Railway, cloudflared proxy gap fixed post-deploy. SVC-02, SVC-06, SVC-07, SVC-08 all satisfied. Ready to plan Phase 46 (Services API Integrations).
 Last activity: 2026-04-11
 
-Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases)
+Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43 + Phase 44 + Phase 45)
 
 ## Performance Metrics
 
@@ -95,6 +95,10 @@ Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases
 - [Phase 45-services-cost-tracking-foundation]: Plan 02: recurring cost materialization is on-read and guarded to current calendar month only — past months never backfill
 - [Phase 45-services-cost-tracking-foundation]: Plan 02: DELETE/PATCH uniformly keyed on external_service_costs.id; notes prefix (manual:/recurring:/email:) drives cascade behavior
 - [Phase 45]: Plan 03: whole-module require of parserModule enables test monkey-patching; await async parser BEFORE sync better-sqlite3 transaction; extractDate normalizes RFC 2822 to ISO with now() fallback
+- [Phase 45]: Plan 04: ServicesPage-owned projects fetch passed as prop to CostDialog/MappingRules/NeedsReview — single source of truth avoids 3x duplicate fetches
+- [Phase 45]: Plan 04: Redacted-editor pattern for secrets — GET /api/app-settings returns metadata only; input clears immediately after save; plaintext never lives in React state past a single submit
+- [Phase 45]: Plan 04: Uniform DELETE for manual/recurring/unparsed/email cost rows via external_service_costs.id — NeedsReviewSection dismiss uses the same endpoint as CostsTable delete, no special casing
+- [Phase 45]: Plan 04 post-deploy (Rule 1 bug): server/routes/proxy.js PROXY_PREFIXES was missing /api/services, /api/app-settings, /api/webhooks — Railway was shadowing Phase 45 routes with its own ephemeral SQLite. Fixed in 6817e0a. Planning gap: plans 45-02/03 didn't update PROXY_PREFIXES and plan-checker didn't catch it. Recommend plan-checker rule for Phase 46.
 
 ### Pending Todos
 
@@ -132,10 +136,11 @@ None.
 | Phase 45 P01 | 23min | 2 tasks | 3 files |
 | Phase 45-services-cost-tracking-foundation P02 | 14min | 3 tasks | 6 files |
 | Phase 45 P03 | ~18min | 3 tasks | 13 files |
+| Phase 45 P04 | ~45min + ~20min post-deploy | 3 tasks + checkpoint | 9 files + proxy.js + gsd-projects.json |
 
 ## Session Continuity
 
-Last session: 2026-04-11T19:09:49.344Z
-Stopped at: Completed 45-03-PLAN.md
+Last session: 2026-04-11T20:15:00.000Z
+Stopped at: Completed 45-04-PLAN.md (Phase 45 complete)
 Resume file: None
-Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans
+Next action: Run `/gsd:plan-phase 46` to decompose Phase 46 (Services API Integrations) — will consume the credentials panel (railway_pat, openai_admin_key, vercel_token) set via Plan 04

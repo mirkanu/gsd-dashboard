@@ -97,11 +97,11 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
   2. User can manually enter a fixed monthly cost for any service through the UI and it appears as a cost line on the Services page
   3. Services page shows cost alongside status — each service displays its monthly total, and each project displays a per-project rollup sum
   4. User can store Railway PAT, OpenAI admin key, and Vercel token via a settings UI (persisted in SQLite settings table, not env vars) and the values survive a Railway redeploy
-**Plans:** 3/4 plans executed
-- [ ] 45-01-PLAN.md — DB migrations (app_settings, processed_emails, service_mapping_rules, manual_cost_entries) + AES-256-GCM crypto helpers
-- [ ] 45-02-PLAN.md — Backend routes: /api/app-settings (encrypted), /api/services/costs (with recurring materialization), /api/services/rules
-- [ ] 45-03-PLAN.md — Email pipeline: /api/webhooks/email + Claude Haiku parser + mapping resolver + fixture tests
-- [ ] 45-04-PLAN.md — Client UI: ServicesPage sections (costs, rules, credentials, needs review) + deploy + human verify
+**Plans:** 4/4 plans complete
+- [x] 45-01-PLAN.md — DB migrations (app_settings, processed_emails, service_mapping_rules, manual_cost_entries) + AES-256-GCM crypto helpers
+- [x] 45-02-PLAN.md — Backend routes: /api/app-settings (encrypted), /api/services/costs (with recurring materialization), /api/services/rules
+- [x] 45-03-PLAN.md — Email pipeline: /api/webhooks/email + Claude Haiku parser + mapping resolver + fixture tests
+- [x] 45-04-PLAN.md — Client UI: ServicesPage sections (costs, rules, credentials, needs review) + deploy + human verify
 
 ### Phase 46: Services API Integrations
 **Goal**: Services page shows 7-day uptime sparklines and live costs pulled directly from Railway, OpenAI, and Vercel APIs using credentials stored in Phase 45.
