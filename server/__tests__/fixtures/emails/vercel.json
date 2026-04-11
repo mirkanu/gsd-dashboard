@@ -1,0 +1,18 @@
+{
+  "trigger": {
+    "event": {
+      "headers": {
+        "message-id": "<vercel-20260403-1@vercel.com>",
+        "from": {
+          "value": [{ "address": "invoice+statements@vercel.com", "name": "Vercel" }],
+          "text": "Vercel <invoice+statements@vercel.com>"
+        },
+        "subject": "Vercel Invoice — April 2026",
+        "date": "2026-04-03T08:15:00Z"
+      },
+      "body": {
+        "html": "<html><body><p>Vercel Inc.</p><p>Total Due: <strong>$20.00</strong> USD</p><p>Billing period: Apr 1 – Apr 30, 2026</p></body></html>"
+      }
+    }
+  }
+}

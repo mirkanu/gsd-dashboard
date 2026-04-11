@@ -1,0 +1,18 @@
+{
+  "trigger": {
+    "event": {
+      "headers": {
+        "message-id": "<openai-20260402-1@openai.com>",
+        "from": {
+          "value": [{ "address": "receipts@openai.com", "name": "OpenAI" }],
+          "text": "OpenAI <receipts@openai.com>"
+        },
+        "subject": "Your OpenAI receipt",
+        "date": "Fri, 02 Apr 2026 12:30:00 +0000"
+      },
+      "body": {
+        "html": "<html><body><p>Receipt from OpenAI, LLC</p><p>Amount charged: <strong>$18.90</strong></p><p>Thanks for your business.</p></body></html>"
+      }
+    }
+  }
+}

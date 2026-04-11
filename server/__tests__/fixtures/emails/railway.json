@@ -1,0 +1,18 @@
+{
+  "trigger": {
+    "event": {
+      "headers": {
+        "message-id": "<railway-20260401-1@railway.app>",
+        "from": {
+          "value": [{ "address": "team@railway.app", "name": "Railway" }],
+          "text": "Railway <team@railway.app>"
+        },
+        "subject": "Your Railway invoice for April 2026",
+        "date": "2026-04-01T10:00:00Z"
+      },
+      "body": {
+        "html": "<html><body><p>Hi,</p><p>Your Railway usage this month totals <strong>$42.17</strong>.</p><p>Thank you,<br>Railway Team</p></body></html>"
+      }
+    }
+  }
+}

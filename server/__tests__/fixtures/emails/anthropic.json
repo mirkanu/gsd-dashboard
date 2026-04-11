@@ -1,0 +1,18 @@
+{
+  "trigger": {
+    "event": {
+      "headers": {
+        "message-id": "<anthropic-20260404-1@anthropic.com>",
+        "from": {
+          "value": [{ "address": "noreply@anthropic.com", "name": "Anthropic" }],
+          "text": "Anthropic <noreply@anthropic.com>"
+        },
+        "subject": "Your Anthropic API receipt",
+        "date": "2026-04-04T09:00:00Z"
+      },
+      "body": {
+        "html": "<html><body><p>Anthropic, PBC</p><p>Your payment of <strong>$7.55</strong> USD was successful.</p><p>Claude API usage — April 2026.</p></body></html>"
+      }
+    }
+  }
+}
