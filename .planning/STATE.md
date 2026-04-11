@@ -4,8 +4,8 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 3
 status: completed
-stopped_at: Completed quick task 42 (fix-usage-window-filter)
-last_updated: "2026-04-11T09:45:00.000Z"
+stopped_at: Completed quick task 44 (auto-deploy-railway-on-tunnel-rotate)
+last_updated: "2026-04-11T17:50:00.000Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
@@ -31,7 +31,7 @@ Phase: 43 — Project Status Accuracy (in progress)
 Current Plan: 3
 Total Plans in Phase: 3
 Status: Plan 01 complete — tmux detection primitives (STAT-02 + STAT-04 fixed at the primitive layer). Ready for Plan 02 (background poller).
-Last activity: 2026-04-11 - Completed quick task 43: swap tunnel ngrok→Cloudflare + zombie cleanup
+Last activity: 2026-04-11 - Completed quick task 44: auto-deploy Railway when Cloudflare tunnel URL rotates
 
 Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases)
 
@@ -117,6 +117,7 @@ None.
 | 41 | Add Archive All + icon-only All: group | 2026-04-10 | (pending) | [41-add-archive-all-button-icon-only-all-pre](./quick/41-add-archive-all-button-icon-only-all-pre/) |
 | 42 | Fix usage window filter to include long-running sessions | 2026-04-11 | 38c2196 | [42-fix-usage-window-filter-to-include-long-](./quick/42-fix-usage-window-filter-to-include-long-/) |
 | 43 | Swap ngrok → Cloudflare Tunnel (pivoted from Tailscale) + zombie cleanup | 2026-04-11 | e391629 | [43-switch-tunnel-from-ngrok-to-tailscale-fu](./quick/43-switch-tunnel-from-ngrok-to-tailscale-fu/) |
+| 44 | Auto-deploy Railway when Cloudflare tunnel URL rotates | 2026-04-11 | d7688f3 | [44-auto-deploy-railway-when-cloudflared-tun](./quick/44-auto-deploy-railway-when-cloudflared-tun/) |
 | Phase 43 P01 | 25min | 2 tasks | 2 files |
 | Phase 43 P02 | 15min | 2 tasks | 4 files |
 | Phase 43 P03 | ~13min | 3 tasks | 7 files |
