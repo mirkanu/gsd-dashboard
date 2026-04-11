@@ -33,7 +33,7 @@ Requirements for Optimisation & Cost Intelligence milestone.
 - [ ] **SVC-05**: Vercel API integration fetches team billing data (Pro tier)
 - [ ] **SVC-06**: Manual cost entry fallback — type fixed monthly costs for services without API or email
 - [ ] **SVC-07**: Services page displays cost alongside status — monthly total per service + per-project rollup
-- [ ] **SVC-08**: API credentials (Railway PAT, OpenAI admin key, Vercel token) stored in SQLite settings table, not env vars
+- [x] **SVC-08**: API credentials (Railway PAT, OpenAI admin key, Vercel token) stored in SQLite settings table, not env vars
 
 ### AI-Guided CLAUDE.md Editor
 
@@ -81,7 +81,7 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | SVC-02 | Phase 45 | Pending |
 | SVC-06 | Phase 45 | Pending |
 | SVC-07 | Phase 45 | Pending |
-| SVC-08 | Phase 45 | Pending |
+| SVC-08 | Phase 45 | Complete |
 | SVC-01 | Phase 46 | Pending |
 | SVC-03 | Phase 46 | Pending |
 | SVC-04 | Phase 46 | Pending |

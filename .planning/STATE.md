@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 3
 status: completed
-stopped_at: Completed quick task 44 (auto-deploy-railway-on-tunnel-rotate)
-last_updated: "2026-04-11T17:50:00.000Z"
+stopped_at: Completed 45-01-PLAN.md
+last_updated: "2026-04-11T18:45:22.686Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 10
+  completed_plans: 7
   percent: 6
 ---
 
@@ -31,7 +31,7 @@ Phase: 43 — Project Status Accuracy (in progress)
 Current Plan: 3
 Total Plans in Phase: 3
 Status: Plan 01 complete — tmux detection primitives (STAT-02 + STAT-04 fixed at the primitive layer). Ready for Plan 02 (background poller).
-Last activity: 2026-04-11 - Completed quick task 44: auto-deploy Railway when Cloudflare tunnel URL rotates
+Last activity: 2026-04-11
 
 Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases)
 
@@ -90,6 +90,7 @@ Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases
 - [Phase 44-usage-display-enhancements]: by_model sorted by cost desc server-side; unknown models fall back to display_name = raw model string and model_pattern = null
 - [Phase 44]: Plan 03: Parent-owned refetch pattern — PricingEditor calls props.onChange() after upsert, UsagePage passes fetchData directly so saving a rate triggers a single source-of-truth refetch
 - [Phase 44]: Plan 03: Railway proxy mode (GSD_DATA_URL) requires PM2 gsd-dashboard restart after backend-touching deploys — Railway alone doesn't refresh the upstream
+- [Phase 45]: Phase 45 Plan 01: base64 storage for AES-GCM ciphertext/IV/auth_tag (smaller than hex); source column is free-text with doc-comment enum; getSecret returns null on decrypt failure; listSecretKeys strips ciphertext to avoid leak
 
 ### Pending Todos
 
@@ -124,10 +125,11 @@ None.
 | Phase 44 P02 | 4min | 2 tasks | 2 files |
 | Phase 44-usage-display-enhancements P01 | 8min | 2 tasks | 2 files |
 | Phase 44-usage-display-enhancements P03 | 12min | 3 tasks | 2 files |
+| Phase 45 P01 | 23min | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-04-11T08:19:01.648Z
-Stopped at: Completed 44-03-PLAN.md
+Last session: 2026-04-11T18:45:22.681Z
+Stopped at: Completed 45-01-PLAN.md
 Resume file: None
 Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans
