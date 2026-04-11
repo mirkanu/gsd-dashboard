@@ -19,7 +19,9 @@ const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
 const autopilotRouter = require("./routes/autopilot");
 const servicesRouter = require("./routes/services");
+const servicesRulesRouter = require("./routes/services-rules");
 const appSettingsRouter = require("./routes/app-settings");
+const webhooksEmailRouter = require("./routes/webhooks-email");
 const configRouter = require("./routes/config");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
@@ -60,8 +62,12 @@ function createApp() {
   app.use("/api/settings", settingsRouter);
   app.use("/api/gsd", gsdRouter);
   app.use("/api/autopilot", autopilotRouter);
+  // Phase 45: mount /api/services/rules BEFORE /api/services so the sub-route
+  // matches before the catch-all services router.
+  app.use("/api/services/rules", servicesRulesRouter);
   app.use("/api/services", servicesRouter);
   app.use("/api/app-settings", appSettingsRouter);
+  app.use("/api/webhooks/email", webhooksEmailRouter);
   app.use("/api/config", configRouter);
   app.use("/mcp", mcpRemote);
 
