@@ -147,8 +147,47 @@ router.get("/window", (_req, res) => {
       )
       .all(since);
 
-  const dailyResult = calculateCost(tokensForWindow(todayMidnight), rules);
-  const weeklyResult = calculateCost(tokensForWindow(weekStart), rules);
+  const summarizeWindow = (tokenRows) => {
+    const { total_cost, breakdown } = calculateCost(tokenRows, rules);
+    let input_tokens = 0;
+    let output_tokens = 0;
+    let cache_read_tokens = 0;
+    let cache_write_tokens = 0;
+    for (const row of tokenRows) {
+      input_tokens += row.input_tokens || 0;
+      output_tokens += row.output_tokens || 0;
+      cache_read_tokens += row.cache_read_tokens || 0;
+      cache_write_tokens += row.cache_write_tokens || 0;
+    }
+    const by_model = breakdown
+      .map((row) => {
+        const rule = row.matched_rule
+          ? rules.find((r) => r.model_pattern === row.matched_rule)
+          : null;
+        return {
+          model: row.model,
+          model_pattern: row.matched_rule,
+          display_name: rule?.display_name || row.model,
+          cost: row.cost,
+          input_tokens: row.input_tokens,
+          output_tokens: row.output_tokens,
+          cache_read_tokens: row.cache_read_tokens,
+          cache_write_tokens: row.cache_write_tokens,
+        };
+      })
+      .sort((a, b) => b.cost - a.cost);
+    return {
+      total_cost,
+      input_tokens,
+      output_tokens,
+      cache_read_tokens,
+      cache_write_tokens,
+      by_model,
+    };
+  };
+
+  const dailySummary = summarizeWindow(tokensForWindow(todayMidnight));
+  const weeklySummary = summarizeWindow(tokensForWindow(weekStart));
 
   const nextMidnight = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)
@@ -186,15 +225,25 @@ router.get("/window", (_req, res) => {
 
   res.json({
     daily: {
-      cost: dailyResult.total_cost,
+      cost: dailySummary.total_cost,
       from: todayMidnight,
       hours_until_reset: Math.round(((nextMidnight - now) / 3600000) * 10) / 10,
+      input_tokens: dailySummary.input_tokens,
+      output_tokens: dailySummary.output_tokens,
+      cache_read_tokens: dailySummary.cache_read_tokens,
+      cache_write_tokens: dailySummary.cache_write_tokens,
+      by_model: dailySummary.by_model,
     },
     weekly: {
-      cost: weeklyResult.total_cost,
+      cost: weeklySummary.total_cost,
       from: weekStart,
       hours_until_reset: Math.round(((nextMonday - now) / 3600000) * 10) / 10,
       by_project: byProject,
+      input_tokens: weeklySummary.input_tokens,
+      output_tokens: weeklySummary.output_tokens,
+      cache_read_tokens: weeklySummary.cache_read_tokens,
+      cache_write_tokens: weeklySummary.cache_write_tokens,
+      by_model: weeklySummary.by_model,
     },
   });
 });
