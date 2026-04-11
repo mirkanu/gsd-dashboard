@@ -19,6 +19,7 @@ const settingsRouter = require("./routes/settings");
 const gsdRouter = require("./routes/gsd");
 const autopilotRouter = require("./routes/autopilot");
 const servicesRouter = require("./routes/services");
+const appSettingsRouter = require("./routes/app-settings");
 const configRouter = require("./routes/config");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
@@ -60,6 +61,7 @@ function createApp() {
   app.use("/api/gsd", gsdRouter);
   app.use("/api/autopilot", autopilotRouter);
   app.use("/api/services", servicesRouter);
+  app.use("/api/app-settings", appSettingsRouter);
   app.use("/api/config", configRouter);
   app.use("/mcp", mcpRemote);
 
