@@ -18,8 +18,7 @@
         { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
         { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
-        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" },
-        { "name": "Vercel", "statusUrl": "https://www.vercel-status.com/api/v2/status.json" }
+        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
       ]
     },
     {
@@ -30,8 +29,7 @@
         { "name": "Railway", "statusUrl": "https://railway.instatus.com/api/v2/status.json" },
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
         { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" },
-        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" },
-        { "name": "Vercel", "statusUrl": "https://www.vercel-status.com/api/v2/status.json" }
+        { "name": "OpenAI", "statusUrl": "https://status.openai.com/api/v2/status.json" }
       ]
     },
     {
