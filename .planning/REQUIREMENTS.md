@@ -16,10 +16,10 @@ Requirements for Optimisation & Cost Intelligence milestone.
 
 ### Usage & Cost Display
 
-- [ ] **USG-01**: Usage page displays token counts (input/output/cache) alongside dollar costs
+- [x] **USG-01**: Usage page displays token counts (input/output/cache) alongside dollar costs
 - [x] **USG-02**: Usage page includes editable per-model pricing editor (reuses existing `/api/pricing` rules)
 - [x] **USG-03**: Pricing editor shows helpful tips explaining cost components (input vs output vs cache) per model
-- [ ] **USG-04**: Usage page shows model breakdown (Opus vs Sonnet vs Haiku) for weekly and daily views
+- [x] **USG-04**: Usage page shows model breakdown (Opus vs Sonnet vs Haiku) for weekly and daily views
 
 ### Services Page UI
 
@@ -74,10 +74,10 @@ Deferred from previous milestones. Tracked but not in current roadmap.
 | STAT-02 | Phase 43 | Complete |
 | STAT-03 | Phase 43 | Complete |
 | STAT-04 | Phase 43 | Complete |
-| USG-01 | Phase 44 | Pending |
+| USG-01 | Phase 44 | Complete |
 | USG-02 | Phase 44 | Complete |
 | USG-03 | Phase 44 | Complete |
-| USG-04 | Phase 44 | Pending |
+| USG-04 | Phase 44 | Complete |
 | SVC-02 | Phase 45 | Pending |
 | SVC-06 | Phase 45 | Pending |
 | SVC-07 | Phase 45 | Pending |

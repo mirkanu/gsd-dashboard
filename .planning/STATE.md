@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 3
 status: completed
-stopped_at: Completed 44-02-PLAN.md (PricingEditor + tests)
-last_updated: "2026-04-11T00:08:12.237Z"
+stopped_at: Completed 44-01-PLAN.md
+last_updated: "2026-04-11T00:34:17.020Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 6
 ---
 
@@ -86,6 +86,8 @@ Progress: [█░░░░░░░░░] 6% (1/3 plans in Phase 43, 0/5 phases
 - [Phase 44]: Plan 02: PricingEditor kept self-contained — Plan 03 owns UsagePage wiring so both can land atomically
 - [Phase 44]: Plan 02: Per-row dirty/saving state + per-row Save button instead of global save — prevents accidental bulk writes
 - [Phase 44]: Plan 02: Inline tips always visible (not collapsible) in PricingEditor header so first-time users see the cost formula immediately
+- [Phase 44-usage-display-enhancements]: API evolution: /api/pricing/window kept fully additive - new token totals and by_model fields alongside existing cost/from/by_project, so UsagePanel and UsagePage keep working without changes
+- [Phase 44-usage-display-enhancements]: by_model sorted by cost desc server-side; unknown models fall back to display_name = raw model string and model_pattern = null
 
 ### Pending Todos
 
@@ -115,10 +117,11 @@ None.
 | Phase 43 P02 | 15min | 2 tasks | 4 files |
 | Phase 43 P03 | ~13min | 3 tasks | 7 files |
 | Phase 44 P02 | 4min | 2 tasks | 2 files |
+| Phase 44-usage-display-enhancements P01 | 8min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-04-11T00:07:55.470Z
-Stopped at: Completed 44-02-PLAN.md (PricingEditor + tests)
+Last session: 2026-04-11T00:34:17.017Z
+Stopped at: Completed 44-01-PLAN.md
 Resume file: None
 Next action: Run `/gsd:plan-phase 43` to decompose Phase 43 (Project Status Accuracy) into executable plans
