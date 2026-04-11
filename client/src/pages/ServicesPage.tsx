@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { RefreshCw } from "lucide-react";
+import { api } from "../lib/api";
+import type { CostEntry, CostsResponse, GsdProject } from "../lib/types";
+import { CostsTable } from "../components/services/CostsTable";
+import { AddCostDialog } from "../components/services/AddCostDialog";
+import { NeedsReviewSection } from "../components/services/NeedsReviewSection";
+import { MappingRulesSection } from "../components/services/MappingRulesSection";
+import { CredentialsPanel } from "../components/services/CredentialsPanel";
 
 interface ServiceStatus {
   name: string;
@@ -72,10 +79,24 @@ function SkeletonCard() {
   );
 }
 
+function currentMonth(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export function ServicesPage() {
   const [data, setData] = useState<ServicesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Phase 45 state
+  const [costsData, setCostsData] = useState<CostsResponse | null>(null);
+  const [costsLoading, setCostsLoading] = useState(true);
+  const [costsError, setCostsError] = useState<string | null>(null);
+  const [costsMonth, setCostsMonth] = useState<string>(currentMonth());
+  const [projects, setProjects] = useState<GsdProject[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editEntry, setEditEntry] = useState<CostEntry | null>(null);
 
   const fetchStatus = useCallback(async () => {
     setLoading(true);
@@ -95,9 +116,55 @@ export function ServicesPage() {
     }
   }, []);
 
+  const fetchCosts = useCallback(async (month: string) => {
+    setCostsLoading(true);
+    setCostsError(null);
+    try {
+      const json = await api.services.costs.get(month);
+      setCostsData(json);
+    } catch (err) {
+      setCostsError(err instanceof Error ? err.message : "Failed to fetch costs");
+    } finally {
+      setCostsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStatus();
   }, [fetchStatus]);
+
+  useEffect(() => {
+    fetchCosts(costsMonth);
+  }, [fetchCosts, costsMonth]);
+
+  useEffect(() => {
+    api.gsd
+      .projects()
+      .then((res) => setProjects(res.projects))
+      .catch(() => setProjects([]));
+  }, []);
+
+  const handleAddClick = () => {
+    setEditEntry(null);
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (entry: CostEntry) => {
+    setEditEntry(entry);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this cost entry?")) return;
+    try {
+      await api.services.costs.delete(id);
+      fetchCosts(costsMonth);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Delete failed");
+    }
+  };
+
+  const refetchCosts = () => fetchCosts(costsMonth);
 
   const visibleProjects = data?.projects.filter((p) => p.services.length > 0) ?? [];
 
@@ -108,7 +175,7 @@ export function ServicesPage() {
         <div>
           <h1 className="text-xl font-semibold text-gray-100">External Services</h1>
           <p className="text-sm text-gray-400 mt-0.5">
-            Live status for services used across projects
+            Live status, monthly costs, and credentials
           </p>
         </div>
         <button
@@ -122,7 +189,7 @@ export function ServicesPage() {
         </button>
       </div>
 
-      {/* Loading state */}
+      {/* Status section (Phase 40 — unchanged) */}
       {loading && (
         <div className="space-y-3">
           <SkeletonCard />
@@ -131,9 +198,8 @@ export function ServicesPage() {
         </div>
       )}
 
-      {/* Error state */}
       {!loading && error && (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="flex flex-col items-center justify-center py-8 text-center">
           <p className="text-red-400 text-sm mb-4">{error}</p>
           <button
             onClick={fetchStatus}
@@ -144,7 +210,6 @@ export function ServicesPage() {
         </div>
       )}
 
-      {/* Projects grid */}
       {!loading && !error && (
         <div className="space-y-3">
           {visibleProjects.length === 0 && (
@@ -167,6 +232,63 @@ export function ServicesPage() {
           ))}
         </div>
       )}
+
+      {/* Phase 45: Costs Table */}
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold text-gray-100 mb-3">Monthly Costs</h2>
+        {costsError ? (
+          <div className="bg-surface-1 border border-red-500/30 rounded-lg p-4 text-sm text-red-400">
+            {costsError}{" "}
+            <button
+              className="underline hover:text-red-300 ml-2"
+              onClick={() => fetchCosts(costsMonth)}
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <CostsTable
+            data={costsData}
+            loading={costsLoading}
+            month={costsMonth}
+            onMonthChange={setCostsMonth}
+            onAddClick={handleAddClick}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        )}
+      </section>
+
+      {/* Phase 45: Needs Review */}
+      {costsData && costsData.needs_review.length > 0 && (
+        <section className="mt-8">
+          <NeedsReviewSection
+            rows={costsData.needs_review}
+            projects={projects}
+            onChanged={refetchCosts}
+          />
+        </section>
+      )}
+
+      {/* Phase 45: Mapping Rules */}
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold text-gray-100 mb-3">Mapping Rules</h2>
+        <MappingRulesSection projects={projects} />
+      </section>
+
+      {/* Phase 45: Credentials */}
+      <section className="mt-8 mb-12">
+        <h2 className="text-lg font-semibold text-gray-100 mb-3">Credentials</h2>
+        <CredentialsPanel />
+      </section>
+
+      <AddCostDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onSaved={refetchCosts}
+        projects={projects}
+        entry={editEntry}
+      />
     </div>
   );
 }
