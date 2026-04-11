@@ -297,6 +297,115 @@ try {
   `);
 }
 
+// ---------------------------------------------------------------------------
+// Phase 45 — Services Cost Tracking Foundation
+// Schema-only migrations: new tables + additive columns on external_service_costs.
+// Prepared statements for these tables are owned by Plan 02 (route layer).
+// ---------------------------------------------------------------------------
+
+// app_settings: encrypted credential storage (AES-256-GCM via server/crypto.js)
+try {
+  db.prepare("SELECT 1 FROM app_settings LIMIT 1").get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value_encrypted TEXT NOT NULL,
+      iv TEXT NOT NULL,
+      auth_tag TEXT NOT NULL,
+      is_secret INTEGER NOT NULL DEFAULT 1,
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+  `);
+}
+
+// processed_emails: dedup ledger for Pipedream email webhook (keyed on Message-ID)
+try {
+  db.prepare("SELECT 1 FROM processed_emails LIMIT 1").get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS processed_emails (
+      message_id TEXT PRIMARY KEY,
+      sender TEXT,
+      subject TEXT,
+      received_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      status TEXT NOT NULL
+    );
+  `);
+}
+
+// service_mapping_rules: user-defined sender/subject → project rules
+try {
+  db.prepare("SELECT 1 FROM service_mapping_rules LIMIT 1").get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS service_mapping_rules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      pattern_type TEXT NOT NULL CHECK(pattern_type IN ('sender','subject_contains')),
+      pattern_value TEXT NOT NULL,
+      project_key TEXT NOT NULL,
+      service TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+  `);
+}
+
+// manual_cost_entries: one-time + recurring monthly costs entered via dialog
+try {
+  db.prepare("SELECT 1 FROM manual_cost_entries LIMIT 1").get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS manual_cost_entries (
+      id TEXT PRIMARY KEY,
+      service TEXT NOT NULL,
+      project_key TEXT,
+      cost_usd REAL NOT NULL,
+      currency TEXT NOT NULL DEFAULT 'USD',
+      start_date TEXT NOT NULL,
+      recurring_monthly INTEGER NOT NULL DEFAULT 0,
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+  `);
+}
+
+// Additive columns on external_service_costs (Phase 24 table).
+// `source` enum values (stored as free text, no CHECK to allow future additions):
+//   'manual' | 'email' | 'api' | 'recurring' | 'unparsed'
+try { db.prepare("SELECT source FROM external_service_costs LIMIT 1").get(); }
+catch { db.prepare("ALTER TABLE external_service_costs ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'").run(); }
+
+try { db.prepare("SELECT message_id FROM external_service_costs LIMIT 1").get(); }
+catch { db.prepare("ALTER TABLE external_service_costs ADD COLUMN message_id TEXT").run(); }
+
+try { db.prepare("SELECT project_key FROM external_service_costs LIMIT 1").get(); }
+catch { db.prepare("ALTER TABLE external_service_costs ADD COLUMN project_key TEXT").run(); }
+
+try { db.prepare("SELECT notes FROM external_service_costs LIMIT 1").get(); }
+catch { db.prepare("ALTER TABLE external_service_costs ADD COLUMN notes TEXT").run(); }
+
+try { db.prepare("SELECT currency FROM external_service_costs LIMIT 1").get(); }
+catch { db.prepare("ALTER TABLE external_service_costs ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'").run(); }
+
+try { db.prepare("SELECT description FROM external_service_costs LIMIT 1").get(); }
+catch { db.prepare("ALTER TABLE external_service_costs ADD COLUMN description TEXT").run(); }
+
+try { db.prepare("SELECT raw_body FROM external_service_costs LIMIT 1").get(); }
+catch { db.prepare("ALTER TABLE external_service_costs ADD COLUMN raw_body TEXT").run(); }
+
+// Indexes for Phase 45 lookups
+db.exec(`
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_service_costs_msgid
+    ON external_service_costs(message_id) WHERE message_id IS NOT NULL;
+  CREATE INDEX IF NOT EXISTS idx_mapping_rules_pattern
+    ON service_mapping_rules(pattern_type, pattern_value);
+  CREATE INDEX IF NOT EXISTS idx_manual_cost_project
+    ON manual_cost_entries(project_key);
+  CREATE INDEX IF NOT EXISTS idx_service_costs_period
+    ON external_service_costs(checked_at, service);
+`);
+
 // Startup cleanup: mark stale active sessions as completed.
 // Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
 // so they stay "active" forever. Complete any active session whose last event is older than
