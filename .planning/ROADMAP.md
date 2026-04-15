@@ -157,7 +157,7 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
 **Goal:** Measure actual per-tmux RSS and Railway $/day cost estimates (surfaced in Services/Usage UI), detect idle Claude sessions, and auto-close them via `/gsd:pause-work` handoff + tmux termination. Config UI for thresholds (idle minutes, Railway RAM rate).
 **Requirements**: TBD (post-roadmap phase — CONTEXT.md decisions are authoritative)
 **Depends on:** Phase 47
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 - [ ] 48-01-PLAN.md — Test stubs (Wave 0) + gracefulShutdown primitive + Pause button refactor + PROXY_PREFIXES update
