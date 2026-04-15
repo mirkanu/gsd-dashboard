@@ -12,7 +12,7 @@
 - ✅ **v4.0 Chat-First Dashboard** - Phases 28-32 (shipped 2026-04-04)
 - ✅ **v4.1 Chat Polish → Terminal-First** - Phases 33-36 + quick tasks 24-30 (shipped 2026-04-06)
 - ✅ **v4.2 Cost Intelligence, Auth & UX Polish** - Phases 37-42 (shipped 2026-04-10)
-- 📋 **v4.3 Optimisation & Cost Intelligence** - Phases 43-47 (planning)
+- 📋 **v4.3 Optimisation & Cost Intelligence** - Phases 43-48 (planning)
 
 ## Phases
 
@@ -151,3 +151,16 @@ See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
 | 45 | SVC-02, SVC-06, SVC-07, SVC-08 |
 | 46 | SVC-01, SVC-03, SVC-04, SVC-05 |
 | 47 | CFG-04, CFG-05, CFG-06, CFG-07, CFG-08 |
+
+### Phase 48: Idle Session Cost Controls
+
+**Goal:** Measure actual per-tmux RSS and Railway $/day cost estimates (surfaced in Services/Usage UI), detect idle Claude sessions, and auto-close them via `/gsd:pause-work` handoff + tmux termination. Config UI for thresholds (idle minutes, Railway RAM rate).
+**Requirements**: TBD (post-roadmap phase — CONTEXT.md decisions are authoritative)
+**Depends on:** Phase 47
+**Plans:** 4 plans
+
+Plans:
+- [ ] 48-01-PLAN.md — Test stubs (Wave 0) + gracefulShutdown primitive + Pause button refactor + PROXY_PREFIXES update
+- [ ] 48-02-PLAN.md — costMeasurement.js (RSS read, $/day math, daily log) + /api/gsd/projects/:name/tmux-cost route
+- [ ] 48-03-PLAN.md — idleDetector.js (2h idle → graceful close, 6h working → force-kill, autopilot 2× threshold) + server startup wiring
+- [ ] 48-04-PLAN.md — Services page $/day column + Usage page idle banner + ConfigPage Idle Auto-Close section + human verify checkpoint
