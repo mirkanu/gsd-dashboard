@@ -10,6 +10,7 @@ const PROXY_PREFIXES = [
   '/api/services',
   '/api/app-settings',
   '/api/webhooks',
+  '/api/gsd',
 ];
 
 function createAgentProxy(gsdDataUrl) {
