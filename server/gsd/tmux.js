@@ -574,4 +574,4 @@ async function detectRateLimitAsync(sessionNames) {
   return hit ?? { active: false, resetAt: null };
 }
 
-module.exports = { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync, _testDetectWithChangeHeuristic, _resetPaneHashCache };
+module.exports = { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync, _testDetectWithChangeHeuristic, _resetPaneHashCache, paneHashCache };
