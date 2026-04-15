@@ -101,6 +101,11 @@ function startServer(app, port) {
       return JSON.parse(fs.readFileSync(configPath, "utf8"));
     };
     startStateBroadcaster(loadProjectsLocal, broadcast);
+
+    // Idle detector — auto-close sessions idle > threshold (default 2h)
+    // Only runs on the local machine where tmux lives, never in proxy/Railway mode.
+    const { startIdleDetector } = require('./gsd/idleDetector');
+    startIdleDetector(loadProjectsLocal);
   }
 
   const isProduction = process.env.NODE_ENV === "production";
