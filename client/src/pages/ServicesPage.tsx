@@ -23,6 +23,11 @@ interface ServicesResponse {
   projects: ProjectServices[];
 }
 
+interface TmuxCost {
+  rssGb: number;
+  dailyCostUsd: number;
+}
+
 function StatusPill({ service }: { service: ServiceStatus }) {
   const configs = {
     operational: {
@@ -98,6 +103,9 @@ export function ServicesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<CostEntry | null>(null);
 
+  // Phase 48: tmux $/day costs per project
+  const [tmuxCosts, setTmuxCosts] = useState<Record<string, TmuxCost>>({});
+
   const fetchStatus = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -140,7 +148,24 @@ export function ServicesPage() {
   useEffect(() => {
     api.gsd
       .projects()
-      .then((res) => setProjects(res.projects))
+      .then(async (res) => {
+        setProjects(res.projects);
+        // Phase 48: fetch tmux $/day cost for each project
+        const costResults = await Promise.allSettled(
+          res.projects.map(async (p: GsdProject) => {
+            const r = await fetch(`/api/gsd/projects/${encodeURIComponent(p.name)}/tmux-cost`);
+            if (!r.ok) return null;
+            return r.json();
+          })
+        );
+        const costs: Record<string, TmuxCost> = {};
+        for (const r of costResults) {
+          if (r.status === 'fulfilled' && r.value?.ok) {
+            costs[r.value.project] = { rssGb: r.value.rssGb, dailyCostUsd: r.value.dailyCostUsd };
+          }
+        }
+        setTmuxCosts(costs);
+      })
       .catch(() => setProjects([]));
   }, []);
 
@@ -215,21 +240,31 @@ export function ServicesPage() {
           {visibleProjects.length === 0 && (
             <p className="text-gray-500 text-sm">No services configured.</p>
           )}
-          {visibleProjects.map((project) => (
-            <div
-              key={project.name}
-              className="bg-surface-1 border border-border rounded-lg p-4"
-            >
-              <h2 className="text-sm font-medium text-gray-300 mb-3 capitalize">
-                {project.name}
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {project.services.map((svc) => (
-                  <StatusPill key={svc.name} service={svc} />
-                ))}
+          {visibleProjects.map((project) => {
+            const cost = tmuxCosts[project.name];
+            return (
+              <div
+                key={project.name}
+                className="bg-surface-1 border border-border rounded-lg p-4"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-medium text-gray-300 capitalize">
+                    {project.name}
+                  </h2>
+                  {cost && cost.dailyCostUsd > 0 && (
+                    <span className="text-xs text-orange-400 font-mono" title={`${cost.rssGb.toFixed(3)} GB RAM`}>
+                      ~${cost.dailyCostUsd.toFixed(2)}/day
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {project.services.map((svc) => (
+                    <StatusPill key={svc.name} service={svc} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

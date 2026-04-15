@@ -84,6 +84,10 @@ export function UsagePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Phase 48: idle cost banner
+  const [idleCostPerDay, setIdleCostPerDay] = useState<number>(0);
+  const [idleSessionCount, setIdleSessionCount] = useState<number>(0);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -99,6 +103,35 @@ export function UsagePage() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Phase 48: fetch idle cost totals asynchronously (non-blocking)
+  useEffect(() => {
+    async function fetchIdleCosts() {
+      try {
+        const gsdData = await api.gsd.projects();
+        const costResults = await Promise.allSettled(
+          (gsdData.projects || []).map(async (p) => {
+            if (!p.tmuxSession) return null;
+            const r = await fetch(`/api/gsd/projects/${encodeURIComponent(p.name)}/tmux-cost`);
+            if (!r.ok) return null;
+            return r.json();
+          })
+        );
+        let total = 0, count = 0;
+        for (const r of costResults) {
+          if (r.status === 'fulfilled' && r.value?.dailyCostUsd > 0) {
+            total += r.value.dailyCostUsd;
+            count++;
+          }
+        }
+        setIdleCostPerDay(total);
+        setIdleSessionCount(count);
+      } catch {
+        // Silent — banner is non-critical
+      }
+    }
+    fetchIdleCosts();
   }, []);
 
   useEffect(() => {
@@ -167,6 +200,20 @@ export function UsagePage() {
       {/* Data display */}
       {!loading && !error && windowData && (
         <div className="space-y-6">
+          {/* Phase 48: Idle cost banner */}
+          {idleCostPerDay > 0.01 && (
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-sm text-orange-300">
+              <span className="font-medium">
+                {idleSessionCount} session{idleSessionCount !== 1 ? 's' : ''} running
+              </span>
+              <span className="text-orange-400/70">—</span>
+              <span>~${idleCostPerDay.toFixed(2)}/day in RAM costs</span>
+              <span className="text-xs text-orange-400/50 ml-auto">
+                Configure auto-close in ConfigPage
+              </span>
+            </div>
+          )}
+
           {/* Summary cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Weekly Spend */}
