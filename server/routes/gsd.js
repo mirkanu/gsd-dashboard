@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const { gracefulShutdown } = require('../gsd/gracefulShutdown');
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
 const { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
@@ -8,6 +9,7 @@ const { getProjectStateSnapshot } = require('../gsd/stateBroadcaster');
 const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED: telegramEnabled } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
 const { calculateCost } = require('./pricing');
+const { getTmuxCostForSession } = require('../gsd/costMeasurement');
 
 const router = express.Router();
 
@@ -369,6 +371,33 @@ router.post('/projects/:name/pause-session', (req, res) => {
     return res.json({ ok: true });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to kill tmux session', detail: err.message });
+  }
+});
+
+// GET /api/gsd/projects/:name/tmux-cost — per-session $/day cost estimate
+router.get('/projects/:name/tmux-cost', async (req, res) => {
+  const { name } = req.params;
+
+  if (GSD_DATA_URL) {
+    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/tmux-cost`,
+      { signal: AbortSignal.timeout(10000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+
+  const { projects } = loadConfig();
+  const project = projects.find(p => p.name === name);
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+
+  const { tmux_session } = project;
+  if (!tmux_session) return res.status(422).json({ error: 'No tmux session configured for this project' });
+
+  try {
+    const cost = getTmuxCostForSession(tmux_session);
+    return res.json({ ok: true, project: name, ...cost });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to compute tmux cost', detail: err.message });
   }
 });
 
