@@ -77,6 +77,15 @@
         { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
         { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" }
       ]
+    },
+    {
+      "name": "GameMCP",
+      "root": "/data/home/GameMCP",
+      "tmux_session": "gamemcp",
+      "services": [
+        { "name": "GitHub", "statusUrl": "https://www.githubstatus.com/api/v2/status.json" },
+        { "name": "Claude", "statusUrl": "https://status.anthropic.com/api/v2/status.json" }
+      ]
     }
   ]
 }
