@@ -4,11 +4,11 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 4 (completed)
 status: planning
-stopped_at: Completed 45-04-PLAN.md (Phase 45 complete)
-last_updated: "2026-04-11T21:14:21.656Z"
-last_activity: 2026-04-11
+stopped_at: Phase 48 context gathered
+last_updated: "2026-04-15T07:58:23.665Z"
+last_activity: "2026-04-15 - Completed quick task 45: create new Project GameMCP"
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 3
   total_plans: 10
   completed_plans: 10
@@ -47,6 +47,10 @@ Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43
 **v4.2 velocity:** 9 plans, 6 phases + 5 quick tasks, 3 days (2026-04-07 - 2026-04-10)
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 48 added: Idle Session Cost Controls — Railway $/day per-tmux cost estimates + auto-close idle Claude sessions via /gsd:pause-work handoff
 
 ### Decisions
 
@@ -141,7 +145,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-11T20:15:00.000Z
-Stopped at: Completed 45-04-PLAN.md (Phase 45 complete)
-Resume file: None
+Last session: 2026-04-15T07:58:23.662Z
+Stopped at: Phase 48 context gathered
+Resume file: .planning/phases/48-idle-session-cost-controls/48-CONTEXT.md
 Next action: Run `/gsd:plan-phase 46` to decompose Phase 46 (Services API Integrations) — will consume the credentials panel (railway_pat, openai_admin_key, vercel_token) set via Plan 04
