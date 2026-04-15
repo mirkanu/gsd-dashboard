@@ -341,13 +341,14 @@ router.post('/projects/:name/reopen-tmux', (req, res) => {
   }
 });
 
-// POST /api/gsd/projects/:name/pause-session — kill the tmux session so the card moves to Paused
-router.post('/projects/:name/pause-session', (req, res) => {
+// POST /api/gsd/projects/:name/pause-session — gracefully shut down the tmux session:
+// sends /gsd:pause-work, polls for completion markers, kills session, notifies Telegram.
+router.post('/projects/:name/pause-session', async (req, res) => {
   const { name } = req.params;
 
   if (GSD_DATA_URL) {
     fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/pause-session`,
-      { method: 'POST', signal: AbortSignal.timeout(10000) })
+      { method: 'POST', signal: AbortSignal.timeout(40000) })  // extended: graceful-shutdown can take ~30s
       .then(r => r.json().then(d => res.status(r.status).json(d)))
       .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
     return;
@@ -360,17 +361,11 @@ router.post('/projects/:name/pause-session', (req, res) => {
   const { tmux_session } = project;
   if (!tmux_session) return res.status(422).json({ error: 'No tmux session configured for this project' });
 
-  if (!isTmuxSessionActive(tmux_session)) {
-    return res.json({ ok: true, message: 'Session already inactive' });
-  }
-
   try {
-    const { execFileSync } = require('child_process');
-    // Kill the tmux session — card will be detected as "paused" on next poll
-    execFileSync('tmux', ['kill-session', '-t', tmux_session], { stdio: 'ignore', timeout: 5000 });
-    return res.json({ ok: true });
+    const result = await gracefulShutdown(tmux_session, name);
+    return res.json(result);
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to kill tmux session', detail: err.message });
+    return res.status(500).json({ error: 'Failed to pause session', detail: err.message });
   }
 });
 
