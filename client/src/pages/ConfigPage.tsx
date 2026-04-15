@@ -8,6 +8,7 @@ import {
   Check,
   AlertCircle,
   Loader2,
+  Timer,
 } from "lucide-react";
 import { api } from "../lib/api";
 import type { ProjectSettings, GsdProject } from "../lib/types";
@@ -112,6 +113,13 @@ export function ConfigPage() {
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
   const [applying, setApplying] = useState(false);
   const [applyResult, setApplyResult] = useState<string | null>(null);
+
+  // Idle Auto-Close settings (Phase 48)
+  const [idleThresholdMinutes, setIdleThresholdMinutes] = useState<number>(120);
+  const [ramRate, setRamRate] = useState<number>(10.0);
+  const [idleEnabled, setIdleEnabled] = useState<boolean>(true);
+  const [idleSaving, setIdleSaving] = useState<boolean>(false);
+  const [idleSaved, setIdleSaved] = useState<boolean>(false);
 
   const isGlobal = selectedProject === "global";
 
@@ -262,6 +270,26 @@ export function ConfigPage() {
 
   const handleCancelApply = () => {
     setApplyDialogOpen(false);
+  };
+
+  // ─── Idle Auto-Close helpers ─────────────────────────────────────────────
+
+  const saveIdleSetting = async (key: string, value: string) => {
+    setIdleSaving(true);
+    try {
+      await api.appSettings.set(key, value);
+      setIdleSaved(true);
+      setTimeout(() => setIdleSaved(false), 2000);
+    } catch (e) {
+      console.error('Failed to save idle setting', e);
+    } finally {
+      setIdleSaving(false);
+    }
+  };
+
+  const handleIdleToggle = (enabled: boolean) => {
+    setIdleEnabled(enabled);
+    saveIdleSetting('idle_timeout_minutes', enabled ? idleThresholdMinutes.toString() : '0');
   };
 
   const handleVerbosityChange = (v: ProjectSettings["verbosity"]) => {
@@ -479,6 +507,84 @@ export function ConfigPage() {
                   Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID environment
                   variables to be set on the server.
                 </p>
+              </div>
+            )}
+          </div>
+
+          {/* Idle Auto-Close */}
+          <div className="bg-surface-2 border border-border rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Timer className="w-4 h-4 text-gray-400" />
+              <h2 className="text-sm font-semibold text-gray-200">
+                Idle Auto-Close
+              </h2>
+              {idleSaved && (
+                <span className="flex items-center gap-1 text-emerald-400 text-xs ml-auto">
+                  <Check className="w-3 h-3" />
+                  Saved
+                </span>
+              )}
+              {idleSaving && (
+                <Loader2 className="w-3 h-3 animate-spin text-gray-400 ml-auto" />
+              )}
+            </div>
+            <p className="text-xs text-gray-400">
+              Automatically close idle Claude sessions via /gsd:pause-work handoff.
+              Set threshold to 0 to disable.
+            </p>
+
+            <Toggle
+              checked={idleEnabled}
+              onChange={handleIdleToggle}
+              label="Auto-close idle sessions"
+            />
+
+            {idleEnabled && (
+              <div className="space-y-4 pt-1">
+                <div className="space-y-1.5">
+                  <label className="text-xs text-gray-400">
+                    Idle threshold (minutes)
+                    <span className="ml-1 text-gray-500">Default: 120 (2 hours)</span>
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="number"
+                      min={1}
+                      value={idleThresholdMinutes}
+                      onChange={(e) => setIdleThresholdMinutes(Number(e.target.value))}
+                      className="w-24 bg-surface-1 border border-border rounded px-2 py-1 text-sm text-gray-100 focus:outline-none focus:ring-1 focus:ring-accent/50"
+                    />
+                    <button
+                      onClick={() => saveIdleSetting('idle_timeout_minutes', idleThresholdMinutes.toString())}
+                      className="text-xs px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded text-white transition-colors active:scale-95"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs text-gray-400">
+                    Railway RAM rate ($/GB-month)
+                    <span className="ml-1 text-gray-500">Default: 10.0</span>
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.5}
+                      value={ramRate}
+                      onChange={(e) => setRamRate(Number(e.target.value))}
+                      className="w-24 bg-surface-1 border border-border rounded px-2 py-1 text-sm text-gray-100 focus:outline-none focus:ring-1 focus:ring-accent/50"
+                    />
+                    <button
+                      onClick={() => saveIdleSetting('railway_ram_rate_monthly', ramRate.toString())}
+                      className="text-xs px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded text-white transition-colors active:scale-95"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

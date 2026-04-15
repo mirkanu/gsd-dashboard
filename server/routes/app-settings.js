@@ -19,8 +19,35 @@ const { db } = require('../db');
 const deleteSecretStmt = db.prepare('DELETE FROM app_settings WHERE key = ?');
 const hasKeyStmt = db.prepare('SELECT updated_at FROM app_settings WHERE key = ?');
 
+// Phase 48 defaults — seeded on first GET if not already set.
+const PHASE_48_DEFAULTS = [
+  {
+    key: 'idle_timeout_minutes',
+    defaultValue: '120',
+  },
+  {
+    key: 'railway_ram_rate_monthly',
+    defaultValue: '10.0',
+  },
+];
+
+function seedPhase48Defaults() {
+  for (const { key, defaultValue } of PHASE_48_DEFAULTS) {
+    const existing = hasKeyStmt.get(key);
+    if (!existing) {
+      setSecret(key, defaultValue);
+    }
+  }
+}
+
 // GET /api/app-settings — list keys with metadata only.
 router.get('/', (_req, res) => {
+  try {
+    seedPhase48Defaults();
+  } catch (e) {
+    // Non-fatal: DASHBOARD_SECRET_KEY may not be set in test environments
+    console.warn('[app-settings] seed skipped:', e.message);
+  }
   const rows = listSecretKeys();
   res.json({
     keys: rows.map((r) => ({ key: r.key, updated_at: r.updated_at, set: true })),
