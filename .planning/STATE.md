@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 4 (completed)
 status: planning
-stopped_at: Completed 48-idle-session-cost-controls-01-PLAN.md
-last_updated: "2026-04-15T09:15:48.184Z"
+stopped_at: Completed 48-02-PLAN.md
+last_updated: "2026-04-15T09:19:00.819Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 14
-  completed_plans: 11
+  completed_plans: 12
   percent: 60
 ---
 
@@ -106,6 +106,7 @@ Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43
 - [Phase 48-idle-session-cost-controls]: gracefulShutdown uses _testGracefulShutdown DI pattern (same as stateBroadcaster) — all I/O injectable, no require mocking needed
 - [Phase 48-idle-session-cost-controls]: Proxy timeout extended from 10s to 40s for pause-session route to accommodate ~30s graceful shutdown window
 - [Phase 48-idle-session-cost-controls]: pause-session route: removed isTmuxSessionActive check — gracefulShutdown handles session-already-inactive case internally
+- [Phase 48-idle-session-cost-controls]: costMeasurement.js exports both bytes-based (estimateTmuxCostPerDay) and KB-based (_testComputeDailyCost) APIs — test file used bytes, route uses KB
 
 ### Pending Todos
 
@@ -146,10 +147,11 @@ None.
 | Phase 45 P03 | ~18min | 3 tasks | 13 files |
 | Phase 45 P04 | ~45min + ~20min post-deploy | 3 tasks + checkpoint | 9 files + proxy.js + gsd-projects.json |
 | Phase 48-idle-session-cost-controls P01 | 15 | 3 tasks | 8 files |
+| Phase 48-idle-session-cost-controls P02 | 17 | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-04-15T09:15:48.180Z
-Stopped at: Completed 48-idle-session-cost-controls-01-PLAN.md
+Last session: 2026-04-15T09:19:00.816Z
+Stopped at: Completed 48-02-PLAN.md
 Resume file: None
 Next action: Run `/gsd:plan-phase 46` to decompose Phase 46 (Services API Integrations) — will consume the credentials panel (railway_pat, openai_admin_key, vercel_token) set via Plan 04
