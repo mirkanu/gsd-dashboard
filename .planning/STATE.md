@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 4 (completed)
 status: planning
-stopped_at: Completed 48-03-PLAN.md
-last_updated: "2026-04-15T09:35:28.756Z"
+stopped_at: Completed 48-04-PLAN.md (Phase 48 complete)
+last_updated: "2026-04-15T10:59:20.709Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
   percent: 60
 ---
 
@@ -109,6 +109,8 @@ Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43
 - [Phase 48-idle-session-cost-controls]: costMeasurement.js exports both bytes-based (estimateTmuxCostPerDay) and KB-based (_testComputeDailyCost) APIs — test file used bytes, route uses KB
 - [Phase 48-idle-session-cost-controls]: isSessionIdle dual calling signature: options-object for tests, injectable-async for internal DI
 - [Phase 48-idle-session-cost-controls]: paneHashCache exported from tmux.js (was private Map) — needed by idleDetector and future consumers
+- [Phase 48-idle-session-cost-controls]: costMeasurement.getTmuxRssKb() walks full descendant process tree — pane PID (bash, ~3MB) alone misses the Claude Code child process (~500-900MB). Inline fix 6f3eab7 corrected live cost from $0.001/day to $0.29/day
+- [Phase 48-idle-session-cost-controls]: Plan 04: ConfigPage initializes idle settings from hardcoded defaults (120 min, $10/GB-month) since GET app-settings returns no plaintext — seeding on first GET ensures backend values match UI defaults
 
 ### Pending Todos
 
@@ -151,10 +153,11 @@ None.
 | Phase 48-idle-session-cost-controls P01 | 15 | 3 tasks | 8 files |
 | Phase 48-idle-session-cost-controls P02 | 17 | 2 tasks | 3 files |
 | Phase 48-idle-session-cost-controls P03 | 12 | 2 tasks | 3 files |
+| Phase 48-idle-session-cost-controls P04 | 55min | 3 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-04-15T09:35:28.749Z
-Stopped at: Completed 48-03-PLAN.md
+Last session: 2026-04-15T10:59:20.705Z
+Stopped at: Completed 48-04-PLAN.md (Phase 48 complete)
 Resume file: None
 Next action: Run `/gsd:plan-phase 46` to decompose Phase 46 (Services API Integrations) — will consume the credentials panel (railway_pat, openai_admin_key, vercel_token) set via Plan 04
