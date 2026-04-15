@@ -53,23 +53,48 @@ function _testComputeDailyCost(rssKb, rateGbMonth = DEFAULT_RATE_GB_MONTH) {
 // ---------------------------------------------------------------------------
 
 /**
- * Get RSS (kilobytes) for the first pane PID in a tmux session.
+ * Get total RSS (kilobytes) for every process rooted at a tmux session's pane PIDs.
+ * Walks the full descendant tree (shell + claude + any child processes) because
+ * the pane PID alone is typically just the shell; the Claude Code process is a child.
  * Returns 0 on any error. Uses synchronous ps.
  */
 function getTmuxRssKb(sessionName) {
   if (!sessionName) return 0;
   try {
-    const pidOutput = execFileSync('tmux', ['list-panes', '-t', sessionName, '-F', '#{pane_pid}'], {
+    const paneOutput = execFileSync('tmux', ['list-panes', '-t', sessionName, '-F', '#{pane_pid}'], {
       encoding: 'utf8', timeout: 2000,
-    }).trim().split('\n')[0];
-    if (!pidOutput) return 0;
-    const pid = pidOutput.trim();
-    if (!pid || isNaN(Number(pid))) return 0;
-    const rssStr = execFileSync('ps', ['-o', 'rss=', '-p', pid], {
+    });
+    const panePids = paneOutput.split('\n').map((s) => s.trim()).filter((s) => s && !isNaN(Number(s)));
+    if (panePids.length === 0) return 0;
+
+    const psOutput = execFileSync('ps', ['-eo', 'pid=,ppid=,rss='], {
       encoding: 'utf8', timeout: 2000,
-    }).trim();
-    const rss = parseInt(rssStr, 10);
-    return isNaN(rss) ? 0 : rss;
+    });
+    const childrenByPpid = new Map();
+    const rssByPid = new Map();
+    for (const line of psOutput.split('\n')) {
+      const parts = line.trim().split(/\s+/);
+      if (parts.length < 3) continue;
+      const pid = parts[0];
+      const ppid = parts[1];
+      const rss = parseInt(parts[2], 10);
+      rssByPid.set(pid, isNaN(rss) ? 0 : rss);
+      if (!childrenByPpid.has(ppid)) childrenByPpid.set(ppid, []);
+      childrenByPpid.get(ppid).push(pid);
+    }
+
+    let totalRss = 0;
+    const visited = new Set();
+    const queue = [...panePids];
+    while (queue.length) {
+      const pid = queue.shift();
+      if (visited.has(pid)) continue;
+      visited.add(pid);
+      totalRss += rssByPid.get(pid) || 0;
+      const kids = childrenByPpid.get(pid) || [];
+      for (const kid of kids) queue.push(kid);
+    }
+    return totalRss;
   } catch {
     return 0;
   }
