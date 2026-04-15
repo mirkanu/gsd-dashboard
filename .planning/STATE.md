@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
 current_plan: 4 (completed)
 status: planning
-stopped_at: Phase 48 context gathered
-last_updated: "2026-04-15T07:58:23.665Z"
-last_activity: "2026-04-15 - Completed quick task 45: create new Project GameMCP"
+stopped_at: Completed 48-idle-session-cost-controls-01-PLAN.md
+last_updated: "2026-04-15T09:15:48.184Z"
+last_activity: 2026-04-15
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 14
+  completed_plans: 11
   percent: 60
 ---
 
@@ -31,7 +31,7 @@ Phase: 45 — Services Cost Tracking Foundation (complete)
 Current Plan: 4 (completed)
 Total Plans in Phase: 4
 Status: Phase 45 complete. All 4 plans executed. ServicesPage renders costs/rules/credentials/needs-review alongside Phase 40 status cards, deployed to Railway, cloudflared proxy gap fixed post-deploy. SVC-02, SVC-06, SVC-07, SVC-08 all satisfied. Ready to plan Phase 46 (Services API Integrations).
-Last activity: 2026-04-15 - Completed quick task 45: create new Project GameMCP
+Last activity: 2026-04-15
 
 Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43 + Phase 44 + Phase 45)
 
@@ -103,6 +103,9 @@ Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43
 - [Phase 45]: Plan 04: Redacted-editor pattern for secrets — GET /api/app-settings returns metadata only; input clears immediately after save; plaintext never lives in React state past a single submit
 - [Phase 45]: Plan 04: Uniform DELETE for manual/recurring/unparsed/email cost rows via external_service_costs.id — NeedsReviewSection dismiss uses the same endpoint as CostsTable delete, no special casing
 - [Phase 45]: Plan 04 post-deploy (Rule 1 bug): server/routes/proxy.js PROXY_PREFIXES was missing /api/services, /api/app-settings, /api/webhooks — Railway was shadowing Phase 45 routes with its own ephemeral SQLite. Fixed in 6817e0a. Planning gap: plans 45-02/03 didn't update PROXY_PREFIXES and plan-checker didn't catch it. Recommend plan-checker rule for Phase 46.
+- [Phase 48-idle-session-cost-controls]: gracefulShutdown uses _testGracefulShutdown DI pattern (same as stateBroadcaster) — all I/O injectable, no require mocking needed
+- [Phase 48-idle-session-cost-controls]: Proxy timeout extended from 10s to 40s for pause-session route to accommodate ~30s graceful shutdown window
+- [Phase 48-idle-session-cost-controls]: pause-session route: removed isTmuxSessionActive check — gracefulShutdown handles session-already-inactive case internally
 
 ### Pending Todos
 
@@ -142,10 +145,11 @@ None.
 | Phase 45-services-cost-tracking-foundation P02 | 14min | 3 tasks | 6 files |
 | Phase 45 P03 | ~18min | 3 tasks | 13 files |
 | Phase 45 P04 | ~45min + ~20min post-deploy | 3 tasks + checkpoint | 9 files + proxy.js + gsd-projects.json |
+| Phase 48-idle-session-cost-controls P01 | 15 | 3 tasks | 8 files |
 
 ## Session Continuity
 
-Last session: 2026-04-15T07:58:23.662Z
-Stopped at: Phase 48 context gathered
-Resume file: .planning/phases/48-idle-session-cost-controls/48-CONTEXT.md
+Last session: 2026-04-15T09:15:48.180Z
+Stopped at: Completed 48-idle-session-cost-controls-01-PLAN.md
+Resume file: None
 Next action: Run `/gsd:plan-phase 46` to decompose Phase 46 (Services API Integrations) — will consume the credentials panel (railway_pat, openai_admin_key, vercel_token) set via Plan 04
