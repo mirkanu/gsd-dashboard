@@ -31,7 +31,7 @@ Phase: 45 — Services Cost Tracking Foundation (complete)
 Current Plan: 4 (completed)
 Total Plans in Phase: 4
 Status: Phase 45 complete. All 4 plans executed. ServicesPage renders costs/rules/credentials/needs-review alongside Phase 40 status cards, deployed to Railway, cloudflared proxy gap fixed post-deploy. SVC-02, SVC-06, SVC-07, SVC-08 all satisfied. Ready to plan Phase 46 (Services API Integrations).
-Last activity: 2026-04-15
+Last activity: 2026-04-16 - Completed quick task 46: Auto-send /gsd:resume-work after re-opening paused tmux session
 
 Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43 + Phase 44 + Phase 45)
 
@@ -140,6 +140,7 @@ None.
 | 43 | Swap ngrok → Cloudflare Tunnel (pivoted from Tailscale) + zombie cleanup | 2026-04-11 | e391629 | [43-switch-tunnel-from-ngrok-to-tailscale-fu](./quick/43-switch-tunnel-from-ngrok-to-tailscale-fu/) |
 | 44 | Auto-deploy Railway when Cloudflare tunnel URL rotates | 2026-04-11 | d7688f3 | [44-auto-deploy-railway-when-cloudflared-tun](./quick/44-auto-deploy-railway-when-cloudflared-tun/) |
 | 45 | Create new Project GameMCP: subfolder, dashboard entry, tmux session | 2026-04-15 | aa09c13 | [45-create-a-new-project-gamemcp-new-subfold](./quick/45-create-a-new-project-gamemcp-new-subfold/) |
+| 46 | Auto-send /gsd:resume-work after re-opening paused tmux session | 2026-04-16 | 234f54d | [46-when-pressing-re-open-tmux-on-a-paused-p](./quick/46-when-pressing-re-open-tmux-on-a-paused-p/) |
 | Phase 43 P01 | 25min | 2 tasks | 2 files |
 | Phase 43 P02 | 15min | 2 tasks | 4 files |
 | Phase 43 P03 | ~13min | 3 tasks | 7 files |
