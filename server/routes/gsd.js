@@ -296,9 +296,10 @@ router.post('/projects/:name/send', async (req, res) => {
         return res.status(500).json({ error: 'Failed to paste buffer to tmux session' });
       }
       // Also send Enter after paste
-      execFileSync('tmux', ['send-keys', '-t', tmux_session, '', 'Enter'], { stdio: 'ignore' });
+      execFileSync('tmux', ['send-keys', '-t', tmux_session, 'Enter'], { stdio: 'ignore' });
     } else {
-      execFileSync('tmux', ['send-keys', '-t', tmux_session, text, 'Enter'], { stdio: 'ignore' });
+      execFileSync('tmux', ['send-keys', '-t', tmux_session, '-l', text], { stdio: 'ignore' });
+      execFileSync('tmux', ['send-keys', '-t', tmux_session, 'Enter'], { stdio: 'ignore' });
     }
     return res.json({ ok: true });
   } catch (err) {
