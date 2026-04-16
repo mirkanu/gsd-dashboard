@@ -202,6 +202,7 @@ function SpecialKeyBar({
       const btn = (e.target as HTMLElement).closest('button');
       if (!btn) return;
       e.preventDefault();
+      const wasFocused = document.activeElement?.classList.contains('xterm-helper-textarea');
       specialKeyPressRef.current = true;
       const idx = parseInt(btn.getAttribute('data-idx') ?? '', 10);
       const key = SPECIAL_KEYS[idx];
@@ -209,7 +210,9 @@ function SpecialKeyBar({
         if (wsRef.current?.readyState === WebSocket.OPEN) {
           wsRef.current.send(key.seq);
         }
-        termRef.current?.focus();
+        if (wasFocused) {
+          termRef.current?.focus();
+        }
       }
     };
 
