@@ -413,7 +413,7 @@ function extractCurrentTask(rawText) {
     /^\s*╭|^\s*╰|^\s*│\s*$/,             // empty box-drawing lines
     /(Opus|Sonnet|Haiku)\s+[\d.]+.*context/i,  // status bar "Opus 4.6 (1M context)"
     /[█▓▒░]+/,                           // progress bar chars
-    /^\s*[⬆↑]\s*\/gsd:/,                 // status bar command prefix
+    /^\s*[⬆↑]\s*\/gsd[:-]/,              // status bar command prefix (matches /gsd: or /gsd-)
     /^\s*[⬆↑↓]\s+/,                      // other arrow-prefixed status lines
     /^\s*\d+:\s+\w+\s+\d+:/,             // session rating UI "1: Bad 2: Fine 3: Good"
     /Hashing…?/i,                        // tool progress (not user-visible task)

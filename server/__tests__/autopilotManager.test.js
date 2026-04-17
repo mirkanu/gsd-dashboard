@@ -270,9 +270,9 @@ test('autopilot.manager: when CircuitBreaker opens, loop broadcasts autopilot_ha
   assert.strictEqual(row.status, 'failed', 'DB status must be "failed" when circuit opens');
 });
 
-// ─── Test 7: runType='plan-all' uses /gsd:plan-phase ──────────────────────────
+// ─── Test 7: runType='plan-all' uses /gsd-plan-phase ──────────────────────────
 
-test("autopilot.manager: runType='plan-all' calls spawnFn with /gsd:plan-phase and broadcasts correct pendingCommand", async () => {
+test("autopilot.manager: runType='plan-all' calls spawnFn with /gsd-plan-phase and broadcasts correct pendingCommand", async () => {
   const db = makeTestDb();
 
   let capturedCmd = null;
@@ -313,8 +313,8 @@ test("autopilot.manager: runType='plan-all' calls spawnFn with /gsd:plan-phase a
   assert.ok(confirmCall, 'pending_confirmation must be broadcast');
   assert.strictEqual(
     confirmCall.data.pendingCommand,
-    '/gsd:plan-phase 2',
-    `pendingCommand should be '/gsd:plan-phase 2', got: ${confirmCall.data.pendingCommand}`
+    '/gsd-plan-phase 2',
+    `pendingCommand should be '/gsd-plan-phase 2', got: ${confirmCall.data.pendingCommand}`
   );
 
   // Confirm the spawn and let it execute
@@ -322,11 +322,11 @@ test("autopilot.manager: runType='plan-all' calls spawnFn with /gsd:plan-phase a
   await new Promise(resolve => setTimeout(resolve, 20));
   manager.stop();
 
-  // Check that spawnFn was called with /gsd:plan-phase
+  // Check that spawnFn was called with /gsd-plan-phase
   assert.strictEqual(
     capturedCmd,
-    '/gsd:plan-phase',
-    `spawnFn first positional arg should be '/gsd:plan-phase', got: ${capturedCmd}`
+    '/gsd-plan-phase',
+    `spawnFn first positional arg should be '/gsd-plan-phase', got: ${capturedCmd}`
   );
 });
 

@@ -10,7 +10,7 @@ const { waitForIdle } = require('../gsd/tmux');
  * Records the job in process_registry and returns a jobId immediately (non-blocking).
  *
  * @param {string} projectName - matches gsd-projects.json projects[].name
- * @param {string} gsdCommand - e.g. '/gsd:plan-phase'
+ * @param {string} gsdCommand - e.g. '/gsd-plan-phase'
  * @param {object} options
  * @param {string[]} [options.args=[]] - additional CLI args appended to gsdCommand
  * @param {string|null} [options.runId=null] - autopilot_runs.id if applicable

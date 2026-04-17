@@ -7,7 +7,7 @@ const assert = require('node:assert');
 // They will be RED (MODULE_NOT_FOUND) until Task 2 creates it.
 const { _testGracefulShutdown } = require('../gsd/gracefulShutdown');
 
-test('graceful.shutdown: sends /gsd:pause-work into pane then kills session', async () => {
+test('graceful.shutdown: sends /gsd-pause-work into pane then kills session', async () => {
   const sentKeys = [];
   const killed = [];
   const notified = [];
@@ -29,7 +29,7 @@ test('graceful.shutdown: sends /gsd:pause-work into pane then kills session', as
 
   const result = await _testGracefulShutdown('test-session', 'test-project', { pauseWorkTimeout: 5000 }, fns);
 
-  assert.ok(sentKeys.some(k => k.text === '/gsd:pause-work'), 'should send /gsd:pause-work');
+  assert.ok(sentKeys.some(k => k.text === '/gsd-pause-work'), 'should send /gsd-pause-work');
   assert.ok(killed.includes('test-session'), 'should kill session');
   assert.strictEqual(result.ok, true);
   assert.strictEqual(result.pauseWorkCompleted, true);

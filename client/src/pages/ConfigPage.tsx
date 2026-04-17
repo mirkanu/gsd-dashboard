@@ -529,7 +529,7 @@ export function ConfigPage() {
               )}
             </div>
             <p className="text-xs text-gray-400">
-              Automatically close idle Claude sessions via /gsd:pause-work handoff.
+              Automatically close idle Claude sessions via /gsd-pause-work handoff.
               Set threshold to 0 to disable.
             </p>
 

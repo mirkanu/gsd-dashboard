@@ -8,7 +8,7 @@ const PAUSE_WORK_TIMEOUT_MS = 30_000;
 const POLL_INTERVAL_MS = 1_000;
 const GRACE_BUFFER_MS = 1_000;
 
-// Markers indicating /gsd:pause-work completed successfully in the pane
+// Markers indicating /gsd-pause-work completed successfully in the pane
 const PAUSE_WORK_MARKERS = [
   /wip:/i,            // commit message "wip: [phase] paused at task X/Y"
   /Handoff created/i,
@@ -54,8 +54,8 @@ async function _testGracefulShutdown(sessionName, projectName, opts = {}, fns = 
     return { ok: true, message: 'Session already inactive', pauseWorkCompleted: false };
   }
 
-  // Send /gsd:pause-work into pane
-  sendKeysFn(sessionName, '/gsd:pause-work');
+  // Send /gsd-pause-work into pane
+  sendKeysFn(sessionName, '/gsd-pause-work');
 
   // Poll for completion markers
   const deadline = Date.now() + timeout;
@@ -78,16 +78,16 @@ async function _testGracefulShutdown(sessionName, projectName, opts = {}, fns = 
 
   // Telegram notification
   if (pauseWorkCompleted) {
-    await notifyFn(projectName, `Idle session auto-closed after idle threshold. Handoff saved via /gsd:pause-work.`);
+    await notifyFn(projectName, `Idle session auto-closed after idle threshold. Handoff saved via /gsd-pause-work.`);
   } else {
-    await notifyFn(projectName, `Idle session killed but pause-work timed out — manual /gsd:resume-work checkpoint may be needed for project ${projectName}.`);
+    await notifyFn(projectName, `Idle session killed but pause-work timed out — manual /gsd-resume-work checkpoint may be needed for project ${projectName}.`);
   }
 
   return { ok: true, pauseWorkCompleted };
 }
 
 /**
- * Gracefully shut down a tmux session by sending /gsd:pause-work,
+ * Gracefully shut down a tmux session by sending /gsd-pause-work,
  * polling for completion, then killing the session and sending a Telegram notification.
  *
  * @param {string} sessionName - tmux session name

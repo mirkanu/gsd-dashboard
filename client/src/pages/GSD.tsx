@@ -76,10 +76,10 @@ function StatusBadge({ status }: { status: string | null }) {
 // ─── Send box ─────────────────────────────────────────────────────────────────
 
 const GSD_CHIPS = [
-  "/gsd:resume-work",
-  "/gsd:progress",
-  "/gsd:pause-work",
-  "/gsd:plan-phase",
+  "/gsd-resume-work",
+  "/gsd-progress",
+  "/gsd-pause-work",
+  "/gsd-plan-phase",
 ] as const;
 
 const CONTEXT_WINDOW = 200_000;

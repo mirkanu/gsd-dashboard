@@ -131,7 +131,7 @@ export function AutopilotControls({ project, autopilotRun }: {
       ) : status === 'pending_confirmation' ? (
         <div className="w-full flex flex-col gap-1.5 py-1">
           <p className="text-[10px] text-gray-400">
-            Ready to send: <span className="font-mono text-accent">{pendingCommand ?? '/gsd:execute-phase'}</span>
+            Ready to send: <span className="font-mono text-accent">{pendingCommand ?? '/gsd-execute-phase'}</span>
           </p>
           <div className="flex gap-2">
             <button

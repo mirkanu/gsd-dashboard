@@ -240,12 +240,12 @@ class AutopilotManager {
 
   /**
    * Returns the correct GSD slash-command based on the current runType.
-   * 'plan-all' → '/gsd:plan-phase'
-   * everything else → '/gsd:execute-phase'
+   * 'plan-all' → '/gsd-plan-phase'
+   * everything else → '/gsd-execute-phase'
    * @returns {string}
    */
   _gsdCommand() {
-    return this._runType === 'plan-all' ? '/gsd:plan-phase' : '/gsd:execute-phase';
+    return this._runType === 'plan-all' ? '/gsd-plan-phase' : '/gsd-execute-phase';
   }
 
   // ─── Internal loop ──────────────────────────────────────────────────────────
