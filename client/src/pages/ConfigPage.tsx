@@ -147,6 +147,42 @@ export function ConfigPage() {
     };
   }, []);
 
+  // ─── Hydrate Idle Auto-Close settings from the server on mount ───────────
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [idleResp, ramResp] = await Promise.allSettled([
+          api.appSettings.getValue("idle_timeout_minutes"),
+          api.appSettings.getValue("railway_ram_rate_monthly"),
+        ]);
+        if (cancelled) return;
+        if (idleResp.status === "fulfilled") {
+          const mins = parseInt(idleResp.value.value, 10);
+          if (!isNaN(mins)) {
+            if (mins === 0) {
+              setIdleEnabled(false);
+              // Keep idleThresholdMinutes at default 120 so re-enabling has a sane value.
+            } else {
+              setIdleEnabled(true);
+              setIdleThresholdMinutes(mins);
+            }
+          }
+        }
+        if (ramResp.status === "fulfilled") {
+          const rate = parseFloat(ramResp.value.value);
+          if (!isNaN(rate)) setRamRate(rate);
+        }
+      } catch (e) {
+        console.warn("Failed to hydrate idle settings", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // ─── Load CLAUDE.md when project changes ─────────────────────────────────
 
   const loadClaudeMd = useCallback(async (project: string) => {
