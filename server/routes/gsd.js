@@ -336,14 +336,6 @@ router.post('/projects/:name/reopen-tmux', (req, res) => {
     // then launch Claude Code with permissions bypass so autopilot/commands work immediately
     execFileSync('tmux', ['new-session', '-d', '-s', tmux_session, '-c', root], { stdio: 'ignore', timeout: 5000 });
     execFileSync('tmux', ['send-keys', '-t', tmux_session, 'claude --dangerously-skip-permissions', 'Enter'], { stdio: 'ignore', timeout: 5000 });
-    // After Claude boots (~10s), send /gsd-resume-work to resume the GSD session
-    setTimeout(() => {
-      try {
-        execFileSync('tmux', ['send-keys', '-t', tmux_session, '/gsd-resume-work', 'Enter'], { stdio: 'ignore', timeout: 5000 });
-      } catch (_) {
-        // best-effort — if Claude isn't ready yet, the user can type it manually
-      }
-    }, 10000);
     return res.json({ ok: true });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to create tmux session', detail: err.message });
