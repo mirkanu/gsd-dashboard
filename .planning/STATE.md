@@ -142,6 +142,7 @@ None.
 | 45 | Create new Project GameMCP: subfolder, dashboard entry, tmux session | 2026-04-15 | aa09c13 | [45-create-a-new-project-gamemcp-new-subfold](./quick/45-create-a-new-project-gamemcp-new-subfold/) |
 | 46 | Auto-send /gsd:resume-work after re-opening paused tmux session | 2026-04-16 | 234f54d | [46-when-pressing-re-open-tmux-on-a-paused-p](./quick/46-when-pressing-re-open-tmux-on-a-paused-p/) |
 | 47 | Fix terminal send-to-tmux missing Enter / iOS keyboard guard | 2026-04-16 | abf19db | [47-fix-terminal-send-to-tmux-missing-enter-](./quick/47-fix-terminal-send-to-tmux-missing-enter-/) |
+| 48 | Stop Re-open Tmux from auto-sending /gsd-resume-work | 2026-04-17 | 78ffe2b | [48-stop-reopen-tmux-auto-resume-work](./quick/48-stop-reopen-tmux-auto-resume-work/) |
 | Phase 43 P01 | 25min | 2 tasks | 2 files |
 | Phase 43 P02 | 15min | 2 tasks | 4 files |
 | Phase 43 P03 | ~13min | 3 tasks | 7 files |
