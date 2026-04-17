@@ -15,11 +15,9 @@ const POLL_INTERVAL_MS = 60 * 1000; // 60 seconds
  */
 function getIdleThresholdMs() {
   try {
-    const { db } = require('../db');
-    const { decrypt } = require('./crypto');
-    const row = db.prepare("SELECT value_encrypted, iv, auth_tag FROM app_settings WHERE key = 'idle_timeout_minutes'").get();
-    if (!row) return DEFAULT_IDLE_THRESHOLD_MS;
-    const val = decrypt(row.value_encrypted, row.iv, row.auth_tag);
+    const { getSecret } = require('../crypto');
+    const val = getSecret('idle_timeout_minutes');
+    if (val == null) return DEFAULT_IDLE_THRESHOLD_MS;
     const mins = parseInt(val, 10);
     if (isNaN(mins)) return DEFAULT_IDLE_THRESHOLD_MS;
     return mins * 60 * 1000; // 0 means disabled

@@ -13,8 +13,11 @@
 
 const express = require('express');
 const router = express.Router();
-const { setSecret, listSecretKeys } = require('../crypto');
+const { getSecret, setSecret, listSecretKeys } = require('../crypto');
 const { db } = require('../db');
+
+// Keys whose plaintext value MAY be read over the wire. Secrets never appear here.
+const PUBLIC_SETTINGS = ['idle_timeout_minutes', 'railway_ram_rate_monthly'];
 
 const deleteSecretStmt = db.prepare('DELETE FROM app_settings WHERE key = ?');
 const hasKeyStmt = db.prepare('SELECT updated_at FROM app_settings WHERE key = ?');
@@ -52,6 +55,25 @@ router.get('/', (_req, res) => {
   res.json({
     keys: rows.map((r) => ({ key: r.key, updated_at: r.updated_at, set: true })),
   });
+});
+
+// GET /api/app-settings/:key/value — plaintext read, strictly allow-listed to non-secret settings.
+// Registered BEFORE /:key so Express path matching hits the more specific route first.
+router.get('/:key/value', (req, res) => {
+  const { key } = req.params;
+  if (!PUBLIC_SETTINGS.includes(key)) {
+    return res.status(403).json({ error: 'not a public setting' });
+  }
+  // Ensure defaults are seeded so first-read after cold-start succeeds.
+  try {
+    seedPhase48Defaults();
+  } catch (e) {
+    // Non-fatal in test env (DASHBOARD_SECRET_KEY may be unset)
+    console.warn('[app-settings] seed skipped:', e.message);
+  }
+  const value = getSecret(key);
+  if (value == null) return res.status(404).json({ error: 'not set' });
+  res.json({ key, value });
 });
 
 // GET /api/app-settings/:key — metadata for one key; 404 if missing.

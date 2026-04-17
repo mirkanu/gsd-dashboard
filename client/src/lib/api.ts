@@ -257,6 +257,10 @@ export const api = {
       request<{ key: string; set: true; updated_at: string }>(
         `/app-settings/${encodeURIComponent(key)}`
       ),
+    getValue: (key: string) =>
+      request<{ key: string; value: string }>(
+        `/app-settings/${encodeURIComponent(key)}/value`
+      ),
     set: (key: string, value: string) =>
       request<{ ok: true }>(`/app-settings/${encodeURIComponent(key)}`, {
         method: "PUT",
