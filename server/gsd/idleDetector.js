@@ -1,13 +1,31 @@
 'use strict';
 
 const { execFileSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const { paneHashCache, detectSessionStateAsync } = require('./tmux');
 const { gracefulShutdown } = require('./gracefulShutdown');
 const { getTmuxCostForSession, logDailyTmuxCosts } = require('./costMeasurement');
+const busyMarkers = require('./busyMarkers');
 
 const DEFAULT_IDLE_THRESHOLD_MS = 120 * 60 * 1000; // 2 hours
 const FORCE_KILL_WORKING_THRESHOLD_MS = 6 * 60 * 60 * 1000; // 6 hours
 const POLL_INTERVAL_MS = 60 * 1000; // 60 seconds
+
+const IDLE_SKIP_LOG_PATH = path.resolve(__dirname, '../../data/logs/idle-skip.log');
+
+/**
+ * Append a single JSONL line to data/logs/idle-skip.log documenting a skip decision.
+ * Never throws — audit logging must not break the idle detector.
+ */
+function _testAppendSkipLog(entry) {
+  try {
+    fs.mkdirSync(path.dirname(IDLE_SKIP_LOG_PATH), { recursive: true });
+    fs.appendFileSync(IDLE_SKIP_LOG_PATH, JSON.stringify(entry) + '\n');
+  } catch {
+    // Never let audit logging break the idle detector
+  }
+}
 
 /**
  * Read idle threshold from app_settings. Falls back to 120 minutes.
@@ -169,6 +187,9 @@ async function _testCheckAndCloseSession(project, fns = {}) {
     logCostFn = logDailyTmuxCosts,
     isAutopilotFn = hasActiveAutopilotRun,
     getThresholdFn = getIdleThresholdMs,
+    hasBusyMarkersFn = busyMarkers.hasBusyMarkers,
+    getBusyMarkersFn = busyMarkers.getMarkers,
+    logSkipFn = _testAppendSkipLog,
   } = fns;
 
   const thresholdMs = getThresholdFn();
@@ -193,6 +214,25 @@ async function _testCheckAndCloseSession(project, fns = {}) {
 
   const idle = await _testIsSessionIdle(project.tmux_session, effectiveThresholdMs, { detectFn, paneCache, nowMs });
   if (!idle) return null;
+
+  // Busy-marker awareness — skip auto-close when Claude is waiting on its own in-flight
+  // background work (bash_bg, agent, wakeup). Every skip is logged as JSONL for audit.
+  if (hasBusyMarkersFn(project.tmux_session)) {
+    const markers = getBusyMarkersFn(project.tmux_session);
+    logSkipFn({
+      ts: new Date(nowMs).toISOString(),
+      session: project.tmux_session,
+      project: project.name,
+      reason: 'busy-markers-present',
+      markers,
+    });
+    return {
+      action: 'skipped',
+      reason: 'busy-markers-present',
+      project: project.name,
+      markers,
+    };
+  }
 
   // Graceful shutdown
   const result = await gracefulShutdownFn(project.tmux_session, project.name);
@@ -242,4 +282,6 @@ module.exports = {
   _testIsSessionIdle,
   _testCheckAndCloseSession,
   hasActiveAutopilotRun,
+  _testAppendSkipLog,
+  IDLE_SKIP_LOG_PATH,
 };
