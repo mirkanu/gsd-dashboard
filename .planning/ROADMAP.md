@@ -1,178 +1,286 @@
 # Roadmap: GSD Dashboard
 
-## Milestones
+**Current milestone:** v5.0 Non-Programmer Mode
+**Created:** 2026-04-18
+**Prior milestones:** archived to `.planning/milestones/` (v4.3 is the immediate predecessor)
 
-- ✅ **v1.0 Foundation** - Phases 1-3 (shipped 2026-03-18)
-- ✅ **v1.1 File Viewer** - Phases 4-6 (shipped 2026-03-21)
-- ✅ **v1.2 Live Data** - Phases 7-8 (shipped 2026-03-23)
-- ✅ **v2.0 Control Plane** - Phases 9-11 (shipped 2026-03-25)
-- ✅ **v2.1 Session Intelligence** - Phases 12-16 (shipped 2026-03-28)
-- ✅ **v2.2-2.3 Card UX & Mobile** - Phases 17-19 (shipped 2026-03-30)
-- ✅ **v3.0 Autopilot** - Phases 20-27 (shipped 2026-04-03)
-- ✅ **v4.0 Chat-First Dashboard** - Phases 28-32 (shipped 2026-04-04)
-- ✅ **v4.1 Chat Polish → Terminal-First** - Phases 33-36 + quick tasks 24-30 (shipped 2026-04-06)
-- ✅ **v4.2 Cost Intelligence, Auth & UX Polish** - Phases 37-42 (shipped 2026-04-10)
-- 📋 **v4.3 Optimisation & Cost Intelligence** - Phases 43-48 (planning)
+---
 
-## Phases
+## Core Value Shift (v4.x → v5.0)
 
-<details>
-<summary>✅ v4.1 Chat Polish → Terminal-First (Phases 33-36) — SHIPPED 2026-04-06</summary>
+From: *"At a glance, see where every GSD project stands and interact with any session"* — a session manager for someone already living inside GSD and Claude Code.
 
-- [x] Phase 33: Classifier Foundation (1/1 plans) — completed 2026-04-04
-- [x] Phase 34: Feedback Pipeline (1/1 plans) — completed 2026-04-04
-- [x] Phase 35: Feedback UI + Send Experience (2/2 plans) — completed 2026-04-05
-- [x] Phase 36: Message Rendering + New Types (2/2 plans) — completed 2026-04-05
+To: *"Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI."*
 
-See [v4.1-ROADMAP.md](./milestones/v4.1-ROADMAP.md) for full archive.
+The tmux terminal stays as a first-class surface. The Dashboard wraps projects, planning, services, lifecycle, notifications, and launched-project workflows — not the conversational loop itself.
 
-</details>
+## Design Principles (codify into root CLAUDE.md, reference from every phase)
 
-<details>
-<summary>✅ v4.2 Cost Intelligence, Auth & UX Polish (Phases 37-42) — SHIPPED 2026-04-10</summary>
+1. The terminal is a first-class surface, not a debug view — stays fully visible in novice mode.
+2. Never ask the user to edit or write code — the user describes, Claude does.
+3. Never ask the user to do programmer things — no diff/log pastes, no file opens, no terminal commands, no jargon decisions.
+4. No GSD/Claude Code jargon in the primary UI — "Phase", "Plan", "Milestone", `/gsd:*` hidden in novice mode.
+5. Autonomous testing is the default, not a choice — every plan auto-runs verify-work.
+6. Admin-API-first for external services — Dashboard asks for credentials upfront, provisions programmatically.
+7. Minimise external services — prefer Railway-hosted solutions wherever feasible.
+8. Dashboard is the control plane, tmux sessions are workers — cross-cutting concerns (status, idle detection, notifications, cost) are Dashboard-owned.
+9. Progress narrated in plain English — landmark events pass through a narration layer.
+10. Power-user mode is a toggle, not a separate product — expert view preserves everything that exists today.
 
-- [x] Phase 37: Auth & Terminal Reliability (2/2 plans) — completed 2026-04-07
-- [x] Phase 38: Terminal Light Mode & Status Colors (1/1 plans) — completed 2026-04-07
-- [x] Phase 39: Resizable Columns (1/1 plans) — completed 2026-04-07
-- [x] Phase 40: External Services Dashboard (1/1 plans) — completed 2026-04-07
-- [x] Phase 41: Claude Usage Tracking (2/2 plans) — completed 2026-04-08
-- [x] Phase 42: Configuration UI (2/2 plans) — completed 2026-04-10
-
-Quick tasks: #34 terminal load delay, #35 auth blocking fix, #36 GSD MCP tools, #37 Usage page, #38 global defaults.
-
-See [v4.2-ROADMAP.md](./milestones/v4.2-ROADMAP.md) for full archive.
-
-</details>
-
-### 📋 v4.3 Optimisation & Cost Intelligence (Phases 43-47)
-
-**Goal:** Fix project status accuracy, enhance usage insights with tokens and model breakdowns, add comprehensive services cost tracking (email parser + APIs), and replace manual CLAUDE.md editing with an AI-guided chat workflow.
-
-**Granularity:** coarse
-**Requirements:** 21 mapped (100% coverage)
-
-- [x] **Phase 43: Project Status Accuracy** — Real-time status push, correct working/waiting detection, elapsed time, task previews (completed 2026-04-10)
-- [x] **Phase 44: Usage Display Enhancements** — Token counts, editable pricing editor, per-model breakdowns (completed 2026-04-11)
-- [x] **Phase 45: Services Cost Tracking Foundation** — Email parser, manual entry, cost display, credentials storage (completed 2026-04-11)
-- [ ] **Phase 46: Services API Integrations** — Uptime sparklines + Railway/OpenAI/Vercel API cost fetchers
-- [ ] **Phase 47: AI-Guided CLAUDE.md Editor** — Chat UI, diff preview, approval flow, AI review action
-
-## Phase Details
-
-### Phase 43: Project Status Accuracy
-**Goal**: User sees accurate, real-time project state on every card without polling lag or false "Waiting" reports.
-**Depends on**: Nothing (foundational fix, first phase of v4.3)
-**Requirements**: STAT-01, STAT-02, STAT-03, STAT-04
-**Success Criteria** (what must be TRUE):
-  1. When a tmux session transitions (working → waiting or vice versa), the project card updates within 1 second without requiring a page refresh or polling tick
-  2. A session actively producing output reports "Working" (never "Waiting") — the current false-waiting bug is gone and verified on the live Railway URL
-  3. Each project card shows elapsed time in the current state (e.g., "Working 2m 30s", "Waiting 5m") and the timer advances live
-  4. Each project in the list shows a preview of the current task from tmux (e.g., "planning phase 14 UI integration") instead of the generic "Chat" placeholder
-**Plans:** 3/3 plans complete
-- [ ] 43-01-PLAN.md — Fix tmux state detection (output-change heuristic) + extractCurrentTask helper
-- [ ] 43-02-PLAN.md — Server background broadcaster + project_state_change WebSocket push + stateEnteredAt/currentTask API fields
-- [ ] 43-03-PLAN.md — Client WS handler + live elapsed tick + currentTask card render + deploy + human verify
-
-### Phase 44: Usage Display Enhancements
-**Goal**: User can see not just dollar costs but token counts, per-model breakdowns, and edit pricing rules directly from the Usage page.
-**Depends on**: Phase 43
-**Requirements**: USG-01, USG-02, USG-03, USG-04
-**Success Criteria** (what must be TRUE):
-  1. Usage page shows input, output, and cache token counts alongside dollar amounts for weekly and daily views
-  2. User can edit per-model pricing rules in the UI (reusing `/api/pricing`) and the costs recalculate after saving
-  3. Pricing editor displays inline tips explaining what input, output, and cache tokens mean and how they drive cost per model
-  4. Usage page renders a model breakdown (Opus vs Sonnet vs Haiku) for both weekly and daily timeframes
-**Plans:** 3/3 plans complete
-- [ ] 44-01-PLAN.md — Extend /api/pricing/window with tokens + by_model breakdown (backend)
-- [ ] 44-02-PLAN.md — Build PricingEditor component with inline tips (frontend, parallel)
-- [ ] 44-03-PLAN.md — Wire tokens, model breakdown, and PricingEditor into UsagePage + deploy + verify
-
-### Phase 45: Services Cost Tracking Foundation
-**Goal**: User can see monthly services costs per project from email receipts and manual entries, with credentials stored in SQLite for use by future API integrations.
-**Depends on**: Phase 44
-**Requirements**: SVC-02, SVC-06, SVC-07, SVC-08
-**Notes**: Builds on the existing `external_service_costs` SQLite table from Phase 24. This phase establishes the storage contract that Phase 46 API integrations will populate.
-**Success Criteria** (what must be TRUE):
-  1. When a billing receipt email is forwarded to the configured inbox, the parser extracts amount/date/service and inserts a row into `external_service_costs` (verifiable by checking the Services page after sending a test receipt)
-  2. User can manually enter a fixed monthly cost for any service through the UI and it appears as a cost line on the Services page
-  3. Services page shows cost alongside status — each service displays its monthly total, and each project displays a per-project rollup sum
-  4. User can store Railway PAT, OpenAI admin key, and Vercel token via a settings UI (persisted in SQLite settings table, not env vars) and the values survive a Railway redeploy
-**Plans:** 4/4 plans complete
-- [x] 45-01-PLAN.md — DB migrations (app_settings, processed_emails, service_mapping_rules, manual_cost_entries) + AES-256-GCM crypto helpers
-- [x] 45-02-PLAN.md — Backend routes: /api/app-settings (encrypted), /api/services/costs (with recurring materialization), /api/services/rules
-- [x] 45-03-PLAN.md — Email pipeline: /api/webhooks/email + Claude Haiku parser + mapping resolver + fixture tests
-- [x] 45-04-PLAN.md — Client UI: ServicesPage sections (costs, rules, credentials, needs review) + deploy + human verify
-
-### Phase 46: Services API Integrations
-**Goal**: Services page shows 7-day uptime sparklines and live costs pulled directly from Railway, OpenAI, and Vercel APIs using credentials stored in Phase 45.
-**Depends on**: Phase 45 (uses `external_service_costs` schema + credentials storage)
-**Requirements**: SVC-01, SVC-03, SVC-04, SVC-05
-**Success Criteria** (what must be TRUE):
-  1. Each service on the Services page renders a 7-day uptime sparkline reflecting historical status checks
-  2. Railway costs appear on the Services page, fetched from Railway's GraphQL API using the PAT stored in SQLite settings
-  3. OpenAI daily usage appears on the Services page, fetched from the OpenAI admin API using the admin key stored in SQLite settings
-  4. Vercel team billing data appears on the Services page, fetched from Vercel's API using the token stored in SQLite settings
-  5. API-sourced costs and email-parsed costs live side-by-side in `external_service_costs` without double-counting for the same period
-**Plans**: TBD
-
-### Phase 47: AI-Guided CLAUDE.md Editor
-**Goal**: User edits CLAUDE.md by describing changes in a chat; an AI assistant with GSD workflow context proposes diffs, the user approves or tweaks, and the file is written to disk.
-**Depends on**: Phase 46
-**Checkpoint**: User testing required — the AI integration is novel and warrants manual verification before marking the phase complete.
-**Requirements**: CFG-04, CFG-05, CFG-06, CFG-07, CFG-08
-**Success Criteria** (what must be TRUE):
-  1. The manual CLAUDE.md textarea is gone from the Config page — no raw-text edit field remains
-  2. Config page has a chat interface where the user describes a desired change; the AI reads the current CLAUDE.md and has GSD workflow context before replying
-  3. AI responses include a unified diff preview (old vs new) rendered in the UI before anything is written to disk
-  4. User can approve, reject, or tweak each proposed diff; only approved diffs are written to disk
-  5. A separate "Review my CLAUDE.md" button asks the AI for unsolicited improvement suggestions without the user typing a prompt
-**Plans**: TBD
+---
 
 ## Progress
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 43. Project Status Accuracy | 3/3 | Complete    | 2026-04-10 |
-| 44. Usage Display Enhancements | 3/3 | Complete    | 2026-04-11 |
-| 45. Services Cost Tracking Foundation | 3/4 | Complete    | 2026-04-11 |
-| 46. Services API Integrations | 0/0 | Not started | - |
-| 47. AI-Guided CLAUDE.md Editor | 0/0 | Not started | - |
+| Phase | Plans | Status | Completed |
+|-------|-------|--------|-----------|
+| 50.5. Original-Repo Cleanup | 0/0 | Not planned | - |
+| 50. Non-Programmer Mode Foundation | 0/0 | Not planned | - |
+| 51. GUI Project Creation + Import | 0/0 | Not planned | - |
+| 53. Auto-Verify by Default | 0/0 | Not planned | - |
+| 54. Admin-API Onboarding for External Services | 0/0 | Not planned | - |
+| 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
+| 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
+| 56B. Non-Programmer Behavioural Contract | 0/0 | Not planned | - |
+| 58. Project Maturity Stages | 0/0 | Not planned | - |
+| 54B. Unified Notification Centre | 0/0 | Not planned | - |
+| 59. Task Backend Migration + Issue GUI Wrapper | 0/0 | Not planned | - |
+| 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
 
-## Coverage (v4.3)
+---
 
-- v4.3 requirements: 21 total
-- Mapped to phases: 21
+## Execution Order (dependency graph)
+
+```
+50.5 (cleanup) ──→ 50 (mode foundation)
+                    ├──→ 51 (project creation)
+                    ├──→ 53 (auto-verify)
+                    ├──→ 54 (admin APIs) ──→ 55 (MCP evaluation)
+                    ├──→ 56 (verbosity + feed) ──→ 56B (behavioural contract)
+                    └──→ 58 (maturity stages) ──┬──→ 54B (notification centre)
+                                                 ├──→ 59 (task migration + issue GUI)
+                                                 └──→ 60 (dev/prod envs)
+```
+
+Phase 56B depends on both 54 (admin APIs) and 56 (verbosity).
+Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Phase 43.
+
+---
+
+## Coverage (v5.0)
+
+- v5.0 requirements: 69 total (see REQUIREMENTS.md)
+- Mapped to phases: 69
 - Unmapped: 0
 
 | Phase | Requirements |
 |-------|--------------|
-| 43 | STAT-01, STAT-02, STAT-03, STAT-04 |
-| 44 | USG-01, USG-02, USG-03, USG-04 |
-| 45 | SVC-02, SVC-06, SVC-07, SVC-08 |
-| 46 | SVC-01, SVC-03, SVC-04, SVC-05 |
-| 47 | CFG-04, CFG-05, CFG-06, CFG-07, CFG-08 |
+| 50.5 | CLN-01, CLN-02, CLN-03, CLN-04, CLN-05, CLN-06 |
+| 50 | NPM-01, NPM-02, NPM-03, NPM-04, NPM-05 |
+| 51 | NPC-01, NPC-02, NPC-03, NPC-04, NPC-05, NPC-06 |
+| 53 | ATV-01, ATV-02, ATV-03, ATV-04, ATV-05 |
+| 54 | APO-01, APO-02, APO-03, APO-04, APO-05, APO-06 |
+| 55 | APO-07, APO-08 |
+| 56 | NAR-01, NAR-02, NAR-03, NAR-04, NAR-05 |
+| 56B | NPB-01, NPB-02, NPB-03, NPB-04, NPB-05, NPB-06, NPB-07 |
+| 58 | MAT-01, MAT-02, MAT-03, MAT-04, MAT-05, MAT-06, MAT-07, MAT-08 |
+| 54B | NTF-01, NTF-02, NTF-03, NTF-04, NTF-05 |
+| 59 | TSK-01, TSK-02, TSK-03, TSK-04, TSK-05, TSK-06, TSK-07, TSK-08, TSK-09 |
+| 60 | ENV-01, ENV-02, ENV-03, ENV-04, ENV-05 |
 
-### Phase 48: Idle Session Cost Controls
+---
 
-**Goal:** Measure actual per-tmux RSS and Railway $/day cost estimates (surfaced in Services/Usage UI), detect idle Claude sessions, and auto-close them via `/gsd:pause-work` handoff + tmux termination. Config UI for thresholds (idle minutes, Railway RAM rate).
-**Requirements**: TBD (post-roadmap phase — CONTEXT.md decisions are authoritative)
-**Depends on:** Phase 47
-**Plans:** 4/4 plans complete
+### Phase 50.5: Original-Repo Cleanup
 
-Plans:
-- [ ] 48-01-PLAN.md — Test stubs (Wave 0) + gracefulShutdown primitive + Pause button refactor + PROXY_PREFIXES update
-- [ ] 48-02-PLAN.md — costMeasurement.js (RSS read, $/day math, daily log) + /api/gsd/projects/:name/tmux-cost route
-- [ ] 48-03-PLAN.md — idleDetector.js (2h idle → graceful close, 6h working → force-kill, autopilot 2× threshold) + server startup wiring
-- [ ] 48-04-PLAN.md — Services page $/day column + Usage page idle banner + ConfigPage Idle Auto-Close section + human verify checkpoint
+**Goal:** Strip out dormant and mis-fitting features inherited from the upstream `hoangsonww/Claude-Code-Agent-Monitor` fork. Mostly deletion; handle as a sequence of quick tasks before Phase 50 kicks off.
+**Requirements:** CLN-01 through CLN-06
+**Depends on:** Nothing
+**Plans:** TBD (likely 2–3 quick-task batches)
 
-### Phase 49: Idle Detector Busy-Work Awareness — prevent auto-close of Claude sessions actively waiting on in-flight background work (background bash, scheduled wakeups, running agents). Extends Phase 48 idle detector with a busy-marker signal sourced from Claude Code hooks: PreToolUse writes a marker when Bash(run_in_background=true), ScheduleWakeup, or Agent fires; PostToolUse/SubagentStop clears it; TTL fallback prevents leaks. Idle detector reads markers and skips auto-close for sessions with active busy work. UI surfaces a waiting-bg sub-state badge. Logs every skipped auto-close decision for audit. Depends on Phase 48.
+---
 
-**Goal:** Prevent auto-close of Claude sessions actively waiting on in-flight background work by extending the Phase 48 idle detector with a hook-sourced busy-marker signal. Every skip is logged; UI surfaces a waiting-bg badge.
-**Requirements**: TBD (CONTEXT.md authoritative)
-**Depends on:** Phase 48
-**Plans:** 3 plans
+### Phase 50: Non-Programmer Mode Foundation
 
-Plans:
-- [ ] 49-01-PLAN.md — busyMarkers.js helper + .claude/hooks/gsd-busy-marker.js + settings.json wiring + unit tests
-- [ ] 49-02-PLAN.md — Integrate hasBusyMarkers into idleDetector._testCheckAndCloseSession + JSONL audit log + extend idle-detector tests
-- [ ] 49-03-PLAN.md — Surface busy_markers in /api/gsd/projects + WS broadcast + waiting·bg UI badge + disk-prune.sh extension + human verify
+**Goal:** A Dashboard-wide `ui_mode` toggle (`novice` | `expert`) with `novice` as default; every user-visible string in the Dashboard UI passes through a translation layer. Terminal output is out of scope — that's Phase 56.
+**Requirements:** NPM-01 through NPM-05
+**Depends on:** Phase 50.5
+**Plans:** TBD
+
+---
+
+### Phase 51: GUI Project Creation + Import
+
+**Goal:** Create a new GSD project — or import an existing folder as a GSD project — from the Dashboard with zero SSH and zero manual file edits. Includes GitHub repo creation on day one.
+**Requirements:** NPC-01 through NPC-06 (satisfies deferred CREATE-01 from v4.x backlog)
+**Depends on:** Phase 50
+**Plans:** TBD
+
+---
+
+### Phase 53: Auto-Verify by Default
+
+**Goal:** Every plan execution automatically runs verification before reporting complete. User sees one state transition ("working" → "done and tested"), not two.
+**Requirements:** ATV-01 through ATV-05
+**Depends on:** Phase 50; builds on `/gsd:verify-work` and Phase 48 idle detection
+**Plans:** TBD
+
+---
+
+### Phase 54: Admin-API Onboarding for External Services
+
+**Goal:** When a project declares a dependency on GitHub / Vercel / Stripe / Resend / Railway / OpenAI / Anthropic / a chosen email service, the Dashboard walks the user through guided onboarding and stores credentials such that the project's Claude Code sessions can use them automatically. Railway-first service picker; third-party only when a genuine gap exists. Subsumes v4.3's Phase 46 scope.
+**Requirements:** APO-01 through APO-06
+**Depends on:** Phase 45 (credentials storage) + Phase 50
+**Plans:** TBD
+
+---
+
+### Phase 55: MCP Tool Router Evaluation (decision phase)
+
+**Goal:** Evaluate whether to use Composio's Tool Router, build a self-hosted MCP gateway, or wire per-service MCP servers individually, so Claude Code sessions get per-project MCP tools for external services automatically, scoped to that project's credentials.
+**Checkpoint:** Build-vs-buy decision — produce a recommendation doc, not a full build.
+**Requirements:** APO-07, APO-08
+**Depends on:** Phase 54
+**Plans:** TBD (small — research + decision doc)
+
+---
+
+### Phase 56: CLI Verbosity Contract + Portfolio Feed
+
+**Goal:** Reduce how much Claude/GSD says in the terminal so the fully-visible tmux pane is pleasant to watch. Extract landmark events from terminal output for surfacing in the Dashboard surround, without replacing the CLI itself.
+**Requirements:** NAR-01 through NAR-05
+**Depends on:** Phase 43 (project state broadcaster — already shipped)
+**Plans:** TBD
+
+---
+
+### Phase 56B: Non-Programmer Behavioural Contract
+
+**Goal:** Claude Code and GSD, when operating in a project flagged as non-programmer mode, never ask the user to perform a programmer action. Technical decisions are made by Claude using its own judgment, documented in the session report, and reversible by the user in plain English.
+**Forbidden → replacement behaviours:**
+| Forbidden | Replacement |
+|-----------|-------------|
+| Asking user to open/view/read code | Read it yourself; summarise in plain English |
+| Asking user to paste git diffs or logs | Read them yourself |
+| Asking user to edit a config/.env/any file | Edit it yourself; request credentials via Dashboard panel (Phase 54) if missing |
+| Asking user to run a terminal command | Run it yourself |
+| Asking user a technical architecture decision in jargon | Decide yourself; state decision in plain English; offer to change course |
+| Asking user to review code before commit | Commit yourself after verify-work passes (Phase 53) |
+| "You'll need to do X manually after this finishes" | Don't finish until X is done, or add X to the plan |
+| "I'll leave this for you to configure" | Configure with sensible default; document in session report |
+| Technical disambiguation questions mid-plan | Use CLAUDE.md defaults; only escalate if truly stuck, framed in user terms |
+**Requirements:** NPB-01 through NPB-07
+**Depends on:** Phase 50 (mode flag), Phase 54 (admin APIs for auto-setup), Phase 56 (verbosity contract it builds on)
+**Plans:** TBD
+
+---
+
+### Phase 58: Project Maturity Stages
+
+**Goal:** Every project has a `stage` field (`draft` | `alpha` | `beta` | `launched` | `maintenance` | `retired`) with stage-appropriate Dashboard defaults and a GUI-driven transition flow between adjacent stages.
+**Stage matrix:**
+| Stage | Meaning | GitHub | Tasks | Deploy | UI emphasis |
+|-------|---------|--------|-------|--------|-------------|
+| Draft | Idea exploring, might get killed | Private (backup only) | Dashboard | None | "Keep iterating" — chat + preview |
+| Alpha | Real structure, single env, single user | Private, main only | Dashboard | Single preview URL | Add "Deploy preview" action |
+| Beta | Shared with ≥1 outsider | Private (public optional) | Dashboard | Single preview, shareable | Surface preview URL, feedback intake |
+| Launched | Real users / real reliance | Public or private, branch workflow | GitHub Issues | Dev + Production, promotion-gated | Dev + Prod URLs, Promote button, Issues view |
+| Maintenance | Live but low velocity | Same as Launched | GitHub Issues | Same | Lower weight; surface only bugs & critical items |
+| Retired | Not touched | Archived on GitHub | Closed/migrated | Paused or torn down | Archived, tmux stopped |
+**Requirements:** MAT-01 through MAT-08
+**Depends on:** Phase 50, Phase 51, Phase 54
+**Plans:** TBD
+
+---
+
+### Phase 54B: Unified Notification Centre
+
+**Goal:** Replace per-tmux Telegram output with a single Dashboard-owned notification service. The Dashboard decides what's worth notifying about, enforces per-project and global policies, and delivers via Telegram. Architectural shift: tmux session → Telegram (many senders, no filter) → Dashboard event bus → NotificationCentre → delivery channels (one sender, policy-filtered).
+**Default event policy:**
+| Event | Default | Rationale |
+|-------|---------|-----------|
+| Session waiting for user input | On | The thing you actually need to know |
+| Plan/phase completed | On | Portfolio-level milestone |
+| Verify-work failed | On | Requires a decision |
+| Verify-work passed (after retry) | Off | Success is expected |
+| Idle session auto-closed (Phase 48) | On | Cost-relevant |
+| External service cost anomaly | On | Cost-relevant |
+| New external GitHub Issue filed (Launched only) | On | Needs triage |
+| Session started | Off | You started it |
+| Individual tool-use events | Off (permanent) | Current noise source |
+| Claude finished responding (per turn) | Off | Intra-session |
+**Requirements:** NTF-01 through NTF-05
+**Depends on:** Phase 42 (existing Telegram infra to refactor), Phase 43 (state broadcaster as event source), Phase 58 (stage-aware policies)
+**Plans:** TBD
+
+---
+
+### Phase 59: Task Backend Migration + Basic Issue GUI Wrapper
+
+**Goal:** When a project transitions Beta → Launched, its task backlog migrates to GitHub Issues, and all subsequent task reads/writes go through a Dashboard-native GUI wrapping GitHub Issues. GitHub's web UI is never needed for day-to-day issue work.
+**Requirements:** TSK-01 through TSK-09
+**Depends on:** Phase 54, Phase 58
+**Plans:** TBD
+
+---
+
+### Phase 60: Dev/Production Environment Manager
+
+**Goal:** Launched projects get provisioned dev + production environments automatically during Beta→Launched transition, with a GUI-driven "Promote dev → prod" action that enforces verify-work passing and documents the change. Railway-first provisioning.
+**Requirements:** ENV-01 through ENV-05
+**Depends on:** Phase 54, Phase 58
+**Plans:** TBD
+
+---
+
+## Milestone-Level Success Test
+
+At the end of v5.0, a non-programmer should be able to use the GSD Dashboard to:
+
+1. Create a brand-new project (with GitHub repo) from the New Project wizard
+2. Build it using the tmux terminal and project surround — no manual file editing, no paste-in of diffs or logs, no technical decisions framed in jargon
+3. Watch it progress from Draft → Alpha → Beta as they iterate, receiving Telegram notifications filtered by policy (not a firehose)
+4. Launch it to production, triggering dev + prod environment provisioning
+5. Receive and respond to GitHub Issues on the launched project entirely through the Dashboard GUI
+6. Promote changes from dev → prod with a single approval click
+
+Verifiable by walking a non-programmer (Emily-Kate or equivalent) through the full flow end-to-end.
+
+---
+
+## Out of Scope for v5.0
+
+| Item | Reason |
+|------|--------|
+| Natural-language action bar routing `/gsd:*` commands | Terminal already does this; wrapping a natural-language interface inside another adds no value |
+| "Describe what's wrong" dispatcher at Dashboard level | `/gsd:debug` in tmux is the existing answer |
+| Full issue lifecycle / Kanban stage board | Deferred to Phase 61 in v5.1 — Phase 59 delivers enough to launch real projects |
+| External-reporter inbox + auto-promotion on merged PRs | Deferred to Phase 61 |
+| Migrating the Dashboard itself to Launched | First real-world test of migration is PRC/KidAI in v5.0; Dashboard is dogfooded in v5.1 |
+| Reply-from-Telegram | Dashboard is already usable on mobile; tap deep link → respond in Dashboard |
+| Other notification delivery channels (email, SMS, Discord, push) | Single-user tool; Telegram is enough |
+| Multi-user auth / RBAC beyond today's cookie auth | Still single-user |
+| Mobile-specific novice UI redesign | Keep current responsive layout |
+| Visual programming / flowchart UX | Natural-language-first is the bet |
+| Anthropic subscription proxy (à la Meridian) | Separate concern |
+| Autopilot cost gate (COST-05) | Follow-up for v5.1 |
+
+---
+
+## Backlog Folded into v5.0
+
+- **Task #49** (Railway cost from RAM) — addressed indirectly via Phase 48 idle controls (shipped) and Phase 60 env-level cost visibility
+- **Task #55** (switch autopilot to jamoeight fork) — decision stands: selective integration of failure propagation + circuit breaker in Phase 53, not a wholesale switch
+- **Task #56** (project status slow/inaccurate) — shipped in Phase 43
+- **Task #68** (change Pause/Archive workflow) — folded into Phase 53
+- **Task #78** (Send button Enter key) — shipped in quick task #47
+- **Task #82** (white/day theme contrast) — parked as SEED-002
+- **Task #84** (CONTEXT.md re-ask) — addressed by Phase 56 verbosity contract
+- **Phase 46** (Services API Integrations, v4.3) — subsumed by Phase 54
+- **Phase 47** (AI-Guided CLAUDE.md Editor, v4.3) — parked as SEED-001
+
+---
+
+## Seeds (parked ideas that may surface in v5.x)
+
+- **SEED-001** — AI-Guided CLAUDE.md Editor (former Phase 47; may surface if non-programmer mode needs a settings transparency surface)
+- **SEED-002** — Light/day theme contrast bug (former task #82; surface during next UI audit)

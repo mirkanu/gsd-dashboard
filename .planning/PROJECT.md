@@ -6,7 +6,22 @@ A terminal-first web dashboard for managing multiple Claude Code GSD projects fr
 
 ## Core Value
 
-At a glance, see where every GSD project stands and interact with any session — without opening separate terminals or checking files manually.
+**As of v5.0 (Non-Programmer Mode):** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI. The tmux terminal stays as a first-class surface. The Dashboard wraps projects, planning, services, lifecycle, notifications, and launched-project workflows — not the conversational loop itself.
+
+**Historical (v1.0–v4.3):** At a glance, see where every GSD project stands and interact with any session — without opening separate terminals or checking files manually.
+
+## Design Principles (v5.0)
+
+1. The terminal is a first-class surface, not a debug view — stays fully visible in novice mode.
+2. Never ask the user to edit or write code — the user describes, Claude does.
+3. Never ask the user to do programmer things — no diff/log pastes, no file opens, no terminal commands, no jargon decisions.
+4. No GSD/Claude Code jargon in the primary UI in novice mode ("Phase", "Plan", "Milestone", `/gsd:*` hidden behind friendly labels).
+5. Autonomous testing is the default, not a choice.
+6. Admin-API-first for external services.
+7. Minimise external services — Railway-first wherever feasible.
+8. Dashboard is the control plane, tmux sessions are workers.
+9. Progress narrated in plain English.
+10. Power-user (expert) mode is a toggle, not a separate product.
 
 ## Requirements
 
@@ -48,10 +63,26 @@ At a glance, see where every GSD project stands and interact with any session �
 - ✓ Per-project config: verbosity settings + Telegram alert toggles, SQLite persistence — v4.2
 - ✓ Global default settings with apply-to-all: global verbosity + Telegram defaults, bulk apply to existing projects — v4.2 (quick task 38)
 - ✓ MCP GSD tools: gsd_list_projects, gsd_get_all_project_status, gsd_read_planning_file, gsd_list_tasks — v4.2 (quick task 36)
+- ✓ Project status accuracy: in-memory stateBroadcaster with 2s poll + 3s change-heuristic cadence; WS push replaces stale message-based status — v4.3
+- ✓ Usage display enhancements: `/api/pricing/window` with per-model tokens + by_model breakdown; inline pricing editor with per-row dirty/saving state — v4.3
+- ✓ Services cost tracking foundation: encrypted credentials in app_settings; `external_service_costs` table with email-parser route; ServicesPage renders costs/rules/credentials — v4.3
+- ✓ Idle session cost controls: RSS → $/day cost measurement; graceful pause on waiting idle; Railway $/day surfaced on Services; Config page Idle Auto-Close section — v4.3
+- ✓ Idle detector busy-work awareness: Claude Code hook-sourced busy markers prevent auto-close of sessions waiting on in-flight bg work; state reads "Working" when busy; JSONL audit log + weekly disk-prune sweep — v4.3 (Phase 49 + quick task 260418-khw)
 
-### Active
+### Active (v5.0 — Non-Programmer Mode)
 
-(None — ready for next milestone)
+- [ ] Original-repo cleanup: strip dormant features inherited from upstream fork (Sessions/SessionDetail/ActivityFeed/Kanban route, useNotifications, seed/import scripts, unused routes + schema) — Phase 50.5
+- [ ] `ui_mode` toggle (novice/expert, novice default) with copywriting translation layer hiding GSD/Claude Code jargon in primary UI — Phase 50
+- [ ] GUI project creation + import: New Project wizard (name → repo → tmux → new-project interview), Import Existing Project with auto codebase analysis — Phase 51
+- [ ] Auto-verify by default: every plan execution auto-runs verify-work; failed verification offers one-click retry; Pause/Archive fold in verification — Phase 53
+- [ ] Admin-API onboarding: guided panels per external service, OAuth where available, admin-key paste otherwise; Railway-first picker; credentials exposed to Claude sessions as env vars — Phase 54 (subsumes former Phase 46)
+- [ ] MCP tool router evaluation: Composio vs self-hosted gateway vs per-service MCP — decision phase only — Phase 55
+- [ ] CLI verbosity contract + Portfolio Feed: reduce CLI output; extract landmark events into Dashboard cards without replacing the terminal — Phase 56
+- [ ] Non-programmer behavioural contract: Claude never asks the user to do programmer things; behavioural eval against 20 representative prompts; user-testing checkpoint — Phase 56B
+- [ ] Project maturity stages (draft/alpha/beta/launched/maintenance/retired) with stage-appropriate Dashboard defaults and GUI transition wizard — Phase 58
+- [ ] Unified notification centre: single Dashboard-owned Telegram sender, event-bus driven, rate-limited + deduplicated + quiet-hours policy; old tmux-level Telegram removed — Phase 54B
+- [ ] Task backend migration + issue GUI wrapper: Beta→Launched migrates tasks to GitHub Issues; Dashboard-native issue list/detail/create/close — Phase 59
+- [ ] Dev/production environment manager: Beta→Launched provisions dev + prod envs on Railway; GUI "Promote dev → prod" button with verify-work gating; one-click rollback — Phase 60
 
 ### Future
 

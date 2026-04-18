@@ -1,40 +1,39 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.3
-milestone_name: Optimisation & Cost Intelligence
-current_plan: 1
-status: executing
-stopped_at: Completed 48-04-PLAN.md (Phase 48 complete)
-last_updated: "2026-04-18T11:03:46.794Z"
-last_activity: 2026-04-18 -- Phase 49 execution started
+milestone: v5.0
+milestone_name: Non-Programmer Mode
+current_plan: null
+status: planning
+stopped_at: v5.0 milestone created — ready to plan Phase 50.5 (Original-Repo Cleanup)
+last_updated: "2026-04-18T17:00:00.000Z"
+last_activity: 2026-04-18 -- v5.0 milestone created (12 phases, 69 requirements)
 progress:
-  total_phases: 5
-  completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_phases: 12
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-07)
+See: .planning/PROJECT.md (updated 2026-04-18)
 
-**Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** Phase 49 — Idle Detector Busy-Work Awareness
+**Core value (v5.0):** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
+**Current focus:** v5.0 kickoff — ready to plan Phase 50.5 (Original-Repo Cleanup)
 
 ## Current Position
 
-Milestone: v4.3 Optimisation & Cost Intelligence
-Phase: 49 (Idle Detector Busy-Work Awareness) — EXECUTING
-Plan: 1 of 3
-Current Plan: 1
-Total Plans in Phase: 3
-Status: Executing Phase 49
-Last activity: 2026-04-18 -- Phase 49 execution started
+Milestone: v5.0 Non-Programmer Mode
+Phase: 50.5 (Original-Repo Cleanup) — NOT STARTED
+Current Plan: —
+Total Plans in Phase: TBD
+Status: Ready to plan Phase 50.5
+Last activity: 2026-04-18 -- v5.0 milestone created
 
-Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43 + Phase 44 + Phase 45)
+Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 
 ## Performance Metrics
 
@@ -46,6 +45,7 @@ Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43
 **v3.0 velocity:** 20 plans, 11 phases + 18 quick tasks, 4 days (2026-03-31 - 2026-04-03)
 **v4.1 velocity:** 6 plans, 4 phases + 10 quick tasks, 2 days (2026-04-04 - 2026-04-06)
 **v4.2 velocity:** 9 plans, 6 phases + 5 quick tasks, 3 days (2026-04-07 - 2026-04-10)
+**v4.3 velocity:** 13 plans, 5 phases + ~5 quick tasks, 8 days (2026-04-10 - 2026-04-18)
 
 ## Accumulated Context
 

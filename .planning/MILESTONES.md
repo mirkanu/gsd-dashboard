@@ -1,5 +1,26 @@
 # Milestones
 
+## v4.3 Optimisation & Cost Intelligence (Shipped: 2026-04-18)
+
+**Phases completed:** 43, 44, 45, 48, 49 (5 phases, 13 plans)
+**Timeline:** 2026-04-10 → 2026-04-18 (8 days)
+
+**Key accomplishments:**
+- Project status accuracy: in-memory `stateBroadcaster` with 2s poll + 3s change-heuristic cadence; WS push replaces stale message-based status
+- Usage tracking: `/api/pricing/window` with per-model tokens + by_model breakdown; inline pricing editor with per-row dirty/saving state; session cost surfaced on project cards
+- Services cost foundation: encrypted credentials (AES-GCM) in `app_settings`; `external_service_costs` table with email-parser route; ServicesPage renders costs/rules/credentials alongside status
+- Idle session cost controls: `costMeasurement` (RSS → $/day math, daily log), `idleDetector` (graceful pause on waiting idle); Railway $/day surfaced on Services page; Config page Idle Auto-Close section
+- Idle detector busy-work awareness: Claude Code hook-sourced busy markers (`PreToolUse` Bash(bg)/Agent/Task, `PostToolUse`/`SubagentStop` clear) prevent auto-close of sessions legitimately waiting on in-flight background work; UI surfaces state as "Working" (not "Waiting") when markers present; JSONL audit log for every skipped auto-close decision; weekly `disk-prune` sweep
+
+**Phases carried forward / dropped:**
+- Phase 46 (Services API Integrations) — subsumed by v5.0 Phase 54 (Admin-API Onboarding)
+- Phase 47 (AI-Guided CLAUDE.md Editor) — parked as SEED-001; v5.0 Phase 56B supersedes the intent
+
+**Last phase number:** 49
+**Archived artifacts:** `.planning/milestones/v4.3/`
+
+---
+
 ## v4.2 Cost Intelligence, Auth & UX Polish (Shipped: 2026-04-10)
 
 **Phases completed:** 6 phases, 9 plans, 0 tasks
