@@ -2,8 +2,6 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
-  Columns3,
-  FolderOpen,
   Activity,
   BarChart3,
   Settings,
@@ -32,9 +30,6 @@ const PRIMARY_ITEMS = [
 // ─── Agent Dashboard submenu ──────────────────────────────────────────────────
 const AGENT_ITEMS = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/kanban", icon: Columns3, label: "Agent Board", end: false },
-  { to: "/sessions", icon: FolderOpen, label: "Sessions", end: false },
-  { to: "/activity", icon: Activity, label: "Activity Feed", end: false },
   { to: "/analytics", icon: BarChart3, label: "Analytics", end: false },
 ] as const;
 

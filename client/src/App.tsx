@@ -1,10 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useCallback } from "react";
 import { Layout } from "./components/Layout";
-import { KanbanBoard } from "./pages/KanbanBoard";
-import { Sessions } from "./pages/Sessions";
-import { SessionDetail } from "./pages/SessionDetail";
-import { ActivityFeed } from "./pages/ActivityFeed";
 import { Analytics } from "./pages/Analytics";
 import { Settings } from "./pages/Settings";
 import { GSD, TerminalPage } from "./pages/GSD";
@@ -64,10 +60,10 @@ export default function App() {
         <Route path="terminal/:name" element={<TerminalPage />} />
         <Route element={<Layout wsConnected={connected} />}>
           <Route index element={<Navigate to="/gsd" replace />} />
-          <Route path="kanban" element={<KanbanBoard />} />
-          <Route path="sessions" element={<Sessions />} />
-          <Route path="sessions/:id" element={<SessionDetail />} />
-          <Route path="activity" element={<ActivityFeed />} />
+          <Route path="kanban" element={<Navigate to="/" replace />} />
+          <Route path="sessions" element={<Navigate to="/" replace />} />
+          <Route path="sessions/:id" element={<Navigate to="/" replace />} />
+          <Route path="activity" element={<Navigate to="/" replace />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings logout={logout} />} />
           <Route path="gsd" element={<GSD />} />
