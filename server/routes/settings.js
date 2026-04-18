@@ -155,86 +155,73 @@ router.post("/reset-pricing", (_req, res) => {
   res.json({ ok: true, pricing });
 });
 
-// GET /api/settings/export — export all data as JSON
+/**
+ * GET /api/settings/export
+ *
+ * Export all user data as a single JSON document for portability
+ * (Phase 58 Retired-stage transitions and manual backups).
+ *
+ * Response shape:
+ *   {
+ *     "schema_version": 1,
+ *     "exported_at": "<ISO-8601 timestamp>",
+ *     "tables": {
+ *       "projects":                [...],
+ *       "project_tasks":           [...],
+ *       "app_settings":            [...],
+ *       "external_service_costs":  [...],
+ *       "service_mapping_rules":   [...],
+ *       "manual_cost_entries":     [...],
+ *       "model_pricing":           [...],
+ *       "claude_api_usage":        [...],
+ *       "processed_emails":        [...],
+ *       "project_settings":        [...]
+ *     }
+ *   }
+ *
+ * Content-Disposition is attachment with filename
+ * "gsd-dashboard-export-YYYY-MM-DD.json".
+ *
+ * Sensitive fields (encrypted ciphertexts from Phase 45 app_settings)
+ * are returned verbatim — decrypting requires the runtime AES-GCM key,
+ * which is not included in the export. Do not include any `*_plaintext`
+ * column even if present.
+ */
 router.get("/export", (_req, res) => {
-  const sessions = db.prepare("SELECT * FROM sessions ORDER BY started_at DESC").all();
-  const agents = db.prepare("SELECT * FROM agents ORDER BY started_at DESC").all();
-  const events = db.prepare("SELECT * FROM events ORDER BY created_at DESC").all();
-  const tokenUsage = db.prepare("SELECT * FROM token_usage").all();
-  const pricing = stmts.listPricing.all();
+  const tables = {};
+  const tableNames = [
+    "projects",
+    "project_tasks",
+    "app_settings",
+    "external_service_costs",
+    "service_mapping_rules",
+    "manual_cost_entries",
+    "model_pricing",
+    "claude_api_usage",
+    "processed_emails",
+    "project_settings",
+  ];
+
+  // Read each table; guard with try/catch to handle missing tables gracefully (forward compat with schema drops)
+  for (const tableName of tableNames) {
+    try {
+      tables[tableName] = db.prepare(`SELECT * FROM ${tableName}`).all();
+    } catch {
+      // Table doesn't exist yet or was dropped — return empty array
+      tables[tableName] = [];
+    }
+  }
 
   res.setHeader("Content-Type", "application/json");
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename="agent-monitor-export-${new Date().toISOString().slice(0, 10)}.json"`
+    `attachment; filename="gsd-dashboard-export-${new Date().toISOString().slice(0, 10)}.json"`
   );
   res.json({
+    schema_version: 1,
     exported_at: new Date().toISOString(),
-    sessions,
-    agents,
-    events,
-    token_usage: tokenUsage,
-    model_pricing: pricing,
+    tables,
   });
-});
-
-// POST /api/settings/cleanup — abandon stale sessions, purge old data
-router.post("/cleanup", (req, res) => {
-  const { abandon_hours, purge_days } = req.body;
-  const result = { abandoned: 0, purged_sessions: 0, purged_events: 0, purged_agents: 0 };
-
-  if (abandon_hours && typeof abandon_hours === "number" && abandon_hours > 0) {
-    // Mark active sessions with no recent events as abandoned
-    const cutoff = new Date(Date.now() - abandon_hours * 3600 * 1000).toISOString();
-    const stale = db
-      .prepare(
-        `SELECT s.id FROM sessions s
-         WHERE s.status = 'active'
-           AND s.started_at < ?
-           AND NOT EXISTS (
-             SELECT 1 FROM events e WHERE e.session_id = s.id AND e.created_at > ?
-           )`
-      )
-      .all(cutoff, cutoff);
-
-    for (const row of stale) {
-      db.prepare(
-        "UPDATE sessions SET status = 'abandoned', ended_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?"
-      ).run(row.id);
-      // Also complete any lingering agents
-      db.prepare(
-        "UPDATE agents SET status = 'completed', ended_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE session_id = ? AND status IN ('idle','connected','working')"
-      ).run(row.id);
-    }
-    result.abandoned = stale.length;
-  }
-
-  if (purge_days && typeof purge_days === "number" && purge_days > 0) {
-    const cutoff = new Date(Date.now() - purge_days * 86400 * 1000).toISOString();
-    // Only purge completed/error/abandoned sessions, never active
-    const toDelete = db
-      .prepare(
-        "SELECT id FROM sessions WHERE status IN ('completed','error','abandoned') AND started_at < ?"
-      )
-      .all(cutoff);
-
-    if (toDelete.length > 0) {
-      const ids = toDelete.map((r) => r.id);
-      const placeholders = ids.map(() => "?").join(",");
-      // Cascading deletes handle agents/events, but token_usage FK might not cascade on all setups
-      result.purged_events = db
-        .prepare(`DELETE FROM events WHERE session_id IN (${placeholders})`)
-        .run(...ids).changes;
-      result.purged_agents = db
-        .prepare(`DELETE FROM agents WHERE session_id IN (${placeholders})`)
-        .run(...ids).changes;
-      db.prepare(`DELETE FROM token_usage WHERE session_id IN (${placeholders})`).run(...ids);
-      db.prepare(`DELETE FROM sessions WHERE id IN (${placeholders})`).run(...ids);
-      result.purged_sessions = toDelete.length;
-    }
-  }
-
-  res.json({ ok: true, ...result });
 });
 
 module.exports = router;
