@@ -94,7 +94,11 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 **Goal:** Strip out dormant and mis-fitting features inherited from the upstream `hoangsonww/Claude-Code-Agent-Monitor` fork. Mostly deletion; handle as a sequence of quick tasks before Phase 50 kicks off.
 **Requirements:** CLN-01 through CLN-06
 **Depends on:** Nothing
-**Plans:** TBD (likely 2–3 quick-task batches)
+**Plans:** 4 plans
+- [ ] 50.5-01-PLAN.md — CLN-01/02/03 client route + view + browser-notification deletions
+- [ ] 50.5-02-PLAN.md — CLN-04 scripts/seed + import-history + statusline deletions
+- [ ] 50.5-03-PLAN.md — CLN-05 route+schema audit and dead-table DROP
+- [ ] 50.5-04-PLAN.md — CLN-06 Dockerfile/workflows + install-hooks rewrite + /api/settings changes
 
 ---
 
