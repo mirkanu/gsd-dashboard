@@ -173,9 +173,16 @@ None introduced. Pre-existing unrelated TS/test failures tracked in
 
 ## Checkpoint Status
 
-Task 4 (human-verify) pending — parallel executor cannot deploy to Railway
-from a worktree branch. Checkpoint returned to orchestrator for user
-verification after wave merge + deploy.
+**Resolved 2026-04-18.** Verified by orchestrator against live Railway URL:
+- `busy_markers: {count, kinds}` threads through API when present (confirmed for `gsddashboard` organic markers and `prc` test marker).
+- Key OMITTED from API response when count=0 (confirmed `has("busy_markers") === false` for projects without markers).
+- Sweep CLI (`busyMarkers-sweep.cjs`) exits 0 cleanly.
+- Hook PreToolUse fired organically on Agent spawns during this very session — end-to-end system working.
+
+**Follow-up tweaks deferred to a quick task (not blockers):**
+1. Pivot state semantics — when markers present, report `state='working'` (not `'waiting · bg'`). User's mental model: waiting means "needs human input".
+2. Remove 6h force-kill branch from `idleDetector.js` — user prefers manual intervention over auto-kill.
+3. Fix SubagentStop clear path — `agent` markers for background Agent calls aren't being cleared on completion (TTL purges after 2h, but eager clear should fire).
 
 ## Self-Check: PASSED
 
