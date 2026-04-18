@@ -14,7 +14,7 @@ function renderSidebar(wsConnected: boolean, collapsed = false) {
 describe("Sidebar", () => {
   it("should render the brand name", () => {
     renderSidebar(true);
-    expect(screen.getByText("Agent Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("GSD Dashboard")).toBeInTheDocument();
   });
 
   it("should render the subtitle", () => {
@@ -22,12 +22,17 @@ describe("Sidebar", () => {
     expect(screen.getByText("Claude Code Monitor")).toBeInTheDocument();
   });
 
-  it("should render all navigation links", () => {
+  it("should render surviving agent-submenu navigation links", () => {
     renderSidebar(true);
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Agent Board")).toBeInTheDocument();
-    expect(screen.getByText("Sessions")).toBeInTheDocument();
-    expect(screen.getByText("Activity Feed")).toBeInTheDocument();
+    expect(screen.getByText("Analytics")).toBeInTheDocument();
+  });
+
+  it("should NOT render removed navigation labels", () => {
+    renderSidebar(true);
+    expect(screen.queryByText("Agent Board")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sessions")).not.toBeInTheDocument();
+    expect(screen.queryByText("Activity Feed")).not.toBeInTheDocument();
   });
 
   it('should show "Live" when WebSocket is connected', () => {
@@ -40,18 +45,12 @@ describe("Sidebar", () => {
     expect(screen.getByText("Disconnected")).toBeInTheDocument();
   });
 
-  it("should show version number", () => {
-    renderSidebar(true);
-    expect(screen.getByText("v1.0.0")).toBeInTheDocument();
-  });
-
-  it("should have correct navigation hrefs", () => {
+  it("should NOT link to removed routes", () => {
     renderSidebar(true);
     const links = screen.getAllByRole("link");
     const hrefs = links.map((link) => link.getAttribute("href"));
-    expect(hrefs).toContain("/");
-    expect(hrefs).toContain("/kanban");
-    expect(hrefs).toContain("/sessions");
-    expect(hrefs).toContain("/activity");
+    expect(hrefs).not.toContain("/kanban");
+    expect(hrefs).not.toContain("/sessions");
+    expect(hrefs).not.toContain("/activity");
   });
 });
