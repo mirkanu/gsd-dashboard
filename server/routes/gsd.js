@@ -10,6 +10,7 @@ const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED
 const { db, stmts } = require('../db');
 const { calculateCost } = require('./pricing');
 const { getTmuxCostForSession } = require('../gsd/costMeasurement');
+const busyMarkers = require('../gsd/busyMarkers');
 
 const router = express.Router();
 
@@ -174,6 +175,13 @@ router.get("/projects", async (_req, res) => {
         projectData?.state?.last_activity ||
         null;
 
+      // Busy markers (Phase 49): prefer snapshot entry, fall back to a fresh read.
+      // Field is OMITTED entirely when count===0 to keep the response
+      // byte-identical to the pre-phase shape for the common (no-marker) case.
+      const snapshotEntry = snap || null;
+      const bm = snapshotEntry?.busy_markers
+        ?? (tmux_session ? busyMarkers.getMarkers(tmux_session) : { count: 0, kinds: [] });
+
       return {
         ...projectData,
         display_name: display_name || null,
@@ -186,6 +194,7 @@ router.get("/projects", async (_req, res) => {
         stateEnteredAt,
         currentTask,
         sessionCost,
+        ...(bm && bm.count > 0 ? { busy_markers: bm } : {}),
       };
     }));
 

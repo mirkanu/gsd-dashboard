@@ -56,6 +56,23 @@ const SESSION_STATE_CONFIG: Record<import("../lib/types").SessionState, { border
   archived: { border: "border-l-4 border-l-gray-600",     label: "Archived", labelCls: "text-gray-500"    },
 };
 
+// Phase 49: humanize busy-marker kinds for the `waiting · bg` tooltip.
+// Exported for unit testing. `kinds` is deduped (server-side Set); count is
+// the total marker count. Rule: single-kind → "N background task[s]"; multi-kind
+// → "N items: background task, running agent, …" (each kind singular label).
+export function humanizeBusyMarkers(bm: { count: number; kinds: string[] }): string {
+  const singular = (k: string): string =>
+    k === 'bash_bg' ? 'background task'
+    : k === 'agent' ? 'running agent'
+    : k === 'wakeup' ? 'scheduled wakeup'
+    : k;
+  const plural = (k: string, n: number): string =>
+    `${n} ${singular(k)}${n === 1 ? '' : 's'}`;
+  if (!bm || !bm.kinds || bm.kinds.length === 0) return `${bm?.count ?? 0} items`;
+  if (bm.kinds.length === 1) return plural(bm.kinds[0], bm.count);
+  return `${bm.count} items: ${bm.kinds.map((k) => singular(k)).join(', ')}`;
+}
+
 const STATUS_STYLES: Record<StatusLevel, string> = {
   success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   info: "bg-accent/10 text-accent border-accent/20",
@@ -713,13 +730,21 @@ export function patchProjectsOnStateChange(
   const idx = projects.findIndex((p) => p.name === evt.project);
   if (idx === -1) return projects;
   const next = projects.slice();
-  next[idx] = {
+  // Phase 49: absence-as-clear. Server omits `busy_markers` when count===0,
+  // so every broadcast is authoritative — copy when present, clear when absent.
+  const patched = {
     ...projects[idx],
     sessionState: evt.sessionState,
     statusText: evt.statusText,
     currentTask: evt.currentTask,
     stateEnteredAt: evt.stateEnteredAt,
-  };
+  } as GsdProject;
+  if (evt.busy_markers) {
+    patched.busy_markers = evt.busy_markers;
+  } else {
+    delete patched.busy_markers;
+  }
+  next[idx] = patched;
   return next;
 }
 
@@ -765,6 +790,14 @@ export function ProjectCard({
                 </span>
               )}
             </span>
+            {project.sessionState === 'waiting' && project.busy_markers && project.busy_markers.count > 0 && (
+              <span
+                className="ml-1 inline-flex items-center rounded-md bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-medium text-blue-300 border border-blue-500/30 flex-shrink-0"
+                title={humanizeBusyMarkers(project.busy_markers)}
+              >
+                waiting · bg
+              </span>
+            )}
             {state?.blockers && state.blockers.length > 0 && (
               <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/20 flex-shrink-0">
                 Blocked

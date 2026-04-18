@@ -6,8 +6,9 @@ const {
   extractCurrentTask,
   extractStatusLine,
 } = require('./tmux');
+const busyMarkers = require('./busyMarkers');
 
-// In-memory snapshot: projectName -> { sessionState, stateEnteredAt, currentTask, statusText }
+// In-memory snapshot: projectName -> { sessionState, stateEnteredAt, currentTask, statusText, busy_markers? }
 const snapshot = new Map();
 
 const DEFAULT_POLL_INTERVAL_MS = 2000;
@@ -19,9 +20,16 @@ const DEFAULT_POLL_INTERVAL_MS = 2000;
  * @param {Function} detectFn - async (sessionName) => state
  * @param {Function} captureFn - async (sessionName) => string|null
  * @param {Function} broadcastFn - (type, data) => void
+ * @param {Function} [getBusyMarkersFn] - (sessionName) => { count, kinds } (injectable for tests)
  * @returns {Promise<boolean>} true if a transition was broadcast
  */
-async function _testPollOnce(project, detectFn, captureFn, broadcastFn) {
+async function _testPollOnce(
+  project,
+  detectFn,
+  captureFn,
+  broadcastFn,
+  getBusyMarkersFn = busyMarkers.getMarkers,
+) {
   if (!project || project.archived || !project.tmux_session) return false;
 
   let sessionState;
@@ -38,6 +46,16 @@ async function _testPollOnce(project, detectFn, captureFn, broadcastFn) {
   const statusText =
     sessionState === 'working' ? (extractStatusLine(paneText) || null) : null;
 
+  // Cheap: per-session JSON file read (Plan 01 contract); self-purges expired.
+  let markersInfo = null;
+  try {
+    markersInfo = getBusyMarkersFn(project.tmux_session);
+  } catch {
+    markersInfo = null;
+  }
+  const busy_markers =
+    markersInfo && markersInfo.count > 0 ? markersInfo : undefined;
+
   const prev = snapshot.get(project.name);
   const nowIso = new Date().toISOString();
 
@@ -48,6 +66,7 @@ async function _testPollOnce(project, detectFn, captureFn, broadcastFn) {
       stateEnteredAt: nowIso,
       currentTask,
       statusText,
+      ...(busy_markers ? { busy_markers } : {}),
     });
     return false;
   }
@@ -59,12 +78,33 @@ async function _testPollOnce(project, detectFn, captureFn, broadcastFn) {
       stateEnteredAt: prev.stateEnteredAt,
       currentTask,
       statusText,
+      ...(busy_markers ? { busy_markers } : {}),
     });
+    // Broadcast on busy_markers change within same state (newly appeared / kinds or count changed / cleared).
+    const prevKey = prev.busy_markers ? JSON.stringify(prev.busy_markers) : '';
+    const nextKey = busy_markers ? JSON.stringify(busy_markers) : '';
+    if (prevKey !== nextKey) {
+      broadcastFn('project_state_change', {
+        project: project.name,
+        sessionState,
+        statusText,
+        currentTask,
+        stateEnteredAt: prev.stateEnteredAt,
+        ...(busy_markers ? { busy_markers } : {}),
+      });
+      return true;
+    }
     return false;
   }
 
   // Transition — update snapshot and broadcast
-  const entry = { sessionState, stateEnteredAt: nowIso, currentTask, statusText };
+  const entry = {
+    sessionState,
+    stateEnteredAt: nowIso,
+    currentTask,
+    statusText,
+    ...(busy_markers ? { busy_markers } : {}),
+  };
   snapshot.set(project.name, entry);
   broadcastFn('project_state_change', {
     project: project.name,
@@ -72,6 +112,7 @@ async function _testPollOnce(project, detectFn, captureFn, broadcastFn) {
     statusText,
     currentTask,
     stateEnteredAt: nowIso,
+    ...(busy_markers ? { busy_markers } : {}),
   });
   return true;
 }
