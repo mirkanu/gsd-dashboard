@@ -10,7 +10,6 @@ import { ConfigPage } from "./pages/ConfigPage";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/Login";
 import { useWebSocket } from "./hooks/useWebSocket";
-import { useNotifications } from "./hooks/useNotifications";
 import { useAuth } from "./hooks/useAuth";
 import { eventBus } from "./lib/eventBus";
 import type { WSMessage } from "./lib/types";
@@ -23,7 +22,6 @@ export default function App() {
   }, []);
 
   const { connected } = useWebSocket(onMessage);
-  useNotifications();
 
   // Auth checking — show minimal spinner while probing the session
   if (authenticated === null) {
