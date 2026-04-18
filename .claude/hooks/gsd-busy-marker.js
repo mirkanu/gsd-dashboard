@@ -108,7 +108,11 @@ function run(raw) {
   }
 
   if (event === 'PostToolUse') {
-    if (toolName === 'Bash' && toolUseId) {
+    if (!toolUseId) return;
+    // Quick task 260418-khw: also clear Agent|Task markers on completion.
+    // SubagentStop fires for the subagent's own Stop but does not reliably
+    // carry the parent's tool_use_id, so Agent|Task markers were leaking.
+    if (toolName === 'Bash' || (toolName && /^(Agent|Task)$/.test(toolName))) {
       safeClear(tmuxSession, toolUseId);
     }
     return;

@@ -118,6 +118,46 @@ test('PostToolUse Bash with matching id → marker cleared (file deleted)', () =
   assert.strictEqual(fs.existsSync(markerFile(TMUX_SESSION)), false, 'file deleted after last marker cleared');
 });
 
+test('khw.pivot: PostToolUse Agent with matching id → agent marker cleared', () => {
+  runHook({
+    hook_event_name: 'PreToolUse',
+    tool_name: 'Agent',
+    tool_input: { description: 'deep research' },
+    tool_use_id: 'agent-posttool-1',
+    cwd: projectRoot,
+  });
+  assert.ok(fs.existsSync(markerFile(TMUX_SESSION)));
+
+  const res = runHook({
+    hook_event_name: 'PostToolUse',
+    tool_name: 'Agent',
+    tool_use_id: 'agent-posttool-1',
+    cwd: projectRoot,
+  });
+  assert.strictEqual(res.status, 0);
+  assert.strictEqual(fs.existsSync(markerFile(TMUX_SESSION)), false, 'Agent marker cleared on PostToolUse');
+});
+
+test('khw.pivot: PostToolUse Task with matching id → task marker cleared', () => {
+  runHook({
+    hook_event_name: 'PreToolUse',
+    tool_name: 'Task',
+    tool_input: { description: 'sub' },
+    tool_use_id: 'task-42',
+    cwd: projectRoot,
+  });
+  assert.ok(fs.existsSync(markerFile(TMUX_SESSION)));
+
+  const res = runHook({
+    hook_event_name: 'PostToolUse',
+    tool_name: 'Task',
+    tool_use_id: 'task-42',
+    cwd: projectRoot,
+  });
+  assert.strictEqual(res.status, 0);
+  assert.strictEqual(fs.existsSync(markerFile(TMUX_SESSION)), false);
+});
+
 test('SubagentStop with id → agent marker cleared', () => {
   runHook({
     hook_event_name: 'PreToolUse',
