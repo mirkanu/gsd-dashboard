@@ -782,7 +782,10 @@ export function ProjectCard({
             )}
           </div>
           <div className="flex items-center gap-1.5 min-w-0 flex-shrink overflow-hidden">
-            <span className={`text-[11px] font-medium flex-shrink-0 ${stateConf.labelCls}`}>
+            <span
+              className={`text-[11px] font-medium flex-shrink-0 ${stateConf.labelCls}`}
+              title={project.busy_markers && project.busy_markers.count > 0 ? humanizeBusyMarkers(project.busy_markers) : undefined}
+            >
               {stateConf.label}
               {project.stateEnteredAt && project.sessionState !== 'archived' && (
                 <span className="ml-1 text-gray-500 font-normal">
@@ -790,14 +793,6 @@ export function ProjectCard({
                 </span>
               )}
             </span>
-            {project.sessionState === 'waiting' && project.busy_markers && project.busy_markers.count > 0 && (
-              <span
-                className="ml-1 inline-flex items-center rounded-md bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-medium text-blue-300 border border-blue-500/30 flex-shrink-0"
-                title={humanizeBusyMarkers(project.busy_markers)}
-              >
-                waiting · bg
-              </span>
-            )}
             {state?.blockers && state.blockers.length > 0 && (
               <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-red-500/10 text-red-400 border-red-500/20 flex-shrink-0">
                 Blocked

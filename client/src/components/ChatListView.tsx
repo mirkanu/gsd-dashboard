@@ -52,24 +52,24 @@ export function ChatListView({ projects, onSelectProject, activeProject, unreadC
         // statusText fallback — STAT-04. Falls back gracefully when null.
         // The right-side `lastActivityTime` timer already shows elapsed time,
         // so we don't duplicate it here.
-        const baseInfo = p.currentTask
+        const info = p.currentTask
           ? truncate(p.currentTask, 80)
           : p.statusText
             ? truncate(p.statusText, 80)
             : capitalize(p.sessionState);
-        // Phase 49: append `waiting · bg` hint when session is waiting on
-        // in-flight background work (run_in_background bash, agent, wakeup).
-        const showBusyHint =
-          p.sessionState === 'waiting' &&
-          p.busy_markers &&
-          p.busy_markers.count > 0;
-        const info = showBusyHint ? `${baseInfo} · bg (${p.busy_markers!.count})` : baseInfo;
+        // Quick task 260418-khw: `· bg` suffix dropped — waiting+markers now
+        // surfaces as sessionState='working' from the server. Tooltip still
+        // exposes marker kinds for introspection.
+        const hasBusy = p.busy_markers && p.busy_markers.count > 0;
+        const tooltip = hasBusy
+          ? `${p.busy_markers!.count} in-flight: ${p.busy_markers!.kinds.join(', ')}`
+          : undefined;
 
         return (
           <div
             key={p.name}
             className={`border-l-4 ${STATE_BORDER[p.sessionState]}${activeProject === p.name ? ' bg-accent/10' : ''}`}
-            title={showBusyHint ? `waiting · bg — ${p.busy_markers!.kinds.join(', ')}` : undefined}
+            title={tooltip}
           >
             <Conversation
               name={displayName}
