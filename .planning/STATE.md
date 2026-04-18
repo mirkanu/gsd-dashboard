@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Optimisation & Cost Intelligence
-current_plan: 4 (completed)
-status: planning
+current_plan: 1
+status: executing
 stopped_at: Completed 48-04-PLAN.md (Phase 48 complete)
-last_updated: "2026-04-15T11:13:15.039Z"
-last_activity: 2026-04-15
+last_updated: "2026-04-18T11:03:46.794Z"
+last_activity: 2026-04-18 -- Phase 49 execution started
 progress:
-  total_phases: 6
-  completed_phases: 4
-  total_plans: 14
-  completed_plans: 14
-  percent: 60
+  total_phases: 5
+  completed_phases: 3
+  total_plans: 10
+  completed_plans: 10
+  percent: 100
 ---
 
 # Project State
@@ -22,16 +22,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-07)
 
 **Core value:** At a glance, see where every GSD project stands and interact with any session
-**Current focus:** v4.3 — Optimisation & Cost Intelligence (roadmap complete, ready to plan Phase 43)
+**Current focus:** Phase 49 — Idle Detector Busy-Work Awareness
 
 ## Current Position
 
 Milestone: v4.3 Optimisation & Cost Intelligence
-Phase: 45 — Services Cost Tracking Foundation (complete)
-Current Plan: 4 (completed)
-Total Plans in Phase: 4
-Status: Phase 45 complete. All 4 plans executed. ServicesPage renders costs/rules/credentials/needs-review alongside Phase 40 status cards, deployed to Railway, cloudflared proxy gap fixed post-deploy. SVC-02, SVC-06, SVC-07, SVC-08 all satisfied. Ready to plan Phase 46 (Services API Integrations).
-Last activity: 2026-04-17 - Completed quick task 260417-rqs: Fix auto-close/pause settings not persisting after reload
+Phase: 49 (Idle Detector Busy-Work Awareness) — EXECUTING
+Plan: 1 of 3
+Current Plan: 1
+Total Plans in Phase: 3
+Status: Executing Phase 49
+Last activity: 2026-04-18 -- Phase 49 execution started
 
 Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43 + Phase 44 + Phase 45)
 
@@ -51,6 +52,7 @@ Progress: [██████░░░░] 60% (3/5 phases complete — Phase 43
 ### Roadmap Evolution
 
 - Phase 48 added: Idle Session Cost Controls — Railway $/day per-tmux cost estimates + auto-close idle Claude sessions via /gsd:pause-work handoff
+- Phase 49 added: Idle Detector Busy-Work Awareness — hook-sourced busy markers prevent auto-close of sessions waiting on in-flight background work (background bash, scheduled wakeups, running agents). Depends on Phase 48.
 
 ### Decisions
 

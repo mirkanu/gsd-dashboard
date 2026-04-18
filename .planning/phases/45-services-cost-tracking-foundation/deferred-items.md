@@ -22,3 +22,13 @@ Reproduced on master without Phase 45 changes (or clearly unrelated to Phase 45 
 
 All belong to earlier phases / unrelated subsystems. File follow-up quick tasks as appropriate.
 
+
+### Plan 04: Pre-existing client typecheck errors (unrelated to Phase 45)
+
+Observed during `npx tsc --noEmit` in `client/`. None touch Phase 45 files. All in pre-existing files.
+
+- `src/components/__tests__/GsdProject.test.ts` (8 errors) — fixture missing `stateEnteredAt` and `currentTask` after Phase 43 type extension.
+- `src/components/__tests__/PricingEditor.test.tsx` (4 errors) — `noUncheckedIndexedAccess` violations.
+- `src/pages/GSD.tsx` (~17 errors) — `noUncheckedIndexedAccess`, `noUnusedLocals`, missing `@xterm/xterm/css/xterm.css` types, ChatListView prop mismatch (`nowMs`).
+
+Phase 45 Plan 04 files (`lib/api.ts`, `lib/types.ts`, `pages/ServicesPage.tsx`, `components/services/*`) typecheck cleanly. Out of scope per execution rules — file as quick task.

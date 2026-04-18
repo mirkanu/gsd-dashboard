@@ -164,3 +164,15 @@ Plans:
 - [ ] 48-02-PLAN.md — costMeasurement.js (RSS read, $/day math, daily log) + /api/gsd/projects/:name/tmux-cost route
 - [ ] 48-03-PLAN.md — idleDetector.js (2h idle → graceful close, 6h working → force-kill, autopilot 2× threshold) + server startup wiring
 - [ ] 48-04-PLAN.md — Services page $/day column + Usage page idle banner + ConfigPage Idle Auto-Close section + human verify checkpoint
+
+### Phase 49: Idle Detector Busy-Work Awareness — prevent auto-close of Claude sessions actively waiting on in-flight background work (background bash, scheduled wakeups, running agents). Extends Phase 48 idle detector with a busy-marker signal sourced from Claude Code hooks: PreToolUse writes a marker when Bash(run_in_background=true), ScheduleWakeup, or Agent fires; PostToolUse/SubagentStop clears it; TTL fallback prevents leaks. Idle detector reads markers and skips auto-close for sessions with active busy work. UI surfaces a waiting-bg sub-state badge. Logs every skipped auto-close decision for audit. Depends on Phase 48.
+
+**Goal:** Prevent auto-close of Claude sessions actively waiting on in-flight background work by extending the Phase 48 idle detector with a hook-sourced busy-marker signal. Every skip is logged; UI surfaces a waiting-bg badge.
+**Requirements**: TBD (CONTEXT.md authoritative)
+**Depends on:** Phase 48
+**Plans:** 3 plans
+
+Plans:
+- [ ] 49-01-PLAN.md — busyMarkers.js helper + .claude/hooks/gsd-busy-marker.js + settings.json wiring + unit tests
+- [ ] 49-02-PLAN.md — Integrate hasBusyMarkers into idleDetector._testCheckAndCloseSession + JSONL audit log + extend idle-detector tests
+- [ ] 49-03-PLAN.md — Surface busy_markers in /api/gsd/projects + WS broadcast + waiting·bg UI badge + disk-prune.sh extension + human verify

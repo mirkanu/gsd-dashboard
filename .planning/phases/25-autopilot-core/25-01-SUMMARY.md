@@ -119,3 +119,11 @@ _Note: TDD tasks have two commits — test (RED) → feat (GREEN)_
 ---
 *Phase: 25-autopilot-core*
 *Completed: 2026-04-01*
+
+## Self-Check: PASSED
+
+- `server/autopilot/AutopilotManager.js` — FOUND
+- `server/__tests__/autopilotManager.test.js` — FOUND
+- `.planning/phases/25-autopilot-core/25-01-SUMMARY.md` — FOUND
+- commit `c39c8c5` (RED) — FOUND
+- commit `0a5fa45` (GREEN) — FOUND
