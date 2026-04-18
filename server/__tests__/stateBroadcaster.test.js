@@ -285,7 +285,8 @@ test('stateBroadcaster: same-state tick where markers NEWLY appear — broadcast
   assert.strictEqual(changed, true, 'must broadcast when busy_markers change within same state');
   assert.strictEqual(broadcast.calls.length, 1);
   const payload = broadcast.calls[0].data;
-  assert.strictEqual(payload.sessionState, 'waiting');
+  // Quick task 260418-khw: waiting+markers emits sessionState='working'
+  assert.strictEqual(payload.sessionState, 'working');
   assert.deepStrictEqual(payload.busy_markers, { count: 1, kinds: ['bash_bg'] });
   assert.strictEqual(payload.stateEnteredAt, firstEnteredAt, 'stateEnteredAt must NOT reset on marker-only change');
 });
@@ -339,4 +340,66 @@ test('stateBroadcaster: same-state tick where markers CLEAR — broadcasts once 
   assert.strictEqual(broadcast.calls.length, 1);
   const payload = broadcast.calls[0].data;
   assert.strictEqual('busy_markers' in payload, false, 'cleared → key absent (absence = clear)');
+  // Quick task 260418-khw: with markers cleared, effectiveState reverts to 'waiting'
+  assert.strictEqual(payload.sessionState, 'waiting');
+});
+
+// ─── Quick task 260418-khw: waiting+markers relabeled as 'working' ───────────
+
+test('khw.pivot: waiting pane with markers appearing → broadcast emits sessionState="working"', async () => {
+  const broadcast = makeBroadcastSpy();
+  let markers = { count: 0, kinds: [] };
+  const getBusy = () => markers;
+  // seed waiting, no markers
+  await _testPollOnce(makeProject(), makeDetect('waiting'), makeCapture('$ '), broadcast, getBusy);
+  // markers appear — pane still waiting, effective state should flip to working
+  markers = { count: 1, kinds: ['bash_bg'] };
+  await _testPollOnce(makeProject(), makeDetect('waiting'), makeCapture('$ '), broadcast, getBusy);
+  assert.strictEqual(broadcast.calls.length, 1);
+  assert.strictEqual(broadcast.calls[0].data.sessionState, 'working');
+});
+
+test('khw.pivot: waiting + no markers → emits sessionState="waiting" unchanged', async () => {
+  const broadcast = makeBroadcastSpy();
+  const getBusy = () => ({ count: 0, kinds: [] });
+  // seed working
+  await _testPollOnce(makeProject(), makeDetect('working'), makeCapture('(30s'), broadcast, getBusy);
+  // pane transitions to waiting with no markers → broadcast with waiting
+  await _testPollOnce(makeProject(), makeDetect('waiting'), makeCapture('$ '), broadcast, getBusy);
+  assert.strictEqual(broadcast.calls.length, 1);
+  assert.strictEqual(broadcast.calls[0].data.sessionState, 'waiting');
+});
+
+test('khw.pivot: working pane with markers → emits sessionState="working" (no relabel-loop)', async () => {
+  const broadcast = makeBroadcastSpy();
+  const getBusy = () => ({ count: 1, kinds: ['agent'] });
+  // seed waiting no markers
+  await _testPollOnce(makeProject(), makeDetect('waiting'), makeCapture('$ '), broadcast, () => ({ count: 0, kinds: [] }));
+  // pane goes to working with markers — effective is working, no flip-flop
+  await _testPollOnce(makeProject(), makeDetect('working'), makeCapture('(30s'), broadcast, getBusy);
+  assert.strictEqual(broadcast.calls.length, 1);
+  assert.strictEqual(broadcast.calls[0].data.sessionState, 'working');
+  assert.deepStrictEqual(broadcast.calls[0].data.busy_markers, { count: 1, kinds: ['agent'] });
+});
+
+test('khw.pivot: markers appear then clear on a waiting pane → two broadcasts: working then waiting, same stateEnteredAt', async () => {
+  const broadcast = makeBroadcastSpy();
+  let markers = { count: 0, kinds: [] };
+  const getBusy = () => markers;
+  // seed waiting no markers
+  await _testPollOnce(makeProject(), makeDetect('waiting'), makeCapture('$ '), broadcast, getBusy);
+  const enteredAt = getProjectStateSnapshot().foo.stateEnteredAt;
+  // markers appear
+  markers = { count: 2, kinds: ['agent', 'bash_bg'] };
+  await _testPollOnce(makeProject(), makeDetect('waiting'), makeCapture('$ '), broadcast, getBusy);
+  // markers clear
+  markers = { count: 0, kinds: [] };
+  await _testPollOnce(makeProject(), makeDetect('waiting'), makeCapture('$ '), broadcast, getBusy);
+
+  assert.strictEqual(broadcast.calls.length, 2);
+  assert.strictEqual(broadcast.calls[0].data.sessionState, 'working');
+  assert.strictEqual(broadcast.calls[1].data.sessionState, 'waiting');
+  // stateEnteredAt preserved across both broadcasts — the pane never truly transitioned
+  assert.strictEqual(broadcast.calls[0].data.stateEnteredAt, enteredAt);
+  assert.strictEqual(broadcast.calls[1].data.stateEnteredAt, enteredAt);
 });

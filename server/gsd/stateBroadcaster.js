@@ -56,13 +56,21 @@ async function _testPollOnce(
   const busy_markers =
     markersInfo && markersInfo.count > 0 ? markersInfo : undefined;
 
+  // Quick task 260418-khw: when a waiting pane has busy markers, emit
+  // state='working' (user's mental model: waiting = needs human input).
+  // stateEnteredAt tracks the raw pane transition so "how long waiting"
+  // stays correct across marker appear/clear cycles.
+  const effectiveState =
+    sessionState === 'waiting' && busy_markers ? 'working' : sessionState;
+
   const prev = snapshot.get(project.name);
   const nowIso = new Date().toISOString();
 
   if (!prev) {
     // Initial seed — record silently, no broadcast (avoid boot-time broadcast storm)
     snapshot.set(project.name, {
-      sessionState,
+      sessionState: effectiveState,
+      rawPaneState: sessionState,
       stateEnteredAt: nowIso,
       currentTask,
       statusText,
@@ -71,22 +79,29 @@ async function _testPollOnce(
     return false;
   }
 
-  if (prev.sessionState === sessionState) {
-    // Same state — keep stateEnteredAt, refresh currentTask / statusText
+  // Detect pane-state transitions via rawPaneState (fallback to sessionState
+  // for snapshots seeded pre-pivot).
+  const prevRaw = prev.rawPaneState ?? prev.sessionState;
+  const paneTransitioned = prevRaw !== sessionState;
+
+  if (!paneTransitioned) {
+    // Same pane state — keep stateEnteredAt, may still need to broadcast if
+    // markers appeared/cleared/changed (which can also flip effectiveState
+    // between waiting↔working for a stable pane-waiting session).
     snapshot.set(project.name, {
-      sessionState,
+      sessionState: effectiveState,
+      rawPaneState: sessionState,
       stateEnteredAt: prev.stateEnteredAt,
       currentTask,
       statusText,
       ...(busy_markers ? { busy_markers } : {}),
     });
-    // Broadcast on busy_markers change within same state (newly appeared / kinds or count changed / cleared).
     const prevKey = prev.busy_markers ? JSON.stringify(prev.busy_markers) : '';
     const nextKey = busy_markers ? JSON.stringify(busy_markers) : '';
     if (prevKey !== nextKey) {
       broadcastFn('project_state_change', {
         project: project.name,
-        sessionState,
+        sessionState: effectiveState,
         statusText,
         currentTask,
         stateEnteredAt: prev.stateEnteredAt,
@@ -97,9 +112,10 @@ async function _testPollOnce(
     return false;
   }
 
-  // Transition — update snapshot and broadcast
+  // Pane-state transitioned — update snapshot and broadcast
   const entry = {
-    sessionState,
+    sessionState: effectiveState,
+    rawPaneState: sessionState,
     stateEnteredAt: nowIso,
     currentTask,
     statusText,
@@ -108,7 +124,7 @@ async function _testPollOnce(
   snapshot.set(project.name, entry);
   broadcastFn('project_state_change', {
     project: project.name,
-    sessionState,
+    sessionState: effectiveState,
     statusText,
     currentTask,
     stateEnteredAt: nowIso,
