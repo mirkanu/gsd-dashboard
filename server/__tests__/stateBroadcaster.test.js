@@ -207,3 +207,136 @@ test('stateBroadcaster: projects with no tmux_session are skipped', async () => 
   assert.strictEqual(broadcast.calls.length, 0);
   assert.strictEqual(Object.keys(getProjectStateSnapshot()).length, 0);
 });
+
+// ─── Phase 49 Plan 03: busy_markers threading ────────────────────────────────
+
+test('stateBroadcaster: transition WITH busy_markers — payload includes busy_markers { count, kinds }', async () => {
+  const broadcast = makeBroadcastSpy();
+  const getBusy = () => ({ count: 2, kinds: ['bash_bg', 'wakeup'] });
+  // seed waiting
+  await _testPollOnce(
+    makeProject(),
+    makeDetect('waiting'),
+    makeCapture('$ '),
+    broadcast,
+    getBusy,
+  );
+  // transition to working
+  await _testPollOnce(
+    makeProject(),
+    makeDetect('working'),
+    makeCapture('(30s · ↓ 12 tokens'),
+    broadcast,
+    getBusy,
+  );
+  assert.strictEqual(broadcast.calls.length, 1);
+  const payload = broadcast.calls[0].data;
+  assert.strictEqual('busy_markers' in payload, true);
+  assert.deepStrictEqual(payload.busy_markers, { count: 2, kinds: ['bash_bg', 'wakeup'] });
+});
+
+test('stateBroadcaster: transition WITHOUT busy_markers — key omitted from payload', async () => {
+  const broadcast = makeBroadcastSpy();
+  const getBusy = () => ({ count: 0, kinds: [] });
+  await _testPollOnce(
+    makeProject(),
+    makeDetect('waiting'),
+    makeCapture('$ '),
+    broadcast,
+    getBusy,
+  );
+  await _testPollOnce(
+    makeProject(),
+    makeDetect('working'),
+    makeCapture('(30s'),
+    broadcast,
+    getBusy,
+  );
+  assert.strictEqual(broadcast.calls.length, 1);
+  const payload = broadcast.calls[0].data;
+  assert.strictEqual('busy_markers' in payload, false, 'busy_markers key must be omitted when count=0');
+});
+
+test('stateBroadcaster: same-state tick where markers NEWLY appear — broadcasts once, stateEnteredAt preserved', async () => {
+  const broadcast = makeBroadcastSpy();
+  let markers = { count: 0, kinds: [] };
+  const getBusy = () => markers;
+  // seed waiting with no markers
+  await _testPollOnce(
+    makeProject(),
+    makeDetect('waiting'),
+    makeCapture('$ '),
+    broadcast,
+    getBusy,
+  );
+  assert.strictEqual(broadcast.calls.length, 0);
+  const firstEnteredAt = getProjectStateSnapshot().foo.stateEnteredAt;
+  await new Promise(r => setTimeout(r, 5));
+
+  // Markers appear — same sessionState, but busy_markers changed
+  markers = { count: 1, kinds: ['bash_bg'] };
+  const changed = await _testPollOnce(
+    makeProject(),
+    makeDetect('waiting'),
+    makeCapture('$ '),
+    broadcast,
+    getBusy,
+  );
+  assert.strictEqual(changed, true, 'must broadcast when busy_markers change within same state');
+  assert.strictEqual(broadcast.calls.length, 1);
+  const payload = broadcast.calls[0].data;
+  assert.strictEqual(payload.sessionState, 'waiting');
+  assert.deepStrictEqual(payload.busy_markers, { count: 1, kinds: ['bash_bg'] });
+  assert.strictEqual(payload.stateEnteredAt, firstEnteredAt, 'stateEnteredAt must NOT reset on marker-only change');
+});
+
+test('stateBroadcaster: same-state tick with unchanged markers — no broadcast', async () => {
+  const broadcast = makeBroadcastSpy();
+  const getBusy = () => ({ count: 1, kinds: ['agent'] });
+  await _testPollOnce(
+    makeProject(),
+    makeDetect('waiting'),
+    makeCapture('$ '),
+    broadcast,
+    getBusy,
+  );
+  // seed broadcasts nothing (initial seed rule)
+  assert.strictEqual(broadcast.calls.length, 0);
+  // Same state, same markers
+  const changed = await _testPollOnce(
+    makeProject(),
+    makeDetect('waiting'),
+    makeCapture('$ '),
+    broadcast,
+    getBusy,
+  );
+  assert.strictEqual(changed, false);
+  assert.strictEqual(broadcast.calls.length, 0);
+});
+
+test('stateBroadcaster: same-state tick where markers CLEAR — broadcasts once without busy_markers key', async () => {
+  const broadcast = makeBroadcastSpy();
+  let markers = { count: 1, kinds: ['bash_bg'] };
+  const getBusy = () => markers;
+  // seed waiting WITH markers
+  await _testPollOnce(
+    makeProject(),
+    makeDetect('waiting'),
+    makeCapture('$ '),
+    broadcast,
+    getBusy,
+  );
+  // Markers clear
+  markers = { count: 0, kinds: [] };
+  const changed = await _testPollOnce(
+    makeProject(),
+    makeDetect('waiting'),
+    makeCapture('$ '),
+    broadcast,
+    getBusy,
+  );
+  assert.strictEqual(changed, true);
+  assert.strictEqual(broadcast.calls.length, 1);
+  const payload = broadcast.calls[0].data;
+  assert.strictEqual('busy_markers' in payload, false, 'cleared → key absent (absence = clear)');
+});
