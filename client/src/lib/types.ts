@@ -126,6 +126,17 @@ export interface GsdProject {
   sessionCost: number | null;
   stateEnteredAt: string | null;
   currentTask: string | null;
+  /**
+   * Phase 49: present only when the tmux session is waiting on in-flight
+   * background work (Bash run_in_background, Agent/Task, ScheduleWakeup).
+   * Absence/undefined means no active markers.
+   */
+  busy_markers?: BusyMarkers;
+}
+
+export interface BusyMarkers {
+  count: number;
+  kinds: Array<'bash_bg' | 'agent' | 'wakeup'>;
 }
 
 export interface ProjectStateChangeEvent {
@@ -134,6 +145,8 @@ export interface ProjectStateChangeEvent {
   statusText: string | null;
   currentTask: string | null;
   stateEnteredAt: string;
+  /** Phase 49: omitted by server when count===0 (absence = clear). */
+  busy_markers?: BusyMarkers;
 }
 
 export interface UsageDay {

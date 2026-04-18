@@ -52,16 +52,24 @@ export function ChatListView({ projects, onSelectProject, activeProject, unreadC
         // statusText fallback — STAT-04. Falls back gracefully when null.
         // The right-side `lastActivityTime` timer already shows elapsed time,
         // so we don't duplicate it here.
-        const info = p.currentTask
+        const baseInfo = p.currentTask
           ? truncate(p.currentTask, 80)
           : p.statusText
             ? truncate(p.statusText, 80)
             : capitalize(p.sessionState);
+        // Phase 49: append `waiting · bg` hint when session is waiting on
+        // in-flight background work (run_in_background bash, agent, wakeup).
+        const showBusyHint =
+          p.sessionState === 'waiting' &&
+          p.busy_markers &&
+          p.busy_markers.count > 0;
+        const info = showBusyHint ? `${baseInfo} · bg (${p.busy_markers!.count})` : baseInfo;
 
         return (
           <div
             key={p.name}
             className={`border-l-4 ${STATE_BORDER[p.sessionState]}${activeProject === p.name ? ' bg-accent/10' : ''}`}
+            title={showBusyHint ? `waiting · bg — ${p.busy_markers!.kinds.join(', ')}` : undefined}
           >
             <Conversation
               name={displayName}
