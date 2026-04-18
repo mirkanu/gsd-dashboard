@@ -182,6 +182,13 @@ router.get("/projects", async (_req, res) => {
       const bm = snapshotEntry?.busy_markers
         ?? (tmux_session ? busyMarkers.getMarkers(tmux_session) : { count: 0, kinds: [] });
 
+      // Quick task 260418-khw: waiting + busy markers → emit "working"
+      // (user's mental model: waiting means needs-human-input). Mirror of the
+      // same override applied in stateBroadcaster so REST + WS agree.
+      if (sessionState === 'waiting' && bm && bm.count > 0) {
+        sessionState = 'working';
+      }
+
       return {
         ...projectData,
         display_name: display_name || null,
