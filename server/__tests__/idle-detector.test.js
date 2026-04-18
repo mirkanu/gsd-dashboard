@@ -5,7 +5,7 @@ const assert = require('node:assert');
 
 // These tests import from ../gsd/idleDetector which does not exist yet.
 // They will be RED (MODULE_NOT_FOUND) until Plan 03 creates it.
-const { isSessionIdle, forceKillIfOverdue, _testCheckAndCloseSession } = require('../gsd/idleDetector');
+const { isSessionIdle, _testCheckAndCloseSession } = require('../gsd/idleDetector');
 
 test('idle.detect: waiting + pane unchanged > threshold → isSessionIdle returns true', async () => {
   const result = await isSessionIdle('test-session', {
@@ -60,24 +60,6 @@ test('idle.autopilot: autopilot session uses 2× threshold', async () => {
   assert.strictEqual(idleNonAutopilot, true, 'non-autopilot session should be idle at 1.5× base threshold');
 });
 
-test('force.kill: working session > 6h → forceKill without gracefulShutdown', async () => {
-  const killed = [];
-  const gracefulCalls = [];
-
-  const result = await forceKillIfOverdue('test-session', 'test-project', {
-    sessionState: 'working',
-    stateEnteredAt: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), // 7h ago
-    forceKillThresholdMs: 6 * 60 * 60 * 1000, // 6h
-    killFn: (s) => { killed.push(s); },
-    gracefulShutdownFn: (s, p) => { gracefulCalls.push({ s, p }); },
-    notifyFn: async () => {},
-  });
-
-  assert.strictEqual(result.forceKilled, true, 'should force-kill working session over 6h');
-  assert.ok(killed.includes('test-session'), 'should call kill');
-  assert.strictEqual(gracefulCalls.length, 0, 'should NOT call gracefulShutdown for force kill');
-});
-
 // ---------------------------------------------------------------------------
 // Plan 49-02: busy-marker awareness in _testCheckAndCloseSession
 // ---------------------------------------------------------------------------
@@ -88,15 +70,13 @@ function _makeBusyFns({
   detectState = 'waiting',
   paneAgeMs = 120_000,
   thresholdMs = 60_000,
-  stuckWorking = false,
   skipLog,
 } = {}) {
   const session = 'gsd-prc';
   const nowMs = Date.now();
   const paneCache = new Map();
   // For waiting: seed lastChangedAt so elapsed > threshold
-  // For working+stuckWorking: seed lastChangedAt so elapsed > 6h force-kill threshold
-  const lastChangedAt = stuckWorking ? nowMs - (7 * 60 * 60 * 1000) : nowMs - paneAgeMs;
+  const lastChangedAt = nowMs - paneAgeMs;
   paneCache.set(session, { hash: 'x', lastChangedAt });
   return {
     session,
@@ -107,7 +87,6 @@ function _makeBusyFns({
       paneCache,
       nowMs,
       gracefulShutdownFn: async () => ({ pauseWorkCompleted: true }),
-      forceKillFn: () => {},
       getCostFn: () => ({ dailyCostUsd: 0, rssGb: 0 }),
       logCostFn: () => {},
       isAutopilotFn: () => false,
@@ -127,9 +106,7 @@ test('idle.busy-markers: pane-waiting + threshold exceeded + markers present →
     skipLog,
   });
   const shutdownGuard = async () => { throw new Error('should not be called'); };
-  const killGuard = () => { throw new Error('should not be called'); };
   fns.gracefulShutdownFn = shutdownGuard;
-  fns.forceKillFn = killGuard;
 
   const result = await _testCheckAndCloseSession(
     { name: 'prc', tmux_session: session },
@@ -167,16 +144,13 @@ test('idle.busy-markers: pane-waiting + threshold exceeded + markers absent → 
   assert.strictEqual(skipLog.length, 0, 'no skip logged when no markers');
 });
 
-test('idle.busy-markers: pane-working → force-kill path ignores busy markers', async () => {
+test('khw.pivot: pane-working → _testCheckAndCloseSession returns null (no auto-close)', async () => {
   const skipLog = [];
-  const killed = [];
   const { fns, session } = _makeBusyFns({
     hasMarkers: true,
     detectState: 'working',
-    stuckWorking: true,
     skipLog,
   });
-  fns.forceKillFn = (s) => { killed.push(s); };
   fns.gracefulShutdownFn = async () => { throw new Error('should not be called'); };
 
   const result = await _testCheckAndCloseSession(
@@ -184,10 +158,8 @@ test('idle.busy-markers: pane-working → force-kill path ignores busy markers',
     fns,
   );
 
-  assert.strictEqual(result.action, 'force-killed');
-  assert.strictEqual(result.reason, 'stuck-working-6h');
-  assert.ok(killed.includes(session));
-  assert.strictEqual(skipLog.length, 0, 'force-kill never logs idle-skip');
+  assert.strictEqual(result, null, 'working sessions are never auto-closed');
+  assert.strictEqual(skipLog.length, 0, 'no skip logged for working sessions');
 });
 
 test('idle.busy-markers: expired markers purged (hasBusyMarkers returns false) → shutdown runs', async () => {

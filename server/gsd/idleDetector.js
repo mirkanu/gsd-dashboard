@@ -1,6 +1,5 @@
 'use strict';
 
-const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { paneHashCache, detectSessionStateAsync } = require('./tmux');
@@ -9,7 +8,8 @@ const { getTmuxCostForSession, logDailyTmuxCosts } = require('./costMeasurement'
 const busyMarkers = require('./busyMarkers');
 
 const DEFAULT_IDLE_THRESHOLD_MS = 120 * 60 * 1000; // 2 hours
-const FORCE_KILL_WORKING_THRESHOLD_MS = 6 * 60 * 60 * 1000; // 6 hours
+// Quick task 260418-khw: 6h force-kill branch removed — user prefers manual
+// intervention over auto-kill for stuck working sessions.
 const POLL_INTERVAL_MS = 60 * 1000; // 60 seconds
 
 const IDLE_SKIP_LOG_PATH = path.resolve(__dirname, '../../data/logs/idle-skip.log');
@@ -118,59 +118,6 @@ async function _testIsSessionIdle(sessionName, thresholdMs, fns = {}) {
 }
 
 /**
- * Check if a working session has been stuck (no pane change) for > FORCE_KILL threshold.
- * Injectable for tests: accepts { paneCache, nowMs }.
- */
-function _isStuckWorking(sessionName, fns = {}) {
-  const { paneCache = paneHashCache, nowMs = Date.now() } = fns;
-  const entry = paneCache.get(sessionName);
-  if (!entry || !entry.lastChangedAt) return false;
-  return (nowMs - entry.lastChangedAt) > FORCE_KILL_WORKING_THRESHOLD_MS;
-}
-
-function _forceKill(sessionName) {
-  try {
-    execFileSync('tmux', ['kill-session', '-t', sessionName], { stdio: 'ignore', timeout: 5000 });
-  } catch { /* already dead */ }
-}
-
-/**
- * Force-kill a working session that has been stuck for > forceKillThresholdMs.
- * Used by tests and internal idle detector loop.
- *
- * @param {string} sessionName
- * @param {string} projectName
- * @param {object} opts - { sessionState, stateEnteredAt, forceKillThresholdMs, killFn, gracefulShutdownFn, notifyFn }
- * @returns {Promise<{ forceKilled: boolean }>}
- */
-async function forceKillIfOverdue(sessionName, projectName, opts = {}) {
-  const {
-    sessionState,
-    stateEnteredAt,
-    forceKillThresholdMs = FORCE_KILL_WORKING_THRESHOLD_MS,
-    killFn = _forceKill,
-    gracefulShutdownFn = gracefulShutdown,
-    notifyFn = async () => {},
-  } = opts;
-
-  if (sessionState !== 'working') {
-    return { forceKilled: false };
-  }
-
-  const enteredAt = stateEnteredAt ? new Date(stateEnteredAt).getTime() : null;
-  if (!enteredAt) return { forceKilled: false };
-
-  const elapsed = Date.now() - enteredAt;
-  if (elapsed <= forceKillThresholdMs) return { forceKilled: false };
-
-  // Force-kill — no graceful shutdown
-  killFn(sessionName);
-  await notifyFn(projectName, `Working session force-killed after being stuck for ${Math.round(elapsed / 3600000)}h with no pane change.`);
-
-  return { forceKilled: true };
-}
-
-/**
  * Check and potentially close a single project session.
  * Injectable for tests via fns parameter.
  */
@@ -182,7 +129,6 @@ async function _testCheckAndCloseSession(project, fns = {}) {
     paneCache = paneHashCache,
     nowMs = Date.now(),
     gracefulShutdownFn = gracefulShutdown,
-    forceKillFn = _forceKill,
     getCostFn = getTmuxCostForSession,
     logCostFn = logDailyTmuxCosts,
     isAutopilotFn = hasActiveAutopilotRun,
@@ -197,16 +143,9 @@ async function _testCheckAndCloseSession(project, fns = {}) {
 
   const state = await detectFn(project.tmux_session);
 
-  // Force-kill hung working sessions (> 6h with no pane change)
-  if (state === 'working') {
-    if (_isStuckWorking(project.tmux_session, { paneCache, nowMs })) {
-      forceKillFn(project.tmux_session);
-      const cost = getCostFn(project.tmux_session);
-      logCostFn([{ sessionName: project.tmux_session, dailyCostUsd: cost.dailyCostUsd, rssGb: cost.rssGb }]);
-      return { action: 'force-killed', reason: 'stuck-working-6h', project: project.name };
-    }
-    return null;
-  }
+  // Quick task 260418-khw: 6h force-kill branch removed. Working sessions are
+  // simply not auto-closed — user prefers manual intervention.
+  if (state === 'working') return null;
 
   // Autopilot sessions use 2× threshold
   const isAutopilot = isAutopilotFn(project.name);
@@ -277,7 +216,6 @@ function startIdleDetector(loadProjectsFn) {
 
 module.exports = {
   isSessionIdle,
-  forceKillIfOverdue,
   startIdleDetector,
   _testIsSessionIdle,
   _testCheckAndCloseSession,
