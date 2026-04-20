@@ -131,13 +131,46 @@ export function useProjectCreationStateSubscriber() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const raw = msg as any;
       if (raw.type === 'project_creation_state' && raw.data) {
+        // Server broadcasts { project, step, status: running|done|failed|complete, error }.
+        // Translate to the client's CreationState shape, merging with prior state
+        // so earlier-completed steps are preserved across messages.
+        const { project, step, status: rawStatus, error } = raw.data as {
+          project: string;
+          step: string;
+          status: 'running' | 'done' | 'failed' | 'complete';
+          error: string | null;
+        };
+        const prior = creationStates[project];
+        let current_step: CreationStep | null = prior?.current_step ?? null;
+        let last_completed_step: CreationStep | null = prior?.last_completed_step ?? null;
+        let failed_at_step: CreationStep | null = prior?.failed_at_step ?? null;
+        let error_message: string | null = prior?.error_message ?? null;
+        let status: CreationState['status'] = prior?.status ?? 'creating';
+
+        if (rawStatus === 'running') {
+          current_step = step as CreationStep;
+          status = 'creating';
+        } else if (rawStatus === 'done') {
+          last_completed_step = step as CreationStep;
+          current_step = null;
+          status = 'creating';
+        } else if (rawStatus === 'failed') {
+          failed_at_step = step as CreationStep;
+          current_step = null;
+          error_message = error;
+          status = 'error';
+        } else if (rawStatus === 'complete') {
+          current_step = null;
+          status = 'working';
+        }
+
         handleCreationStateMessage({
-          project: raw.data.project,
-          current_step: raw.data.current_step as CreationStep | undefined,
-          last_completed_step: raw.data.last_completed_step as CreationStep | undefined,
-          failed_at_step: raw.data.failed_at_step as CreationStep | undefined,
-          error_message: raw.data.error_message,
-          status: raw.data.status,
+          project,
+          current_step: current_step ?? undefined,
+          last_completed_step: last_completed_step ?? undefined,
+          failed_at_step: failed_at_step ?? undefined,
+          error_message: error_message ?? undefined,
+          status,
         });
       }
     });
