@@ -168,13 +168,10 @@ if (require.main === module) {
   }
 
   // Periodic maintenance sweep (every 2 min):
-  // 1. Mark abandoned sessions that slipped through event-based detection
-  // 2. Scan active sessions' JSONL files for new compaction entries
-  //    (/compact fires no hooks, so compaction agents only appear on next hook event
-  //    without this scanner)
+  // Mark abandoned sessions that slipped through event-based detection.
+  // (Compaction scanning was removed with scripts/import-history.js in Phase 50.5-02.)
   const cleanupDb = require("./db");
   const { broadcast } = require("./websocket");
-  const { importCompactions, findCompactionsInFile } = require("../scripts/import-history");
   setInterval(
     () => {
       // 0. Log memory usage for trend monitoring
@@ -197,31 +194,6 @@ if (require.main === module) {
         broadcast("session_updated", cleanupDb.stmts.getSession.get(s.id));
       }
 
-      // 2. Scan active sessions for new compaction entries
-      const active = cleanupDb.db
-        .prepare(
-          "SELECT DISTINCT e.session_id, json_extract(e.data, '$.transcript_path') as tp FROM events e JOIN sessions s ON s.id = e.session_id WHERE s.status = 'active' AND json_extract(e.data, '$.transcript_path') IS NOT NULL GROUP BY e.session_id ORDER BY MAX(e.id) DESC"
-        )
-        .all();
-      for (const row of active) {
-        if (!row.tp) continue;
-        try {
-          const compactions = findCompactionsInFile(row.tp);
-          if (compactions.length === 0) continue;
-          const mainAgentId = `${row.session_id}-main`;
-          const created = importCompactions(cleanupDb, row.session_id, mainAgentId, compactions);
-          if (created > 0) {
-            broadcast(
-              "agent_created",
-              cleanupDb.stmts.getAgent.get(
-                `${row.session_id}-compact-${compactions[compactions.length - 1].uuid}`
-              )
-            );
-          }
-        } catch {
-          continue;
-        }
-      }
     },
     2 * 60 * 1000
   );
@@ -240,21 +212,8 @@ if (require.main === module) {
     }
   }, WATCHDOG_INTERVAL).unref();
 
-  // Auto-import legacy sessions and backfill compaction tracking on startup
-  const { importAllSessions, backfillCompactions } = require("../scripts/import-history");
-  const dbModule = require("./db");
-  importAllSessions(dbModule)
-    .then(({ imported, skipped, errors }) => {
-      if (imported > 0) console.log(`Imported ${imported} legacy sessions from ~/.claude/`);
-      if (errors > 0) console.log(`${errors} session files had errors during import`);
-    })
-    .then(() => backfillCompactions(dbModule))
-    .then(({ backfilled }) => {
-      if (backfilled > 0) console.log(`Backfilled ${backfilled} compaction events from ~/.claude/`);
-    })
-    .catch(() => {
-      // Non-fatal — legacy import is best-effort
-    });
+  // Legacy session import and compaction backfill were removed with
+  // scripts/import-history.js in Phase 50.5-02.
 }
 
 module.exports = { createApp, startServer };
