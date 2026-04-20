@@ -274,6 +274,16 @@ Verifiable by walking a non-programmer (Emily-Kate or equivalent) through the fu
 - **Phase 46** (Services API Integrations, v4.3) — subsumed by Phase 54
 - **Phase 47** (AI-Guided CLAUDE.md Editor, v4.3) — parked as SEED-001
 
+### Phase 52: GSD Command Discoverability — CLAUDE.md guidance for Claude to proactively suggest the best /gsd-* command for natural-language queries; add /gsd-next to dashboard shortcut buttons above the insert-into-tmux input
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 51
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 52 to break down)
+
 ---
 
 ## Seeds (parked ideas that may surface in v5.x)

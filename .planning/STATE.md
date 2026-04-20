@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: | Item | Reason |
-current_plan: —
-status: planning
+current_plan: 1
+status: executing
 stopped_at: Phase 51 context gathered
-last_updated: "2026-04-20T08:07:34.113Z"
-last_activity: 2026-04-20 -- Phase 50 removed from roadmap (GSD terminology acceptable; behavioural contract covers the intent via Phase 56B global default)
+last_updated: "2026-04-20T10:05:13.497Z"
+last_activity: 2026-04-20 -- Phase 51 execution started
 progress:
   total_phases: 30
   completed_phases: 27
-  total_plans: 57
+  total_plans: 61
   completed_plans: 57
-  percent: 100
+  percent: 93
 ---
 
 # Project State
@@ -22,16 +22,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value (v5.0):** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
-**Current focus:** Phase 50.5 complete + verified; Phase 50 dropped; ready to plan Phase 51 (GUI Project Creation + Import)
+**Current focus:** Phase 51 — gui-project-creation-import
 
 ## Current Position
 
 Milestone: v5.0 Non-Programmer Mode
-Phase: 51 (GUI Project Creation + Import) — NOT STARTED
-Current Plan: —
-Total Plans in Phase: TBD
-Status: Ready to plan
-Last activity: 2026-04-20 -- Phase 50 removed from roadmap (GSD terminology acceptable; behavioural contract covers the intent via Phase 56B global default)
+Phase: 51 (gui-project-creation-import) — EXECUTING
+Plan: 1 of 4
+Current Plan: 1
+Total Plans in Phase: 4
+Status: Executing Phase 51
+Last activity: 2026-04-20 -- Phase 51 execution started
 
 Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 
@@ -53,6 +54,7 @@ Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 
 - Phase 48 added: Idle Session Cost Controls — Railway $/day per-tmux cost estimates + auto-close idle Claude sessions via /gsd:pause-work handoff
 - Phase 49 added: Idle Detector Busy-Work Awareness — hook-sourced busy markers prevent auto-close of sessions waiting on in-flight background work (background bash, scheduled wakeups, running agents). Depends on Phase 48.
+- Phase 52 added: GSD Command Discoverability — CLAUDE.md guidance for Claude to proactively suggest the best /gsd-* command for natural-language queries (surfaces underused commands); adds /gsd-next to the dashboard shortcut buttons row above the insert-into-tmux input.
 
 ### Decisions
 
