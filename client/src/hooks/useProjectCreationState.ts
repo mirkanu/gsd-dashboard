@@ -96,6 +96,37 @@ export function useActiveCreationProjects(): [string, CreationState][] {
  */
 export function useProjectCreationStateSubscriber() {
   useEffect(() => {
+    // Seed from the server so mobile and other late-joining clients see
+    // in-progress or failed creations they missed the live WS broadcast for.
+    let cancelled = false;
+    fetch('/api/projects/creations')
+      .then(r => (r.ok ? r.json() : { creations: [] }))
+      .then((data: { creations?: Array<{
+        project_name: string;
+        last_completed_step: string | null;
+        current_step: string | null;
+        failed_at_step: string | null;
+        error_message: string | null;
+      }> }) => {
+        if (cancelled) return;
+        (data.creations || []).forEach(row => {
+          const status: CreationState['status'] = row.failed_at_step
+            ? 'error'
+            : row.last_completed_step === 'claude_launch'
+              ? 'working'
+              : 'creating';
+          handleCreationStateMessage({
+            project: row.project_name,
+            current_step: row.current_step as CreationStep | undefined,
+            last_completed_step: row.last_completed_step as CreationStep | undefined,
+            failed_at_step: row.failed_at_step as CreationStep | undefined,
+            error_message: row.error_message ?? undefined,
+            status,
+          });
+        });
+      })
+      .catch(() => { /* non-fatal */ });
+
     const unsubscribe = eventBus.subscribe(msg => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const raw = msg as any;
@@ -110,6 +141,6 @@ export function useProjectCreationStateSubscriber() {
         });
       }
     });
-    return unsubscribe;
+    return () => { cancelled = true; unsubscribe(); };
   }, []);
 }

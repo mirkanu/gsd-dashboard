@@ -273,6 +273,15 @@ async function runCreationPipeline(opts) {
         GH_TOKEN: pat,
         GIT_TERMINAL_PROMPT: '0',
         GIT_ASKPASS: 'echo',
+        // Provide a default identity so `git commit` works even when the
+        // system has no global user.name/user.email configured. These env
+        // vars are overrides; if the user has their own git identity set
+        // globally it still takes precedence for later commits they make
+        // themselves in the project.
+        GIT_AUTHOR_NAME: process.env.GIT_AUTHOR_NAME || 'GSD Dashboard',
+        GIT_AUTHOR_EMAIL: process.env.GIT_AUTHOR_EMAIL || 'dashboard@gsd.local',
+        GIT_COMMITTER_NAME: process.env.GIT_COMMITTER_NAME || 'GSD Dashboard',
+        GIT_COMMITTER_EMAIL: process.env.GIT_COMMITTER_EMAIL || 'dashboard@gsd.local',
       };
       await execStep('git', ['-C', projectRoot, 'add', '.'], { env: gitEnv });
       await execStep('git', ['-C', projectRoot, 'commit', '-m', 'chore: initial commit'], { env: gitEnv });
@@ -380,6 +389,31 @@ async function runCreationPipeline(opts) {
 // GET /api/projects/github-pats
 // Lists all GitHub PAT keys (github_pat and github_pat_*) with metadata.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// GET /api/projects/creations
+// Returns all rows from the creation_state table so mobile/late-joining
+// clients can seed their local UI state. Includes failed and in-progress
+// pipelines; the UI decides what to render.
+// ---------------------------------------------------------------------------
+
+router.get('/creations', (_req, res) => {
+  try {
+    const rows = db.prepare('SELECT * FROM creation_state ORDER BY updated_at DESC').all();
+    const creations = rows.map((r) => ({
+      project_name: r.project_name,
+      last_completed_step: r.last_completed_step,
+      current_step: r.current_step,
+      step_sequence: r.step_sequence ? JSON.parse(r.step_sequence) : [],
+      failed_at_step: r.failed_at_step,
+      error_message: r.error_message,
+      updated_at: r.updated_at,
+    }));
+    return res.json({ creations });
+  } catch (err) {
+    return res.status(500).json({ error: toPlainError(err, null) });
+  }
+});
 
 router.get('/github-pats', (_req, res) => {
   try {
