@@ -548,6 +548,12 @@ router.post('/import', async (req, res) => {
     return res.status(409).json({ error: `Project "${projectName}" is already registered in the Dashboard.` });
   }
 
+  // If .planning/ is missing and caller hasn't confirmed seeding yet,
+  // signal the client to show the seeding confirmation dialog (D-10 / NPC-04).
+  if (!seed && !fs.existsSync(path.join(folder, '.planning'))) {
+    return res.json({ needs_seeding: true });
+  }
+
   // Register in gsd-projects.json
   try {
     config.projects = config.projects || [];
