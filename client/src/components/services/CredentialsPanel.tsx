@@ -10,6 +10,7 @@ interface CredentialDef {
 }
 
 const CREDENTIALS: CredentialDef[] = [
+  { key: "github_pat", label: "GitHub PAT", hint: "Personal access token from github.com → Settings → Developer settings → Tokens. Needs repo + workflow scope. Required to create projects from the Dashboard." },
   { key: "railway_pat", label: "Railway PAT", hint: "Personal access token from Railway → Account → Tokens" },
   { key: "openai_admin_key", label: "OpenAI Admin Key", hint: "Admin API key from platform.openai.com → Organization" },
   { key: "vercel_token", label: "Vercel Token", hint: "Token from vercel.com → Settings → Tokens" },

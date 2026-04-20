@@ -116,8 +116,8 @@ export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen
 
   const handleNewProject = () => {
     if (hasGithubPat === false) {
-      // No PAT configured — open Services panel with credentials
-      navigate('/services');
+      // No PAT configured — open Services panel with credentials, signal why.
+      navigate('/services?need=github_pat');
     } else {
       setShowNewProject(true);
     }

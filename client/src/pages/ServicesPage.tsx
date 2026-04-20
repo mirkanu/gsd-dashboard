@@ -7,6 +7,7 @@ import { AddCostDialog } from "../components/services/AddCostDialog";
 import { NeedsReviewSection } from "../components/services/NeedsReviewSection";
 import { MappingRulesSection } from "../components/services/MappingRulesSection";
 import { CredentialsPanel } from "../components/services/CredentialsPanel";
+import { useLocation } from "react-router-dom";
 
 interface ServiceStatus {
   name: string;
@@ -90,6 +91,8 @@ function currentMonth(): string {
 }
 
 export function ServicesPage() {
+  const location = useLocation();
+  const needsGithubPat = new URLSearchParams(location.search).get("need") === "github_pat";
   const [data, setData] = useState<ServicesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -195,6 +198,16 @@ export function ServicesPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
+      {needsGithubPat && (
+        <div className="mb-4 rounded-md border border-accent/50 bg-accent/10 px-4 py-3 text-sm text-gray-100">
+          <div className="font-medium">Add a GitHub PAT to create projects</div>
+          <div className="mt-1 text-gray-300">
+            The Dashboard can't create GitHub repos without a Personal Access Token.
+            Add one under <span className="font-medium">Credentials → GitHub PAT</span> below,
+            then go back and click <span className="font-medium">+ New Project</span>.
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
