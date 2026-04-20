@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import { handleCreationStateMessage } from '../hooks/useProjectCreationState';
 
 interface Pat {
   key: string;
@@ -96,6 +97,13 @@ export function NewProjectDialog({ open, onClose, onCreated }: NewProjectDialogP
         }),
       });
       if (res.status === 202) {
+        // Optimistic: inject initial creation state so the card appears
+        // immediately in ChatListView before the first WebSocket update arrives.
+        handleCreationStateMessage({
+          project: sanitized,
+          status: 'creating',
+          current_step: 'scaffold',
+        });
         onCreated(sanitized);
         onClose();
         return;

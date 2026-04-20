@@ -4,6 +4,8 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import { timeAgo } from "../lib/timeAgo";
 import type { GsdProject, SessionState } from "../lib/types";
+import { useActiveCreationProjects } from "../hooks/useProjectCreationState";
+import { ProjectCreationCard } from "./ProjectCreationCard";
 
 interface ChatListViewProps {
   projects: GsdProject[];
@@ -28,6 +30,8 @@ function truncate(s: string, max: number): string {
 }
 
 export function ChatListView({ projects, onSelectProject, activeProject, unreadCounts }: ChatListViewProps) {
+  const creatingProjects = useActiveCreationProjects();
+
   // Sort by sessionUpdatedAt descending (newest first), nulls to bottom
   const sorted = [...projects].sort((a, b) => {
     if (!a.sessionUpdatedAt && !b.sessionUpdatedAt) return 0;
@@ -36,7 +40,17 @@ export function ChatListView({ projects, onSelectProject, activeProject, unreadC
     return new Date(b.sessionUpdatedAt).getTime() - new Date(a.sessionUpdatedAt).getTime();
   });
 
-  if (sorted.length === 0) {
+  // Projects in creation state whose creation is not yet in 'working' status
+  // Filter out any that have already appeared in the regular project list
+  // (clearCreationState handles the cleanup, but during the 1.5s transition
+  // the regular card should take priority)
+  const activeCreations = creatingProjects.filter(
+    ([name, state]) =>
+      state.status !== 'working' &&
+      !projects.some(p => p.name === name),
+  );
+
+  if (sorted.length === 0 && activeCreations.length === 0) {
     return (
       <div className="flex items-center justify-center py-20 text-gray-500 text-sm">
         No projects found
@@ -45,7 +59,12 @@ export function ChatListView({ projects, onSelectProject, activeProject, unreadC
   }
 
   return (
-    <ConversationList>
+    <>
+      {/* Active creation cards — rendered above the regular project list */}
+      {activeCreations.map(([name]) => (
+        <ProjectCreationCard key={`creating-${name}`} projectName={name} />
+      ))}
+      <ConversationList>
       {sorted.map((p) => {
         const displayName = p.display_name || capitalize(p.name);
         // Prefer the live currentTask preview (from STATE.md) over the generic
@@ -82,5 +101,6 @@ export function ChatListView({ projects, onSelectProject, activeProject, unreadC
         );
       })}
     </ConversationList>
+    </>
   );
 }
