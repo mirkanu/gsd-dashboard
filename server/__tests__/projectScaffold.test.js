@@ -100,14 +100,14 @@ describe('scaffoldProject', () => {
     assert.ok(gitignore.includes('.planning/worktrees'), '.gitignore must contain .planning/worktrees');
   });
 
-  test('scaffold.create: creates valid package.json with correct name field', () => {
+  test('scaffold.create: does NOT create package.json (avoids brownfield misdetection by /gsd-new-project)', () => {
     const root = path.join(tmpDir, 'pkg-test');
     scaffoldProject(root, { name: 'My New Package' });
 
-    const pkgRaw = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
-    const pkg = JSON.parse(pkgRaw);
-    assert.strictEqual(pkg.name, sanitizeName('My New Package'));
-    assert.ok(pkg.version, 'package.json must have version field');
+    assert.ok(
+      !fs.existsSync(path.join(root, 'package.json')),
+      'package.json must not be scaffolded — its presence triggers "detected existing code. Map codebase first?" in /gsd-new-project',
+    );
   });
 
   test('scaffold.create: throws if directory already exists', () => {
@@ -121,12 +121,11 @@ describe('scaffoldProject', () => {
     );
   });
 
-  test('scaffold.create: creates directory with all three required files', () => {
+  test('scaffold.create: creates directory with required files (README.md, .gitignore)', () => {
     const root = path.join(tmpDir, 'full-test');
     scaffoldProject(root, { name: 'Full Test', description: 'Full desc' });
 
     assert.ok(fs.existsSync(path.join(root, 'README.md')), 'README.md must exist');
     assert.ok(fs.existsSync(path.join(root, '.gitignore')), '.gitignore must exist');
-    assert.ok(fs.existsSync(path.join(root, 'package.json')), 'package.json must exist');
   });
 });

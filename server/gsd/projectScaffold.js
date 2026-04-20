@@ -63,18 +63,10 @@ function scaffoldProject(projectRoot, { name, description = '' }) {
   ].join('\n') + '\n';
   fs.writeFileSync(path.join(projectRoot, '.gitignore'), gitignore, 'utf8');
 
-  // package.json — minimal, private
-  const pkg = {
-    name: sanitizeName(name),
-    version: '0.1.0',
-    description: description || '',
-    private: true,
-  };
-  fs.writeFileSync(
-    path.join(projectRoot, 'package.json'),
-    JSON.stringify(pkg, null, 2) + '\n',
-    'utf8',
-  );
+  // Intentionally NO package.json — it would make init.cjs flag the project
+  // as brownfield and prompt "detected existing code. Map codebase first?".
+  // If the project ends up being Node, /gsd-new-project or the user adds one
+  // explicitly (via `npm init`) based on the chosen stack.
 }
 
 module.exports = { scaffoldProject, sanitizeName, STEP_SEQUENCE };
