@@ -406,6 +406,25 @@ db.exec(`
     ON external_service_costs(checked_at, service);
 `);
 
+// Migration: creation_state table (Phase 51 — project creation pipeline tracking)
+try {
+  db.prepare('SELECT 1 FROM creation_state LIMIT 1').get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS creation_state (
+      project_name TEXT PRIMARY KEY,
+      last_completed_step TEXT,
+      step_sequence TEXT NOT NULL DEFAULT '[]',
+      current_step TEXT,
+      failed_at_step TEXT,
+      error_message TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_creation_state_project ON creation_state(project_name);
+  `);
+}
+
 // Startup cleanup: mark stale active sessions as completed.
 // Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
 // so they stay "active" forever. Complete any active session whose last event is older than
