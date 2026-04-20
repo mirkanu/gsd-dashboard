@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: | Item | Reason |
 current_plan: —
-status: executing
-stopped_at: Phase 50 context gathered
-last_updated: "2026-04-18T22:08:30.139Z"
-last_activity: 2026-04-18 -- Phase 50.5 planning complete
+status: planning
+stopped_at: Phase 50 dropped — ready to plan Phase 51
+last_updated: "2026-04-20T00:00:00.000Z"
+last_activity: 2026-04-20 -- Phase 50 removed from roadmap; terminology toggle scrapped, behavioural contract (Phase 56B) becomes global default
 progress:
   total_phases: 30
   completed_phases: 27
@@ -22,16 +22,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value (v5.0):** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
-**Current focus:** v5.0 kickoff — ready to plan Phase 50.5 (Original-Repo Cleanup)
+**Current focus:** Phase 50.5 complete + verified; Phase 50 dropped; ready to plan Phase 51 (GUI Project Creation + Import)
 
 ## Current Position
 
 Milestone: v5.0 Non-Programmer Mode
-Phase: 50.5 (Original-Repo Cleanup) — NOT STARTED
+Phase: 51 (GUI Project Creation + Import) — NOT STARTED
 Current Plan: —
-Total Plans in Phase: 4
-Status: Ready to execute
-Last activity: 2026-04-18 -- Phase 50.5 planning complete
+Total Plans in Phase: TBD
+Status: Ready to plan
+Last activity: 2026-04-20 -- Phase 50 removed from roadmap (GSD terminology acceptable; behavioural contract covers the intent via Phase 56B global default)
 
 Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 
@@ -163,7 +163,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-18T22:08:30.132Z
-Stopped at: Phase 50 context gathered
-Resume file: .planning/phases/50-non-programmer-mode-foundation/50-CONTEXT.md
-Next action: Run `/gsd:plan-phase 46` to decompose Phase 46 (Services API Integrations) — will consume the credentials panel (railway_pat, openai_admin_key, vercel_token) set via Plan 04
+Last session: 2026-04-20T00:00:00.000Z
+Stopped at: Phase 50 dropped; roadmap renumbered deps; ready for Phase 51
+Resume file: —
+Next action: Run `/gsd-discuss-phase 51` or `/gsd-plan-phase 51` — GUI Project Creation + Import (wizard + import, GitHub-integrated). Now depends only on 50.5 (complete).

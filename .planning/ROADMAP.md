@@ -16,16 +16,14 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 
 ## Design Principles (codify into root CLAUDE.md, reference from every phase)
 
-1. The terminal is a first-class surface, not a debug view — stays fully visible in novice mode.
+1. The terminal is a first-class surface, not a debug view — shown raw (in and out); GSD terminology and slash commands are acceptable there.
 2. Never ask the user to edit or write code — the user describes, Claude does.
-3. Never ask the user to do programmer things — no diff/log pastes, no file opens, no terminal commands, no jargon decisions.
-4. No GSD/Claude Code jargon in the primary UI — "Phase", "Plan", "Milestone", `/gsd:*` hidden in novice mode.
-5. Autonomous testing is the default, not a choice — every plan auto-runs verify-work.
-6. Admin-API-first for external services — Dashboard asks for credentials upfront, provisions programmatically.
-7. Minimise external services — prefer Railway-hosted solutions wherever feasible.
-8. Dashboard is the control plane, tmux sessions are workers — cross-cutting concerns (status, idle detection, notifications, cost) are Dashboard-owned.
-9. Progress narrated in plain English — landmark events pass through a narration layer.
-10. Power-user mode is a toggle, not a separate product — expert view preserves everything that exists today.
+3. Never ask the user to do programmer things that Claude/GSD can do itself — no "run command X", no "test Y", no "deploy started, check back in a few minutes". Claude runs, waits, verifies, then pings.
+4. Autonomous testing is the default, not a choice — every plan auto-runs verify-work.
+5. Admin-API-first for external services — Dashboard asks for credentials upfront, provisions programmatically.
+6. Minimise external services — prefer Railway-hosted solutions wherever feasible.
+7. Dashboard is the control plane, tmux sessions are workers — cross-cutting concerns (status, idle detection, notifications, cost) are Dashboard-owned.
+8. Progress narrated in plain English — landmark events pass through a narration layer (Dashboard cards and Portfolio Feed, not the terminal).
 
 ---
 
@@ -34,7 +32,6 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
 | 50.5. Original-Repo Cleanup | 0/0 | Not planned | - |
-| 50. Non-Programmer Mode Foundation | 0/0 | Not planned | - |
 | 51. GUI Project Creation + Import | 0/0 | Not planned | - |
 | 53. Auto-Verify by Default | 0/0 | Not planned | - |
 | 54. Admin-API Onboarding for External Services | 0/0 | Not planned | - |
@@ -51,14 +48,13 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 ## Execution Order (dependency graph)
 
 ```
-50.5 (cleanup) ──→ 50 (mode foundation)
-                    ├──→ 51 (project creation)
-                    ├──→ 53 (auto-verify)
-                    ├──→ 54 (admin APIs) ──→ 55 (MCP evaluation)
-                    ├──→ 56 (verbosity + feed) ──→ 56B (behavioural contract)
-                    └──→ 58 (maturity stages) ──┬──→ 54B (notification centre)
-                                                 ├──→ 59 (task migration + issue GUI)
-                                                 └──→ 60 (dev/prod envs)
+50.5 (cleanup) ──→ 51 (project creation)
+                   ├──→ 53 (auto-verify)
+                   ├──→ 54 (admin APIs) ──→ 55 (MCP evaluation)
+                   ├──→ 56 (verbosity + feed) ──→ 56B (behavioural contract)
+                   └──→ 58 (maturity stages) ──┬──→ 54B (notification centre)
+                                                ├──→ 59 (task migration + issue GUI)
+                                                └──→ 60 (dev/prod envs)
 ```
 
 Phase 56B depends on both 54 (admin APIs) and 56 (verbosity).
@@ -68,14 +64,13 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 
 ## Coverage (v5.0)
 
-- v5.0 requirements: 69 total (see REQUIREMENTS.md)
-- Mapped to phases: 69
+- v5.0 requirements: 64 total (see REQUIREMENTS.md)
+- Mapped to phases: 64
 - Unmapped: 0
 
 | Phase | Requirements |
 |-------|--------------|
 | 50.5 | CLN-01, CLN-02, CLN-03, CLN-04, CLN-05, CLN-06 |
-| 50 | NPM-01, NPM-02, NPM-03, NPM-04, NPM-05 |
 | 51 | NPC-01, NPC-02, NPC-03, NPC-04, NPC-05, NPC-06 |
 | 53 | ATV-01, ATV-02, ATV-03, ATV-04, ATV-05 |
 | 54 | APO-01, APO-02, APO-03, APO-04, APO-05, APO-06 |
@@ -91,7 +86,7 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 
 ### Phase 50.5: Original-Repo Cleanup
 
-**Goal:** Strip out dormant and mis-fitting features inherited from the upstream `hoangsonww/Claude-Code-Agent-Monitor` fork. Mostly deletion; handle as a sequence of quick tasks before Phase 50 kicks off.
+**Goal:** Strip out dormant and mis-fitting features inherited from the upstream `hoangsonww/Claude-Code-Agent-Monitor` fork. Mostly deletion; handle as a sequence of quick tasks before the rest of v5.0 kicks off.
 **Requirements:** CLN-01 through CLN-06
 **Depends on:** Nothing
 **Plans:** 4 plans
@@ -102,20 +97,11 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 
 ---
 
-### Phase 50: Non-Programmer Mode Foundation
-
-**Goal:** A Dashboard-wide `ui_mode` toggle (`novice` | `expert`) with `novice` as default; every user-visible string in the Dashboard UI passes through a translation layer. Terminal output is out of scope — that's Phase 56.
-**Requirements:** NPM-01 through NPM-05
-**Depends on:** Phase 50.5
-**Plans:** TBD
-
----
-
 ### Phase 51: GUI Project Creation + Import
 
 **Goal:** Create a new GSD project — or import an existing folder as a GSD project — from the Dashboard with zero SSH and zero manual file edits. Includes GitHub repo creation on day one.
 **Requirements:** NPC-01 through NPC-06 (satisfies deferred CREATE-01 from v4.x backlog)
-**Depends on:** Phase 50
+**Depends on:** Phase 50.5
 **Plans:** TBD
 
 ---
@@ -124,7 +110,7 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 
 **Goal:** Every plan execution automatically runs verification before reporting complete. User sees one state transition ("working" → "done and tested"), not two.
 **Requirements:** ATV-01 through ATV-05
-**Depends on:** Phase 50; builds on `/gsd:verify-work` and Phase 48 idle detection
+**Depends on:** builds on `/gsd:verify-work` and Phase 48 idle detection
 **Plans:** TBD
 
 ---
@@ -133,7 +119,7 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 
 **Goal:** When a project declares a dependency on GitHub / Vercel / Stripe / Resend / Railway / OpenAI / Anthropic / a chosen email service, the Dashboard walks the user through guided onboarding and stores credentials such that the project's Claude Code sessions can use them automatically. Railway-first service picker; third-party only when a genuine gap exists. Subsumes v4.3's Phase 46 scope.
 **Requirements:** APO-01 through APO-06
-**Depends on:** Phase 45 (credentials storage) + Phase 50
+**Depends on:** Phase 45 (credentials storage)
 **Plans:** TBD
 
 ---
@@ -159,7 +145,7 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 
 ### Phase 56B: Non-Programmer Behavioural Contract
 
-**Goal:** Claude Code and GSD, when operating in a project flagged as non-programmer mode, never ask the user to perform a programmer action. Technical decisions are made by Claude using its own judgment, documented in the session report, and reversible by the user in plain English.
+**Goal:** Claude Code and GSD, by default for every project, never ask the user to perform a programmer action that Claude can do itself. Technical decisions are made by Claude using its own judgment, documented in the session report, and reversible by the user in plain English. Terminal stays raw — interpretation happens via behaviour, not output rewriting.
 **Forbidden → replacement behaviours:**
 | Forbidden | Replacement |
 |-----------|-------------|
@@ -167,13 +153,15 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 | Asking user to paste git diffs or logs | Read them yourself |
 | Asking user to edit a config/.env/any file | Edit it yourself; request credentials via Dashboard panel (Phase 54) if missing |
 | Asking user to run a terminal command | Run it yourself |
+| "Deploy started, check back in a few minutes" | Run the deploy, wait for it, verify it's live, then ping the user |
+| Asking user to run the tests | Run them yourself; only report after they pass (or after a real failure needing a decision) |
 | Asking user a technical architecture decision in jargon | Decide yourself; state decision in plain English; offer to change course |
 | Asking user to review code before commit | Commit yourself after verify-work passes (Phase 53) |
 | "You'll need to do X manually after this finishes" | Don't finish until X is done, or add X to the plan |
 | "I'll leave this for you to configure" | Configure with sensible default; document in session report |
 | Technical disambiguation questions mid-plan | Use CLAUDE.md defaults; only escalate if truly stuck, framed in user terms |
 **Requirements:** NPB-01 through NPB-07
-**Depends on:** Phase 50 (mode flag), Phase 54 (admin APIs for auto-setup), Phase 56 (verbosity contract it builds on)
+**Depends on:** Phase 54 (admin APIs for auto-setup), Phase 56 (verbosity contract it builds on)
 **Plans:** TBD
 
 ---
@@ -191,7 +179,7 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 | Maintenance | Live but low velocity | Same as Launched | GitHub Issues | Same | Lower weight; surface only bugs & critical items |
 | Retired | Not touched | Archived on GitHub | Closed/migrated | Paused or torn down | Archived, tmux stopped |
 **Requirements:** MAT-01 through MAT-08
-**Depends on:** Phase 50, Phase 51, Phase 54
+**Depends on:** Phase 51, Phase 54
 **Plans:** TBD
 
 ---
@@ -263,7 +251,7 @@ Verifiable by walking a non-programmer (Emily-Kate or equivalent) through the fu
 | Reply-from-Telegram | Dashboard is already usable on mobile; tap deep link → respond in Dashboard |
 | Other notification delivery channels (email, SMS, Discord, push) | Single-user tool; Telegram is enough |
 | Multi-user auth / RBAC beyond today's cookie auth | Still single-user |
-| Mobile-specific novice UI redesign | Keep current responsive layout |
+| Mobile-specific UI redesign | Keep current responsive layout |
 | Visual programming / flowchart UX | Natural-language-first is the bet |
 | Anthropic subscription proxy (à la Meridian) | Separate concern |
 | Autopilot cost gate (COST-05) | Follow-up for v5.1 |

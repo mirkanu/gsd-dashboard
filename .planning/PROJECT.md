@@ -12,16 +12,14 @@ A terminal-first web dashboard for managing multiple Claude Code GSD projects fr
 
 ## Design Principles (v5.0)
 
-1. The terminal is a first-class surface, not a debug view — stays fully visible in novice mode.
+1. The terminal is a first-class surface, not a debug view — shown raw (in and out); GSD terminology and slash commands are acceptable there.
 2. Never ask the user to edit or write code — the user describes, Claude does.
-3. Never ask the user to do programmer things — no diff/log pastes, no file opens, no terminal commands, no jargon decisions.
-4. No GSD/Claude Code jargon in the primary UI in novice mode ("Phase", "Plan", "Milestone", `/gsd:*` hidden behind friendly labels).
-5. Autonomous testing is the default, not a choice.
-6. Admin-API-first for external services.
-7. Minimise external services — Railway-first wherever feasible.
-8. Dashboard is the control plane, tmux sessions are workers.
-9. Progress narrated in plain English.
-10. Power-user (expert) mode is a toggle, not a separate product.
+3. Never ask the user to do programmer things that Claude/GSD can do itself — no "run command X", no "test Y", no "deploy started, check back in a few minutes". Claude runs, waits, verifies, then pings.
+4. Autonomous testing is the default, not a choice.
+5. Admin-API-first for external services.
+6. Minimise external services — Railway-first wherever feasible.
+7. Dashboard is the control plane, tmux sessions are workers.
+8. Progress narrated in plain English — in Dashboard cards and the Portfolio Feed, not the terminal.
 
 ## Requirements
 
@@ -72,7 +70,6 @@ A terminal-first web dashboard for managing multiple Claude Code GSD projects fr
 ### Active (v5.0 — Non-Programmer Mode)
 
 - [ ] Original-repo cleanup: strip dormant features inherited from upstream fork (Sessions/SessionDetail/ActivityFeed/Kanban route, useNotifications, seed/import scripts, unused routes + schema) — Phase 50.5
-- [ ] `ui_mode` toggle (novice/expert, novice default) with copywriting translation layer hiding GSD/Claude Code jargon in primary UI — Phase 50
 - [ ] GUI project creation + import: New Project wizard (name → repo → tmux → new-project interview), Import Existing Project with auto codebase analysis — Phase 51
 - [ ] Auto-verify by default: every plan execution auto-runs verify-work; failed verification offers one-click retry; Pause/Archive fold in verification — Phase 53
 - [ ] Admin-API onboarding: guided panels per external service, OAuth where available, admin-key paste otherwise; Railway-first picker; credentials exposed to Claude sessions as env vars — Phase 54 (subsumes former Phase 46)

@@ -21,18 +21,6 @@ Prior milestone requirements (v3.x and v4.x) are archived under `.planning/miles
 
 ---
 
-## NPM — Non-Programmer Mode Foundation
-
-| ID | Requirement | Phase |
-|----|-------------|-------|
-| NPM-01 | `ui_mode` setting (`novice` \| `expert`) persisted in `app_settings`, default `novice`, switchable from a top-bar control surviving refresh and redeploy. | 50 |
-| NPM-02 | In novice mode, no string containing "phase", "plan", "milestone", or a slash command appears in any user-facing Dashboard element; verified by automated text scan in the test suite. | 50 |
-| NPM-03 | Expert mode preserves today's UI verbatim — no regressions in existing views. | 50 |
-| NPM-04 | `copywriting.js` translation map owns all novice-mode labels (Phase → "Step", Plan → "Task", Milestone → "Version", etc.); unit-testable in isolation. | 50 |
-| NPM-05 | Settings page restructured into "System" (technical config, expert-leaning) + "First-run" (guided setup, novice-leaning) sections. | 50 |
-
----
-
 ## NPC — New Project Creation (Wizard + Import)
 
 | ID | Requirement | Phase |
@@ -50,10 +38,10 @@ Prior milestone requirements (v3.x and v4.x) are archived under `.planning/miles
 
 | ID | Requirement | Phase |
 |----|-------------|-------|
-| ATV-01 | After `/gsd:execute-phase` completes, Dashboard automatically triggers `/gsd:verify-work` without user action in novice mode. | 53 |
+| ATV-01 | After `/gsd:execute-phase` completes, Dashboard automatically triggers `/gsd:verify-work` without user action. | 53 |
 | ATV-02 | If verification fails, Dashboard surfaces "I hit a problem — want me to try to fix it?" with one-click retry. | 53 |
 | ATV-03 | Plan cards only transition to ✅ after verification passes; failed verification keeps them in ⚠ with AI's plain-English summary of what broke. | 53 |
-| ATV-04 | Pause/Archive workflow (task #68) folded in: Pause = graceful shutdown + verify-work + pause; Archive = verify-work + stop tmux + GitHub archive if applicable. Expert mode preserves today's separate-step flow. | 53 |
+| ATV-04 | Pause/Archive workflow (task #68) folded in: Pause = graceful shutdown + verify-work + pause; Archive = verify-work + stop tmux + GitHub archive if applicable. | 53 |
 | ATV-05 | Failure-retry logic adopts failure-propagation + circuit-breaker patterns from the `jamoeight/get-shit-done-autopilot` fork (task #55): extract failure context into retry prompts, stop after N consecutive failures. | 53 |
 
 ---
@@ -83,7 +71,7 @@ Prior milestone requirements (v3.x and v4.x) are archived under `.planning/miles
 | NAR-02 | GSD config overrides for the worst verbosity offenders (CONTEXT.md re-ask, per-plan ceremony) applied project-by-project via the Config page. | 56 |
 | NAR-03 | Structured-signal extractor extends Phase 43's `extractCurrentTask` to pull session-report summaries, plan-completion events, and verification results from tmux output; surfaced as structured cards on the project page without touching the terminal stream. | 56 |
 | NAR-04 | Portfolio Feed replaces the old ActivityFeed route slot: plain-English cross-project stream ("Finished wiring cost page on GSD Dashboard 2m ago") drawn from extracted signals, not arbitrary CLI scraping. | 56 |
-| NAR-05 | The terminal itself is unchanged in both novice and expert modes — we reduce what Claude says, not what the user sees; landmark extraction is additive. | 56 |
+| NAR-05 | The terminal itself is unchanged — we reduce what Claude says, not what the user sees; landmark extraction is additive. | 56 |
 
 ---
 
@@ -91,10 +79,10 @@ Prior milestone requirements (v3.x and v4.x) are archived under `.planning/miles
 
 | ID | Requirement | Phase |
 |----|-------------|-------|
-| NPB-01 | `CLAUDE.md` template for non-programmer-mode projects contains an explicit "Do not ask the user to…" section covering forbidden behaviours and their replacements. | 56B |
-| NPB-02 | GSD skill overrides ensure `/gsd:discuss-phase` and `/gsd:plan-phase` don't surface implementation-level questions in non-programmer mode — all questions framed in user-outcome terms. | 56B |
-| NPB-03 | Deterministic enforcement via hooks where possible: PreToolUse hooks block tool calls that prompt the user instead of executing when the Dashboard knows the file path or has the needed credential. | 56B |
-| NPB-04 | Behavioural eval set of 20 representative prompts runs against Claude in non-programmer mode, graded for violations of the forbidden-behaviours list; target zero violations. | 56B |
+| NPB-01 | Global `CLAUDE.md` template contains an explicit "Do not ask the user to…" section covering forbidden behaviours and their replacements — applies to every GSD project by default. | 56B |
+| NPB-02 | GSD skill overrides ensure `/gsd:discuss-phase` and `/gsd:plan-phase` don't surface implementation-level questions — all questions framed in user-outcome terms. | 56B |
+| NPB-03 | Claude/GSD must complete end-to-end before pinging the user: run the commands, wait for deploys, run the tests, verify success — never "deploy started, check back in a few minutes" handoffs. | 56B |
+| NPB-04 | Behavioural eval set of 20 representative prompts runs against Claude, graded for violations of the forbidden-behaviours list; target zero violations. | 56B |
 | NPB-05 | When Claude genuinely needs a decision the user is qualified to make, the question is framed in user-outcome language (not jargon). | 56B |
 | NPB-06 | When Claude needs a missing credential, the Dashboard surfaces a credentials-request panel (Phase 54) rather than Claude asking in the terminal. | 56B |
 | NPB-07 | User-testing checkpoint with a genuine non-programmer (Emily-Kate or equivalent) runs through 3 real tasks on a Draft-stage project; any stall is a failure and feeds back into the CLAUDE.md rules. | 56B |
@@ -158,9 +146,9 @@ Prior milestone requirements (v3.x and v4.x) are archived under `.planning/miles
 
 ## Coverage
 
-- **v5.0 requirements:** 69 total across 11 categories
-- **Phases:** 50.5 + 50 + 51 + 53 + 54 + 55 + 56 + 56B + 58 + 54B + 59 + 60 = 12 phases
-- **Mapped:** 69/69
+- **v5.0 requirements:** 64 total across 10 categories
+- **Phases:** 50.5 + 51 + 53 + 54 + 55 + 56 + 56B + 58 + 54B + 59 + 60 = 11 phases
+- **Mapped:** 64/64
 - **Unmapped:** 0
 
 ## Deferred to v5.1+
