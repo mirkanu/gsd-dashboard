@@ -32,7 +32,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
 | 50.5. Original-Repo Cleanup | 0/0 | Not planned | - |
-| 51. GUI Project Creation + Import | 4/4 | Planned | - |
+| 51. GUI Project Creation + Import | 4/4 | Complete   | 2026-04-20 |
 | 53. Auto-Verify by Default | 0/0 | Not planned | - |
 | 54. Admin-API Onboarding for External Services | 0/0 | Not planned | - |
 | 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
@@ -102,11 +102,11 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 **Goal:** Create a new GSD project — or import an existing folder as a GSD project — from the Dashboard with zero SSH and zero manual file edits. Includes GitHub repo creation on day one.
 **Requirements:** NPC-01 through NPC-06 (satisfies deferred CREATE-01 from v4.x backlog)
 **Depends on:** Phase 50.5
-**Plans:** 4 plans
-- [ ] 51-01-PLAN.md — DB migration (creation_state), projectScaffold.js + projectDetector.js utilities, proxy prefix update
-- [ ] 51-02-PLAN.md — Backend route /api/projects (create, import, candidates, resume, github-pats) + server/index.js mount
-- [ ] 51-03-PLAN.md — UI: NewProjectDialog, ImportProjectDialog, ProjectProgressChip, Sidebar button wiring
-- [ ] 51-04-PLAN.md — UI: ProjectCreationCard + useProjectCreationState hook + ChatListView wiring
+**Plans:** 4/4 plans complete
+- [x] 51-01-PLAN.md — DB migration (creation_state), projectScaffold.js + projectDetector.js utilities, proxy prefix update
+- [x] 51-02-PLAN.md — Backend route /api/projects (create, import, candidates, resume, github-pats) + server/index.js mount
+- [x] 51-03-PLAN.md — UI: NewProjectDialog, ImportProjectDialog, ProjectProgressChip, Sidebar button wiring
+- [x] 51-04-PLAN.md — UI: ProjectCreationCard + useProjectCreationState hook + ChatListView wiring
 
 ---
 
