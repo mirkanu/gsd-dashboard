@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Activity,
@@ -17,7 +17,10 @@ import {
   Server,
   Coins,
   Wrench,
+  Plus,
 } from "lucide-react";
+import { NewProjectDialog } from "./NewProjectDialog";
+import { ImportProjectDialog } from "./ImportProjectDialog";
 
 // ─── Primary nav (always visible at top) ─────────────────────────────────────
 const PRIMARY_ITEMS = [
@@ -97,7 +100,28 @@ interface SidebarProps {
 
 export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen, onNavClick }: SidebarProps) {
   const [agentsOpen, setAgentsOpen] = useState(loadAgentsOpen);
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [hasGithubPat, setHasGithubPat] = useState<boolean | null>(null);
+  const navigate = useNavigate();
   const slim = collapsed && !isMobile;
+
+  // PAT pre-flight check on mount (once)
+  useEffect(() => {
+    fetch('/api/projects/github-pats')
+      .then(r => r.json())
+      .then(data => setHasGithubPat((data.pats || []).length > 0))
+      .catch(() => setHasGithubPat(false));
+  }, []);
+
+  const handleNewProject = () => {
+    if (hasGithubPat === false) {
+      // No PAT configured — open Services panel with credentials
+      navigate('/services');
+    } else {
+      setShowNewProject(true);
+    }
+  };
 
   const toggleAgents = () => {
     // On collapsed desktop, expand sidebar first then open submenu
@@ -114,6 +138,7 @@ export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen
     : "";
 
   return (
+    <>
     <aside
       className={`fixed left-0 top-0 bottom-0 bg-surface-1 border-r border-border flex flex-col z-30 overflow-y-auto overflow-x-hidden transition-[width,transform] duration-200 ${
         isMobile ? `w-60 ${mobileTransform}` : collapsed ? "w-[4.25rem]" : "w-60"
@@ -148,6 +173,35 @@ export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen
             onClick={onNavClick}
           />
         ))}
+
+        {/* New Project CTA */}
+        {!slim && (
+          <div className="pt-1 pb-0.5">
+            <button
+              onClick={handleNewProject}
+              className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 border border-indigo-500/30 hover:border-indigo-500/50 transition-colors duration-150"
+              title="Create a new GSD project"
+            >
+              <Plus className="w-4 h-4 flex-shrink-0" />
+              <span>+ New Project</span>
+            </button>
+            <button
+              onClick={() => setShowImport(true)}
+              className="mt-1 w-full text-left px-3 py-1 text-xs text-gray-500 hover:text-gray-300 transition-colors duration-150"
+            >
+              Import existing
+            </button>
+          </div>
+        )}
+        {slim && (
+          <button
+            onClick={handleNewProject}
+            title="New Project"
+            className="flex items-center justify-center w-full px-2 py-2.5 rounded-lg text-indigo-300 hover:bg-indigo-500/20 border border-transparent hover:border-indigo-500/30 transition-colors duration-150"
+          >
+            <Plus className="w-4 h-4 flex-shrink-0" />
+          </button>
+        )}
 
         {/* Divider */}
         {!slim && <div className="border-t border-border/50 my-2" />}
@@ -260,6 +314,28 @@ export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen
         )}
       </div>
     </aside>
+
+    {/* Project creation/import dialogs — rendered outside aside to avoid stacking context issues */}
+    {showNewProject && (
+      <NewProjectDialog
+        open={showNewProject}
+        onClose={() => setShowNewProject(false)}
+        onCreated={() => {
+          setShowNewProject(false);
+          // ProjectCreationCard (Plan 04) appears via WebSocket; no manual state update needed
+        }}
+      />
+    )}
+    {showImport && (
+      <ImportProjectDialog
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImported={() => {
+          setShowImport(false);
+        }}
+      />
+    )}
+    </>
   );
 }
 
