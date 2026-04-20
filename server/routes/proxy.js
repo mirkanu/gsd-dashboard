@@ -10,7 +10,7 @@ const PROXY_PREFIXES = [
   '/api/services',
   '/api/app-settings',
   '/api/webhooks',
-  '/api/projects',
+  '/api/projects', // Phase 51: project creation + import routes
 ];
 
 function createAgentProxy(gsdDataUrl) {
@@ -22,7 +22,8 @@ function createAgentProxy(gsdDataUrl) {
     const search = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
     const upstreamUrl = `${gsdDataUrl}${req.path}${search}`;
 
-    const fetchOpts = { signal: AbortSignal.timeout(10000), method: req.method };
+    const timeoutMs = req.path.startsWith('/api/projects/create') ? 120000 : 10000;
+    const fetchOpts = { signal: AbortSignal.timeout(timeoutMs), method: req.method };
     if (req.method === 'PUT' || req.method === 'POST' || req.method === 'PATCH') {
       fetchOpts.headers = { 'Content-Type': 'application/json' };
       fetchOpts.body = JSON.stringify(req.body);
