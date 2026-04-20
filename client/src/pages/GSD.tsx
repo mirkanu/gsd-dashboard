@@ -22,6 +22,7 @@ import { ChatListFilters } from "../components/ChatListFilters";
 import { ProjectDetailsPanel } from "../components/ProjectDetailsPanel";
 import { AutopilotControls } from "../components/AutopilotControls";
 import { useResizableColumns } from "../hooks/useResizableColumns";
+import { useProjectCreationStateSubscriber } from "../hooks/useProjectCreationState";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() =>
@@ -1039,6 +1040,9 @@ export function GSD() {
     });
     return unsub;
   }, []);
+
+  // Subscribe to project_creation_state WS messages — drives creation cards in ChatListView
+  useProjectCreationStateSubscriber();
 
   // 1-second "now" tick for live-ticking elapsed-time labels. A single
   // useState<number> is cheap — React reconciles ~10 cards efficiently.
