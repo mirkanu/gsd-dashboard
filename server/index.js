@@ -27,6 +27,7 @@ const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
 const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
 const { authRouter, isValidToken } = require("./routes/auth");
+const projectsRouter = require("./routes/projects");
 
 function cookieAuth(req, res, next) {
   // Skip auth for localhost
@@ -69,6 +70,7 @@ function createApp() {
   app.use("/api/app-settings", appSettingsRouter);
   app.use("/api/webhooks/email", webhooksEmailRouter);
   app.use("/api/config", configRouter);
+  app.use("/api/projects", projectsRouter);
   app.use("/mcp", mcpRemote);
 
   app.get("/api/health", (_req, res) => {
