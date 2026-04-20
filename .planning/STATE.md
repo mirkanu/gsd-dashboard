@@ -4,9 +4,9 @@ milestone: v5.0
 milestone_name: | Item | Reason |
 current_plan: —
 status: planning
-stopped_at: Phase 50 dropped — ready to plan Phase 51
-last_updated: "2026-04-20T00:00:00.000Z"
-last_activity: 2026-04-20 -- Phase 50 removed from roadmap; terminology toggle scrapped, behavioural contract (Phase 56B) becomes global default
+stopped_at: Phase 51 context gathered
+last_updated: "2026-04-20T08:07:34.113Z"
+last_activity: 2026-04-20 -- Phase 50 removed from roadmap (GSD terminology acceptable; behavioural contract covers the intent via Phase 56B global default)
 progress:
   total_phases: 30
   completed_phases: 27
@@ -163,7 +163,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-20T00:00:00.000Z
-Stopped at: Phase 50 dropped; roadmap renumbered deps; ready for Phase 51
-Resume file: —
+Last session: 2026-04-20T08:07:34.106Z
+Stopped at: Phase 51 context gathered
+Resume file: .planning/phases/51-gui-project-creation-import/51-CONTEXT.md
 Next action: Run `/gsd-discuss-phase 51` or `/gsd-plan-phase 51` — GUI Project Creation + Import (wizard + import, GitHub-integrated). Now depends only on 50.5 (complete).
