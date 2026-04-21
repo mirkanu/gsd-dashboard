@@ -20,6 +20,7 @@ import { MarkdownViewer } from "../components/MarkdownViewer";
 import { ChatListView } from "../components/ChatListView";
 import { ChatListFilters } from "../components/ChatListFilters";
 import { ProjectDetailsPanel } from "../components/ProjectDetailsPanel";
+import { PauseConfirmDialog } from "../components/PauseConfirmDialog";
 import { AutopilotControls } from "../components/AutopilotControls";
 import { useResizableColumns } from "../hooks/useResizableColumns";
 import { useProjectCreationStateSubscriber } from "../hooks/useProjectCreationState";
@@ -932,6 +933,7 @@ export function GSD() {
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
   // Mobile info drawer uses a GsdProject object
   const [drawerProject, setDrawerProject] = useState<GsdProject | null>(null);
+  const [pauseTarget, setPauseTarget] = useState<string | null>(null);
   // Ref to track selected project name in the load() callback (which has [] deps)
   const selectedProjRef = useRef<string | null>(null);
 
@@ -1244,7 +1246,7 @@ export function GSD() {
                   <ProjectDetailsPanel
                     project={selectedProj}
                     autopilotRun={autopilotRuns.get(selectedProj.name) ?? null}
-                    onPauseSession={() => pauseSession(selectedProj.name)}
+                    onPauseSession={() => setPauseTarget(selectedProj.name)}
                     onArchive={() => archiveProject(selectedProj.name)}
                     onUnarchive={() => unarchiveProject(selectedProj.name)}
                     onOpenTerminal={() => {}}
@@ -1268,6 +1270,12 @@ export function GSD() {
             onClose={() => setFullScreen(null)}
           />
         )}
+        <PauseConfirmDialog
+          projectName={pauseTarget}
+          onClose={() => setPauseTarget(null)}
+          onSendPauseWork={(name) => api.gsd.send(name, "/gsd-pause-work")}
+          onJustPause={(name) => pauseSession(name)}
+        />
       </>
     );
   }
@@ -1312,7 +1320,7 @@ export function GSD() {
         <GsdDrawer
           project={drawerProject}
           autopilotRun={autopilotRuns.get(drawerProject.name) ?? null}
-          onPauseSession={() => pauseSession(drawerProject.name)}
+          onPauseSession={() => setPauseTarget(drawerProject.name)}
           onArchive={() => { archiveProject(drawerProject.name); setDrawerProject(null); setSelectedProject(null); }}
           onUnarchive={() => unarchiveProject(drawerProject.name)}
           onOpenTerminal={() => {}}
@@ -1329,6 +1337,12 @@ export function GSD() {
         />
       )}
     </div>
+    <PauseConfirmDialog
+      projectName={pauseTarget}
+      onClose={() => setPauseTarget(null)}
+      onSendPauseWork={(name) => api.gsd.send(name, "/gsd-pause-work")}
+      onJustPause={(name) => pauseSession(name)}
+    />
     {selectedProject && (
       <TerminalOverlay
         projectName={selectedProject}
