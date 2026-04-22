@@ -141,6 +141,8 @@ export const api = {
       request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/reopen-tmux`, { method: 'POST' }),
     pauseSession: (projectName: string) =>
       request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/pause-session`, { method: 'POST' }),
+    killSession: (projectName: string) =>
+      request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/kill-session`, { method: 'POST' }),
     tasks: {
       list: (projectKey: string, archived = false) =>
         request<{ tasks: GsdTask[] }>(

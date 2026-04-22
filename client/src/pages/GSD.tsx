@@ -996,6 +996,13 @@ export function GSD() {
     } catch { /* silent fail */ }
   }, [load]);
 
+  const hardKillSession = useCallback(async (name: string) => {
+    try {
+      await api.gsd.killSession(name);
+      load();
+    } catch { /* silent fail */ }
+  }, [load]);
+
   const archiveProject = useCallback(async (name: string) => {
     try {
       await api.gsd.archive(name);
@@ -1274,7 +1281,7 @@ export function GSD() {
           projectName={pauseTarget}
           onClose={() => setPauseTarget(null)}
           onSendPauseWork={(name) => api.gsd.send(name, "/gsd-pause-work")}
-          onJustPause={(name) => pauseSession(name)}
+          onJustPause={(name) => hardKillSession(name)}
         />
       </>
     );
@@ -1341,7 +1348,7 @@ export function GSD() {
       projectName={pauseTarget}
       onClose={() => setPauseTarget(null)}
       onSendPauseWork={(name) => api.gsd.send(name, "/gsd-pause-work")}
-      onJustPause={(name) => pauseSession(name)}
+      onJustPause={(name) => hardKillSession(name)}
     />
     {selectedProject && (
       <TerminalOverlay
