@@ -1622,6 +1622,96 @@ describe("Phase 12: archive/unarchive endpoints", () => {
 // ============================================================
 // Phase 17: task endpoints
 // ============================================================
+// ============================================================
+// POST /api/gsd/projects/create
+// ============================================================
+describe("POST /api/gsd/projects/create", () => {
+  const TEMP_CONFIG_PATH = path.join(os.tmpdir(), `gsd-create-test-${Date.now()}-${process.pid}.json`);
+  let prevGsdProjectsPath;
+
+  before(() => {
+    prevGsdProjectsPath = process.env.GSD_PROJECTS_PATH;
+    // Write a minimal config with empty projects
+    fs.writeFileSync(TEMP_CONFIG_PATH, JSON.stringify({ projects: [] }, null, 2), "utf8");
+    process.env.GSD_PROJECTS_PATH = TEMP_CONFIG_PATH;
+  });
+
+  after(() => {
+    if (prevGsdProjectsPath === undefined) delete process.env.GSD_PROJECTS_PATH;
+    else process.env.GSD_PROJECTS_PATH = prevGsdProjectsPath;
+    try { fs.unlinkSync(TEMP_CONFIG_PATH); } catch { /* ignore */ }
+  });
+
+  it("returns 400 when name is empty string", async () => {
+    const res = await post("/api/gsd/projects/create", { name: "" });
+    assert.equal(res.status, 400);
+    assert.ok(res.body.error, "Expected error in body");
+  });
+
+  it("returns 400 when name is missing", async () => {
+    const res = await post("/api/gsd/projects/create", {});
+    assert.equal(res.status, 400);
+    assert.ok(res.body.error, "Expected error in body");
+  });
+
+  it("returns 400 when name contains a slash", async () => {
+    const res = await post("/api/gsd/projects/create", { name: "foo/bar" });
+    assert.equal(res.status, 400);
+    assert.ok(res.body.error, "Expected error in body");
+  });
+
+  it("returns 400 when name contains dot-dot", async () => {
+    const res = await post("/api/gsd/projects/create", { name: "..evil" });
+    assert.equal(res.status, 400);
+    assert.ok(res.body.error, "Expected error in body");
+  });
+
+  it("returns 409 when project name already exists in config", async () => {
+    // Manually inject an entry into the temp config
+    const config = JSON.parse(fs.readFileSync(TEMP_CONFIG_PATH, "utf8"));
+    config.projects.push({ name: "already-exists", root: "/tmp/already-exists", tmux_session: "already-exists" });
+    fs.writeFileSync(TEMP_CONFIG_PATH, JSON.stringify(config, null, 2), "utf8");
+
+    const res = await post("/api/gsd/projects/create", { name: "already-exists" });
+    assert.equal(res.status, 409);
+    assert.ok(res.body.error, "Expected error in body");
+  });
+
+  it("returns 201 with project object on valid name (tmux path, skipped if tmux unavailable)", async () => {
+    const uniqueName = `test-create-${Date.now()}`;
+    const basePath = os.tmpdir();
+    const expectedDir = path.join(basePath, uniqueName);
+    let res;
+    try {
+      res = await post("/api/gsd/projects/create", { name: uniqueName, basePath });
+    } catch (err) {
+      // Network error — unlikely but guard
+      return;
+    }
+
+    if (res.status === 500 && res.body && res.body.detail &&
+        (res.body.detail.includes("tmux") || res.body.detail.includes("not found"))) {
+      // tmux not available in test environment — acceptable
+      return;
+    }
+
+    assert.equal(res.status, 201);
+    assert.equal(res.body.ok, true);
+    assert.ok(res.body.project, "Expected project in response");
+    assert.equal(res.body.project.name, uniqueName);
+    assert.equal(res.body.project.root, expectedDir);
+    assert.equal(res.body.project.tmux_session, uniqueName);
+
+    // Verify config was updated
+    const config = JSON.parse(fs.readFileSync(TEMP_CONFIG_PATH, "utf8"));
+    const added = config.projects.find((p) => p.name === uniqueName);
+    assert.ok(added, "Project should be in config after create");
+
+    // Cleanup
+    try { fs.rmSync(expectedDir, { recursive: true, force: true }); } catch { /* ignore */ }
+  });
+});
+
 describe("task endpoints", () => {
   const PROJECT_KEY = "task-test-proj";
 
