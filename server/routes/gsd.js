@@ -157,7 +157,7 @@ router.get("/projects", async (_req, res) => {
       const stateEnteredAt =
         snap && snap.sessionState === sessionState
           ? snap.stateEnteredAt
-          : new Date().toISOString();
+          : null; // unknown — do not invent a timestamp; UI hides the elapsed label when null
 
       // Calculate session cost for the most recent session
       let sessionCost = null;
