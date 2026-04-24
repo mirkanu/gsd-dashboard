@@ -159,7 +159,7 @@ function SendBox({ projectName, initialValue, contextTokens }: { projectName: st
       style={focused && isMobile ? { bottom: 0, background: getTermTheme().background } : undefined}
       onClick={(e) => e.stopPropagation()}
     >
-      {/* ContextBar hidden — token data inaccurate (cumulative vs current prompt); TODO: fix data source */}
+      {contextTokens != null && contextTokens > 0 && <ContextBar tokens={contextTokens} />}
       <div className="flex gap-2">
         <input
           type="text"
@@ -294,9 +294,10 @@ interface TerminalOverlayProps {
   initialSendValue: string;
   inline?: boolean;
   onInfo?: () => void;
+  contextTokens?: number | null;
 }
 
-function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inline = false, onInfo }: TerminalOverlayProps) {
+function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inline = false, onInfo, contextTokens }: TerminalOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -358,6 +359,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         fontSize: window.matchMedia('(pointer: coarse)').matches ? 10 : 14,
         fontFamily: 'Menlo, Monaco, "Courier New", monospace',
         theme: { background: tt.background, foreground: tt.foreground, selectionBackground: tt.selectionBackground },
+        scrollback: 0, // disable xterm scrollback — tmux owns all scrollback; prevents repeated-page bug
       });
       const fitAddon = new FitAddon();
       terminal.loadAddon(fitAddon);
@@ -481,7 +483,11 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
       terminal.attachCustomWheelEventHandler((ev) => {
         const activeWs = wsRef.current;
         if (!activeWs || activeWs.readyState !== WebSocket.OPEN) return false;
-        const lines = Math.max(1, Math.round(Math.abs(ev.deltaY) / ((terminal.options.fontSize as number) ?? 14)));
+        const fontSize = (terminal.options.fontSize as number) ?? 14;
+        // Normalize to pixels first (deltaMode 1 = lines, 0 = pixels), then divide by 3× fontSize
+        // so one standard wheel notch (≈100 px) sends ~2–3 lines instead of ~7.
+        const pixelY = ev.deltaMode === 1 ? ev.deltaY * fontSize : ev.deltaY;
+        const lines = Math.max(1, Math.round(Math.abs(pixelY) / (fontSize * 3)));
         const seq = ev.deltaY > 0 ? '\x1b[<65;1;1M' : '\x1b[<64;1;1M';
         for (let i = 0; i < lines; i++) activeWs.send(seq);
         return false;
@@ -713,7 +719,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
             <SendBox
               projectName={projectName}
               initialValue={initialSendValue}
-              contextTokens={null}
+              contextTokens={contextTokens ?? null}
             />
           )}
           <SpecialKeyBar wsRef={wsRef} termRef={termRef} specialKeyPressRef={specialKeyPressRef} />
@@ -836,7 +842,8 @@ export function ProjectCard({
             onClick={(e) => {
               e.stopPropagation();
               if (window.matchMedia('(pointer: coarse)').matches) {
-                window.open(`/terminal/${encodeURIComponent(project.name)}`, '_blank');
+                const tokens = project.contextTokens ?? '';
+                window.open(`/terminal/${encodeURIComponent(project.name)}${tokens ? `?tokens=${tokens}` : ''}`, '_blank');
               } else {
                 onOpenTerminal(state?.next_action ?? "");
               }
@@ -1337,6 +1344,7 @@ export function GSD() {
                     onClose={() => setSelectedProject(null)}
                     initialSendValue=""
                     inline={true}
+                    contextTokens={selectedProj?.contextTokens}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-500 text-sm">
@@ -1476,6 +1484,7 @@ export function GSD() {
         wsBase={terminalWsBase}
         onClose={handleTerminalClose}
         initialSendValue=""
+        contextTokens={selectedProj?.contextTokens}
         onInfo={() => {
           const proj = projects.find((p) => p.name === selectedProject);
           if (proj) {
@@ -1501,12 +1510,16 @@ export function TerminalPage() {
 
   if (!name) return null;
 
+  const tokensParam = new URLSearchParams(window.location.search).get('tokens');
+  const contextTokens = tokensParam ? parseInt(tokensParam, 10) || null : null;
+
   return (
     <TerminalOverlay
       projectName={decodeURIComponent(name)}
       wsBase={wsBase}
       onClose={() => window.close()}
       initialSendValue=""
+      contextTokens={contextTokens}
     />
   );
 }
