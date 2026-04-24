@@ -83,6 +83,6 @@ None — no new network endpoints or auth paths introduced on the frontend. The 
 - 2218502 — feat(15-02): add NewProjectDialog component and New project button
 
 ### Checkpoint status:
-Task 3 is a `checkpoint:human-verify` — execution paused awaiting manual verification.
+Task 3 `checkpoint:human-verify` — approved by user on 2026-04-24.
 
 ## Self-Check: PASSED
