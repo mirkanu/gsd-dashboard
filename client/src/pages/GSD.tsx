@@ -911,6 +911,103 @@ export function ProjectCard({
   );
 }
 
+// ─── New project dialog ───────────────────────────────────────────────────────
+
+interface NewProjectDialogProps {
+  onClose: () => void;
+  onCreated: (project: GsdProject) => void;
+}
+
+function NewProjectDialog({ onClose, onCreated }: NewProjectDialogProps) {
+  const [name, setName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const { project } = await api.gsd.create(trimmed);
+      // Build a minimal GsdProject shape for optimistic display
+      const newProject: GsdProject = {
+        name: project.name,
+        root: project.root,
+        state: null,
+        roadmap: null,
+        requirements: null,
+        version: null,
+        liveUrl: null,
+        velocity: 0,
+        streak: 0,
+        estimatedCompletion: null,
+        tmuxActive: true, // session was just created
+        contextTokens: null,
+        sessionUpdatedAt: null,
+      };
+      onCreated(newProject);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create project");
+      setSubmitting(false);
+    }
+  };
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center"
+      style={{ zIndex: 60 }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-surface-2 border border-border rounded-xl p-6 w-full max-w-sm shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-base font-semibold text-gray-100 mb-1">New project</h3>
+        <p className="text-xs text-gray-500 mb-4">
+          Creates a directory, tmux session, and launches Claude with /gsd:new-project.
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            autoFocus
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="project-name"
+            className="w-full text-sm bg-surface-3 border border-border rounded px-3 py-2 text-gray-200 placeholder:text-gray-600 focus:outline-none focus:border-accent/50"
+          />
+          {error && <p className="text-xs text-red-400">{error}</p>}
+          <div className="flex gap-2 justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-sm px-3 py-1.5 rounded text-gray-400 hover:text-gray-200 hover:bg-surface-3 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!name.trim() || submitting}
+              className="text-sm px-4 py-1.5 rounded bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {submitting ? "Creating…" : "Create"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export function GSD() {
@@ -934,6 +1031,7 @@ export function GSD() {
   // Mobile info drawer uses a GsdProject object
   const [drawerProject, setDrawerProject] = useState<GsdProject | null>(null);
   const [pauseTarget, setPauseTarget] = useState<string | null>(null);
+  const [showNewProject, setShowNewProject] = useState(false);
   // Ref to track selected project name in the load() callback (which has [] deps)
   const selectedProjRef = useRef<string | null>(null);
 
@@ -1016,6 +1114,10 @@ export function GSD() {
       load();
     } catch { /* silent fail */ }
   }, [load]);
+
+  const handleProjectCreated = useCallback((project: GsdProject) => {
+    setProjects((prev) => [project, ...prev]);
+  }, []);
 
   // Fetch terminal WS base URL once on mount (null = use relative URL)
   useEffect(() => {
@@ -1143,6 +1245,12 @@ export function GSD() {
         >
           <Sun className="w-3.5 h-3.5 hidden dark:block" />
           <Moon className="w-3.5 h-3.5 block dark:hidden" />
+        </button>
+        <button
+          onClick={() => setShowNewProject(true)}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-200 hover:bg-surface-3 border border-border transition-colors"
+        >
+          + New project
         </button>
         <button
           onClick={() => load(true)}
@@ -1283,6 +1391,12 @@ export function GSD() {
           onSendPauseWork={(name) => api.gsd.send(name, "/gsd-pause-work")}
           onJustPause={(name) => hardKillSession(name)}
         />
+        {showNewProject && (
+          <NewProjectDialog
+            onClose={() => setShowNewProject(false)}
+            onCreated={handleProjectCreated}
+          />
+        )}
       </>
     );
   }
@@ -1350,6 +1464,12 @@ export function GSD() {
       onSendPauseWork={(name) => api.gsd.send(name, "/gsd-pause-work")}
       onJustPause={(name) => hardKillSession(name)}
     />
+    {showNewProject && (
+      <NewProjectDialog
+        onClose={() => setShowNewProject(false)}
+        onCreated={handleProjectCreated}
+      />
+    )}
     {selectedProject && (
       <TerminalOverlay
         projectName={selectedProject}
