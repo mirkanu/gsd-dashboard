@@ -523,18 +523,6 @@ router.post('/projects/create', async (req, res) => {
 
   const dir = path.join(resolvedBase, name);
 
-  // Check for duplicate in config
-  let config;
-  try {
-    config = loadConfig();
-  } catch (err) {
-    return res.status(500).json({ error: 'Failed to read config', detail: err.message });
-  }
-
-  if (config.projects.find((p) => p.name === name)) {
-    return res.status(409).json({ error: 'project already exists' });
-  }
-
   // Create directory
   try {
     fs.mkdirSync(dir, { recursive: true });
@@ -564,8 +552,13 @@ router.post('/projects/create', async (req, res) => {
   const newEntry = { name, root: dir, tmux_session: name };
   try {
     const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../../gsd-projects.json');
-    // Re-read to pick up any writes since we first loaded
+    // Re-read to pick up any writes since we first loaded, and re-check for duplicates
+    // atomically — two concurrent creates for the same name would both pass an early
+    // check, but checking here against the freshest state closes that race window.
     const freshConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (freshConfig.projects.find((p) => p.name === name)) {
+      return res.status(409).json({ error: 'project already exists' });
+    }
     freshConfig.projects.push(newEntry);
     fs.writeFileSync(configPath, JSON.stringify(freshConfig, null, 2) + '\n', 'utf8');
   } catch (err) {
