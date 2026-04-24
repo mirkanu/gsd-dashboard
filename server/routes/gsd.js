@@ -523,6 +523,18 @@ router.post('/projects/create', async (req, res) => {
 
   const dir = path.join(resolvedBase, name);
 
+  // Early duplicate check — fast-path rejection before any side effects.
+  // A second check is performed at write time (against the fresh re-read) to
+  // close the race window where two concurrent requests both pass this check.
+  try {
+    const earlyConfig = loadConfig();
+    if (earlyConfig.projects.find((p) => p.name === name)) {
+      return res.status(409).json({ error: 'project already exists' });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to read config', detail: err.message });
+  }
+
   // Create directory
   try {
     fs.mkdirSync(dir, { recursive: true });

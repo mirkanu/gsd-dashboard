@@ -1679,7 +1679,9 @@ describe("POST /api/gsd/projects/create", () => {
 
   it("returns 201 with project object on valid name (tmux path, skipped if tmux unavailable)", async () => {
     const uniqueName = `test-create-${Date.now()}`;
-    const basePath = os.tmpdir();
+    // basePath must be in the allowlist — only '/data/home' is permitted.
+    // Passing an out-of-allowlist path (e.g. os.tmpdir()) silently falls back to /data/home.
+    const basePath = '/data/home';
     const expectedDir = path.join(basePath, uniqueName);
     let res;
     try {
