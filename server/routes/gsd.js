@@ -485,6 +485,97 @@ router.post('/projects/:name/unarchive', (req, res) => {
   }
 });
 
+// POST /api/gsd/projects/create — create a new project directory, tmux session, and config entry
+router.post('/projects/create', async (req, res) => {
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/projects/create`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req.body),
+          signal: AbortSignal.timeout(15000),
+        }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
+
+  const { name, basePath } = req.body || {};
+
+  // Validate name: required, non-empty, only alphanumeric/dash/underscore
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return res.status(400).json({ error: 'name is required' });
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+    return res.status(400).json({ error: 'invalid project name' });
+  }
+
+  // Resolve basePath: use provided absolute path or default to /data/home
+  const resolvedBase =
+    basePath && typeof basePath === 'string' && path.isAbsolute(basePath)
+      ? basePath
+      : '/data/home';
+
+  const dir = path.join(resolvedBase, name);
+
+  // Check for duplicate in config
+  let config;
+  try {
+    config = loadConfig();
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to read config', detail: err.message });
+  }
+
+  if (config.projects.find((p) => p.name === name)) {
+    return res.status(409).json({ error: 'project already exists' });
+  }
+
+  // Create directory
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to create project directory', detail: err.message });
+  }
+
+  // Create detached tmux session
+  const { execFileSync } = require('child_process');
+  try {
+    execFileSync('tmux', ['new-session', '-d', '-s', name, '-c', dir], { stdio: 'ignore' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to create tmux session', detail: err.message });
+  }
+
+  // Send Claude launch sequence into the session
+  try {
+    execFileSync('tmux', ['send-keys', '-t', name, 'claude', 'Enter'], { stdio: 'ignore' });
+    // Brief pause to allow claude to start before the slash command
+    await new Promise((r) => setTimeout(r, 500));
+    execFileSync('tmux', ['send-keys', '-t', name, '/gsd:new-project', 'Enter'], { stdio: 'ignore' });
+  } catch (err) {
+    // Non-fatal: session was created, claude launch sequence failed
+    // Continue and register the project — user can retry from the terminal
+  }
+
+  // Build and persist the new config entry
+  const newEntry = { name, root: dir, tmux_session: name };
+  try {
+    const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../../gsd-projects.json');
+    // Re-read to pick up any writes since we first loaded
+    const freshConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    freshConfig.projects.push(newEntry);
+    fs.writeFileSync(configPath, JSON.stringify(freshConfig, null, 2) + '\n', 'utf8');
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to update config', detail: err.message });
+  }
+
+  return res.status(201).json({ ok: true, project: newEntry });
+});
+
 // POST /api/gsd/projects/:key/tasks — create a task
 router.post('/projects/:key/tasks', async (req, res) => {
   const { key } = req.params;
