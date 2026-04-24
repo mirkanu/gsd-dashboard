@@ -6,6 +6,7 @@ const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
 const { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
 const { getProjectStateSnapshot } = require('../gsd/stateBroadcaster');
+const { execFileSync, spawnSync } = require('child_process');
 const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED: telegramEnabled } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
 const { calculateCost } = require('./pricing');
@@ -300,7 +301,6 @@ router.post('/projects/:name/send', async (req, res) => {
   }
 
   try {
-    const { execFileSync, spawnSync } = require('child_process');
     if (text.length > 1000) {
       // Large text: use tmux load-buffer (reads from stdin) + paste-buffer to avoid arg length limits
       const load = spawnSync('tmux', ['load-buffer', '-'], { input: text, encoding: 'utf8', stdio: ['pipe', 'ignore', 'ignore'] });
@@ -347,7 +347,6 @@ router.post('/projects/:name/reopen-tmux', (req, res) => {
   }
 
   try {
-    const { execFileSync } = require('child_process');
     // Create a new detached tmux session with the project's root as the working directory
     // then launch Claude Code with permissions bypass so autopilot/commands work immediately
     execFileSync('tmux', ['new-session', '-d', '-s', tmux_session, '-c', root], { stdio: 'ignore', timeout: 5000 });
@@ -406,7 +405,6 @@ router.post('/projects/:name/kill-session', async (req, res) => {
   if (!tmux_session) return res.status(422).json({ error: 'No tmux session configured for this project' });
 
   try {
-    const { execFileSync } = require('child_process');
     if (isTmuxSessionActive(tmux_session)) {
       execFileSync('tmux', ['kill-session', '-t', tmux_session], { stdio: 'ignore', timeout: 5000 });
     }
@@ -543,7 +541,6 @@ router.post('/projects/create', async (req, res) => {
   }
 
   // Create detached tmux session
-  const { execFileSync } = require('child_process');
   try {
     execFileSync('tmux', ['new-session', '-d', '-s', name, '-c', dir], { stdio: 'ignore' });
   } catch (err) {
