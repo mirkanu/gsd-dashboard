@@ -133,6 +133,11 @@ export const api = {
         body: JSON.stringify({ text }),
       }),
     wsBase: () => request<{ wsBase: string | null }>("/gsd/ws-base"),
+    create: (name: string) =>
+      request<{ ok: boolean; project: { name: string; root: string; tmux_session: string } }>(
+        "/gsd/projects/create",
+        { method: "POST", body: JSON.stringify({ name }) }
+      ),
     archive: (projectName: string) =>
       request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/archive`, { method: 'POST' }),
     unarchive: (projectName: string) =>
