@@ -513,9 +513,11 @@ router.post('/projects/create', async (req, res) => {
     return res.status(400).json({ error: 'invalid project name' });
   }
 
-  // Resolve basePath: use provided absolute path or default to /data/home
+  // Resolve basePath: restrict to an explicit allowlist — path.isAbsolute() alone is not
+  // a security boundary and would permit arbitrary paths like /etc or /root.
+  const ALLOWED_BASES = ['/data/home'];
   const resolvedBase =
-    basePath && typeof basePath === 'string' && path.isAbsolute(basePath)
+    basePath && typeof basePath === 'string' && ALLOWED_BASES.includes(basePath)
       ? basePath
       : '/data/home';
 
