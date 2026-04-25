@@ -42,6 +42,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
 | 59. Task Backend Migration + Issue GUI Wrapper | 0/0 | Not planned | - |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
+| 62. Hetzner VPS Migration | 0/0 | Not planned | - |
 
 ---
 
@@ -283,6 +284,19 @@ Verifiable by walking a non-programmer (Emily-Kate or equivalent) through the fu
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 52 to break down)
+
+---
+
+### Phase 62: Hetzner VPS Migration — move all Railway services to self-hosted Hetzner CAX21 to eliminate ~$120/month in Railway costs
+
+**Goal:** Provision a Hetzner CAX21 (8 GB ARM VPS at ~$8/month), migrate GSD Dashboard, KidAI, ynab, debates, and reforma PostgreSQL off Railway, configure Cloudflare Tunnel with gsdlabs.dev subdomains, establish the VPS as the primary Claude CLI SSH host, and cancel/clean up Railway services — reducing the monthly infrastructure bill from ~$127 to ~$8.
+
+**Requirements**: Hetzner API token from user; Cloudflare credentials already available at /data/home/.env (CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL for gsdlabs.dev)
+**Depends on:** Independent (can run in parallel with v5.0 phases)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 62 to break down)
 
 ---
 
