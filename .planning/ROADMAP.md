@@ -42,7 +42,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
 | 59. Task Backend Migration + Issue GUI Wrapper | 0/0 | Not planned | - |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
-| 62. Hetzner VPS Migration | 0/0 | Not planned | - |
+| 62. Hetzner VPS Migration | 8/10 | In Progress|  |
 
 ---
 
@@ -293,17 +293,17 @@ Plans:
 
 **Requirements**: Hetzner API token from user; Cloudflare credentials already available at /data/home/.env (CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL for gsdlabs.dev)
 **Depends on:** Independent (can run in parallel with v5.0 phases)
-**Plans:** 10 plans
+**Plans:** 8/10 plans executed
 
 Plans:
-- [ ] 62-01-PLAN.md — VPS bootstrap: OS, Docker, PM2, cloudflared, directory layout, secrets (.env.production)
-- [ ] 62-02-PLAN.md — Cloudflare named tunnel + gsdlabs.dev ingress rules; updated GSD Dashboard deploy workflow
-- [ ] 62-03-PLAN.md — Reforma PostgreSQL migration: dump Railway, restore into reforma-db container, update Vercel DATABASE_URL
-- [ ] 62-04-PLAN.md — GSD Dashboard lift-and-shift: clone to VPS, PM2 setup, verify dashboard.gsdlabs.dev
-- [ ] 62-05-PLAN.md — Debates Docker deploy + GitHub Actions workflow; verify debates.gsdlabs.dev
-- [ ] 62-06-PLAN.md — Ynab Next.js + PostgreSQL migration; verify ynab.gsdlabs.dev
-- [ ] 62-07-PLAN.md — KidAI admin + image-search-mcp + PostgreSQL migration + VPS crontab; verify kidai.gsdlabs.dev
-- [ ] 62-08-PLAN.md — PostgreSQL backup container: nightly pg_dump -> Backblaze B2 with 30-day retention
+- [x] 62-01-PLAN.md — VPS bootstrap: OS, Docker, PM2, cloudflared, directory layout, secrets (.env.production)
+- [x] 62-02-PLAN.md — Cloudflare named tunnel + gsdlabs.dev ingress rules; updated GSD Dashboard deploy workflow
+- [x] 62-03-PLAN.md — Reforma PostgreSQL migration: dump Railway, restore into reforma-db container, update Vercel DATABASE_URL
+- [x] 62-04-PLAN.md — GSD Dashboard lift-and-shift: clone to VPS, PM2 setup, verify dashboard.gsdlabs.dev
+- [x] 62-05-PLAN.md — Debates Docker deploy + GitHub Actions workflow; verify debates.gsdlabs.dev
+- [x] 62-06-PLAN.md — Ynab Next.js + PostgreSQL migration; verify ynab.gsdlabs.dev
+- [x] 62-07-PLAN.md — KidAI admin + image-search-mcp + PostgreSQL migration + VPS crontab; verify kidai.gsdlabs.dev
+- [x] 62-08-PLAN.md — PostgreSQL backup container: nightly pg_dump -> Backblaze B2 with 30-day retention
 - [ ] 62-09-PLAN.md — Parallel run validation gate: 1-week health check sweep + user sign-off checkpoint
 - [ ] 62-10-PLAN.md — Railway teardown + DNS cutover + tunnel.sh cleanup
 
