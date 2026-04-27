@@ -1,20 +1,43 @@
-name: Deploy to Railway
+name: Deploy to Hetzner VPS
 
 on:
   push:
     branches:
       - master
+  workflow_dispatch:  # Manual trigger for re-deploys
+
+env:
+  SERVICE_NAME: gsd-dashboard
+  SERVICE_PATH: /home/services/gsddashboard
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
+      - name: Deploy via SSH to Hetzner VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HETZNER_VPS_IP }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          port: 22
+          script: |
+            set -eux
 
-      - name: Deploy
-        run: railway up --service "GSD Dashboard" --environment production --detach
-        env:
-          RAILWAY_API_KEY: ${{ secrets.RAILWAY_TOKEN }}
+            cd ${{ env.SERVICE_PATH }}
+
+            git fetch origin master
+            git checkout origin/master
+
+            # Install dependencies and restart via PM2
+            npm ci --production
+            pm2 restart gsd-dashboard || pm2 start npm --name gsd-dashboard -- start
+
+            # Verify service is healthy
+            sleep 5
+            curl -f http://localhost:4820/api/health || exit 1
+
+            echo "Deployment successful"
