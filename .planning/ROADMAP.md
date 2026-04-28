@@ -289,7 +289,7 @@ Plans:
 
 ### Phase 62: Hetzner VPS Migration — move all Railway services to self-hosted Hetzner CAX21 to eliminate ~$120/month in Railway costs
 
-**Goal:** Provision a Hetzner CAX21 (8 GB ARM VPS at ~$8/month), migrate GSD Dashboard, KidAI, ynab, debates, and reforma PostgreSQL off Railway, configure Cloudflare Tunnel with gsdlabs.dev subdomains, establish the VPS as the primary Claude CLI SSH host, and cancel/clean up Railway services — reducing the monthly infrastructure bill from ~$127 to ~$8.
+**Goal:** Shut down Railway entirely — migrate all active Railway services and the Claude CLI SSH host to a Hetzner CAX21 (8 GB ARM VPS, ~$8/month), verify full functionality on Hetzner, then cancel Railway to bring the monthly bill to ~$0. Configure Cloudflare Tunnel with gsdlabs.dev subdomains. Exceptions: reforma frontend stays on Vercel (not Railway); Josie is archived — delete from Railway, no migration needed. Reduces the monthly infrastructure bill from ~$127 to ~$8.
 
 **Requirements**: Hetzner API token from user; Cloudflare credentials already available at /data/home/.env (CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL for gsdlabs.dev)
 **Depends on:** Independent (can run in parallel with v5.0 phases)
