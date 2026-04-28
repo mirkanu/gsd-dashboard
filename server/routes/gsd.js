@@ -350,7 +350,9 @@ router.post('/projects/:name/reopen-tmux', (req, res) => {
     // Create a new detached tmux session with the project's root as the working directory
     // then launch Claude Code with permissions bypass so autopilot/commands work immediately
     execFileSync('tmux', ['new-session', '-d', '-s', tmux_session, '-c', root], { stdio: 'ignore', timeout: 5000 });
-    execFileSync('tmux', ['send-keys', '-t', tmux_session, 'claude --effort medium --dangerously-skip-permissions', 'Enter'], { stdio: 'ignore', timeout: 5000 });
+    const isRoot = process.getuid && process.getuid() === 0;
+    const claudeCmd = isRoot ? 'claude --effort medium' : 'claude --effort medium --dangerously-skip-permissions';
+    execFileSync('tmux', ['send-keys', '-t', tmux_session, claudeCmd, 'Enter'], { stdio: 'ignore', timeout: 5000 });
     return res.json({ ok: true });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to create tmux session', detail: err.message });
