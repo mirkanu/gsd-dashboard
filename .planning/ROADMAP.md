@@ -42,7 +42,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
 | 59. Task Backend Migration + Issue GUI Wrapper | 0/0 | Not planned | - |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
-| 62. Hetzner VPS Migration | 8/10 | In Progress|  |
+| 62. Hetzner VPS Migration | 9/11 | In Progress|  |
 
 ---
 
@@ -293,7 +293,7 @@ Plans:
 
 **Requirements**: Hetzner API token from user; Cloudflare credentials already available at /data/home/.env (CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL for gsdlabs.dev)
 **Depends on:** Independent (can run in parallel with v5.0 phases)
-**Plans:** 8/10 plans executed
+**Plans:** 9/11 plans executed
 
 Plans:
 - [x] 62-01-PLAN.md — VPS bootstrap: OS, Docker, PM2, cloudflared, directory layout, secrets (.env.production)

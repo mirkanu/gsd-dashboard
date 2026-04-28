@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: | Item | Reason |
-current_plan: 1
+current_plan: 2
 status: executing
-stopped_at: Phase 62 context gathered
-last_updated: "2026-04-28T10:10:16.071Z"
-last_activity: 2026-04-28 -- Phase 62 execution started
+stopped_at: Completed 62-09b-PLAN.md (Tasks 0-3 auto; Task 4 awaiting human verification)
+last_updated: "2026-04-28T10:56:44.374Z"
+last_activity: 2026-04-28
 progress:
   total_phases: 32
   completed_phases: 29
   total_plans: 72
-  completed_plans: 71
-  percent: 99
+  completed_plans: 72
+  percent: 100
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 Milestone: v5.0 Non-Programmer Mode
 Phase: 62 (hetzner-vps-migration) — EXECUTING
-Plan: 1 of 11
-Current Plan: 1
+Plan: 2 of 11
+Current Plan: 2
 Total Plans in Phase: 11
-Status: Executing Phase 62
-Last activity: 2026-04-28 -- Phase 62 execution started
+Status: Ready to execute
+Last activity: 2026-04-28
 
 Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 
@@ -115,6 +115,9 @@ Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 - [Phase 48-idle-session-cost-controls]: paneHashCache exported from tmux.js (was private Map) — needed by idleDetector and future consumers
 - [Phase 48-idle-session-cost-controls]: costMeasurement.getTmuxRssKb() walks full descendant process tree — pane PID (bash, ~3MB) alone misses the Claude Code child process (~500-900MB). Inline fix 6f3eab7 corrected live cost from $0.001/day to $0.29/day
 - [Phase 48-idle-session-cost-controls]: Plan 04: ConfigPage initializes idle settings from hardcoded defaults (120 min, $10/GB-month) since GET app-settings returns no plaintext — seeding on first GET ensures backend values match UI defaults
+- [Phase 62]: GSD via SCP not npm: gsd-for-claude package does not exist on npm — SCP from Railway is the only install method
+- [Phase 62]: pm2 restart --update-env required: plain pm2 restart doesn't re-read env_file; needed for .env changes to take effect in PM2 ecosystem
+- [Phase 62]: DASHBOARD_PASS added for VPS: VPS dashboard is public-facing (dashboard.gsdlabs.dev); 24-char generated password stored in /home/services/gsddashboard/.env
 
 ### Pending Todos
 
@@ -162,10 +165,11 @@ None.
 | Phase 48-idle-session-cost-controls P02 | 17 | 2 tasks | 3 files |
 | Phase 48-idle-session-cost-controls P03 | 12 | 2 tasks | 3 files |
 | Phase 48-idle-session-cost-controls P04 | 55min | 3 tasks | 5 files |
+| Phase 62 P09b | 41 | 4 tasks | 10 files |
 
 ## Session Continuity
 
-Last session: 2026-04-25T09:36:58.311Z
-Stopped at: Phase 62 context gathered
-Resume file: .planning/phases/62-hetzner-vps-migration/62-CONTEXT.md
+Last session: 2026-04-28T10:56:44.368Z
+Stopped at: Completed 62-09b-PLAN.md (Tasks 0-3 auto; Task 4 awaiting human verification)
+Resume file: None
 Next action: Run `/gsd-discuss-phase 51` or `/gsd-plan-phase 51` — GUI Project Creation + Import (wizard + import, GitHub-integrated). Now depends only on 50.5 (complete).
