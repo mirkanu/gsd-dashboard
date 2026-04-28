@@ -37,9 +37,22 @@ function cookieAuth(req, res, next) {
   // Skip auth for MCP (Claude.ai connects without credentials)
   if (req.path.startsWith("/mcp")) return next();
 
-  // All API routes and static assets are public — client-side auth gate in App.tsx
-  // handles UI access control. This single-user dashboard doesn't need per-route server auth.
-  // Only /api/auth/login validates the password and sets the cookie.
+  // Skip auth if not configured (no-auth mode)
+  const pass = process.env.DASHBOARD_PASS;
+  if (!pass || !process.env.AUTH_REQUIRED) return next();
+
+  // Auth endpoints and health are always public (client needs these to log in)
+  if (req.path.startsWith("/api/auth") || req.path === "/api/health") return next();
+
+  // Static assets are public — the client needs to load to render the login form
+  if (!req.path.startsWith("/api") && !req.path.startsWith("/ws")) return next();
+
+  // Enforce token check for all API and WebSocket routes
+  const cookieHeader = req.headers.cookie || "";
+  const match = cookieHeader.split(";").map((s) => s.trim()).find((s) => s.startsWith("gsd_token="));
+  const token = match ? match.slice("gsd_token=".length) : null;
+  if (!isValidToken(token)) return res.status(401).json({ error: "Unauthorized" });
+
   return next();
 }
 
