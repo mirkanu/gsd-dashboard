@@ -23,10 +23,16 @@ function createAgentProxy(gsdDataUrl) {
     const upstreamUrl = `${gsdDataUrl}${req.path}${search}`;
 
     const timeoutMs = req.path.startsWith('/api/projects/create') ? 120000 : 10000;
+    const internalHeader = process.env.GSD_INTERNAL_SECRET
+      ? { 'x-gsd-internal': process.env.GSD_INTERNAL_SECRET }
+      : {};
+
     const fetchOpts = { signal: AbortSignal.timeout(timeoutMs), method: req.method };
     if (req.method === 'PUT' || req.method === 'POST' || req.method === 'PATCH') {
-      fetchOpts.headers = { 'Content-Type': 'application/json' };
+      fetchOpts.headers = { 'Content-Type': 'application/json', ...internalHeader };
       fetchOpts.body = JSON.stringify(req.body);
+    } else {
+      if (Object.keys(internalHeader).length) fetchOpts.headers = internalHeader;
     }
 
     try {

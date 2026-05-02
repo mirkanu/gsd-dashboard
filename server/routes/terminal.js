@@ -2,8 +2,11 @@
 
 const path = require('path');
 const fs = require('fs');
-const { WebSocketServer } = require('ws');
+const { WebSocketServer, WebSocket: WS } = require('ws');
 const { isTmuxSessionActiveAsync } = require('../gsd/tmux');
+
+const GSD_DATA_URL = (process.env.GSD_DATA_URL || '').replace(/\/$/, '');
+const GSD_INTERNAL_SECRET = process.env.GSD_INTERNAL_SECRET || '';
 
 function loadConfig() {
   const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../../gsd-projects.json');
@@ -16,10 +19,61 @@ function attachTerminalWS(server) {
 
   server.on('upgrade', async (req, socket, head) => {
     if (!req.url.startsWith('/ws/terminal/')) {
-      // Not our path — let other upgrade handlers deal with it
       return;
     }
 
+    // -- Proxy mode (Railway -> VPS) -------------------------------------------
+    if (GSD_DATA_URL) {
+      const rawName = req.url.replace(/^\/ws\/terminal\//, '').split('?')[0];
+      const wsUpstream = GSD_DATA_URL
+        .replace(/^https:/, 'wss:')
+        .replace(/^http:/, 'ws:')
+        + '/ws/terminal/' + rawName;
+
+      const upstreamHeaders = GSD_INTERNAL_SECRET
+        ? { 'x-gsd-internal': GSD_INTERNAL_SECRET }
+        : {};
+
+      let upstream;
+      try {
+        upstream = new WS(wsUpstream, { headers: upstreamHeaders });
+      } catch (err) {
+        socket.destroy();
+        return;
+      }
+
+      wss.handleUpgrade(req, socket, head, (client) => {
+        // Wait for upstream to be ready before bridging
+        upstream.on('open', () => {
+          // client -> upstream
+          client.on('message', (msg) => {
+            if (upstream.readyState === WS.OPEN) upstream.send(msg);
+          });
+          // upstream -> client
+          upstream.on('message', (msg) => {
+            if (client.readyState === WS.OPEN) client.send(msg);
+          });
+        });
+
+        upstream.on('close', (code, reason) => {
+          if (client.readyState === WS.OPEN) client.close(code, reason);
+        });
+        upstream.on('error', () => {
+          if (client.readyState === WS.OPEN) client.close(4502, 'upstream error');
+        });
+        client.on('close', () => {
+          if (upstream.readyState === WS.OPEN || upstream.readyState === WS.CONNECTING) {
+            upstream.close();
+          }
+        });
+        client.on('error', () => {
+          if (upstream.readyState === WS.OPEN) upstream.close();
+        });
+      });
+      return; // do NOT fall through to pty path
+    }
+
+    // -- Local mode (VPS direct) ------------------------------------------------
     const rawName = req.url.replace(/^\/ws\/terminal\//, '').split('?')[0];
     const projectName = decodeURIComponent(rawName);
 
@@ -76,7 +130,7 @@ function attachTerminalWS(server) {
         return;
       }
 
-      // 16ms PTY output batching — accumulate output into a buffer and flush once per frame (60fps).
+      // 16ms PTY output batching -- accumulate output into a buffer and flush once per frame (60fps).
       // This prevents xterm.js from receiving one write per byte which causes input lag.
       let ptyBuffer = '';
       let flushTimer = null;

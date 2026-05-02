@@ -24,6 +24,14 @@ const PROJECTS_CACHE_TTL = 30000; // 30 seconds — longer than poll interval so
 const PROJECTS_CACHE_STALE = 5000; // after 5s, serve from cache but refresh in background
 
 const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
+const INTERNAL_HEADERS = process.env.GSD_INTERNAL_SECRET
+  ? { 'x-gsd-internal': process.env.GSD_INTERNAL_SECRET }
+  : {};
+
+function upstreamFetch(url, opts = {}) {
+  const headers = { ...INTERNAL_HEADERS, ...(opts.headers || {}) };
+  return fetch(url, { ...opts, headers });
+}
 
 function loadConfig() {
   const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, "../../gsd-projects.json");
@@ -36,16 +44,11 @@ function saveConfig(config) {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', 'utf8');
 }
 
-// GET /api/gsd/ws-base — returns the WebSocket base URL for terminal connections
-// When GSD_DATA_URL is set (Railway proxy mode), terminal WebSocket must connect
-// to the tunnel directly since Railway has no tmux/node-pty.
+// GET /api/gsd/ws-base — always returns null so browser connects to current host.
+// When GSD_DATA_URL is set (Railway proxy mode), terminal WS is proxied server-side
+// in terminal.js — the browser never needs to know about the VPS directly.
 router.get("/ws-base", (_req, res) => {
-  if (GSD_DATA_URL) {
-    const wsBase = GSD_DATA_URL.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:');
-    res.json({ wsBase });
-  } else {
-    res.json({ wsBase: null });
-  }
+  res.json({ wsBase: null });
 });
 
 // GET /api/gsd/config — return raw project list from config file
@@ -68,7 +71,7 @@ router.get("/projects", async (_req, res) => {
         // Cache is older than STALE threshold — trigger background refresh
         if (!projectsCacheRefreshing) {
           projectsCacheRefreshing = true;
-          fetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) })
+          upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) })
             .then(r => r.json())
             .then(data => {
               projectsCache = data;
@@ -82,7 +85,7 @@ router.get("/projects", async (_req, res) => {
     }
     // No cache yet — blocking fetch (only happens on first request before warm completes)
     try {
-      const upstream = await fetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) });
+      const upstream = await upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects`, { signal: AbortSignal.timeout(10000) });
       const data = await upstream.json();
       projectsCache = data;
       projectsCacheExpiry = Date.now() + PROJECTS_CACHE_TTL;
@@ -224,7 +227,7 @@ router.get('/projects/:name/files/:fileId', async (req, res) => {
 
   if (GSD_DATA_URL) {
     try {
-      const upstream = await fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/files/${encodeURIComponent(fileId)}`, { signal: AbortSignal.timeout(10000) });
+      const upstream = await upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/files/${encodeURIComponent(fileId)}`, { signal: AbortSignal.timeout(10000) });
       if (!upstream.ok) {
         return res.status(upstream.status).json({ error: 'File not found' });
       }
@@ -328,7 +331,7 @@ router.post('/projects/:name/reopen-tmux', (req, res) => {
   const { name } = req.params;
 
   if (GSD_DATA_URL) {
-    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/reopen-tmux`,
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/reopen-tmux`,
       { method: 'POST', signal: AbortSignal.timeout(10000) })
       .then(r => r.json().then(d => res.status(r.status).json(d)))
       .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
@@ -342,16 +345,23 @@ router.post('/projects/:name/reopen-tmux', (req, res) => {
   const { tmux_session, root } = project;
   if (!tmux_session) return res.status(422).json({ error: 'No tmux session configured for this project' });
 
-  if (isTmuxSessionActive(tmux_session)) {
-    return res.json({ ok: true, message: 'Session already active' });
-  }
+  const isRoot = process.getuid && process.getuid() === 0;
+  const claudeCmd = isRoot ? 'claude --effort medium' : 'claude --effort medium --dangerously-skip-permissions';
 
   try {
+    if (isTmuxSessionActive(tmux_session)) {
+      // Session exists — only send the Claude command if it's not already running
+      const state = detectSessionState(tmux_session);
+      if (state !== 'paused') {
+        return res.json({ ok: true, message: 'Session already active' });
+      }
+      execFileSync('tmux', ['send-keys', '-t', tmux_session, claudeCmd, 'Enter'], { stdio: 'ignore', timeout: 5000 });
+      return res.json({ ok: true, message: 'Restarted Claude in existing session' });
+    }
+
     // Create a new detached tmux session with the project's root as the working directory
     // then launch Claude Code with permissions bypass so autopilot/commands work immediately
     execFileSync('tmux', ['new-session', '-d', '-s', tmux_session, '-c', root], { stdio: 'ignore', timeout: 5000 });
-    const isRoot = process.getuid && process.getuid() === 0;
-    const claudeCmd = isRoot ? 'claude --effort medium' : 'claude --effort medium --dangerously-skip-permissions';
     execFileSync('tmux', ['send-keys', '-t', tmux_session, claudeCmd, 'Enter'], { stdio: 'ignore', timeout: 5000 });
     return res.json({ ok: true });
   } catch (err) {
@@ -365,7 +375,7 @@ router.post('/projects/:name/pause-session', async (req, res) => {
   const { name } = req.params;
 
   if (GSD_DATA_URL) {
-    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/pause-session`,
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/pause-session`,
       { method: 'POST', signal: AbortSignal.timeout(40000) })  // extended: graceful-shutdown can take ~30s
       .then(r => r.json().then(d => res.status(r.status).json(d)))
       .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
@@ -392,7 +402,7 @@ router.post('/projects/:name/kill-session', async (req, res) => {
   const { name } = req.params;
 
   if (GSD_DATA_URL) {
-    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/kill-session`,
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/kill-session`,
       { method: 'POST', signal: AbortSignal.timeout(10000) })
       .then(r => r.json().then(d => res.status(r.status).json(d)))
       .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
@@ -421,7 +431,7 @@ router.get('/projects/:name/tmux-cost', async (req, res) => {
   const { name } = req.params;
 
   if (GSD_DATA_URL) {
-    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/tmux-cost`,
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/tmux-cost`,
       { signal: AbortSignal.timeout(10000) })
       .then(r => r.json().then(d => res.status(r.status).json(d)))
       .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
@@ -446,7 +456,7 @@ router.get('/projects/:name/tmux-cost', async (req, res) => {
 // POST /api/gsd/projects/:name/archive
 router.post('/projects/:name/archive', (req, res) => {
   if (GSD_DATA_URL) {
-    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/archive`,
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/archive`,
       { method: 'POST', signal: AbortSignal.timeout(10000) })
       .then(r => r.json().then(d => res.status(r.status).json(d)))
       .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
@@ -467,7 +477,7 @@ router.post('/projects/:name/archive', (req, res) => {
 // POST /api/gsd/projects/:name/unarchive
 router.post('/projects/:name/unarchive', (req, res) => {
   if (GSD_DATA_URL) {
-    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/unarchive`,
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/unarchive`,
       { method: 'POST', signal: AbortSignal.timeout(10000) })
       .then(r => r.json().then(d => res.status(r.status).json(d)))
       .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
