@@ -6,6 +6,14 @@ const { stmts, GLOBAL_SETTINGS_KEY, getGlobalSettings } = require("../db");
 const router = express.Router();
 
 const GSD_DATA_URL = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
+const INTERNAL_HEADERS = process.env.GSD_INTERNAL_SECRET
+  ? { 'x-gsd-internal': process.env.GSD_INTERNAL_SECRET }
+  : {};
+
+function upstreamFetch(url, opts = {}) {
+  const headers = { ...INTERNAL_HEADERS, ...(opts.headers || {}) };
+  return fetch(url, { ...opts, headers });
+}
 
 function loadConfig() {
   const configPath =
@@ -64,7 +72,7 @@ router.put("/claude-md", async (req, res) => {
 
   if (GSD_DATA_URL) {
     try {
-      const upstream = await fetch(`${GSD_DATA_URL}/api/config/claude-md`, {
+      const upstream = await upstreamFetch(`${GSD_DATA_URL}/api/config/claude-md`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(req.body),
@@ -98,7 +106,7 @@ router.put("/claude-md", async (req, res) => {
 router.get("/project-settings", async (req, res) => {
   if (GSD_DATA_URL) {
     try {
-      const upstream = await fetch(`${GSD_DATA_URL}/api/config/project-settings`, {
+      const upstream = await upstreamFetch(`${GSD_DATA_URL}/api/config/project-settings`, {
         signal: AbortSignal.timeout(10000),
       });
       const data = await upstream.json();
@@ -173,7 +181,7 @@ router.get("/project-settings/:project", async (req, res) => {
 router.post("/project-settings/apply-global", async (req, res) => {
   if (GSD_DATA_URL) {
     try {
-      const upstream = await fetch(`${GSD_DATA_URL}/api/config/project-settings/apply-global`, {
+      const upstream = await upstreamFetch(`${GSD_DATA_URL}/api/config/project-settings/apply-global`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(req.body || {}),

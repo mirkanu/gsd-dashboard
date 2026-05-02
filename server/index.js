@@ -47,6 +47,10 @@ function cookieAuth(req, res, next) {
   // Static assets are public — the client needs to load to render the login form
   if (!req.path.startsWith("/api") && !req.path.startsWith("/ws")) return next();
 
+  // Allow trusted server-to-server calls (Railway → VPS proxy)
+  const internalSecret = process.env.GSD_INTERNAL_SECRET;
+  if (internalSecret && req.headers["x-gsd-internal"] === internalSecret) return next();
+
   // Enforce token check for all API and WebSocket routes
   const cookieHeader = req.headers.cookie || "";
   const match = cookieHeader.split(";").map((s) => s.trim()).find((s) => s.startsWith("gsd_token="));
@@ -89,6 +93,7 @@ function createApp() {
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
+
 
   return app;
 }
