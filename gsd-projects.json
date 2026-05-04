@@ -158,6 +158,12 @@
           "statusUrl": "https://status.anthropic.com/api/v2/status.json"
         }
       ]
+    },
+    {
+      "name": "arch-test-proj-p12",
+      "root": "/tmp/arch-test-p12",
+      "tmux_session": "nonexistent-arch-session-p12",
+      "archived": true
     }
   ]
 }

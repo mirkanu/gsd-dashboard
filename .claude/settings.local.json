@@ -1,5 +1,28 @@
 {
   "permissions": {
-    "allow": ["Bash(npm run:*)", "Bash(cd client:*)", "Bash(git add:*)", "Bash(git:*)"]
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(cd client:*)",
+      "Bash(git add:*)",
+      "Bash(git:*)",
+      "Skill(gsd-pause-work)",
+      "Skill(gsd-resume-work)",
+      "Skill(gsd-add-phase)",
+      "Skill(gsd-research-phase)",
+      "WebSearch",
+      "WebFetch(domain:blog.arrogantrabbit.com)",
+      "WebFetch(domain:cockpit-project.org)",
+      "WebFetch(domain:mindlesstux.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.vultr.com)",
+      "WebFetch(domain:forum.proxmox.com)",
+      "Skill(gsd-update)",
+      "Skill(gsd-phase)",
+      "Bash(cp -a /root/.claude/ /home/claude/.claude/)",
+      "Bash(chown -R claude:claude /home/claude/.claude/)",
+      "Bash(sed -i 's|/root/.claude/hooks/gsd-read-injection-scanner.js|/home/claude/.claude/hooks/gsd-read-injection-scanner.js|g' /home/claude/.claude/settings.json)",
+      "Read(//home/claude/.claude/**)",
+      "Read(//home/claude/.claude/hooks/**)"
+    ]
   }
 }

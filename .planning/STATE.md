@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: | Item | Reason |
-current_plan: 2
+current_plan: 1
 status: executing
 stopped_at: Completed 62-09b-PLAN.md (Tasks 0-3 auto; Task 4 awaiting human verification)
-last_updated: "2026-05-04T20:17:10.146Z"
-last_activity: 2026-05-04 -- Phase 70 planning complete
+last_updated: "2026-05-04T21:12:24.344Z"
+last_activity: 2026-05-04 -- Phase 70 execution started
 progress:
   total_phases: 40
   completed_phases: 29
   total_plans: 79
-  completed_plans: 77
-  percent: 97
+  completed_plans: 78
+  percent: 99
 ---
 
 # Project State
@@ -22,17 +22,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value (v5.0):** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
-**Current focus:** Phase 62 — hetzner-vps-migration
+**Current focus:** Phase 70 — hetzner-non-root-user
 
 ## Current Position
 
 Milestone: v5.0 Non-Programmer Mode
-Phase: 62 (hetzner-vps-migration) — EXECUTING
-Plan: 2 of 11
-Current Plan: 2
+Phase: 70 (hetzner-non-root-user) — EXECUTING
+Plan: 1 of 3
+Current Plan: 1
 Total Plans in Phase: 3
-Status: Ready to execute
-Last activity: 2026-05-04 -- Phase 70 planning complete
+Status: Executing Phase 70
+Last activity: 2026-05-04 -- Phase 70 execution started
 
 Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 
