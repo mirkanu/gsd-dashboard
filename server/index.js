@@ -1,5 +1,15 @@
 if (!process.env.NODE_ENV) process.env.NODE_ENV = "production";
 
+process.on('uncaughtException', (err) => {
+  console.error('[fatal] uncaughtException — exiting for PM2 restart:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[fatal] unhandledRejection — exiting for PM2 restart:', reason);
+  process.exit(1);
+});
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
