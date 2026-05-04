@@ -345,8 +345,7 @@ router.post('/projects/:name/reopen-tmux', (req, res) => {
   const { tmux_session, root } = project;
   if (!tmux_session) return res.status(422).json({ error: 'No tmux session configured for this project' });
 
-  const isRoot = process.getuid && process.getuid() === 0;
-  const claudeCmd = isRoot ? 'claude --effort medium' : 'claude --effort medium --dangerously-skip-permissions';
+  const claudeCmd = 'claude --effort medium --dangerously-skip-permissions';
 
   try {
     if (isTmuxSessionActive(tmux_session)) {
