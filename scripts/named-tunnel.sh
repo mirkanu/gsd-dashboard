@@ -17,4 +17,4 @@ log "Starting named Cloudflare tunnel (gsd-dashboard)..."
 # cloudflared tunnel run keeps the process in the foreground.
 # PM2 restarts it on exit.
 # Config lives in non-standard path set during Phase 62 tunnel setup.
-exec cloudflared --config /root/.cloudflare-tunnel/config.yml tunnel run 2>&1 | tee -a "$LOG_FILE"
+exec cloudflared --config /home/claude/.cloudflare-tunnel/config.yml tunnel run 2>&1 | tee -a "$LOG_FILE"

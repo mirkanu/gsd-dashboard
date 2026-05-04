@@ -2,7 +2,7 @@
 # Health check loop — restarts gsd-dashboard via pm2 if it stops responding.
 # Runs every 30s. If 3 consecutive checks fail, force-restarts.
 
-PM2="/data/home/.local/bin/pm2"
+PM2="/usr/bin/pm2"
 URL="http://localhost:4820/api/health"
 FAIL_COUNT=0
 MAX_FAILS=3
@@ -22,7 +22,7 @@ while true; do
         kill -9 "$PID" 2>/dev/null
         sleep 2
       fi
-      $PM2 restart gsd-dashboard 2>/dev/null || $PM2 start /data/home/gsddashboard/ecosystem.config.cjs --only gsd-dashboard 2>/dev/null
+      $PM2 restart gsd-dashboard 2>/dev/null
       FAIL_COUNT=0
       sleep 10  # give it time to start
     fi
