@@ -5,14 +5,14 @@ milestone_name: | Item | Reason |
 current_plan: 2
 status: executing
 stopped_at: Completed 62-09b-PLAN.md (Tasks 0-3 auto; Task 4 awaiting human verification)
-last_updated: "2026-04-28T10:56:44.374Z"
-last_activity: 2026-04-28
+last_updated: "2026-05-04T20:17:10.146Z"
+last_activity: 2026-05-04 -- Phase 70 planning complete
 progress:
-  total_phases: 32
+  total_phases: 40
   completed_phases: 29
-  total_plans: 72
-  completed_plans: 72
-  percent: 100
+  total_plans: 79
+  completed_plans: 77
+  percent: 97
 ---
 
 # Project State
@@ -30,9 +30,9 @@ Milestone: v5.0 Non-Programmer Mode
 Phase: 62 (hetzner-vps-migration) — EXECUTING
 Plan: 2 of 11
 Current Plan: 2
-Total Plans in Phase: 11
+Total Plans in Phase: 3
 Status: Ready to execute
-Last activity: 2026-04-28
+Last activity: 2026-05-04 -- Phase 70 planning complete
 
 Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 - Phase 48 added: Idle Session Cost Controls — Railway $/day per-tmux cost estimates + auto-close idle Claude sessions via /gsd:pause-work handoff
 - Phase 49 added: Idle Detector Busy-Work Awareness — hook-sourced busy markers prevent auto-close of sessions waiting on in-flight background work (background bash, scheduled wakeups, running agents). Depends on Phase 48.
 - Phase 52 added: GSD Command Discoverability — CLAUDE.md guidance for Claude to proactively suggest the best /gsd-* command for natural-language queries (surfaces underused commands); adds /gsd-next to the dashboard shortcut buttons row above the insert-into-tmux input.
+- Phase 70 added: Hetzner Non-Root User — create claude OS user so --dangerously-skip-permissions works; migrate PM2/ownership/SSH/Claude config; fix isRoot workaround in gsd.js
 
 ### Decisions
 
