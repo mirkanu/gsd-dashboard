@@ -28,6 +28,7 @@ const mcpRemote = require("./routes/mcp-remote");
 const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
 const { authRouter, isValidToken } = require("./routes/auth");
 const projectsRouter = require("./routes/projects");
+const dockerOpsRouter = require("./routes/docker-ops");
 
 function cookieAuth(req, res, next) {
   // Skip auth for localhost
@@ -36,6 +37,9 @@ function cookieAuth(req, res, next) {
 
   // Skip auth for MCP (Claude.ai connects without credentials)
   if (req.path.startsWith("/mcp")) return next();
+
+  // Docker ops routes use their own secret-based auth
+  if (req.path.startsWith("/api/docker")) return next();
 
   // Skip auth if not configured (no-auth mode)
   const pass = process.env.DASHBOARD_PASS;
@@ -88,6 +92,7 @@ function createApp() {
   app.use("/api/webhooks/email", webhooksEmailRouter);
   app.use("/api/config", configRouter);
   app.use("/api/projects", projectsRouter);
+  app.use("/api/docker", dockerOpsRouter);
   app.use("/mcp", mcpRemote);
 
   app.get("/api/health", (_req, res) => {
