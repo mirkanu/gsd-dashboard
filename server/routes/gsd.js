@@ -350,9 +350,12 @@ router.post('/projects/:name/reopen-tmux', (req, res) => {
 
   try {
     if (isTmuxSessionActive(tmux_session)) {
-      // Session exists — only send the Claude command if it's not already running
-      const state = detectSessionState(tmux_session);
-      if (state !== 'paused') {
+      // Check whether claude is actually running in the pane (not just a bare shell)
+      const paneCmd = execFileSync(
+        'tmux', ['list-panes', '-t', tmux_session, '-F', '#{pane_current_command}'],
+        { encoding: 'utf8', timeout: 5000 }
+      ).trim().split('\n')[0];
+      if (paneCmd === 'claude') {
         return res.json({ ok: true, message: 'Session already active' });
       }
       execFileSync('tmux', ['send-keys', '-t', tmux_session, claudeCmd, 'Enter'], { stdio: 'ignore', timeout: 5000 });
