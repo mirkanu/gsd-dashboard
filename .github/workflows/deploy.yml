@@ -21,7 +21,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.HETZNER_VPS_IP }}
-          username: root
+          username: claude
           key: ${{ secrets.HETZNER_SSH_KEY }}
           port: 22
           script: |
