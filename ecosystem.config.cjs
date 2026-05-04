@@ -1,9 +1,12 @@
+const path = require('path');
+const ROOT = __dirname;
+
 module.exports = {
   apps: [
     {
       name: 'gsd-dashboard',
-      script: 'server/index.js',
-      cwd: '/data/home/gsddashboard',
+      script: path.join(ROOT, 'server/index.js'),
+      cwd: ROOT,
       env: {
         NODE_ENV: 'production',
       },
@@ -13,8 +16,8 @@ module.exports = {
     },
     {
       name: 'gsd-healthcheck',
-      script: 'scripts/healthcheck.sh',
-      cwd: '/data/home/gsddashboard',
+      script: path.join(ROOT, 'scripts/healthcheck.sh'),
+      cwd: ROOT,
       interpreter: '/bin/sh',
       autorestart: true,
       restart_delay: 10000,
@@ -22,8 +25,8 @@ module.exports = {
     },
     {
       name: 'gsd-tunnel',
-      script: 'scripts/tunnel.sh',
-      cwd: '/data/home/gsddashboard',
+      script: path.join(ROOT, 'scripts/named-tunnel.sh'),
+      cwd: ROOT,
       interpreter: '/bin/sh',
       restart_delay: 5000,
       max_restarts: 50,

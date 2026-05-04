@@ -11,13 +11,10 @@
 #   1. Running `cloudflared tunnel --url http://localhost:$DASHBOARD_PORT`
 #   2. Parsing the generated *.trycloudflare.com URL from cloudflared stdout/stderr
 #   3. Writing the URL to $ROOT/.tunnel-url (for ops/debugging)
-#   4. Syncing the URL to Railway GSD_DATA_URL via the `railway` CLI (best-effort)
-#   5. Keeping cloudflared in the foreground so PM2 restarts on crash
+#   4. Keeping cloudflared in the foreground so PM2 restarts on crash
 #
 # Prereqs:
 #   - /usr/local/bin/cloudflared installed (Debian package, version 2026.3.0+)
-#   - railway CLI authenticated in this shell (optional; skipped with a log
-#     line if missing)
 #
 # Env:
 #   - DASHBOARD_PORT (default 4820)
@@ -42,40 +39,6 @@ DASHBOARD_PORT="${DASHBOARD_PORT:-4820}"
 
 log() { echo "[$(date -u +%FT%TZ)] $*" | tee -a "$LOG_FILE"; }
 
-update_railway() {
-  NEW_URL="$1"
-  if ! command -v railway >/dev/null 2>&1; then
-    log "railway CLI not found; skipping GSD_DATA_URL update"
-    return 1
-  fi
-  # Best-effort: don't fail the tunnel if Railway update errors.
-  log "Updating Railway GSD_DATA_URL -> $NEW_URL"
-  if (cd "$ROOT" && railway variables --set "GSD_DATA_URL=$NEW_URL" >>"$LOG_FILE" 2>&1); then
-    log "Railway GSD_DATA_URL updated"
-    return 0
-  else
-    log "Railway update failed — tunnel still live locally"
-    return 1
-  fi
-}
-
-deploy_railway() {
-  # Trigger a fresh Railway deploy so the updated GSD_DATA_URL env var takes
-  # effect in the running container. `railway variables --set` alone only
-  # updates project config; the running container keeps the old value until
-  # the next deploy. cloudflared quick tunnels rotate URLs on every restart,
-  # so we always redeploy after a successful update_railway.
-  if ! command -v railway >/dev/null 2>&1; then
-    log "railway CLI not found; skipping redeploy"
-    return 0
-  fi
-  log "Triggering Railway redeploy (railway up --detach) so new GSD_DATA_URL takes effect"
-  if (cd "$ROOT" && railway up --detach >>"$LOG_FILE" 2>&1); then
-    log "Railway redeploy triggered"
-  else
-    log "Railway redeploy failed — tunnel still live locally, manual \`railway up --detach\` may be needed"
-  fi
-}
 
 log "Starting cloudflared quick tunnel -> http://localhost:$DASHBOARD_PORT"
 
@@ -116,10 +79,6 @@ fi
 printf '%s\n' "$URL" > "$URL_FILE"
 log "New tunnel URL: $URL"
 log "Wrote $URL_FILE"
-
-if update_railway "$URL"; then
-  deploy_railway
-fi
 
 # Tail cloudflared raw log into the main log so PM2 logs show ongoing activity.
 tail -n 0 -F "$CF_RAW_LOG" >>"$LOG_FILE" 2>&1 &
