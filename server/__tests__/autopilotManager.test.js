@@ -12,6 +12,9 @@ try {
 // Will fail until server/autopilot/AutopilotManager.js is created — RED phase
 const { AutopilotManager } = require('../autopilot/AutopilotManager');
 
+// Track every manager created in tests so the after() hook can stop them all
+const managers = [];
+
 // ─── In-memory DB setup ────────────────────────────────────────────────────────
 
 function makeTestDb() {
@@ -97,6 +100,7 @@ test('autopilot.manager: start() inserts autopilot_runs row with status=running 
   const readStateFn = makeReadStateFn(2);
 
   const manager = new AutopilotManager({ db, spawnFn, broadcastFn, readStateFn, pollMs: 1 });
+  managers.push(manager);
   const { runId } = await manager.start('test-project', { startPhase: 1, totalPhases: 2 });
 
   assert.ok(runId, 'runId must be returned');
@@ -119,6 +123,7 @@ test('autopilot.manager: pause() sets paused=true and updates status to paused i
   const readStateFn = makeReadStateFn(0);
 
   const manager = new AutopilotManager({ db, spawnFn, broadcastFn, readStateFn, pollMs: 100 });
+  managers.push(manager);
   const { runId } = await manager.start('test-project', { startPhase: 1, totalPhases: 3 });
 
   manager.pause();
@@ -151,6 +156,7 @@ test('autopilot.manager: resume() resets CircuitBreaker and clears paused flag',
     db, spawnFn, broadcastFn, readStateFn, pollMs: 100,
     circuitBreakerFactory: mockCbFactory,
   });
+  managers.push(manager);
   const { runId } = await manager.start('test-project', { startPhase: 1, totalPhases: 3 });
 
   manager.pause();
@@ -204,6 +210,7 @@ test('autopilot.manager: failed phase triggers retry once before calling recordF
     db, spawnFn, broadcastFn, readStateFn, pollMs: 5,
     circuitBreakerFactory: mockCbFactory,
   });
+  managers.push(manager);
 
   await manager.start('test-project', { startPhase: 1, totalPhases: 3 });
 
@@ -253,6 +260,7 @@ test('autopilot.manager: when CircuitBreaker opens, loop broadcasts autopilot_ha
     db, spawnFn, broadcastFn, readStateFn, pollMs: 5,
     circuitBreakerFactory: mockCbFactory,
   });
+  managers.push(manager);
 
   const { runId } = await manager.start('test-project', { startPhase: 1, totalPhases: 3 });
 
@@ -268,6 +276,8 @@ test('autopilot.manager: when CircuitBreaker opens, loop broadcasts autopilot_ha
 
   const row = db.prepare('SELECT status FROM autopilot_runs WHERE id = ?').get(runId);
   assert.strictEqual(row.status, 'failed', 'DB status must be "failed" when circuit opens');
+
+  manager.stop(); // explicit cleanup — internal _halt() may have already stopped it (idempotent)
 });
 
 // ─── Test 7: runType='plan-all' uses /gsd-plan-phase ──────────────────────────
@@ -296,6 +306,7 @@ test("autopilot.manager: runType='plan-all' calls spawnFn with /gsd-plan-phase a
     db, spawnFn, broadcastFn, readStateFn, pollMs: 5,
     circuitBreakerFactory: mockCbFactory,
   });
+  managers.push(manager);
 
   await manager.start('test-project', {
     runType: 'plan-all',
@@ -362,6 +373,7 @@ test('autopilot.manager: broadcast autopilot_progress called with correct shape 
     db, spawnFn, broadcastFn, readStateFn, pollMs: 5,
     circuitBreakerFactory: mockCbFactory,
   });
+  managers.push(manager);
 
   const { runId } = await manager.start('test-project', { startPhase: 1, totalPhases: 2 });
 
@@ -385,5 +397,13 @@ test('autopilot.manager: broadcast autopilot_progress called with correct shape 
       `data.status must be a valid status, got: ${call.data.status}`
     );
     assert.strictEqual(call.data.runId, runId, 'data.runId must match');
+  }
+});
+
+// ─── Global cleanup — stop all managers regardless of test outcome ────────────
+
+after(() => {
+  for (const m of managers) {
+    m.stop(); // idempotent — stop() guards against double-call
   }
 });

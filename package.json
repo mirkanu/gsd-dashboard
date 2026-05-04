@@ -21,7 +21,7 @@
     "install-hooks": "node scripts/install-hooks.js",
     "clear-data": "node scripts/clear-data.js",
     "test": "node --test server/__tests__/*.test.js && cd client && npm test",
-    "test:server": "node --test server/__tests__/*.test.js",
+    "test:server": "node --test --test-timeout 30000 server/__tests__/*.test.js",
     "test:client": "cd client && npm test",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
