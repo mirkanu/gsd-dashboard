@@ -43,6 +43,10 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 59. Task Backend Migration + Issue GUI Wrapper | 0/0 | Not planned | - |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
 | 62. Hetzner VPS Migration | 9/11 | In Progress|  |
+| 67. Cockpit VPS Monitoring | 0/0 | Not planned | - |
+| 68. Portainer Docker UI | 0/0 | Not planned | - |
+| 69. VPS System Stats Page in GSD Dashboard | 0/0 | Not planned | - |
+| 70. Hetzner Non-Root User | 0/3 | Planned | - |
 
 ---
 
@@ -306,6 +310,47 @@ Plans:
 - [x] 62-08-PLAN.md — PostgreSQL backup container: nightly pg_dump -> Backblaze B2 with 30-day retention
 - [ ] 62-09-PLAN.md — Parallel run validation gate: 1-week health check sweep + user sign-off checkpoint
 - [ ] 62-10-PLAN.md — Railway teardown + DNS cutover + tunnel.sh cleanup
+
+---
+
+---
+
+### Phase 67: Cockpit VPS Monitoring
+
+**Goal:** Install and expose Cockpit on the Hetzner VPS so there's a browser-accessible server admin UI at `VPS-IP:9090` showing CPU load, RAM, disk usage, running processes, systemd units, and journal logs — without needing SSH for routine health checks.
+**Requirements:** TBD
+**Depends on:** Phase 62 (Hetzner VPS up and running)
+**Plans:** TBD (run /gsd-plan-phase 67 to break down)
+
+---
+
+### Phase 68: Portainer Docker UI
+
+**Goal:** Install Portainer CE on the Hetzner VPS so all Docker containers can be inspected, restarted, and log-tailed from a browser — a Railway-like container management UI without the Railway price tag. Expose via Cloudflare Tunnel at `portainer.gsdlabs.dev`.
+**Requirements:** TBD
+**Depends on:** Phase 62 (Hetzner VPS + Docker + Cloudflare Tunnel)
+**Plans:** TBD (run /gsd-plan-phase 68 to break down)
+
+---
+
+### Phase 69: VPS System Stats Page in GSD Dashboard
+
+**Goal:** Add a "Server" page to the GSD Dashboard showing live VPS metrics — CPU load average, RAM (used/free/swap), disk usage per mount, and top processes by memory. Expose via a `/api/system` endpoint on the existing Express server; no new services required.
+**Requirements:** TBD
+**Depends on:** Phase 62 (GSD Dashboard running on Hetzner VPS)
+**Plans:** TBD (run /gsd-plan-phase 69 to break down)
+
+---
+
+### Phase 70: Hetzner Non-Root User
+
+**Goal:** Create a non-root `claude` OS user on the Hetzner VPS so Claude Code can run with `--dangerously-skip-permissions` (blocked for root by Claude Code 2.1.126+). Migrate PM2 processes, docker group membership, SSH authorized_keys, `/data/home` and `/home/services` ownership, global Claude settings, and crontabs to the new user. Remove the `isRoot` workaround from `server/routes/gsd.js`. Future SSH sessions target `claude@hetzner` instead of `root@hetzner`.
+**Requirements:** TBD
+**Depends on:** Phase 62 (Hetzner VPS running)
+**Plans:** 3 plans
+- [ ] 70-01-PLAN.md — create claude user + SSH + ownership transfer + Claude config migration
+- [ ] 70-02-PLAN.md — PM2 migration to claude + systemd boot unit + crontab migration + tmux cleanup
+- [ ] 70-03-PLAN.md — fix hardcoded /root/ paths in scripts + update 4 GitHub Actions workflows + remove isRoot from gsd.js
 
 ---
 
