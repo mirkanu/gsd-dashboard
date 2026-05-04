@@ -1035,6 +1035,7 @@ export function GSD() {
   const [autopilotRuns, setAutopilotRuns] = useState<Map<string, import('../lib/types').AutopilotRun>>(new Map());
   const [fullScreen, setFullScreen] = useState<{ content: string; title: string } | null>(null);
   const [terminalWsBase, setTerminalWsBase] = useState<string | null>(null);
+  const [terminalKey, setTerminalKey] = useState(0);
   // Mobile info drawer uses a GsdProject object
   const [drawerProject, setDrawerProject] = useState<GsdProject | null>(null);
   const [pauseTarget, setPauseTarget] = useState<string | null>(null);
@@ -1339,6 +1340,7 @@ export function GSD() {
               <div className="flex flex-col overflow-hidden flex-1 min-w-0" style={{ overscrollBehavior: 'contain' }}>
                 {selectedProject ? (
                   <TerminalOverlay
+                    key={`${terminalKey}-${selectedProject}`}
                     projectName={selectedProject}
                     wsBase={terminalWsBase}
                     onClose={() => setSelectedProject(null)}
@@ -1373,7 +1375,7 @@ export function GSD() {
                     onArchive={() => archiveProject(selectedProj.name)}
                     onUnarchive={() => unarchiveProject(selectedProj.name)}
                     onOpenTerminal={() => {}}
-                    onReopenTmux={() => load()}
+                    onReopenTmux={() => { load(); setTerminalKey(k => k + 1); }}
                     onExpand={(content, tabId) => setFullScreen({ content, title: TAB_TITLES[tabId] ?? tabId })}
                   />
                 ) : (
@@ -1453,7 +1455,7 @@ export function GSD() {
           onArchive={() => { archiveProject(drawerProject.name); setDrawerProject(null); setSelectedProject(null); }}
           onUnarchive={() => unarchiveProject(drawerProject.name)}
           onOpenTerminal={() => {}}
-          onReopenTmux={() => load()}
+          onReopenTmux={() => { load(); setTerminalKey(k => k + 1); }}
           onClose={() => setDrawerProject(null)}
           onExpand={(content, tabId) => setFullScreen({ content, title: TAB_TITLES[tabId] ?? tabId })}
         />
