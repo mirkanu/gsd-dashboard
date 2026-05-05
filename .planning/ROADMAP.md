@@ -33,7 +33,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 |-------|-------|--------|-----------|
 | 50.5. Original-Repo Cleanup | 0/0 | Not planned | - |
 | 51. GUI Project Creation + Import | 4/4 | Complete   | 2026-04-20 |
-| 53. Auto-Verify by Default | 4/4 | In Progress |  |
+| 53. Auto-Verify by Default | 4/4 | Complete | 2026-05-05 |
 | 54. Admin-API Onboarding for External Services | 0/0 | Not planned | - |
 | 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
 | 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
@@ -126,7 +126,7 @@ Plans:
 - [x] 53-01-PLAN.md — verifyOrchestrator engine (startVerify, runVerify, maybeStartVerify, isVerifying, circuit breaker)
 - [x] 53-02-PLAN.md — VerifyBadge UI component
 - [x] 53-03-PLAN.md — Wire verifyOrchestrator into stateBroadcaster, idleDetector, and route handlers
-- [ ] 53-04-PLAN.md — Gap closure: client types/API wiring + DB migration for project_verify_state
+- [x] 53-04-PLAN.md — Gap closure: client types/API wiring + DB migration for project_verify_state
 
 ---
 
