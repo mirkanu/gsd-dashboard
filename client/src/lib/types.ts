@@ -132,6 +132,13 @@ export interface GsdProject {
    * Absence/undefined means no active markers.
    */
   busy_markers?: BusyMarkers;
+  /**
+   * Phase 53: verifyState is set when the verifyOrchestrator is active for this project.
+   * Absence/undefined means no verify run is in progress or it passed.
+   */
+  verifyState?: 'verifying' | 'verify-passed' | 'verify-failed';
+  /** Plain-English summary of why verification failed. Null when verifyState is not 'verify-failed'. */
+  verifyFailureSummary?: string | null;
 }
 
 export interface BusyMarkers {
@@ -147,6 +154,9 @@ export interface ProjectStateChangeEvent {
   stateEnteredAt: string;
   /** Phase 49: omitted by server when count===0 (absence = clear). */
   busy_markers?: BusyMarkers;
+  /** Phase 53: verifyState omitted by server when verify is not active (absence = clear). */
+  verifyState?: 'verifying' | 'verify-passed' | 'verify-failed';
+  verifyFailureSummary?: string | null;
 }
 
 export interface UsageDay {

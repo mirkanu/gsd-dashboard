@@ -148,6 +148,11 @@ export const api = {
       request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/pause-session`, { method: 'POST' }),
     killSession: (projectName: string) =>
       request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectName)}/kill-session`, { method: 'POST' }),
+    verify: (name: string) =>
+      request<{ ok: boolean; started: boolean }>(
+        `/gsd/projects/${encodeURIComponent(name)}/verify`,
+        { method: 'POST' }
+      ),
     tasks: {
       list: (projectKey: string, archived = false) =>
         request<{ tasks: GsdTask[] }>(
