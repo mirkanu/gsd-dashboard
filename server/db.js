@@ -176,6 +176,19 @@ try {
   `);
 }
 
+// Migration: add verify circuit-breaker table (Phase 53)
+try {
+  db.prepare('SELECT 1 FROM project_verify_state LIMIT 1').get();
+} catch {
+  db.prepare(
+    'CREATE TABLE IF NOT EXISTS project_verify_state (' +
+    '  project_id TEXT PRIMARY KEY,' +
+    '  consecutive_failures INTEGER NOT NULL DEFAULT 0,' +
+    '  last_verify_at TEXT' +
+    ')'
+  ).run();
+}
+
 // Seed default model pricing if table is empty
 const pricingCount = db.prepare("SELECT COUNT(*) as c FROM model_pricing").get();
 if (pricingCount.c === 0) {
