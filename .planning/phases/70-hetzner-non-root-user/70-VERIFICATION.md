@@ -1,8 +1,8 @@
 ---
 phase: 70-hetzner-non-root-user
 verified: 2026-05-04T23:30:00Z
-status: gaps_found
-score: 11/12 must-haves verified
+status: passed
+score: 12/12 must-haves verified
 overrides_applied: 0
 gaps:
   - truth: "All four GitHub Actions deploy workflows use username: claude"
