@@ -22,6 +22,7 @@ import { ChatListFilters } from "../components/ChatListFilters";
 import { ProjectDetailsPanel } from "../components/ProjectDetailsPanel";
 import { PauseConfirmDialog } from "../components/PauseConfirmDialog";
 import { AutopilotControls } from "../components/AutopilotControls";
+import { VerifyBadge } from "../components/VerifyBadge";
 import { useResizableColumns } from "../hooks/useResizableColumns";
 import { useProjectCreationStateSubscriber } from "../hooks/useProjectCreationState";
 
@@ -752,6 +753,13 @@ export function patchProjectsOnStateChange(
   } else {
     delete patched.busy_markers;
   }
+  if ('verifyState' in evt) {
+    patched.verifyState = evt.verifyState;
+    patched.verifyFailureSummary = evt.verifyFailureSummary ?? null;
+  } else {
+    delete patched.verifyState;
+    delete patched.verifyFailureSummary;
+  }
   next[idx] = patched;
   return next;
 }
@@ -875,6 +883,13 @@ export function ProjectCard({
               {reopening ? "Starting…" : "Re-open"}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Verify state badge — Phase 53 */}
+      {project.verifyState && (
+        <div className="px-4 pb-1 pt-0" onClick={(e) => e.stopPropagation()}>
+          <VerifyBadge project={project} />
         </div>
       )}
 
