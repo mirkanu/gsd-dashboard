@@ -198,3 +198,27 @@ test('idle.busy-markers: skip-log JSONL schema: ts, session, project, reason, ma
   assert.deepStrictEqual(keys, ['markers', 'project', 'reason', 'session', 'ts']);
   assert.deepStrictEqual(Object.keys(skipLog[0].markers).sort(), ['count', 'kinds']);
 });
+
+test('skips auto-close and logs verify-in-progress when isVerifyingFn returns true', async () => {
+  const skipLog = [];
+  const nowMs = Date.now();
+  const fns = {
+    detectFn: async () => 'waiting',
+    paneCache: new Map([['test-sess', { lastChangedAt: nowMs - 90_000 }]]),
+    nowMs,
+    gracefulShutdownFn: async () => { throw new Error('must not be called'); },
+    isAutopilotFn: () => false,
+    getThresholdFn: () => 60_000,
+    hasBusyMarkersFn: () => false,
+    logSkipFn: (entry) => skipLog.push(entry),
+    isVerifyingFn: () => true,   // simulate active verify
+  };
+  const project = { name: 'my-proj', tmux_session: 'test-sess' };
+  const result = await _testCheckAndCloseSession(project, fns);
+
+  assert.strictEqual(result.action, 'skipped');
+  assert.strictEqual(result.reason, 'verify-in-progress');
+  assert.strictEqual(skipLog.length, 1);
+  assert.strictEqual(skipLog[0].reason, 'verify-in-progress');
+  assert.strictEqual(skipLog[0].project, 'my-proj');
+});

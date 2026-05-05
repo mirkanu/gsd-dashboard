@@ -7,6 +7,7 @@ const {
   extractStatusLine,
 } = require('./tmux');
 const busyMarkers = require('./busyMarkers');
+const verifyOrchestrator = require('./verifyOrchestrator');
 
 // In-memory snapshot: projectName -> { sessionState, stateEnteredAt, currentTask, statusText, busy_markers? }
 const snapshot = new Map();
@@ -29,6 +30,8 @@ async function _testPollOnce(
   captureFn,
   broadcastFn,
   getBusyMarkersFn = busyMarkers.getMarkers,
+  maybeStartVerifyFn = verifyOrchestrator.maybeStartVerify,
+  isVerifyingFn = verifyOrchestrator.isVerifying,
 ) {
   if (!project || project.archived || !project.tmux_session) return false;
 
@@ -122,6 +125,13 @@ async function _testPollOnce(
     ...(busy_markers ? { busy_markers } : {}),
   };
   snapshot.set(project.name, entry);
+
+  // Fire-and-forget verify trigger on working→waiting transition.
+  // Guards: not already verifying (injected isVerifyingFn), transition is working→waiting only.
+  if (prevRaw === 'working' && sessionState === 'waiting' && !isVerifyingFn(project.name)) {
+    maybeStartVerifyFn(project, broadcastFn).catch(() => {});
+  }
+
   broadcastFn('project_state_change', {
     project: project.name,
     sessionState: effectiveState,

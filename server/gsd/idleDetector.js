@@ -6,6 +6,7 @@ const { paneHashCache, detectSessionStateAsync } = require('./tmux');
 const { gracefulShutdown } = require('./gracefulShutdown');
 const { getTmuxCostForSession, logDailyTmuxCosts } = require('./costMeasurement');
 const busyMarkers = require('./busyMarkers');
+const verifyOrchestrator = require('./verifyOrchestrator');
 
 const DEFAULT_IDLE_THRESHOLD_MS = 120 * 60 * 1000; // 2 hours
 // Quick task 260418-khw: 6h force-kill branch removed — user prefers manual
@@ -136,6 +137,7 @@ async function _testCheckAndCloseSession(project, fns = {}) {
     hasBusyMarkersFn = busyMarkers.hasBusyMarkers,
     getBusyMarkersFn = busyMarkers.getMarkers,
     logSkipFn = _testAppendSkipLog,
+    isVerifyingFn = verifyOrchestrator.isVerifying,
   } = fns;
 
   const thresholdMs = getThresholdFn();
@@ -153,6 +155,21 @@ async function _testCheckAndCloseSession(project, fns = {}) {
 
   const idle = await _testIsSessionIdle(project.tmux_session, effectiveThresholdMs, { detectFn, paneCache, nowMs });
   if (!idle) return null;
+
+  // Phase 53: skip auto-close when a verify is currently running for this project
+  if (isVerifyingFn(project.name)) {
+    logSkipFn({
+      ts: new Date(nowMs).toISOString(),
+      session: project.tmux_session,
+      project: project.name,
+      reason: 'verify-in-progress',
+    });
+    return {
+      action: 'skipped',
+      reason: 'verify-in-progress',
+      project: project.name,
+    };
+  }
 
   // Busy-marker awareness — skip auto-close when Claude is waiting on its own in-flight
   // background work (bash_bg, agent, wakeup). Every skip is logged as JSONL for audit.
