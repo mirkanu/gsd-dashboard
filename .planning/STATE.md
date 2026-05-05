@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 - Phase 49 added: Idle Detector Busy-Work Awareness — hook-sourced busy markers prevent auto-close of sessions waiting on in-flight background work (background bash, scheduled wakeups, running agents). Depends on Phase 48.
 - Phase 52 added: GSD Command Discoverability — CLAUDE.md guidance for Claude to proactively suggest the best /gsd-* command for natural-language queries (surfaces underused commands); adds /gsd-next to the dashboard shortcut buttons row above the insert-into-tmux input.
 - Phase 70 added: Hetzner Non-Root User — create claude OS user so --dangerously-skip-permissions works; migrate PM2/ownership/SSH/Claude config; fix isRoot workaround in gsd.js
+- Phase 71 added: CLAUDE.md-First Automation Refactor — audit and remove server-side tmux injection patterns; replace with CLAUDE.md instructions and GSD workflow hooks; partial rollback of Phase 53 trigger logic
 
 ### Decisions
 
