@@ -47,7 +47,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 68. Portainer Docker UI | 0/0 | Not planned | - |
 | 69. VPS System Stats Page in GSD Dashboard | 0/0 | Not planned | - |
 | 70. Hetzner Non-Root User | 0/3 | Planned | - |
-| 71. CLAUDE.md-First Automation Refactor | 0/0 | Not planned | - |
+| 71. CLAUDE.md-First Automation Refactor | 0/2 | Planned | - |
 
 ---
 
@@ -363,10 +363,14 @@ Plans:
 
 ### Phase 71: CLAUDE.md-First Automation Refactor
 
-**Goal:** Eliminate server-side tmux injection in favour of CLAUDE.md instructions and GSD workflow hooks. Audit all phases in the current milestone for patterns that send slash commands into live Claude sessions (working→waiting triggers, orchestrator-injected commands). Replace with CLAUDE.md-level behavioural rules or GSD workflow steps that run in fresh subagent contexts — avoiding context-limit risk and duplicated verification logic. Keep the UI/dashboard feedback layer (VerifyBadge, WebSocket broadcasting) but remove the trigger wiring in stateBroadcaster/verifyOrchestrator.
-**Requirements:** TBD
+**Goal:** Eliminate server-side tmux injection in favour of CLAUDE.md instructions and GSD workflow hooks. Remove the working→waiting auto-verify trigger from stateBroadcaster, disable Autopilot auto-dispatch, add a verify-work rule to the global GSD CLAUDE.md template, and add a verification backstop to gsd-complete-milestone. Keep the VerifyBadge UI and WebSocket broadcasting layer intact.
+**Requirements:** D-01 through D-08 (captured in 71-CONTEXT.md)
 **Depends on:** Phase 53 (Auto-Verify by Default — partial rollback of trigger logic)
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 71-01-PLAN.md — Remove maybeStartVerify from stateBroadcaster; disable AutopilotManager auto-dispatch; tests green
+- [ ] 71-02-PLAN.md — Add verify-work rule to GSD CLAUDE.md template (profile-output.cjs); add backstop check to complete-milestone workflow
 
 ---
 
