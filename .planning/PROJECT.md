@@ -72,7 +72,7 @@ A terminal-first web dashboard for managing multiple Claude Code GSD projects fr
 - [ ] Original-repo cleanup: strip dormant features inherited from upstream fork (Sessions/SessionDetail/ActivityFeed/Kanban route, useNotifications, seed/import scripts, unused routes + schema) — Phase 50.5
 - ✓ GUI project creation + import: New Project wizard (name → repo → tmux → new-project interview), Import Existing Project with auto codebase analysis — Phase 51
 - ✓ One-click project creation: POST /api/gsd/projects/create backend endpoint + NewProjectDialog frontend; optimistic card prepend with tmux controls — Phase 15
-- [ ] Auto-verify by default: every plan execution auto-runs verify-work; failed verification offers one-click retry; Pause/Archive fold in verification — Phase 53
+- ✓ Auto-verify by default: every plan execution auto-runs verify-work; failed verification offers one-click retry; Pause/Archive fold in verification — Phase 53 (complete 2026-05-05)
 - [ ] Admin-API onboarding: guided panels per external service, OAuth where available, admin-key paste otherwise; Railway-first picker; credentials exposed to Claude sessions as env vars — Phase 54 (subsumes former Phase 46)
 - [ ] MCP tool router evaluation: Composio vs self-hosted gateway vs per-service MCP — decision phase only — Phase 55
 - [ ] CLI verbosity contract + Portfolio Feed: reduce CLI output; extract landmark events into Dashboard cards without replacing the terminal — Phase 56
@@ -152,4 +152,4 @@ v4.2 lessons:
 - AI-guided CLAUDE.md editor with diff preview
 
 ---
-*Last updated: 2026-04-10 after v4.3 milestone start*
+*Last updated: 2026-05-05 after Phase 53 completion*
