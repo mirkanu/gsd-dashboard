@@ -19,10 +19,10 @@ test('pause.route: POST /pause-session calls gracefulShutdown not direct tmux ki
   );
 
   // The pause-session route body should not do a direct kill-session
-  // (gracefulShutdown internally handles kill)
-  // We check that the new async route pattern is present
+  // (gracefulShutdown internally handles kill via _testPauseSession helper)
+  // We check that gracefulShutdown is wired as the default gracefulShutdownFn
   assert.ok(
-    content.includes('gracefulShutdown(tmux_session'),
-    'pause-session route should call gracefulShutdown(tmux_session, ...) — expected RED until Task 3'
+    content.includes('gracefulShutdownFn = gracefulShutdown'),
+    'pause-session route should use gracefulShutdown as the default gracefulShutdownFn in _testPauseSession'
   );
 });

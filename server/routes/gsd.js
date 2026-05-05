@@ -12,6 +12,7 @@ const { db, stmts } = require('../db');
 const { calculateCost } = require('./pricing');
 const { getTmuxCostForSession } = require('../gsd/costMeasurement');
 const busyMarkers = require('../gsd/busyMarkers');
+const verifyOrchestrator = require('../gsd/verifyOrchestrator');
 
 const router = express.Router();
 
@@ -371,6 +372,24 @@ router.post('/projects/:name/reopen-tmux', (req, res) => {
   }
 });
 
+// Injectable test helper for pause-session — accepts injected fns for test isolation (Phase 53 ATV-04)
+async function _testPauseSession(project, fns = {}) {
+  const {
+    isTmuxActiveFn = isTmuxSessionActive,
+    runVerifyFn = verifyOrchestrator.runVerify,
+    gracefulShutdownFn = gracefulShutdown,
+    broadcastFn = require('../websocket').broadcast,
+  } = fns;
+
+  const { name, tmux_session } = project;
+  let verifyResult = null;
+  if (isTmuxActiveFn(tmux_session)) {
+    verifyResult = await runVerifyFn(project, broadcastFn, { timeout: 10 * 60 * 1000 });
+  }
+  const result = await gracefulShutdownFn(tmux_session, name);
+  return { ...result, verifyResult };
+}
+
 // POST /api/gsd/projects/:name/pause-session — gracefully shut down the tmux session:
 // sends /gsd-pause-work, polls for completion markers, kills session, notifies Telegram.
 router.post('/projects/:name/pause-session', async (req, res) => {
@@ -392,7 +411,8 @@ router.post('/projects/:name/pause-session', async (req, res) => {
   if (!tmux_session) return res.status(422).json({ error: 'No tmux session configured for this project' });
 
   try {
-    const result = await gracefulShutdown(tmux_session, name);
+    const { broadcast } = require('../websocket');
+    const result = await _testPauseSession(project, { broadcastFn: broadcast });
     return res.json(result);
   } catch (err) {
     return res.status(500).json({ error: 'Failed to pause session', detail: err.message });
@@ -456,7 +476,7 @@ router.get('/projects/:name/tmux-cost', async (req, res) => {
 });
 
 // POST /api/gsd/projects/:name/archive
-router.post('/projects/:name/archive', (req, res) => {
+router.post('/projects/:name/archive', async (req, res) => {
   if (GSD_DATA_URL) {
     upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/archive`,
       { method: 'POST', signal: AbortSignal.timeout(10000) })
@@ -468,11 +488,55 @@ router.post('/projects/:name/archive', (req, res) => {
     const config = loadConfig();
     const project = config.projects.find(p => p.name === req.params.name);
     if (!project) return res.status(404).json({ error: 'Project not found' });
+
+    const { tmux_session } = project;
+    let verifyResult = null;
+    if (tmux_session && isTmuxSessionActive(tmux_session)) {
+      const { broadcast } = require('../websocket');
+      verifyResult = await verifyOrchestrator.runVerify(project, broadcast, { timeout: 5 * 60 * 1000 });
+      try {
+        execFileSync('tmux', ['kill-session', '-t', tmux_session], { stdio: 'ignore', timeout: 5000 });
+      } catch { /* session already dead */ }
+    }
+
     project.archived = true;
     saveConfig(config);
-    res.json({ ok: true });
+    res.json({ ok: true, verifyResult });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update config', detail: err.message });
+    res.status(500).json({ error: 'Failed to archive project', detail: err.message });
+  }
+});
+
+// POST /api/gsd/projects/:name/verify — trigger verify-work for a project (called by UI retry button)
+router.post('/projects/:name/verify', async (req, res) => {
+  const { name } = req.params;
+
+  if (GSD_DATA_URL) {
+    fetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(name)}/verify`,
+      { method: 'POST', signal: AbortSignal.timeout(60000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+
+  const { projects } = loadConfig();
+  const project = projects.find(p => p.name === name);
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+
+  const { tmux_session } = project;
+  if (!tmux_session) return res.status(422).json({ error: 'No tmux session configured for this project' });
+
+  if (!isTmuxSessionActive(tmux_session)) {
+    return res.status(422).json({ error: 'Tmux session is not active' });
+  }
+
+  try {
+    const { broadcast } = require('../websocket');
+    // Fire-and-forget — respond immediately; client watches WebSocket for verify state changes
+    verifyOrchestrator.maybeStartVerify(project, broadcast);
+    return res.json({ ok: true, started: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to start verification', detail: err.message });
   }
 });
 
@@ -688,3 +752,4 @@ router.patch('/projects/:key/tasks/:id', async (req, res) => {
 });
 
 module.exports = router;
+module.exports._testPauseSession = _testPauseSession;
