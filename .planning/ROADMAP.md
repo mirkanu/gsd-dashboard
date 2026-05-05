@@ -120,7 +120,10 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 **Goal:** Every plan execution automatically runs verification before reporting complete. User sees one state transition ("working" → "done and tested"), not two.
 **Requirements:** ATV-01 through ATV-05
 **Depends on:** builds on `/gsd:verify-work` and Phase 48 idle detection
-**Plans:** TBD
+**Plans:** 03
+
+Wave 2 *(blocked on Wave 1 completion)*
+- Plan 03: Wire verifyOrchestrator into stateBroadcaster, idleDetector, and route handlers
 
 ---
 
