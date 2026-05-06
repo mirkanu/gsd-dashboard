@@ -39,14 +39,12 @@ else
     pid=$(echo "$line" | awk '{print $1}')
     owner=$(echo "$line" | awk '{print $2}')
     log "  PID=$pid owner=$owner"
-    if [[ "$owner" == "root" ]] && [[ "$(whoami)" != "root" ]]; then
-      log "  NOTICE: PID $pid is owned by root — run 'sudo kill $pid' manually to terminate."
+    if kill "$pid" 2>/dev/null; then
+      log "  Killed PID $pid (owner=$owner)."
+    elif sudo kill "$pid" 2>/dev/null; then
+      log "  Killed PID $pid via sudo (owner=$owner)."
     else
-      if kill "$pid" 2>/dev/null; then
-        log "  Killed PID $pid (owner=$owner)."
-      else
-        log "  Failed to kill PID $pid (owner=$owner) — may need sudo."
-      fi
+      log "  Failed to kill PID $pid (owner=$owner) — escalation failed."
     fi
   done <<< "$hung_pids"
 fi
