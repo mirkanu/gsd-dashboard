@@ -255,6 +255,10 @@ class AutopilotManager {
    * Checks paused/stopped flags, detects phase transitions, handles failures.
    */
   _tick() {
+    // D-06 (Phase 71): Auto-dispatch disabled. Autopilot is now manual-only.
+    // _tick() runs but never spawns. Use confirmSpawn() from the UI to dispatch.
+    return;
+
     // Guard: stopped or paused — do nothing this tick
     if (this._stopped || this.paused) return;
 
