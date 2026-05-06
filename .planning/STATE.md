@@ -32,7 +32,7 @@ Plan: 1 of 3
 Current Plan: 1
 Total Plans in Phase: 4
 Status: Ready to execute
-Last activity: 2026-05-05 -- Phase 53 planning complete
+Last activity: 2026-05-06 -- Quick task 260506-bnb: Fix server crash resilience (PM2 systemd, hung tests, claude wrapper, memory-guard)
 
 Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 
@@ -166,6 +166,7 @@ None.
 | Phase 45 P04 | ~45min + ~20min post-deploy | 3 tasks + checkpoint | 9 files + proxy.js + gsd-projects.json |
 | Phase 48-idle-session-cost-controls P01 | 15 | 3 tasks | 8 files |
 | Phase 48-idle-session-cost-controls P02 | 17 | 2 tasks | 3 files |
+| 260506-bnb | Fix server crash resilience (PM2 systemd, hung tests, claude wrapper, memory-guard) | 2026-05-06 | b09668b | [260506-bnb-fix-server-crash-resilience](./quick/260506-bnb-fix-server-crash-resilience/) |
 | Phase 48-idle-session-cost-controls P03 | 12 | 2 tasks | 3 files |
 | Phase 48-idle-session-cost-controls P04 | 55min | 3 tasks | 5 files |
 | Phase 62 P09b | 41 | 4 tasks | 10 files |
