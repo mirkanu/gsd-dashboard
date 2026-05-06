@@ -46,8 +46,8 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 67. Cockpit VPS Monitoring | 0/0 | Not planned | - |
 | 68. Portainer Docker UI | 0/0 | Not planned | - |
 | 69. VPS System Stats Page in GSD Dashboard | 0/0 | Not planned | - |
-| 70. Hetzner Non-Root User | 0/3 | Planned | - |
-| 71. CLAUDE.md-First Automation Refactor | 0/2 | Planned | - |
+| 70. Hetzner Non-Root User | 3/3 | Complete | 2026-05-05 |
+| 71. CLAUDE.md-First Automation Refactor | 2/2 | Complete | 2026-05-06 |
 
 ---
 
