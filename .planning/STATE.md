@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
 
 ### Decisions
 
+- [Phase 71]: CLAUDE.md template changes (profile-output.cjs) only apply to new projects — must also be manually propagated to all existing project CLAUDE.md files (gsddashboard, debates, reforma, ynab, KidAI, zoho-todoist-sync). Always do both together.
 - [v4.1]: Terminal-first approach beats chat classifier — raw terminal is more reliable, faster, and always accurate
 - [v4.1]: Async tmux + API caching critical for responsiveness (sync calls blocked event loop 5-15s)
 - [v4.2]: Phases 37-38 are foundational fixes (auth, terminal reliability, light mode) — do before new features

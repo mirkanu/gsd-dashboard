@@ -45,3 +45,4 @@
 - Use file-specific rules in `.claude/rules/` when working in scoped areas.
 - Use project skills from `.claude/skills/` for repeatable workflows.
 - Use `.claude/agents/` subagents for focused review or investigation passes.
+- After every plan execution completes, run `/gsd-verify-work` before reporting done — do not wait for a dashboard trigger.
