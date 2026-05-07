@@ -17,6 +17,7 @@ import {
   Server,
   Coins,
   Wrench,
+  Monitor,
   Plus,
 } from "lucide-react";
 import { NewProjectDialog } from "./NewProjectDialog";
@@ -28,6 +29,7 @@ const PRIMARY_ITEMS = [
   { to: "/services", icon: Server, label: "Services" },
   { to: "/usage", icon: Coins, label: "Usage" },
   { to: "/config", icon: Wrench, label: "Config" },
+  { to: "/server", icon: Monitor, label: "Server" },
 ] as const;
 
 // ─── Agent Dashboard submenu ──────────────────────────────────────────────────

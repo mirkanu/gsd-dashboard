@@ -7,6 +7,7 @@ import { GSD, TerminalPage } from "./pages/GSD";
 import { ServicesPage } from "./pages/ServicesPage";
 import { UsagePage } from "./pages/UsagePage";
 import { ConfigPage } from "./pages/ConfigPage";
+import { ServerPage } from "./pages/ServerPage";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/Login";
 import { useWebSocket } from "./hooks/useWebSocket";
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="services" element={<ServicesPage />} />
           <Route path="usage" element={<UsagePage />} />
           <Route path="config" element={<ConfigPage />} />
+          <Route path="server" element={<ServerPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

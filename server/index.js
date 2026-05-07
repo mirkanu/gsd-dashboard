@@ -56,6 +56,7 @@ const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require(
 const { authRouter, isValidToken } = require("./routes/auth");
 const projectsRouter = require("./routes/projects");
 const dockerOpsRouter = require("./routes/docker-ops");
+const systemRouter = require("./routes/system");
 
 // Compute once at startup — date of last git commit formatted as "07May2026"
 const BUILD_DATE = (() => {
@@ -128,6 +129,7 @@ function createApp() {
   app.use("/api/config", configRouter);
   app.use("/api/projects", projectsRouter);
   app.use("/api/docker", dockerOpsRouter);
+  app.use("/api/system", systemRouter);
   app.use("/mcp", mcpRemote);
 
   app.get("/api/health", (_req, res) => {
