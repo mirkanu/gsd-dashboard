@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 # Cloudflare Tunnel launcher for GSD Dashboard.
+# Phase 62: Railway sync removed — GSD_DATA_URL is now fixed at dashboard.gsdlabs.dev
 #
 # Replaces the previous Tailscale Funnel wrapper (retired 2026-04-11 after
 # latency testing showed 1-10s per proxied request and frequent 502 timeouts
@@ -39,7 +40,6 @@ DASHBOARD_PORT="${DASHBOARD_PORT:-4820}"
 
 log() { echo "[$(date -u +%FT%TZ)] $*" | tee -a "$LOG_FILE"; }
 
-
 log "Starting cloudflared quick tunnel -> http://localhost:$DASHBOARD_PORT"
 
 # Truncate raw log on each start so URL parsing is deterministic.
@@ -77,8 +77,7 @@ if [ -z "$URL" ]; then
 fi
 
 printf '%s\n' "$URL" > "$URL_FILE"
-log "New tunnel URL: $URL"
-log "Wrote $URL_FILE"
+log "New tunnel URL: $URL (Railway sync disabled — GSD_DATA_URL is fixed at dashboard.gsdlabs.dev)"
 
 # Tail cloudflared raw log into the main log so PM2 logs show ongoing activity.
 tail -n 0 -F "$CF_RAW_LOG" >>"$LOG_FILE" 2>&1 &
