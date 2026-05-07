@@ -164,6 +164,11 @@
       "root": "/tmp/arch-test-p12",
       "tmux_session": "nonexistent-arch-session-p12",
       "archived": true
+    },
+    {
+      "name": "psalter",
+      "root": "/data/home/psalter",
+      "tmux_session": "psalter"
     }
   ]
 }

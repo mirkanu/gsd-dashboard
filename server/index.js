@@ -1,5 +1,22 @@
 if (!process.env.NODE_ENV) process.env.NODE_ENV = "production";
 
+// Load .env from repo root if present — fills gaps not set by the process launcher
+try {
+  const fs = require("fs"), path = require("path");
+  const envPath = path.resolve(__dirname, "..", ".env");
+  if (fs.existsSync(envPath)) {
+    for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eq = trimmed.indexOf("=");
+      if (eq < 1) continue;
+      const key = trimmed.slice(0, eq).trim();
+      const val = trimmed.slice(eq + 1).trim();
+      if (!(key in process.env)) process.env[key] = val;
+    }
+  }
+} catch { /* non-fatal */ }
+
 process.on('uncaughtException', (err) => {
   console.error('[fatal] uncaughtException — exiting for PM2 restart:', err);
   process.exit(1);

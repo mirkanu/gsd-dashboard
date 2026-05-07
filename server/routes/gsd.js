@@ -620,11 +620,14 @@ router.post('/projects/create', async (req, res) => {
     return res.status(500).json({ error: 'Failed to create project directory', detail: err.message });
   }
 
-  // Create detached tmux session
+  // Create detached tmux session (ignore "duplicate session" — reuse existing)
   try {
-    execFileSync('tmux', ['new-session', '-d', '-s', name, '-c', dir], { stdio: 'ignore' });
+    execFileSync('tmux', ['new-session', '-d', '-s', name, '-c', dir], { stdio: 'pipe' });
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to create tmux session', detail: err.message });
+    const msg = (err.stderr?.toString() || err.message || '').toLowerCase();
+    if (!msg.includes('duplicate session')) {
+      return res.status(500).json({ error: 'Failed to create tmux session', detail: err.message });
+    }
   }
 
   // Send Claude launch sequence into the session
@@ -632,7 +635,7 @@ router.post('/projects/create', async (req, res) => {
     execFileSync('tmux', ['send-keys', '-t', name, 'claude', 'Enter'], { stdio: 'ignore' });
     // Brief pause to allow claude to start before the slash command
     await new Promise((r) => setTimeout(r, 500));
-    execFileSync('tmux', ['send-keys', '-t', name, '/gsd:new-project', 'Enter'], { stdio: 'ignore' });
+    execFileSync('tmux', ['send-keys', '-t', name, '/gsd-new-project', 'Enter'], { stdio: 'ignore' });
   } catch (err) {
     // Non-fatal: session was created, claude launch sequence failed
     // Continue and register the project — user can retry from the terminal
