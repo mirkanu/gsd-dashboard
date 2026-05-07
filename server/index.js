@@ -57,6 +57,14 @@ const { authRouter, isValidToken } = require("./routes/auth");
 const projectsRouter = require("./routes/projects");
 const dockerOpsRouter = require("./routes/docker-ops");
 
+// Compute once at startup — date of last git commit formatted as "07May2026"
+const BUILD_DATE = (() => {
+  try {
+    const { execSync } = require("child_process");
+    return execSync('git log -1 --format="%cd" --date=format:"%d%b%Y"', { encoding: "utf8" }).trim().replace(/"/g, "");
+  } catch { return "unknown"; }
+})();
+
 function cookieAuth(req, res, next) {
   // Skip auth for localhost
   const host = req.hostname || "";
@@ -123,7 +131,7 @@ function createApp() {
   app.use("/mcp", mcpRemote);
 
   app.get("/api/health", (_req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
+    res.json({ status: "ok", timestamp: new Date().toISOString(), buildDate: BUILD_DATE });
   });
 
 

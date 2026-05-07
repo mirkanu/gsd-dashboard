@@ -103,6 +103,7 @@ export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen
   const [showNewProject, setShowNewProject] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [hasGithubPat, setHasGithubPat] = useState<boolean | null>(null);
+  const [buildDate, setBuildDate] = useState<string>('');
   const navigate = useNavigate();
   const slim = collapsed && !isMobile;
 
@@ -112,6 +113,13 @@ export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen
       .then(r => r.json())
       .then(data => setHasGithubPat((data.pats || []).length > 0))
       .catch(() => setHasGithubPat(false));
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(data => { if (data.buildDate) setBuildDate(data.buildDate); })
+      .catch(() => {});
   }, []);
 
   const handleNewProject = () => {
@@ -294,7 +302,7 @@ export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen
               {!slim && <span className="text-gray-500">Disconnected</span>}
             </>
           )}
-          {!slim && <span className="ml-auto text-gray-600">v1.1.0</span>}
+          {!slim && <span className="ml-auto text-gray-600">{buildDate || 'v1.1.0'}</span>}
         </div>
         {!slim && (
           <div className="flex items-center gap-3">
