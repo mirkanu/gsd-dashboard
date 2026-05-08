@@ -178,3 +178,7 @@ Last session: 2026-04-28T10:56:44.368Z
 Stopped at: Completed 62-09b-PLAN.md (Tasks 0-3 auto; Task 4 awaiting human verification)
 Resume file: None
 Next action: Run `/gsd-discuss-phase 51` or `/gsd-plan-phase 51` — GUI Project Creation + Import (wizard + import, GitHub-integrated). Now depends only on 50.5 (complete).
+
+## Blockers/Concerns
+
+- **UAT pending (phases 67/68/69):** cockpit.gsdlabs.dev, portainer.gsdlabs.dev, and GSD Dashboard "Server" page need manual browser verification before milestone sign-off. See VERIFICATION.md in each phase dir for what to check.

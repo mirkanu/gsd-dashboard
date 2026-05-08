@@ -585,7 +585,7 @@ No new authentication surfaces, credentials, or user input paths are introduced.
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`df` output column reliability across locales**
    - What we know: `df -k /` on Ubuntu 22.04 reliably puts "Use%" in column 4 (0-indexed)
