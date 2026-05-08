@@ -119,3 +119,10 @@ None — pm2-logrotate only writes within `/home/claude/.pm2/logs/` which is alr
 ---
 *Phase: 72-disk-full-prevention*
 *Completed: 2026-05-08*
+
+## Self-Check: PASSED
+
+- FOUND: `.planning/phases/72-disk-full-prevention/72-02-SUMMARY.md`
+- FOUND: commit `05ec53f`
+- pm2-logrotate present in `pm2 list` (online)
+- max_size=20M, retain=3, compress=true confirmed via `pm2 conf`
