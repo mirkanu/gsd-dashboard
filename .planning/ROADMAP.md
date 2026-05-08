@@ -48,7 +48,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 69. VPS System Stats Page in GSD Dashboard | 0/0 | Not planned | - |
 | 70. Hetzner Non-Root User | 3/3 | Complete | 2026-05-05 |
 | 71. CLAUDE.md-First Automation Refactor | 2/2 | Complete | 2026-05-06 |
-| 72. Disk Full Prevention | 0/5 | Planned | - |
+| 72. Disk Full Prevention | 5/5 | Complete | 2026-05-08 |
 
 ---
 
@@ -383,11 +383,11 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 72-01-PLAN.md — Fix named-tunnel.sh: remove tee (D-01), add --loglevel warn (D-02), add startup truncate guard (D-07)
-- [ ] 72-02-PLAN.md — Install and configure pm2-logrotate: max_size=20M, retain=3, compress=true, daily rotation (D-03)
-- [ ] 72-03-PLAN.md — Add disk monitoring + WAL checkpoint to maintenance sweep in server/index.js (D-04, D-05)
-- [ ] 72-04-PLAN.md — Create scripts/prune-old-data.js and register weekly cron (D-06)
-- [ ] 72-05-PLAN.md — Write docs/DISK-RUNBOOK.md with emergency procedure and rotation expectations (D-08)
+- [x] 72-01-PLAN.md — Fix named-tunnel.sh: remove tee (D-01), add --loglevel warn (D-02), add startup truncate guard (D-07)
+- [x] 72-02-PLAN.md — Install and configure pm2-logrotate: max_size=20M, retain=3, compress=true, daily rotation (D-03)
+- [x] 72-03-PLAN.md — Add disk monitoring + WAL checkpoint to maintenance sweep in server/index.js (D-04, D-05)
+- [x] 72-04-PLAN.md — Create scripts/prune-old-data.js and register weekly cron (D-06)
+- [x] 72-05-PLAN.md — Write docs/DISK-RUNBOOK.md with emergency procedure and rotation expectations (D-08)
 
 ---
 
