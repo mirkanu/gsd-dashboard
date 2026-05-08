@@ -1,5 +1,27 @@
 # Milestones
 
+## v5.0 Hetzner Migration (Shipped: 2026-05-08)
+
+**Phases completed:** 62, 67, 68, 69, 70, 71, 72 (7 phases, 23 plans)
+**Timeline:** 2026-04-27 → 2026-05-08 (11 days)
+
+**Key accomplishments:**
+- Full Railway → Hetzner migration: all 7 services (GSD Dashboard, Debates, Ynab, KidAI, Reforma, PostgreSQL backups, Claude CLI workspace) moved from Railway (~$120/month) to Hetzner CAX21 ARM VPS (€5/month) — 96% cost reduction
+- Cloudflare Tunnel + gsdlabs.dev: named tunnel with remote-managed ingress (API); all services live at *.gsdlabs.dev subdomains
+- VPS management tooling: Cockpit (cockpit.gsdlabs.dev) + Portainer (portainer.gsdlabs.dev) + Server stats page in GSD Dashboard sidebar
+- Non-root claude user: PM2, Docker, SSH, Claude config migrated; `--dangerously-skip-permissions` works; isRoot workaround removed from gsd.js; all deploy workflows deleted
+- CLAUDE.md-first automation: removed server-side `maybeStartVerify` trigger and Autopilot auto-dispatch; Dashboard is now a passive observer
+- Disk full prevention: pm2-logrotate, cloudflared warn-level logging, WAL checkpoint, weekly data pruning, disk monitoring with Telegram alerts, DISK-RUNBOOK.md
+
+**Phases carried forward:**
+- Phases 50.5, 51, 53 (v5.0 feature work) remain complete but ungrouped — will be included in v5.1 milestone close
+- Version-control `/home/services/hetzner-vps/` — deferred as pending todo
+
+**Last phase number:** 72
+**Archived artifacts:** `.planning/milestones/v5.0-ROADMAP.md`
+
+---
+
 ## v4.3 Optimisation & Cost Intelligence (Shipped: 2026-04-18)
 
 **Phases completed:** 43, 44, 45, 48, 49 (5 phases, 13 plans)

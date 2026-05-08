@@ -1,8 +1,14 @@
 # Roadmap: GSD Dashboard
 
-**Current milestone:** v5.0 Non-Programmer Mode
+**Current milestone:** v5.1 Non-Programmer Mode
 **Created:** 2026-04-18
-**Prior milestones:** archived to `.planning/milestones/` (v4.3 is the immediate predecessor)
+**Prior milestones:** archived to `.planning/milestones/`
+
+## Milestones
+
+- ✅ **v5.0 Hetzner Migration** — Phases 62, 67–72 (shipped 2026-05-08) · [archive](milestones/v5.0-ROADMAP.md)
+- ✅ **v4.3 Optimisation & Cost Intelligence** — Phases 43–49 (shipped 2026-04-18)
+- 🚧 **v5.1 Non-Programmer Mode** — Phases 50.5, 51, 53, 52, 54–60 (in progress)
 
 ---
 
@@ -31,9 +37,10 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 50.5. Original-Repo Cleanup | 0/0 | Not planned | - |
-| 51. GUI Project Creation + Import | 4/4 | Complete   | 2026-04-20 |
-| 53. Auto-Verify by Default | 4/4 | Complete | 2026-05-05 |
+| 50.5. Original-Repo Cleanup | 4/4 | Complete ✅ (v5.1) | 2026-04-18 |
+| 51. GUI Project Creation + Import | 4/4 | Complete ✅ (v5.1) | 2026-04-20 |
+| 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
+| 52. GSD Command Discoverability | 0/0 | Not planned | - |
 | 54. Admin-API Onboarding for External Services | 0/0 | Not planned | - |
 | 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
 | 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
@@ -42,13 +49,13 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
 | 59. Task Backend Migration + Issue GUI Wrapper | 0/0 | Not planned | - |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
-| 62. Hetzner VPS Migration | 9/11 | In Progress|  |
-| 67. Cockpit VPS Monitoring | 0/0 | Not planned | - |
-| 68. Portainer Docker UI | 0/0 | Not planned | - |
-| 69. VPS System Stats Page in GSD Dashboard | 0/0 | Not planned | - |
-| 70. Hetzner Non-Root User | 3/3 | Complete | 2026-05-05 |
-| 71. CLAUDE.md-First Automation Refactor | 2/2 | Complete | 2026-05-06 |
-| 72. Disk Full Prevention | 5/5 | Complete | 2026-05-08 |
+| 62. Hetzner VPS Migration | 10/11 | Complete ✅ (v5.0) | 2026-05-08 |
+| 67. Cockpit VPS Monitoring | 1/1 | Complete ✅ (v5.0) | 2026-05-07 |
+| 68. Portainer Docker UI | 1/1 | Complete ✅ (v5.0) | 2026-05-07 |
+| 69. VPS System Stats Page in GSD Dashboard | 1/1 | Complete ✅ (v5.0) | 2026-05-07 |
+| 70. Hetzner Non-Root User | 3/3 | Complete ✅ (v5.0) | 2026-05-05 |
+| 71. CLAUDE.md-First Automation Refactor | 2/2 | Complete ✅ (v5.0) | 2026-05-06 |
+| 72. Disk Full Prevention | 5/5 | Complete ✅ (v5.0) | 2026-05-08 |
 
 ---
 
@@ -69,9 +76,9 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 
 ---
 
-## Coverage (v5.0)
+## Coverage (v5.1)
 
-- v5.0 requirements: 64 total (see REQUIREMENTS.md)
+- v5.1 requirements: 64 total (see REQUIREMENTS.md)
 - Mapped to phases: 64
 - Unmapped: 0
 
@@ -96,11 +103,11 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 **Goal:** Strip out dormant and mis-fitting features inherited from the upstream `hoangsonww/Claude-Code-Agent-Monitor` fork. Mostly deletion; handle as a sequence of quick tasks before the rest of v5.0 kicks off.
 **Requirements:** CLN-01 through CLN-06
 **Depends on:** Nothing
-**Plans:** 4 plans
-- [ ] 50.5-01-PLAN.md — CLN-01/02/03 client route + view + browser-notification deletions
-- [ ] 50.5-02-PLAN.md — CLN-04 scripts/seed + import-history + statusline deletions
-- [ ] 50.5-03-PLAN.md — CLN-05 route+schema audit and dead-table DROP
-- [ ] 50.5-04-PLAN.md — CLN-06 Dockerfile/workflows + install-hooks rewrite + /api/settings changes
+**Plans:** 4/4 complete
+- [x] 50.5-01-PLAN.md — CLN-01/02/03 client route + view + browser-notification deletions
+- [x] 50.5-02-PLAN.md — CLN-04 scripts/seed + import-history + statusline deletions
+- [x] 50.5-03-PLAN.md — CLN-05 route+schema audit and dead-table DROP
+- [x] 50.5-04-PLAN.md — CLN-06 Dockerfile/workflows + install-hooks rewrite + /api/settings changes
 
 ---
 
@@ -241,9 +248,9 @@ Plans:
 
 ---
 
-## Milestone-Level Success Test
+## Milestone-Level Success Test (v5.1)
 
-At the end of v5.0, a non-programmer should be able to use the GSD Dashboard to:
+At the end of v5.1, a non-programmer should be able to use the GSD Dashboard to:
 
 1. Create a brand-new project (with GitHub repo) from the New Project wizard
 2. Build it using the tmux terminal and project surround — no manual file editing, no paste-in of diffs or logs, no technical decisions framed in jargon
@@ -256,7 +263,7 @@ Verifiable by walking a non-programmer (Emily-Kate or equivalent) through the fu
 
 ---
 
-## Out of Scope for v5.0
+## Out of Scope for v5.1
 
 | Item | Reason |
 |------|--------|
@@ -299,95 +306,88 @@ Plans:
 
 ---
 
-### Phase 62: Hetzner VPS Migration — move all Railway services to self-hosted Hetzner CAX21 to eliminate ~$120/month in Railway costs
+<details>
+<summary>✅ v5.0 Hetzner Migration (Phases 62, 67–72) — SHIPPED 2026-05-08</summary>
 
-**Goal:** Shut down Railway entirely — migrate all active Railway services and the Claude CLI SSH host to a Hetzner CAX21 (8 GB ARM VPS, ~$8/month), verify full functionality on Hetzner, then cancel Railway to bring the monthly bill to ~$0. Configure Cloudflare Tunnel with gsdlabs.dev subdomains. Exceptions: reforma frontend stays on Vercel (not Railway); Josie is archived — delete from Railway, no migration needed. Reduces the monthly infrastructure bill from ~$127 to ~$8.
+### Phase 62: Hetzner VPS Migration
 
-**Requirements**: Hetzner API token from user; Cloudflare credentials already available at /data/home/.env (CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL for gsdlabs.dev)
-**Depends on:** Independent (can run in parallel with v5.0 phases)
-**Plans:** 9/11 plans executed
+**Goal:** Shut down Railway entirely — migrate all services to Hetzner CAX21 ARM VPS (~€5/month), configure Cloudflare Tunnel with gsdlabs.dev subdomains, cancel Railway. Reduced monthly infra bill from ~$127 to ~€5.
+**Depends on:** Independent
+**Plans:** 10/11 (62-09 superseded by 62-09b)
 
-Plans:
 - [x] 62-01-PLAN.md — VPS bootstrap: OS, Docker, PM2, cloudflared, directory layout, secrets (.env.production)
-- [x] 62-02-PLAN.md — Cloudflare named tunnel + gsdlabs.dev ingress rules; updated GSD Dashboard deploy workflow
-- [x] 62-03-PLAN.md — Reforma PostgreSQL migration: dump Railway, restore into reforma-db container, update Vercel DATABASE_URL
+- [x] 62-02-PLAN.md — Cloudflare named tunnel + gsdlabs.dev ingress rules
+- [x] 62-03-PLAN.md — Reforma PostgreSQL migration: dump Railway, restore on VPS, update Vercel DATABASE_URL
 - [x] 62-04-PLAN.md — GSD Dashboard lift-and-shift: clone to VPS, PM2 setup, verify dashboard.gsdlabs.dev
-- [x] 62-05-PLAN.md — Debates Docker deploy + GitHub Actions workflow; verify debates.gsdlabs.dev
+- [x] 62-05-PLAN.md — Debates Docker deploy; verify debates.gsdlabs.dev
 - [x] 62-06-PLAN.md — Ynab Next.js + PostgreSQL migration; verify ynab.gsdlabs.dev
-- [x] 62-07-PLAN.md — KidAI admin + image-search-mcp + PostgreSQL migration + VPS crontab; verify kidai.gsdlabs.dev
-- [x] 62-08-PLAN.md — PostgreSQL backup container: nightly pg_dump -> Backblaze B2 with 30-day retention
-- [ ] 62-09-PLAN.md — Parallel run validation gate: 1-week health check sweep + user sign-off checkpoint
-- [ ] 62-10-PLAN.md — Railway teardown + DNS cutover + tunnel.sh cleanup
-
----
+- [x] 62-07-PLAN.md — KidAI admin + image-search-mcp + PostgreSQL + VPS crontab; verify kidai.gsdlabs.dev
+- [x] 62-08-PLAN.md — PostgreSQL backup container: nightly pg_dump → Backblaze B2 (30-day retention)
+- [x] 62-09b-PLAN.md — Claude CLI + GSD workspace migration to VPS; parallel run validated; user sign-off
+- [x] 62-10-PLAN.md — Railway teardown: account deleted 2026-05-08; tunnel.sh cleaned up
 
 ---
 
 ### Phase 67: Cockpit VPS Monitoring
 
-**Goal:** Install and expose Cockpit on the Hetzner VPS so there's a browser-accessible server admin UI at `VPS-IP:9090` showing CPU load, RAM, disk usage, running processes, systemd units, and journal logs — without needing SSH for routine health checks.
-**Requirements:** TBD
-**Depends on:** Phase 62 (Hetzner VPS up and running)
-**Plans:** TBD (run /gsd-plan-phase 67 to break down)
+**Goal:** Browser-accessible server admin UI at cockpit.gsdlabs.dev (CPU, RAM, disk, processes, systemd, journal).
+**Depends on:** Phase 62 | **Plans:** 1/1
+
+- [x] 67-01-PLAN.md — Install Cockpit + expose via Cloudflare Tunnel remote API
 
 ---
 
 ### Phase 68: Portainer Docker UI
 
-**Goal:** Install Portainer CE on the Hetzner VPS so all Docker containers can be inspected, restarted, and log-tailed from a browser — a Railway-like container management UI without the Railway price tag. Expose via Cloudflare Tunnel at `portainer.gsdlabs.dev`.
-**Requirements:** TBD
-**Depends on:** Phase 62 (Hetzner VPS + Docker + Cloudflare Tunnel)
-**Plans:** TBD (run /gsd-plan-phase 68 to break down)
+**Goal:** Docker container management at portainer.gsdlabs.dev (inspect, restart, log-tail from browser).
+**Depends on:** Phase 62 | **Plans:** 1/1
+
+- [x] 68-01-PLAN.md — Install Portainer CE + expose via Cloudflare Tunnel remote API
 
 ---
 
 ### Phase 69: VPS System Stats Page in GSD Dashboard
 
-**Goal:** Add a "Server" page to the GSD Dashboard showing live VPS metrics — CPU load average, RAM (used/free/swap), disk usage per mount, and top processes by memory. Expose via a `/api/system` endpoint on the existing Express server; no new services required.
-**Requirements:** TBD
-**Depends on:** Phase 62 (GSD Dashboard running on Hetzner VPS)
-**Plans:** TBD (run /gsd-plan-phase 69 to break down)
+**Goal:** "Server" page in GSD Dashboard sidebar showing live CPU/RAM/disk/processes via `/api/system`.
+**Depends on:** Phase 62 | **Plans:** 1/1
+
+- [x] 69-01-PLAN.md — `/api/system` Express route + Server page in sidebar
 
 ---
 
 ### Phase 70: Hetzner Non-Root User
 
-**Goal:** Create a non-root `claude` OS user on the Hetzner VPS so Claude Code can run with `--dangerously-skip-permissions` (blocked for root by Claude Code 2.1.126+). Migrate PM2 processes, docker group membership, SSH authorized_keys, `/data/home` and `/home/services` ownership, global Claude settings, and crontabs to the new user. Remove the `isRoot` workaround from `server/routes/gsd.js`. Future SSH sessions target `claude@hetzner` instead of `root@hetzner`.
-**Requirements:** TBD
-**Depends on:** Phase 62 (Hetzner VPS running)
-**Plans:** 3 plans
-- [ ] 70-01-PLAN.md — create claude user + SSH + ownership transfer + Claude config migration
-- [ ] 70-02-PLAN.md — PM2 migration to claude + systemd boot unit + crontab migration + tmux cleanup
-- [ ] 70-03-PLAN.md — fix hardcoded /root/ paths in scripts + update 4 GitHub Actions workflows + remove isRoot from gsd.js
+**Goal:** Create `claude` OS user; migrate PM2, Docker group, SSH keys, `/data/home` + `/home/services` ownership, Claude config; remove `isRoot` workaround from gsd.js. Verified 12/12 (2026-05-05).
+**Depends on:** Phase 62 | **Plans:** 3/3
+
+- [x] 70-01-PLAN.md — Create claude user, SSH, ownership transfer, Claude config migration
+- [x] 70-02-PLAN.md — PM2 migration to claude, systemd pm2-claude.service, crontab migration
+- [x] 70-03-PLAN.md — Remove hardcoded /root/ paths, delete 4 GitHub Actions workflows, remove isRoot from gsd.js
 
 ---
 
 ### Phase 71: CLAUDE.md-First Automation Refactor
 
-**Goal:** Eliminate server-side tmux injection in favour of CLAUDE.md instructions and GSD workflow hooks. Remove the working→waiting auto-verify trigger from stateBroadcaster, disable Autopilot auto-dispatch, add a verify-work rule to the global GSD CLAUDE.md template, and add a verification backstop to gsd-complete-milestone. Keep the VerifyBadge UI and WebSocket broadcasting layer intact.
-**Requirements:** D-01 through D-08 (captured in 71-CONTEXT.md)
-**Depends on:** Phase 53 (Auto-Verify by Default — partial rollback of trigger logic)
-**Plans:** 2 plans
+**Goal:** Remove server-side tmux injection (auto-verify trigger, Autopilot auto-dispatch). Dashboard is passive observer; CLAUDE.md drives GSD workflow.
+**Depends on:** Phase 53 | **Plans:** 2/2
 
-Plans:
-- [ ] 71-01-PLAN.md — Remove maybeStartVerify from stateBroadcaster; disable AutopilotManager auto-dispatch; tests green
-- [ ] 71-02-PLAN.md — Add verify-work rule to GSD CLAUDE.md template (profile-output.cjs); add backstop check to complete-milestone workflow
+- [x] 71-01-PLAN.md — Remove maybeStartVerify from stateBroadcaster; disable AutopilotManager auto-dispatch
+- [x] 71-02-PLAN.md — Add verify-work rule to GSD CLAUDE.md template; add backstop to complete-milestone workflow
 
 ---
 
 ### Phase 72: Disk Full Prevention
 
-**Goal:** Permanently eliminate the recurring "disk full → SQLite write failure → UI spinning wheel / 502" outage pattern. Fix the double-logging in `named-tunnel.sh` (tee + PM2 = 2 copies of cloudflared output), drop cloudflared to warn-level logging, install and configure pm2-logrotate, add disk usage monitoring to the maintenance sweep with Telegram alerts at configurable thresholds, add periodic SQLite WAL checkpoint and data pruning, and document the disk management runbook.
-**Requirements:** All fixes must be non-breaking to existing hook ingestion, WebSocket broadcast, and Cloudflare Tunnel behavior.
-**Depends on:** Phase 62 (VPS + tunnel running), Phase 69 (system stats endpoint)
-**Plans:** 5 plans
+**Goal:** Eliminate "disk full → SQLite write failure → 502" outage. Fix cloudflared double-logging, add pm2-logrotate, disk monitoring with Telegram alerts, WAL checkpoint, weekly pruning, runbook.
+**Depends on:** Phase 62, Phase 69 | **Plans:** 5/5
 
-Plans:
-- [x] 72-01-PLAN.md — Fix named-tunnel.sh: remove tee (D-01), add --loglevel warn (D-02), add startup truncate guard (D-07)
-- [x] 72-02-PLAN.md — Install and configure pm2-logrotate: max_size=20M, retain=3, compress=true, daily rotation (D-03)
-- [x] 72-03-PLAN.md — Add disk monitoring + WAL checkpoint to maintenance sweep in server/index.js (D-04, D-05)
-- [x] 72-04-PLAN.md — Create scripts/prune-old-data.js and register weekly cron (D-06)
-- [x] 72-05-PLAN.md — Write docs/DISK-RUNBOOK.md with emergency procedure and rotation expectations (D-08)
+- [x] 72-01-PLAN.md — Fix named-tunnel.sh: remove tee, add --loglevel warn, startup truncate guard
+- [x] 72-02-PLAN.md — Install pm2-logrotate: max_size=20M, retain=3, compress=true, daily rotation
+- [x] 72-03-PLAN.md — Disk monitoring + WAL checkpoint in maintenance sweep (server/index.js)
+- [x] 72-04-PLAN.md — scripts/prune-old-data.js + weekly cron
+- [x] 72-05-PLAN.md — docs/DISK-RUNBOOK.md: emergency procedure, rotation table, Hetzner resize steps
+
+</details>
 
 ---
 

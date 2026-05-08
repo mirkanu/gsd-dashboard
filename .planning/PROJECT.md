@@ -66,13 +66,17 @@ A terminal-first web dashboard for managing multiple Claude Code GSD projects fr
 - ✓ Services cost tracking foundation: encrypted credentials in app_settings; `external_service_costs` table with email-parser route; ServicesPage renders costs/rules/credentials — v4.3
 - ✓ Idle session cost controls: RSS → $/day cost measurement; graceful pause on waiting idle; Railway $/day surfaced on Services; Config page Idle Auto-Close section — v4.3
 - ✓ Idle detector busy-work awareness: Claude Code hook-sourced busy markers prevent auto-close of sessions waiting on in-flight bg work; state reads "Working" when busy; JSONL audit log + weekly disk-prune sweep — v4.3 (Phase 49 + quick task 260418-khw)
+- ✓ Hetzner VPS migration: all 7 services moved from Railway (~$120/month) to Hetzner CAX21 ARM (€5/month); Cloudflare Tunnel + gsdlabs.dev subdomains; Railway account deleted 2026-05-08 — v5.0 (Phase 62)
+- ✓ VPS management tooling: Cockpit at cockpit.gsdlabs.dev, Portainer at portainer.gsdlabs.dev, Server stats page in GSD Dashboard sidebar — v5.0 (Phases 67–69)
+- ✓ Non-root claude user: PM2/Docker/SSH/Claude config migrated; --dangerously-skip-permissions works; isRoot workaround removed; all GitHub Actions deploy workflows deleted — v5.0 (Phase 70)
+- ✓ CLAUDE.md-first automation: removed server-side maybeStartVerify trigger and Autopilot auto-dispatch; Dashboard is passive observer — v5.0 (Phase 71)
+- ✓ Disk full prevention: pm2-logrotate, cloudflared warn-level logging, WAL checkpoint, weekly data pruning, disk monitoring + Telegram alerts, DISK-RUNBOOK.md — v5.0 (Phase 72)
+- ✓ Original-repo cleanup: stripped Sessions/SessionDetail/ActivityFeed/Kanban route, useNotifications, seed/import scripts, unused routes + schema — v5.1 (Phase 50.5)
+- ✓ GUI project creation + import: New Project wizard (name → repo → tmux → new-project interview), Import Existing Project with auto codebase analysis — v5.1 (Phase 51)
+- ✓ One-click project creation: POST /api/gsd/projects/create backend endpoint + NewProjectDialog frontend; optimistic card prepend with tmux controls — v5.1 (Phase 15)
+- ✓ Auto-verify by default: every plan execution auto-runs verify-work; failed verification offers one-click retry; Pause/Archive fold in verification — v5.1 (Phase 53, complete 2026-05-05)
 
-### Active (v5.0 — Non-Programmer Mode)
-
-- [ ] Original-repo cleanup: strip dormant features inherited from upstream fork (Sessions/SessionDetail/ActivityFeed/Kanban route, useNotifications, seed/import scripts, unused routes + schema) — Phase 50.5
-- ✓ GUI project creation + import: New Project wizard (name → repo → tmux → new-project interview), Import Existing Project with auto codebase analysis — Phase 51
-- ✓ One-click project creation: POST /api/gsd/projects/create backend endpoint + NewProjectDialog frontend; optimistic card prepend with tmux controls — Phase 15
-- ✓ Auto-verify by default: every plan execution auto-runs verify-work; failed verification offers one-click retry; Pause/Archive fold in verification — Phase 53 (complete 2026-05-05)
+### Active (v5.1 — Non-Programmer Mode)
 - [ ] Admin-API onboarding: guided panels per external service, OAuth where available, admin-key paste otherwise; Railway-first picker; credentials exposed to Claude sessions as env vars — Phase 54 (subsumes former Phase 46)
 - [ ] MCP tool router evaluation: Composio vs self-hosted gateway vs per-service MCP — decision phase only — Phase 55
 - [ ] CLI verbosity contract + Portfolio Feed: reduce CLI output; extract landmark events into Dashboard cards without replacing the terminal — Phase 56
@@ -137,19 +141,16 @@ v4.2 lessons:
 
 - **Tech stack**: Fork of Claude Code Agent Monitor — React frontend, Express backend, must stay compatible
 - **Data source**: Read-only filesystem access to `.planning/` directories on the same machine
-- **Deployment**: Railway (cloud) with cloudflared tunnel to local machine for GSD data
-- **Memory**: Railway container shared by 4+ Claude Code sessions; 1GB heap cap per node process
+- **Deployment**: Hetzner CAX21 ARM VPS (Helsinki) with Cloudflare named tunnel; all services at *.gsdlabs.dev; runs as `claude` OS user under PM2 + systemd
+- **Memory**: Hetzner VPS (8GB RAM); pm2-logrotate + weekly SQLite pruning prevent disk exhaustion
 
-## Current Milestone: v4.3 Optimisation & Cost Intelligence
+## Current Milestone: v5.1 Non-Programmer Mode
 
-**Goal:** Fix project status accuracy, optimise the new pages (Services/Usage/Config), add comprehensive services cost tracking, and replace manual CLAUDE.md editing with an AI-guided workflow.
+**Goal:** A non-programmer can build, run, and evolve software using the GSD Dashboard as the control plane — no SSH, no code editing, no manual deploys.
 
-**Target features:**
-- Real-time project status via WebSocket push (fix Working/Waiting false states)
-- Project cards show elapsed time + current task preview
-- Usage page: token counts, editable per-model pricing, model breakdown
-- Services page: uptime sparklines + comprehensive cost tracking (email + APIs)
-- AI-guided CLAUDE.md editor with diff preview
+**Shipped prerequisites (v5.0 + early v5.1):** Hetzner migration, VPS tooling, non-root user, CLAUDE.md-first automation, disk prevention, repo cleanup, GUI project creation, auto-verify.
+
+**Remaining phases:** 52 (GSD discoverability), 54 (admin-API onboarding), 55 (MCP evaluation), 56 (verbosity + portfolio feed), 56B (behavioural contract), 58 (project maturity stages), 54B (notification centre), 59 (task/issue migration), 60 (dev/prod envs).
 
 ---
-*Last updated: 2026-05-05 after Phase 53 completion*
+*Last updated: 2026-05-08 after v5.0 Hetzner Migration milestone close*

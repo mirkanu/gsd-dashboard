@@ -1,40 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.0
-milestone_name: | Item | Reason |
-current_plan: 2
-status: complete
-stopped_at: Completed Phase 72 — all 5 plans executed, deployed, verified
-last_updated: "2026-05-08T13:00:00.000Z"
-last_activity: 2026-05-08 -- Phase 72 complete: Disk Full Prevention
+milestone: v5.1
+milestone_name: Non-Programmer Mode
+current_plan: 0
+status: planning
+stopped_at: v5.0 Hetzner Migration milestone closed 2026-05-08 — ready to plan v5.1
+last_updated: "2026-05-08T18:00:00.000Z"
+last_activity: 2026-05-08 -- v5.0 Hetzner Migration milestone closed
 progress:
-  total_phases: 40
-  completed_phases: 31
-  total_plans: 81
-  completed_plans: 81
-  percent: 100
+  total_phases: 12
+  completed_phases: 3
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-18)
+See: .planning/PROJECT.md (updated 2026-05-08)
 
-**Core value (v5.0):** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
-**Current focus:** Phase 70 complete — awaiting next phase selection
+**Core value:** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
+**Current focus:** v5.0 Hetzner Migration closed — starting v5.1 Non-Programmer Mode
 
 ## Current Position
 
-Milestone: v5.0 Non-Programmer Mode
-Phase: 70 (hetzner-non-root-user) — COMPLETE
-Plan: 1 of 3
-Current Plan: 1
-Total Plans in Phase: 4
-Status: Ready to execute
-Last activity: 2026-05-06 -- Quick task 260506-bnb: Fix server crash resilience (PM2 systemd, hung tests, claude wrapper, memory-guard)
+Milestone: v5.1 Non-Programmer Mode
+Status: Planning — next phase to plan is Phase 52 (GSD Command Discoverability)
+Last activity: 2026-05-08 -- v5.0 Hetzner Migration milestone closed (phases 62, 67–72 archived)
 
-Progress: [░░░░░░░░░░] 0% (0/12 phases complete)
+Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
 ## Performance Metrics
 
