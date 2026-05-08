@@ -374,6 +374,15 @@ Plans:
 
 ---
 
+### Phase 72: Disk Full Prevention
+
+**Goal:** Permanently eliminate the recurring "disk full → SQLite write failure → UI spinning wheel / 502" outage pattern. Fix the double-logging in `named-tunnel.sh` (tee + PM2 = 2 copies of cloudflared output), drop cloudflared to warn-level logging, install and configure pm2-logrotate, add disk usage monitoring to the maintenance sweep with Telegram alerts at configurable thresholds, add periodic SQLite WAL checkpoint and data pruning, and document the disk management runbook.
+**Requirements:** All fixes must be non-breaking to existing hook ingestion, WebSocket broadcast, and Cloudflare Tunnel behavior.
+**Depends on:** Phase 62 (VPS + tunnel running), Phase 69 (system stats endpoint)
+**Plans:** TBD (run /gsd-plan-phase 72 to break down)
+
+---
+
 ## Seeds (parked ideas that may surface in v5.x)
 
 - **SEED-001** — AI-Guided CLAUDE.md Editor (former Phase 47; may surface if non-programmer mode needs a settings transparency surface)
