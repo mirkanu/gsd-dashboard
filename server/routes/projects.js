@@ -303,7 +303,7 @@ async function runCreationPipeline(opts) {
       }
     },
     async tmux_start() {
-      await execStep('tmux', ['new-session', '-d', '-s', sanitizedName, '-x', '220', '-y', '50']);
+      await execStep('tmux', ['new-session', '-d', '-s', sanitizedName]);
       // Register in gsd-projects.json now that session is live
       try {
         const config = loadConfig();
@@ -606,7 +606,7 @@ router.post('/import', async (req, res) => {
   // Start tmux session
   let tmuxStarted = false;
   try {
-    await execStep('tmux', ['new-session', '-d', '-s', projectName, '-x', '220', '-y', '50']);
+    await execStep('tmux', ['new-session', '-d', '-s', projectName]);
     tmuxStarted = true;
   } catch (err) {
     // Non-fatal — session may already exist or tmux may not be installed on Railway

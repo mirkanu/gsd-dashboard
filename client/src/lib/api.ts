@@ -31,11 +31,19 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+export class HttpError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 async function requestText(path: string): Promise<string> {
   const res = await fetch(`${BASE}${path}`);
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error || `HTTP ${res.status}`);
+    throw new HttpError(body?.error || `HTTP ${res.status}`, res.status);
   }
   return res.text();
 }

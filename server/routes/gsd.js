@@ -250,15 +250,17 @@ router.get('/projects/:name/files/:fileId', async (req, res) => {
     return res.status(400).json({ error: 'Unknown file identifier' });
   }
   const filePath = resolveFile(name, project.root, fileId);
+  const hasProjectMd = fs.existsSync(path.join(project.root, '.planning', 'PROJECT.md'));
+  const missingMsg = hasProjectMd ? 'Setup in progress' : 'Not initialized';
   if (!filePath) {
-    return res.status(404).json({ error: 'File not found' });
+    return res.status(404).json({ error: missingMsg });
   }
   try {
     const content = fs.readFileSync(filePath, 'utf8');
     res.set('Content-Type', 'text/plain; charset=utf-8');
     res.send(content);
   } catch {
-    res.status(404).json({ error: 'File not found' });
+    res.status(404).json({ error: missingMsg });
   }
 });
 

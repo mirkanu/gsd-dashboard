@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Maximize2 } from "lucide-react";
-import { api } from "../lib/api";
+import { api, HttpError } from "../lib/api";
 import type { GsdProject, AutopilotRun } from "../lib/types";
 import { TasksTab } from "./TasksTab";
 import { ProjectControls } from "./ProjectControls";
@@ -42,16 +42,29 @@ export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onA
   const [content, setContent]     = useState<string | null>(null);
   const [loading, setLoading]     = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [notFoundMsg, setNotFoundMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab === "tasks") return;
     let cancelled = false;
     setContent(null);
     setFetchError(null);
+    setNotFoundMsg(null);
     setLoading(true);
     api.gsd.file(project.name, activeTab)
       .then((text) => { if (!cancelled) { setContent(text); setLoading(false); } })
-      .catch((err) => { if (!cancelled) { setFetchError(err.message ?? "Failed to load file"); setLoading(false); } });
+      .catch((err) => {
+        if (!cancelled) {
+          if (err instanceof HttpError && err.status === 404) {
+            setNotFoundMsg(err.message === 'Setup in progress'
+              ? 'Setting up — planning files will appear once the milestone is created.'
+              : 'Not initialized yet — run /gsd-new-project in the terminal.');
+          } else {
+            setFetchError(err.message ?? "Failed to load file");
+          }
+          setLoading(false);
+        }
+      });
     return () => { cancelled = true; };
   }, [activeTab, project.name]);
 
@@ -124,10 +137,13 @@ export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onA
             {loading && (
               <p className="text-sm text-gray-500 py-4">Loading...</p>
             )}
+            {notFoundMsg && !loading && (
+              <p className="text-sm text-gray-500 py-4">{notFoundMsg}</p>
+            )}
             {fetchError && !loading && (
               <p className="text-sm text-red-400 py-4">{fetchError}</p>
             )}
-            {!loading && !fetchError && content !== null && (
+            {!loading && !fetchError && !notFoundMsg && content !== null && (
               <div className="prose prose-sm prose-invert max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
               </div>

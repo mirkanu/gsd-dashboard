@@ -164,61 +164,79 @@ describe("Auth endpoints (HTTP)", () => {
 // ────────────────────────────────────────────────────────────
 describe("cookieAuth middleware logic (unit)", () => {
   let isValidToken;
+  const TEST_PASS = "test-secret-pass";
+  const crypto = require("crypto");
 
   before(() => {
-    // Load auth module (already in cache or fresh load)
     const auth = require("../routes/auth");
     isValidToken = auth.isValidToken;
   });
 
-  it("isValidToken returns false for empty token", () => {
-    assert.equal(isValidToken(""), false);
-    assert.equal(isValidToken(null), false);
-    assert.equal(isValidToken(undefined), false);
+  const makeToken = (pass, offsetMs = 30 * 24 * 60 * 60 * 1000) => {
+    const expiry = (Date.now() + offsetMs).toString(16);
+    const sig = crypto.createHmac("sha256", pass).update(expiry).digest("hex");
+    return `${expiry}.${sig}`;
+  };
+
+  it("isValidToken returns false for empty/null/undefined token", () => {
+    const prev = process.env.DASHBOARD_PASS;
+    process.env.DASHBOARD_PASS = TEST_PASS;
+    try {
+      assert.equal(isValidToken(""), false);
+      assert.equal(isValidToken(null), false);
+      assert.equal(isValidToken(undefined), false);
+    } finally {
+      if (prev === undefined) delete process.env.DASHBOARD_PASS;
+      else process.env.DASHBOARD_PASS = prev;
+    }
   });
 
-  it("isValidToken returns false for unknown token", () => {
-    assert.equal(isValidToken("unknowntoken123"), false);
+  it("isValidToken returns false for malformed or tampered token", () => {
+    const prev = process.env.DASHBOARD_PASS;
+    process.env.DASHBOARD_PASS = TEST_PASS;
+    try {
+      assert.equal(isValidToken("notavalidtoken"), false);
+      const valid = makeToken(TEST_PASS);
+      const tampered = valid.slice(0, -4) + "0000";
+      assert.equal(isValidToken(tampered), false);
+    } finally {
+      if (prev === undefined) delete process.env.DASHBOARD_PASS;
+      else process.env.DASHBOARD_PASS = prev;
+    }
   });
 
-  it("cookieAuth blocks requests without a valid token from non-localhost", (t, done) => {
-    // Build a mock req/res to call cookieAuth directly
-    // We need to import the cookieAuth function — it's not exported, so we test
-    // by crafting the middleware logic inline (same code as in index.js)
-    const pass = "some-pass";
-    const cookieHeader = "";
-    const match = cookieHeader.split(";").map(s => s.trim()).find(s => s.startsWith("gsd_token="));
-    const token = match ? match.slice("gsd_token=".length) : "";
-    const valid = isValidToken(token);
-
-    assert.equal(valid, false, "Empty cookie header should yield invalid token");
-    assert.ok(!valid, "No token = should be blocked");
-    done();
+  it("isValidToken returns false for expired token", () => {
+    const prev = process.env.DASHBOARD_PASS;
+    process.env.DASHBOARD_PASS = TEST_PASS;
+    try {
+      const expired = makeToken(TEST_PASS, -1000);
+      assert.equal(isValidToken(expired), false);
+    } finally {
+      if (prev === undefined) delete process.env.DASHBOARD_PASS;
+      else process.env.DASHBOARD_PASS = prev;
+    }
   });
 
-  it("cookieAuth allows requests with a valid token", async () => {
-    // Simulate: generate a token via the login logic, then validate it
-    const crypto = require("crypto");
-    // Access the tokens Map via a fresh require or test via auth module
-    // Since tokens is not exported, we test indirectly:
-    // 1. Set env + post to /api/auth/login to generate a token
-    // 2. Extract from cookie
-    // 3. Check isValidToken returns true
-
-    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-    // Inject a token directly by calling the login endpoint via HTTP
-    // But we can't do HTTP here since server may not be running in this describe block.
-    // Instead, test the token store by calling the login route handler logic inline:
-    const fakeToken = crypto.randomBytes(32).toString("hex");
-    // isValidToken checks an internal Map, so fresh tokens aren't in it.
-    // This test simply confirms unknown tokens return false (already covered above).
-    assert.equal(isValidToken(fakeToken), false);
+  it("cookieAuth allows requests with a valid HMAC token", () => {
+    const prev = process.env.DASHBOARD_PASS;
+    process.env.DASHBOARD_PASS = TEST_PASS;
+    try {
+      const token = makeToken(TEST_PASS);
+      assert.equal(isValidToken(token), true);
+    } finally {
+      if (prev === undefined) delete process.env.DASHBOARD_PASS;
+      else process.env.DASHBOARD_PASS = prev;
+    }
   });
 
-  it("no-auth mode: DASHBOARD_PASS falsy means login returns ok immediately", () => {
-    // Test the conditional logic directly
-    const pass = "";
-    const result = !pass ? { ok: true } : null;
-    assert.deepEqual(result, { ok: true });
+  it("no-auth mode: isValidToken returns true when DASHBOARD_PASS is unset", () => {
+    const prev = process.env.DASHBOARD_PASS;
+    delete process.env.DASHBOARD_PASS;
+    try {
+      assert.equal(isValidToken("anything"), true);
+      assert.equal(isValidToken(""), true);
+    } finally {
+      if (prev !== undefined) process.env.DASHBOARD_PASS = prev;
+    }
   });
 });

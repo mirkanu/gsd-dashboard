@@ -3,23 +3,30 @@ const crypto = require('crypto');
 const express = require('express');
 const router = express.Router();
 
-// In-memory token store: token -> expiry timestamp (ms)
-// Simple and sufficient for a single-user local dashboard.
-const tokens = new Map();
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-function generateToken() {
-  return crypto.randomBytes(32).toString('hex');
+function hmac(data, secret) {
+  return crypto.createHmac('sha256', secret).update(data).digest('hex');
+}
+
+function generateToken(secret) {
+  const expiry = (Date.now() + THIRTY_DAYS_MS).toString(16);
+  const sig = hmac(expiry, secret);
+  return `${expiry}.${sig}`;
 }
 
 function isValidToken(token) {
+  const pass = process.env.DASHBOARD_PASS;
+  if (!pass) return true; // no-auth mode
   if (!token) return false;
-  const expiry = tokens.get(token);
-  if (!expiry) return false;
-  if (Date.now() > expiry) { tokens.delete(token); return false; }
-  return true;
+  const dot = token.indexOf('.');
+  if (dot === -1) return false;
+  const expiry = token.slice(0, dot);
+  const sig = token.slice(dot + 1);
+  if (Date.now() > parseInt(expiry, 16)) return false;
+  const expected = hmac(expiry, pass);
+  return crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'));
 }
-
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 router.post('/login', (req, res) => {
   const pass = process.env.DASHBOARD_PASS;
@@ -30,8 +37,7 @@ router.post('/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid password' });
   }
 
-  const token = generateToken();
-  tokens.set(token, Date.now() + THIRTY_DAYS_MS);
+  const token = generateToken(pass);
 
   res.cookie('gsd_token', token, {
     httpOnly: true,
@@ -43,10 +49,6 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  // Extract and revoke token
-  const cookieHeader = req.headers.cookie || '';
-  const match = cookieHeader.split(';').map(s => s.trim()).find(s => s.startsWith('gsd_token='));
-  if (match) tokens.delete(match.slice('gsd_token='.length));
   res.clearCookie('gsd_token', { path: '/' });
   res.json({ ok: true });
 });

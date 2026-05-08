@@ -37,8 +37,8 @@ export function registerGsdTools(context: ToolContext): void {
     ].join(" "),
     {},
     async () => {
-      const projects = await api.get<
-        Array<{
+      const { projects } = await api.get<{
+        projects: Array<{
           name: string;
           display_name?: string;
           tmuxActive: boolean;
@@ -47,8 +47,9 @@ export function registerGsdTools(context: ToolContext): void {
           statusText?: string;
           liveUrl?: string;
           archived?: boolean;
-        }>
-      >("/api/gsd/projects");
+        }>;
+        rateLimit?: unknown;
+      }>("/api/gsd/projects");
       return {
         projects: projects.map((p) => ({
           name: p.name,
