@@ -95,15 +95,16 @@ and `deploy_railway()`) with the cleaned-up version:
 | `pm2 list \| grep gsd-tunnel` | online ✓ |
 | `curl -f https://dashboard.gsdlabs.dev/api/health` | HTTP 200 `{"status":"ok"}` ✓ |
 
-## Checkpoint (Task 3 — Awaiting User)
+## Checkpoint (Task 3 — COMPLETE)
 
-**BLOCKING:** User must complete Railway teardown via railway.app dashboard and confirm:
+**User deleted Railway account entirely on 2026-05-08.** Full account deletion covered all 7 services in one action.
 
-1. All Railway services listed in 62-TEARDOWN-LOG.md are paused or deleted
-2. Railway billing estimate shows near $0 for next month
-3. All gsdlabs.dev subdomains still respond after teardown
+- Railway API confirmed dead — token returns "Not Authorized" (verified via API call 2026-05-08)
+- `YNAB_RAILWAY_API_TOKEN` removed from `/home/services/.env.production`
+- All gsdlabs.dev subdomains continue to serve from Hetzner VPS via Cloudflare Tunnel
+- Monthly cost: ~$8/month (Hetzner CAX21 only) — down from ~$127/month
 
-After user confirmation, Phase 62 is complete. Monthly cost drops from ~$127 to ~$8 (Hetzner CAX21 only).
+**Phase 62 COMPLETE.**
 
 ## Deviations from Plan
 
