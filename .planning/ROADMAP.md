@@ -48,6 +48,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 69. VPS System Stats Page in GSD Dashboard | 0/0 | Not planned | - |
 | 70. Hetzner Non-Root User | 3/3 | Complete | 2026-05-05 |
 | 71. CLAUDE.md-First Automation Refactor | 2/2 | Complete | 2026-05-06 |
+| 72. Disk Full Prevention | 0/5 | Planned | - |
 
 ---
 
@@ -379,7 +380,14 @@ Plans:
 **Goal:** Permanently eliminate the recurring "disk full → SQLite write failure → UI spinning wheel / 502" outage pattern. Fix the double-logging in `named-tunnel.sh` (tee + PM2 = 2 copies of cloudflared output), drop cloudflared to warn-level logging, install and configure pm2-logrotate, add disk usage monitoring to the maintenance sweep with Telegram alerts at configurable thresholds, add periodic SQLite WAL checkpoint and data pruning, and document the disk management runbook.
 **Requirements:** All fixes must be non-breaking to existing hook ingestion, WebSocket broadcast, and Cloudflare Tunnel behavior.
 **Depends on:** Phase 62 (VPS + tunnel running), Phase 69 (system stats endpoint)
-**Plans:** TBD (run /gsd-plan-phase 72 to break down)
+**Plans:** 5 plans
+
+Plans:
+- [ ] 72-01-PLAN.md — Fix named-tunnel.sh: remove tee (D-01), add --loglevel warn (D-02), add startup truncate guard (D-07)
+- [ ] 72-02-PLAN.md — Install and configure pm2-logrotate: max_size=20M, retain=3, compress=true, daily rotation (D-03)
+- [ ] 72-03-PLAN.md — Add disk monitoring + WAL checkpoint to maintenance sweep in server/index.js (D-04, D-05)
+- [ ] 72-04-PLAN.md — Create scripts/prune-old-data.js and register weekly cron (D-06)
+- [ ] 72-05-PLAN.md — Write docs/DISK-RUNBOOK.md with emergency procedure and rotation expectations (D-08)
 
 ---
 
