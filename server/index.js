@@ -52,11 +52,12 @@ const webhooksEmailRouter = require("./routes/webhooks-email");
 const configRouter = require("./routes/config");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
-const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
+const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled, sendNotification } = require("./gsd/telegram");
 const { authRouter, isValidToken } = require("./routes/auth");
 const projectsRouter = require("./routes/projects");
 const dockerOpsRouter = require("./routes/docker-ops");
 const systemRouter = require("./routes/system");
+const { execSync } = require("child_process");
 
 // Compute once at startup — date of last git commit formatted as "07May2026"
 const BUILD_DATE = (() => {
@@ -232,6 +233,11 @@ if (require.main === module) {
   // (Compaction scanning was removed with scripts/import-history.js in Phase 50.5-02.)
   const cleanupDb = require("./db");
   const { broadcast } = require("./websocket");
+
+  // D-04/D-05: maintenance sweep state
+  let maintenanceCycle = 0;
+  let lastDiskAlertLevel = 0; // 0=none, 1=warning (>=85%), 2=critical (>=95%)
+
   setInterval(
     () => {
       // 0. Log memory usage for trend monitoring
@@ -252,6 +258,49 @@ if (require.main === module) {
         }
         cleanupDb.stmts.updateSession.run(null, "abandoned", now, null, s.id);
         broadcast("session_updated", cleanupDb.stmts.getSession.get(s.id));
+      }
+
+      // D-05: WAL checkpoint every 10 cycles (every 20 minutes)
+      maintenanceCycle++;
+      if (maintenanceCycle % 10 === 0) {
+        try {
+          cleanupDb.db.pragma('wal_checkpoint(TRUNCATE)');
+          console.log('[maintenance] WAL checkpoint complete');
+        } catch (e) {
+          console.error('[maintenance] WAL checkpoint failed:', e.message);
+        }
+      }
+
+      // D-04: disk usage monitoring — alert once per threshold crossing
+      try {
+        const dfOut = execSync('df -k --output=pcent /', { timeout: 3000 }).toString();
+        const lines = dfOut.trim().split('\n');
+        // Output: "Use%\n 93%" — line[1] is the value
+        const diskPct = lines[1] ? parseInt(lines[1].trim(), 10) : null;
+        if (diskPct !== null && !isNaN(diskPct)) {
+          if (diskPct >= 95 && lastDiskAlertLevel < 2) {
+            lastDiskAlertLevel = 2;
+            console.error(`[CRITICAL] Disk at ${diskPct}% — SQLite write failures imminent`);
+            if (telegramEnabled) {
+              sendNotification('dashboard',
+                `[CRITICAL] Disk at ${diskPct}% on VPS — SQLite write failures imminent. Emergency: pm2 flush && truncate -s 0 /home/services/gsddashboard/logs/gsd-tunnel.log`
+              );
+            }
+          } else if (diskPct >= 85 && lastDiskAlertLevel < 1) {
+            lastDiskAlertLevel = 1;
+            console.warn(`[maintenance] Disk at ${diskPct}% — warning threshold crossed`);
+            if (telegramEnabled) {
+              sendNotification('dashboard',
+                `Warning: Disk at ${diskPct}% on VPS — approaching full. Run node scripts/prune-old-data.js to free space.`
+              );
+            }
+          } else if (diskPct < 80 && lastDiskAlertLevel > 0) {
+            lastDiskAlertLevel = 0;
+            console.log(`[maintenance] Disk at ${diskPct}% — disk alert cleared`);
+          }
+        }
+      } catch (e) {
+        console.error('[maintenance] Disk check failed:', e.message);
       }
 
     },
