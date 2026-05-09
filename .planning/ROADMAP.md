@@ -44,7 +44,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
 | 52. GSD Command Discoverability | 2/2 | Complete    | 2026-05-09 |
 | 54. Global Env Editor | 2/2 | Complete ✅ (v5.1) | 2026-05-09 |
-| 56. CLI Verbosity Contract + Portfolio Feed | 2/3 | In Progress|  |
+| 56. CLI Verbosity Contract + Portfolio Feed | 3/3 | Complete   | 2026-05-09 |
 | 56B. Non-Programmer Behavioural Contract | 0/0 | Not planned | - |
 | 58. Project Maturity Stages | 0/0 | Not planned | - |
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
@@ -168,7 +168,7 @@ Plans:
 - [x] 56-03-PLAN.md — CLAUDE.md verbosity rules: all 6 project files + GSD template (independent of server)
 
 **Wave 2** *(blocked on 56-01)*
-- [ ] 56-02-PLAN.md — Client UI: EventTypeBadge, FeedPage, Dashboard preview, Sidebar, App routing, ConfigPage toggles
+- [x] 56-02-PLAN.md — Client UI: EventTypeBadge, FeedPage, Dashboard preview, Sidebar, App routing, ConfigPage toggles
 
 ---
 
