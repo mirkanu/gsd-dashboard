@@ -4,8 +4,8 @@ milestone: v5.1
 milestone_name: | Item | Reason |
 status: executing
 stopped_at: Completed 62-09b-PLAN.md (Tasks 0-3 auto; Task 4 awaiting human verification)
-last_updated: "2026-05-09T00:20:08.162Z"
-last_activity: 2026-05-09 -- Phase 52 planning complete
+last_updated: "2026-05-09T08:19:48.297Z"
+last_activity: 2026-05-09 -- Phase 52 execution started
 progress:
   total_phases: 11
   completed_phases: 3
@@ -21,13 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
-**Current focus:** v5.0 Hetzner Migration closed — starting v5.1 Non-Programmer Mode
+**Current focus:** Phase 52 — gsd-command-discoverability
 
 ## Current Position
 
+Phase: 52 (gsd-command-discoverability) — EXECUTING
+Plan: 1 of 2
 Milestone: v5.1 Non-Programmer Mode
-Status: Ready to execute
-Last activity: 2026-05-09 -- Phase 52 planning complete
+Status: Executing Phase 52
+Last activity: 2026-05-09 -- Phase 52 execution started
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 

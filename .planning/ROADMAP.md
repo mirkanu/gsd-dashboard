@@ -40,7 +40,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 50.5. Original-Repo Cleanup | 4/4 | Complete ✅ (v5.1) | 2026-04-18 |
 | 51. GUI Project Creation + Import | 4/4 | Complete ✅ (v5.1) | 2026-04-20 |
 | 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
-| 52. GSD Command Discoverability | 0/2 | Planned | - |
+| 52. GSD Command Discoverability | 0/2 | Planned    |  |
 | 54. Admin-API Onboarding for External Services | 0/0 | Not planned | - |
 | 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
 | 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
