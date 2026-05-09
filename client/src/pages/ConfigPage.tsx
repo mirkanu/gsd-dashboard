@@ -267,6 +267,8 @@ export function ConfigPage() {
         verbosity: patch.verbosity ?? settings.verbosity,
         telegram_alerts:
           patch.telegram_alerts ?? settings.telegram_alerts ?? {},
+        suppress_context_reask: patch.suppress_context_reask ?? settings.suppress_context_reask,
+        suppress_plan_ceremony: patch.suppress_plan_ceremony ?? settings.suppress_plan_ceremony,
       };
       const result = await api.config.saveProjectSettings(
         settingsProjectKey,
@@ -339,6 +341,12 @@ export function ConfigPage() {
     const newAlerts = { ...settings.telegram_alerts, [key]: value };
     setSettings({ ...settings, telegram_alerts: newAlerts });
     saveSettings({ telegram_alerts: newAlerts }, key);
+  };
+
+  const handleGsdToggle = (key: 'suppress_context_reask' | 'suppress_plan_ceremony', value: boolean) => {
+    if (!settings) return;
+    setSettings({ ...settings, [key]: value });
+    saveSettings({ [key]: value }, key);
   };
 
   // ─── Render ──────────────────────────────────────────────────────────────
@@ -509,6 +517,45 @@ export function ConfigPage() {
                 <option value="normal">Normal</option>
                 <option value="quiet">Quiet</option>
               </select>
+            )}
+          </div>
+
+          {/* GSD Verbosity Overrides */}
+          <div className="bg-surface-2 border border-border rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Wrench className="w-4 h-4 text-gray-400" />
+              <h2 className="text-sm font-semibold text-gray-200">GSD Verbosity Overrides</h2>
+              {(settingsSaved === 'suppress_context_reask' || settingsSaved === 'suppress_plan_ceremony') && (
+                <span className="flex items-center gap-1 text-emerald-400 text-xs ml-auto">
+                  <Check className="w-3 h-3" /> Saved
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">Per-project only. Has no effect on the Global tab.</p>
+
+            {isGlobal ? (
+              <p className="text-sm text-gray-500 italic">Select a project to configure GSD verbosity overrides.</p>
+            ) : settingsLoading ? (
+              <SettingsSkeleton />
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Toggle
+                    checked={settings?.suppress_context_reask ?? false}
+                    onChange={(v) => handleGsdToggle('suppress_context_reask', v)}
+                    label="Skip CONTEXT.md re-asking when file already exists"
+                  />
+                  <p className="text-xs text-gray-600">When on, GSD skips the discuss-phase interview if CONTEXT.md is already present.</p>
+                </div>
+                <div className="space-y-1">
+                  <Toggle
+                    checked={settings?.suppress_plan_ceremony ?? false}
+                    onChange={(v) => handleGsdToggle('suppress_plan_ceremony', v)}
+                    label="Suppress plan preamble and postamble narration"
+                  />
+                  <p className="text-xs text-gray-600">When on, GSD omits the opening and closing narration around each plan execution.</p>
+                </div>
+              </div>
             )}
           </div>
 
