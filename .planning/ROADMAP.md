@@ -148,7 +148,10 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
+**Wave 1**
 - [ ] 54-01-PLAN.md — Backend API: GET /api/env + PUT /api/env (atomic write, path-traversal-safe)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 54-02-PLAN.md — Frontend: EnvEditorPage + EnvTable + Sidebar nav + App.tsx route
 
 ---

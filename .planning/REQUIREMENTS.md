@@ -52,8 +52,8 @@ Prior milestone requirements (v3.x and v4.x) are archived under `.planning/miles
 
 | ID | Requirement | Phase |
 |----|-------------|-------|
-| APO-01 | Project setup wizard and retro-fit panel for existing projects asks "does this project need any of the following services?" with a curated Railway-first checklist. | 54 |
-| APO-02 | For each checked service, Dashboard opens a service-specific onboarding panel — OAuth where the provider supports it (GitHub, Vercel), admin-key paste with "where to find this" walkthrough otherwise. | 54 |
+| APO-01 | View `/home/services/.env.production` from the Dashboard UI — parsed key=value display with comment and blank-line preservation. *(Rescoped from service-wizard; see ROADMAP.md Phase 54 note)* | 54 |
+| APO-02 | Edit and save key=value pairs in `/home/services/.env.production` from the Dashboard UI — atomic write, secret masking for sensitive keys, add/delete rows, unsaved-changes indicator. *(Rescoped from service-onboarding panel; see ROADMAP.md Phase 54 note)* | 54 |
 | APO-03 | Credentials land in `app_settings` encrypted (reusing Phase 45 AES-GCM helpers) and are exposed to the project's Claude Code session as env vars. | 54 |
 | APO-04 | "Needs setup" badge on the project card calls out any declared dependency that isn't yet wired up. | 54 |
 | APO-05 | Removing a service cleanly revokes the stored credential and updates the env. | 54 |
