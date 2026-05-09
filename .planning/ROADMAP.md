@@ -8,8 +8,9 @@
 
 - ✅ **v5.0 Hetzner Migration** — Phases 62, 67–72 (shipped 2026-05-08) · [archive](milestones/v5.0-ROADMAP.md)
 - ✅ **v4.3 Optimisation & Cost Intelligence** — Phases 43–49 (shipped 2026-04-18)
-- 🚧 **v5.1 Non-Programmer Mode** — Phases 50.5, 51, 53, 52, 54–60 (in progress)
+- 🚧 **v5.1 Non-Programmer Mode** — Phases 50.5, 51, 53, 52, 54, 56–60 (in progress)
   *(Phase 54 scope reduced: guided onboarding replaced by Global Env Editor — simpler, covers real workflow)*
+  *(Phase 55 dropped: MCP tool routing is premature — global .env already handles credential distribution)*
 
 ---
 
@@ -43,7 +44,6 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
 | 52. GSD Command Discoverability | 2/2 | Complete    | 2026-05-09 |
 | 54. Global Env Editor | 2/2 | Complete ✅ (v5.1) | 2026-05-09 |
-| 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
 | 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
 | 56B. Non-Programmer Behavioural Contract | 0/0 | Not planned | - |
 | 58. Project Maturity Stages | 0/0 | Not planned | - |
@@ -65,7 +65,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 ```
 50.5 (cleanup) ──→ 51 (project creation)
                    ├──→ 53 (auto-verify)
-                   ├──→ 54 (global env editor) ──→ 55 (MCP evaluation)
+                   ├──→ 54 (global env editor)
                    ├──→ 56 (verbosity + feed) ──→ 56B (behavioural contract)
                    └──→ 58 (maturity stages) ──┬──→ 54B (notification centre)
                                                 ├──→ 59 (task migration + issue GUI)
@@ -80,8 +80,8 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 ## Coverage (v5.1)
 
 - v5.1 requirements: 64 total (see REQUIREMENTS.md)
-- Mapped to phases: 64
-- Unmapped: 0
+- Mapped to phases: 62 (APO-07, APO-08 deferred — Phase 55 dropped)
+- Unmapped: 2
 
 | Phase | Requirements |
 |-------|--------------|
@@ -89,7 +89,6 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 | 51 | NPC-01, NPC-02, NPC-03, NPC-04, NPC-05, NPC-06 |
 | 53 | ATV-01, ATV-02, ATV-03, ATV-04, ATV-05 |
 | 54 | APO-01, APO-02 |
-| 55 | APO-07, APO-08 |
 | 56 | NAR-01, NAR-02, NAR-03, NAR-04, NAR-05 |
 | 56B | NPB-01, NPB-02, NPB-03, NPB-04, NPB-05, NPB-06, NPB-07 |
 | 58 | MAT-01, MAT-02, MAT-03, MAT-04, MAT-05, MAT-06, MAT-07, MAT-08 |
@@ -153,16 +152,6 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 54-02-PLAN.md — Frontend: EnvEditorPage + EnvTable + Sidebar nav + App.tsx route
-
----
-
-### Phase 55: MCP Tool Router Evaluation (decision phase)
-
-**Goal:** Evaluate whether to use Composio's Tool Router, build a self-hosted MCP gateway, or wire per-service MCP servers individually, so Claude Code sessions get per-project MCP tools for external services automatically, scoped to that project's credentials.
-**Checkpoint:** Build-vs-buy decision — produce a recommendation doc, not a full build.
-**Requirements:** APO-07, APO-08
-**Depends on:** Phase 54
-**Plans:** TBD (small — research + decision doc)
 
 ---
 
@@ -404,3 +393,4 @@ Plans:
 
 - **SEED-001** — AI-Guided CLAUDE.md Editor (former Phase 47; may surface if non-programmer mode needs a settings transparency surface)
 - **SEED-002** — Light/day theme contrast bug (former task #82; surface during next UI audit)
+- **SEED-003** — MCP Tool Router / per-project MCP scoping (former Phase 55; dropped because global .env already handles credential distribution — revisit if Claude starts failing to use external services correctly despite having the keys)
