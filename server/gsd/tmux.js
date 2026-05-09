@@ -574,4 +574,38 @@ async function detectRateLimitAsync(sessionNames) {
   return hit ?? { active: false, resetAt: null };
 }
 
-module.exports = { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync, _testDetectWithChangeHeuristic, _resetPaneHashCache, paneHashCache };
+/**
+ * Scan tmux pane text for landmark GSD events (plan complete, verify pass/fail, phase complete).
+ * Returns null if no landmark is detected.
+ * waiting_input is NOT detected here — it is detected by state transition in stateBroadcaster.js.
+ *
+ * @param {string|null|undefined} rawText
+ * @param {string} projectName
+ * @returns {{ type: string, label: string, projectName: string, detectedAt: string }|null}
+ */
+function extractLandmarkEvent(rawText, projectName) {
+  if (!rawText || !projectName) return null;
+  const lines = rawText.split('\n');
+  // Scan bottom-up (most recent output first) through last 50 lines
+  const recentLines = lines.slice(-50);
+  for (let i = recentLines.length - 1; i >= 0; i--) {
+    const clean = stripAnsi(recentLines[i]).trim();
+    if (!clean) continue;
+
+    if (/SUMMARY\.md written/i.test(clean) || /plan\s+\d+\s+(complete|done)/i.test(clean) || /gsd-execute-phase.*done/i.test(clean)) {
+      return { type: 'plan_complete', label: `Finished a plan on ${projectName}`, projectName, detectedAt: new Date().toISOString() };
+    }
+    if (/phase\s+\d+\s+(complete|done)/i.test(clean) || /all\s+plans.*done/i.test(clean)) {
+      return { type: 'phase_complete', label: `Phase complete on ${projectName}`, projectName, detectedAt: new Date().toISOString() };
+    }
+    if (/verify.*passed/i.test(clean) || /all\s+tests?\s+pass/i.test(clean) || /verification.*passed/i.test(clean)) {
+      return { type: 'verify_passed', label: `Verify passed on ${projectName}`, projectName, detectedAt: new Date().toISOString() };
+    }
+    if (/verify.*failed/i.test(clean) || /tests?.*failed/i.test(clean) || /verification.*failed/i.test(clean)) {
+      return { type: 'verify_failed', label: `Verify failed on ${projectName}`, projectName, detectedAt: new Date().toISOString() };
+    }
+  }
+  return null;
+}
+
+module.exports = { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, _testDetectFromOutput, waitForIdle, _testWaitForIdle, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync, _testDetectWithChangeHeuristic, _resetPaneHashCache, paneHashCache, extractLandmarkEvent };
