@@ -44,7 +44,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
 | 52. GSD Command Discoverability | 2/2 | Complete    | 2026-05-09 |
 | 54. Global Env Editor | 2/2 | Complete ✅ (v5.1) | 2026-05-09 |
-| 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
+| 56. CLI Verbosity Contract + Portfolio Feed | 0/3 | Ready to execute | - |
 | 56B. Non-Programmer Behavioural Contract | 0/0 | Not planned | - |
 | 58. Project Maturity Stages | 0/0 | Not planned | - |
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
@@ -160,7 +160,15 @@ Plans:
 **Goal:** Reduce how much Claude/GSD says in the terminal so the fully-visible tmux pane is pleasant to watch. Extract landmark events from terminal output for surfacing in the Dashboard surround, without replacing the CLI itself.
 **Requirements:** NAR-01 through NAR-05
 **Depends on:** Phase 43 (project state broadcaster — already shipped)
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+**Wave 1** (parallel)
+- [ ] 56-01-PLAN.md — Server foundation: feedStore.js, extractLandmarkEvent() in tmux.js, stateBroadcaster integration, GET /api/feed, proxy prefix, DB migration for suppress_* columns
+- [ ] 56-03-PLAN.md — CLAUDE.md verbosity rules: all 6 project files + GSD template (independent of server)
+
+**Wave 2** *(blocked on 56-01)*
+- [ ] 56-02-PLAN.md — Client UI: EventTypeBadge, FeedPage, Dashboard preview, Sidebar, App routing, ConfigPage toggles
 
 ---
 
