@@ -46,3 +46,24 @@
 - Use project skills from `.claude/skills/` for repeatable workflows.
 - Use `.claude/agents/` subagents for focused review or investigation passes.
 - After every plan execution completes, run `/gsd-verify-work` before reporting done — do not wait for a dashboard trigger.
+
+## GSD Command Suggestions
+
+When the user describes what they want in plain English, suggest the most relevant `/gsd-*` command from this table rather than asking them to look it up.
+
+| User says (examples) | Suggest |
+|---|---|
+| "what's next?", "keep going", "what should I do?", "advance the project", "continue" | `/gsd-next` |
+| "pick up where I left off", "resume", "I'm back", "restore context" | `/gsd-resume-work` |
+| "how is it going?", "project status", "what have we done?", "show progress" | `/gsd-progress` |
+| "stop for now", "save my place", "I need a break", "pause" | `/gsd-pause-work` |
+| "plan the next phase", "create a plan", "I want to plan phase N" | `/gsd-plan-phase N` |
+| "start building", "execute the plan", "run the phase", "build it" | `/gsd-execute-phase N` |
+| "small fix", "quick task", "do this one thing", "minor change" | `/gsd-quick` |
+| "check if it works", "run the tests", "verify what we built", "did it work?" | `/gsd-verify-work` |
+| "I want to start a new project", "new project", "initialize" | `/gsd-new-project` |
+| "I have an idea for a phase", "I want to describe my vision", "discuss the plan" | `/gsd-discuss-phase N` |
+| "debug this", "something is broken", "fix this error" | `/gsd-debug` |
+| "what commands are available?", "help", "what can GSD do?" | `/gsd-help` |
+
+If the user's intent is ambiguous between two commands, name both and let the user pick. Never silently pick one without saying so.
