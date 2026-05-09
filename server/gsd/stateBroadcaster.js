@@ -5,8 +5,10 @@ const {
   capturePaneTextAsync,
   extractCurrentTask,
   extractStatusLine,
+  extractLandmarkEvent,
 } = require('./tmux');
 const busyMarkers = require('./busyMarkers');
+const feedStore = require('./feedStore');
 
 // In-memory snapshot: projectName -> { sessionState, stateEnteredAt, currentTask, statusText, busy_markers? }
 const snapshot = new Map();
@@ -131,6 +133,39 @@ async function _testPollOnce(
     stateEnteredAt: nowIso,
     ...(busy_markers ? { busy_markers } : {}),
   });
+
+  // Landmark event detection — runs on pane-state transitions only.
+  // waiting_input: reuse rawPaneState transition to 'waiting'.
+  if (sessionState === 'waiting' && prevRaw !== 'waiting') {
+    const displayName = project.display_name || project.name;
+    const waitingEntry = {
+      type: 'waiting_input',
+      projectName: project.name,
+      projectDisplayName: displayName,
+      label: `Waiting for input on ${displayName}`,
+      detectedAt: nowIso,
+    };
+    feedStore.pushEvent(waitingEntry);
+    broadcastFn('feed_event', feedStore.getEvents()[0]);
+  }
+
+  // Regex-based landmark detection (plan_complete, verify_passed, verify_failed, phase_complete)
+  const landmark = extractLandmarkEvent(paneText, project.display_name || project.name);
+  if (landmark) {
+    // Deduplication: skip if last landmark for this project was < 30s ago
+    const prevSnap = snapshot.get(project.name);
+    const lastLandmarkAt = prevSnap && prevSnap.lastLandmarkAt ? prevSnap.lastLandmarkAt : null;
+    const elapsed = lastLandmarkAt ? Date.now() - new Date(lastLandmarkAt).getTime() : Infinity;
+    if (elapsed > 30000) {
+      const displayName = project.display_name || project.name;
+      feedStore.pushEvent({ ...landmark, projectDisplayName: displayName });
+      broadcastFn('feed_event', feedStore.getEvents()[0]);
+      // Update lastLandmarkAt on the snapshot (merge into existing entry)
+      const current = snapshot.get(project.name);
+      if (current) snapshot.set(project.name, { ...current, lastLandmarkAt: nowIso });
+    }
+  }
+
   return true;
 }
 

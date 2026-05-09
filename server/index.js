@@ -50,6 +50,7 @@ const servicesRulesRouter = require("./routes/services-rules");
 const appSettingsRouter = require("./routes/app-settings");
 const webhooksEmailRouter = require("./routes/webhooks-email");
 const configRouter = require("./routes/config");
+const feedRouter = require("./routes/feed");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
 const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
@@ -128,6 +129,7 @@ function createApp() {
   app.use("/api/config", configRouter);
   app.use("/api/projects", projectsRouter);
   app.use("/api/docker", dockerOpsRouter);
+  app.use("/api/feed", feedRouter);
   app.use("/mcp", mcpRemote);
 
   app.get("/api/health", (_req, res) => {
