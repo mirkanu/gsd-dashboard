@@ -42,7 +42,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 51. GUI Project Creation + Import | 4/4 | Complete ✅ (v5.1) | 2026-04-20 |
 | 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
 | 52. GSD Command Discoverability | 2/2 | Complete    | 2026-05-09 |
-| 54. Global Env Editor | 0/2 | Not started | - |
+| 54. Global Env Editor | 2/2 | Complete ✅ (v5.1) | 2026-05-09 |
 | 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
 | 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
 | 56B. Non-Programmer Behavioural Contract | 0/0 | Not planned | - |
@@ -149,10 +149,10 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 54-01-PLAN.md — Backend API: GET /api/env + PUT /api/env (atomic write, path-traversal-safe)
+- [x] 54-01-PLAN.md — Backend API: GET /api/env + PUT /api/env (atomic write, path-traversal-safe)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 54-02-PLAN.md — Frontend: EnvEditorPage + EnvTable + Sidebar nav + App.tsx route
+- [x] 54-02-PLAN.md — Frontend: EnvEditorPage + EnvTable + Sidebar nav + App.tsx route
 
 ---
 
