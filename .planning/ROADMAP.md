@@ -40,7 +40,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 50.5. Original-Repo Cleanup | 4/4 | Complete ✅ (v5.1) | 2026-04-18 |
 | 51. GUI Project Creation + Import | 4/4 | Complete ✅ (v5.1) | 2026-04-20 |
 | 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
-| 52. GSD Command Discoverability | 0/0 | Not planned | - |
+| 52. GSD Command Discoverability | 0/2 | Planned | - |
 | 54. Admin-API Onboarding for External Services | 0/0 | Not planned | - |
 | 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
 | 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
@@ -294,15 +294,16 @@ Verifiable by walking a non-programmer (Emily-Kate or equivalent) through the fu
 - **Phase 46** (Services API Integrations, v4.3) — subsumed by Phase 54
 - **Phase 47** (AI-Guided CLAUDE.md Editor, v4.3) — parked as SEED-001
 
-### Phase 52: GSD Command Discoverability — CLAUDE.md guidance for Claude to proactively suggest the best /gsd-* command for natural-language queries; add /gsd-next to dashboard shortcut buttons above the insert-into-tmux input
+### Phase 52: GSD Command Discoverability
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Make the GSD command toolkit discoverable through natural conversation (CLAUDE.md guidance) and one-tap chip buttons on mobile (Dashboard UI). Two parallel deliverables: CLAUDE.md natural-language → command mapping table; /gsd-next shortcut chip wired into the terminal panel.
+**Requirements**: GSD Command Discoverability — CLAUDE.md guidance + /gsd-next UI button
 **Depends on:** Phase 51
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 52 to break down)
+- [ ] 52-01-PLAN.md — Add GSD Command Suggestions section to CLAUDE.md (NL → /gsd-* mapping table)
+- [ ] 52-02-PLAN.md — Add /gsd-next to GSD_CHIPS and render CommandChips in TerminalOverlay (GSD.tsx)
 
 ---
 
