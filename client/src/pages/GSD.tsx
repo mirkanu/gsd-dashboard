@@ -25,6 +25,7 @@ import { AutopilotControls } from "../components/AutopilotControls";
 import { VerifyBadge } from "../components/VerifyBadge";
 import { useResizableColumns } from "../hooks/useResizableColumns";
 import { useProjectCreationStateSubscriber } from "../hooks/useProjectCreationState";
+import { CommandChips } from "../components/CommandChips";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() =>
@@ -96,6 +97,7 @@ function StatusBadge({ status }: { status: string | null }) {
 // ─── Send box ─────────────────────────────────────────────────────────────────
 
 const GSD_CHIPS = [
+  "/gsd-next",
   "/gsd-resume-work",
   "/gsd-progress",
   "/gsd-pause-work",
@@ -723,6 +725,12 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
               contextTokens={contextTokens ?? null}
             />
           )}
+          <div aria-label="GSD command shortcuts">
+            <CommandChips
+              commands={[...GSD_CHIPS]}
+              onSelect={(cmd) => api.gsd.send(projectName, cmd)}
+            />
+          </div>
           <SpecialKeyBar wsRef={wsRef} termRef={termRef} specialKeyPressRef={specialKeyPressRef} />
         </div>
       )}
