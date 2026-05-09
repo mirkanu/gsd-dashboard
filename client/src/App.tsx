@@ -8,6 +8,7 @@ import { ServicesPage } from "./pages/ServicesPage";
 import { UsagePage } from "./pages/UsagePage";
 import { ConfigPage } from "./pages/ConfigPage";
 import { EnvEditorPage } from "./pages/EnvEditorPage";
+import { FeedPage } from "./pages/FeedPage";
 import { ServerPage } from "./pages/ServerPage";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/Login";
@@ -63,7 +64,8 @@ export default function App() {
           <Route path="kanban" element={<Navigate to="/" replace />} />
           <Route path="sessions" element={<Navigate to="/" replace />} />
           <Route path="sessions/:id" element={<Navigate to="/" replace />} />
-          <Route path="activity" element={<Navigate to="/" replace />} />
+          <Route path="feed" element={<FeedPage />} />
+          <Route path="activity" element={<Navigate to="/feed" replace />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings logout={logout} />} />
           <Route path="gsd" element={<GSD />} />

@@ -241,6 +241,17 @@ export interface ProjectSettings {
   verbosity: 'verbose' | 'normal' | 'quiet';
   telegram_alerts: Record<string, boolean>;
   updated_at?: string;
+  suppress_context_reask?: boolean;
+  suppress_plan_ceremony?: boolean;
+}
+
+export interface FeedEntry {
+  id: string;
+  type: 'plan_complete' | 'verify_passed' | 'verify_failed' | 'waiting_input' | 'phase_complete';
+  projectName: string;
+  projectDisplayName: string;
+  label: string;
+  detectedAt: string; // ISO timestamp
 }
 
 export interface ClaudeMdResponse {

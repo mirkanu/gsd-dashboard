@@ -6,6 +6,7 @@ import {
   BarChart3,
   Settings,
   MapPin,
+  Rss,
   Wifi,
   WifiOff,
   Github,
@@ -27,6 +28,7 @@ import { ImportProjectDialog } from "./ImportProjectDialog";
 // ─── Primary nav (always visible at top) ─────────────────────────────────────
 const PRIMARY_ITEMS = [
   { to: "/gsd", icon: MapPin, label: "GSD Projects" },
+  { to: "/feed", icon: Rss, label: "Feed" },
   { to: "/services", icon: Server, label: "Services" },
   { to: "/usage", icon: Coins, label: "Usage" },
   { to: "/config", icon: Wrench, label: "Config" },
