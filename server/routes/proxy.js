@@ -12,6 +12,7 @@ const PROXY_PREFIXES = [
   '/api/webhooks',
   '/api/projects', // Phase 51: project creation + import routes
   '/api/env', // Phase 54: global env editor
+  '/api/feed',     // Phase 56: Portfolio Feed
 ];
 
 function createAgentProxy(gsdDataUrl) {

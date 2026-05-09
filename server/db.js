@@ -438,6 +438,16 @@ try {
   `);
 }
 
+// Migration: add GSD verbosity override columns to project_settings (Phase 56)
+try {
+  db.prepare("SELECT suppress_context_reask FROM project_settings LIMIT 1").get();
+} catch {
+  db.exec(`
+    ALTER TABLE project_settings ADD COLUMN suppress_context_reask INTEGER;
+    ALTER TABLE project_settings ADD COLUMN suppress_plan_ceremony INTEGER;
+  `);
+}
+
 // Startup cleanup: mark stale active sessions as completed.
 // Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
 // so they stay "active" forever. Complete any active session whose last event is older than
@@ -682,11 +692,13 @@ const stmts = {
     `SELECT * FROM project_settings WHERE project_key = ?`
   ),
   upsertProjectSettings: db.prepare(
-    `INSERT INTO project_settings (project_key, verbosity, telegram_alerts, updated_at)
-     VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    `INSERT INTO project_settings (project_key, verbosity, telegram_alerts, suppress_context_reask, suppress_plan_ceremony, updated_at)
+     VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
      ON CONFLICT(project_key) DO UPDATE SET
        verbosity = excluded.verbosity,
        telegram_alerts = excluded.telegram_alerts,
+       suppress_context_reask = COALESCE(excluded.suppress_context_reask, suppress_context_reask),
+       suppress_plan_ceremony = COALESCE(excluded.suppress_plan_ceremony, suppress_plan_ceremony),
        updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`
   ),
   listProjectSettings: db.prepare(

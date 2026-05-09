@@ -232,7 +232,7 @@ router.put("/project-settings/:project", async (req, res) => {
     }
   }
 
-  const { verbosity, telegram_alerts } = req.body || {};
+  const { verbosity, telegram_alerts, suppress_context_reask, suppress_plan_ceremony } = req.body || {};
 
   // Validate verbosity
   const validVerbosity = ["verbose", "normal", "quiet"];
@@ -250,13 +250,21 @@ router.put("/project-settings/:project", async (req, res) => {
   }
 
   try {
-    stmts.upsertProjectSettings.run(project, finalVerbosity, JSON.stringify(finalAlerts));
+    stmts.upsertProjectSettings.run(
+      project,
+      finalVerbosity,
+      JSON.stringify(finalAlerts),
+      suppress_context_reask != null ? (suppress_context_reask ? 1 : 0) : null,
+      suppress_plan_ceremony != null ? (suppress_plan_ceremony ? 1 : 0) : null,
+    );
     const saved = stmts.getProjectSettings.get(project);
     res.json({
       ok: true,
       settings: {
         ...saved,
         telegram_alerts: JSON.parse(saved.telegram_alerts || "{}"),
+        suppress_context_reask: saved.suppress_context_reask === 1,
+        suppress_plan_ceremony: saved.suppress_plan_ceremony === 1,
       },
     });
   } catch (err) {
