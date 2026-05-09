@@ -9,6 +9,7 @@
 - ✅ **v5.0 Hetzner Migration** — Phases 62, 67–72 (shipped 2026-05-08) · [archive](milestones/v5.0-ROADMAP.md)
 - ✅ **v4.3 Optimisation & Cost Intelligence** — Phases 43–49 (shipped 2026-04-18)
 - 🚧 **v5.1 Non-Programmer Mode** — Phases 50.5, 51, 53, 52, 54–60 (in progress)
+  *(Phase 54 scope reduced: guided onboarding replaced by Global Env Editor — simpler, covers real workflow)*
 
 ---
 
@@ -41,7 +42,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 51. GUI Project Creation + Import | 4/4 | Complete ✅ (v5.1) | 2026-04-20 |
 | 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
 | 52. GSD Command Discoverability | 2/2 | Complete    | 2026-05-09 |
-| 54. Admin-API Onboarding for External Services | 0/0 | Not planned | - |
+| 54. Global Env Editor | 0/2 | Not started | - |
 | 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
 | 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
 | 56B. Non-Programmer Behavioural Contract | 0/0 | Not planned | - |
@@ -64,14 +65,14 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 ```
 50.5 (cleanup) ──→ 51 (project creation)
                    ├──→ 53 (auto-verify)
-                   ├──→ 54 (admin APIs) ──→ 55 (MCP evaluation)
+                   ├──→ 54 (global env editor) ──→ 55 (MCP evaluation)
                    ├──→ 56 (verbosity + feed) ──→ 56B (behavioural contract)
                    └──→ 58 (maturity stages) ──┬──→ 54B (notification centre)
                                                 ├──→ 59 (task migration + issue GUI)
                                                 └──→ 60 (dev/prod envs)
 ```
 
-Phase 56B depends on both 54 (admin APIs) and 56 (verbosity).
+Phase 56B depends on both 54 (global env editor) and 56 (verbosity).
 Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Phase 43.
 
 ---
@@ -87,7 +88,7 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 | 50.5 | CLN-01, CLN-02, CLN-03, CLN-04, CLN-05, CLN-06 |
 | 51 | NPC-01, NPC-02, NPC-03, NPC-04, NPC-05, NPC-06 |
 | 53 | ATV-01, ATV-02, ATV-03, ATV-04, ATV-05 |
-| 54 | APO-01, APO-02, APO-03, APO-04, APO-05, APO-06 |
+| 54 | APO-01, APO-02 |
 | 55 | APO-07, APO-08 |
 | 56 | NAR-01, NAR-02, NAR-03, NAR-04, NAR-05 |
 | 56B | NPB-01, NPB-02, NPB-03, NPB-04, NPB-05, NPB-06, NPB-07 |
@@ -139,12 +140,16 @@ Plans:
 
 ---
 
-### Phase 54: Admin-API Onboarding for External Services
+### Phase 54: Global Env Editor
 
-**Goal:** When a project declares a dependency on GitHub / Vercel / Stripe / Resend / Railway / OpenAI / Anthropic / a chosen email service, the Dashboard walks the user through guided onboarding and stores credentials such that the project's Claude Code sessions can use them automatically. Railway-first service picker; third-party only when a genuine gap exists. Subsumes v4.3's Phase 46 scope.
-**Requirements:** APO-01 through APO-06
-**Depends on:** Phase 45 (credentials storage)
-**Plans:** TBD
+**Goal:** Make `/home/services/.env.production` viewable and directly editable from the Dashboard UI. Key=value editor with save. Replaces the original guided-onboarding scope — credentials are already managed in the global env manually; this just brings that workflow into the Dashboard.
+**Requirements:** APO-01 (view), APO-02 (edit/save)
+**Depends on:** Phase 51
+**Plans:** 2 plans
+
+Plans:
+- [ ] 54-01-PLAN.md — Backend API: GET /api/env + PUT /api/env (atomic write, path-traversal-safe)
+- [ ] 54-02-PLAN.md — Frontend: EnvEditorPage + EnvTable + Sidebar nav + App.tsx route
 
 ---
 
@@ -175,7 +180,7 @@ Plans:
 |-----------|-------------|
 | Asking user to open/view/read code | Read it yourself; summarise in plain English |
 | Asking user to paste git diffs or logs | Read them yourself |
-| Asking user to edit a config/.env/any file | Edit it yourself; request credentials via Dashboard panel (Phase 54) if missing |
+| Asking user to edit a config/.env/any file | Edit it yourself; use the Global Env Editor (Phase 54) if credentials are missing |
 | Asking user to run a terminal command | Run it yourself |
 | "Deploy started, check back in a few minutes" | Run the deploy, wait for it, verify it's live, then ping the user |
 | Asking user to run the tests | Run them yourself; only report after they pass (or after a real failure needing a decision) |
@@ -185,7 +190,7 @@ Plans:
 | "I'll leave this for you to configure" | Configure with sensible default; document in session report |
 | Technical disambiguation questions mid-plan | Use CLAUDE.md defaults; only escalate if truly stuck, framed in user terms |
 **Requirements:** NPB-01 through NPB-07
-**Depends on:** Phase 54 (admin APIs for auto-setup), Phase 56 (verbosity contract it builds on)
+**Depends on:** Phase 54 (global env editor), Phase 56 (verbosity contract it builds on)
 **Plans:** TBD
 
 ---
