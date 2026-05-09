@@ -16,35 +16,33 @@ import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
 import { StatCard } from "../components/StatCard";
 import { AgentCard } from "../components/AgentCard";
-import { AgentStatusBadge } from "../components/StatusBadge";
 import { EmptyState } from "../components/EmptyState";
+import { EventTypeBadge } from "../components/EventTypeBadge";
 import { timeAgo, fmt, fmtCost } from "../lib/format";
-import type { Stats, Agent, DashboardEvent, WSMessage } from "../lib/types";
+import type { Stats, Agent, FeedEntry, WSMessage } from "../lib/types";
 
 export function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [activeAgents, setActiveAgents] = useState<Agent[]>([]);
-  const [recentEvents, setRecentEvents] = useState<DashboardEvent[]>([]);
   const [totalCost, setTotalCost] = useState<number | null>(null);
   const [allSubagents, setAllSubagents] = useState<Agent[]>([]);
   const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set());
+  const [feedEvents, setFeedEvents] = useState<FeedEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const [statsRes, workingRes, connectedRes, idleRes, eventsRes, costRes] = await Promise.all([
+      const [statsRes, workingRes, connectedRes, idleRes, costRes] = await Promise.all([
         api.stats.get(),
         api.agents.list({ status: "working", limit: 20 }),
         api.agents.list({ status: "connected", limit: 20 }),
         api.agents.list({ status: "idle", limit: 20 }),
-        api.events.list({ limit: 15 }),
         api.pricing.totalCost(),
       ]);
       setStats(statsRes);
       const active = [...workingRes.agents, ...connectedRes.agents, ...idleRes.agents];
       setActiveAgents(active);
-      setRecentEvents(eventsRes.events);
       setTotalCost(costRes.total_cost);
       setError(null);
 
@@ -67,6 +65,14 @@ export function Dashboard() {
     const interval = setInterval(load, 10000);
     return () => clearInterval(interval);
   }, [load]);
+
+  // Fetch portfolio feed on mount
+  useEffect(() => {
+    fetch('/api/feed')
+      .then(r => r.json())
+      .then(d => setFeedEvents((d.events ?? []).slice(0, 5)))
+      .catch(() => {});
+  }, []);
 
   // Auto-expand agents with active subagents
   useEffect(() => {
@@ -91,8 +97,8 @@ export function Dashboard() {
       ) {
         load();
       }
-      if (msg.type === "new_event") {
-        setRecentEvents((prev) => [msg.data as DashboardEvent, ...prev.slice(0, 14)]);
+      if (msg.type === "feed_event") {
+        setFeedEvents(prev => [msg.data as FeedEntry, ...prev].slice(0, 5));
       }
     });
   }, [load]);
@@ -270,46 +276,23 @@ export function Dashboard() {
           )}
         </div>
 
-        {/* Recent activity */}
+        {/* Portfolio Feed preview */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-300">Recent Activity</h3>
-            <button onClick={() => navigate("/activity")} className="btn-ghost text-xs">
+            <h3 className="text-sm font-semibold text-gray-300">Portfolio Feed</h3>
+            <button onClick={() => navigate("/feed")} className="btn-ghost text-xs flex items-center gap-1">
               View All <ArrowRight className="w-3 h-3" />
             </button>
           </div>
-          {recentEvents.length === 0 ? (
-            <EmptyState
-              icon={Activity}
-              title="No activity yet"
-              description="Events from Claude Code sessions will stream here in real-time."
-            />
+          {feedEvents.length === 0 ? (
+            <EmptyState icon={Activity} title="No events yet" description="Landmark events from GSD sessions will appear here." />
           ) : (
             <div className="card divide-y divide-border">
-              {recentEvents.slice(0, 8).map((event, i) => (
-                <div
-                  key={event.id ?? i}
-                  className="px-4 py-3 flex items-center gap-3 hover:bg-surface-4 transition-colors cursor-pointer"
-                  onClick={() => navigate(`/sessions/${event.session_id}`)}
-                >
-                  <AgentStatusBadge
-                    status={
-                      event.event_type === "Stop"
-                        ? "completed"
-                        : event.event_type === "PreToolUse"
-                          ? "working"
-                          : "connected"
-                    }
-                  />
-                  <span className="text-sm text-gray-300 truncate flex-1">
-                    {event.summary || event.event_type}
-                  </span>
-                  {event.tool_name && (
-                    <span className="text-[11px] text-gray-500 font-mono">{event.tool_name}</span>
-                  )}
-                  <span className="text-[11px] text-gray-600 flex-shrink-0">
-                    {timeAgo(event.created_at)}
-                  </span>
+              {feedEvents.slice(0, 5).map((event) => (
+                <div key={event.id} className="px-4 py-3 flex items-center gap-3 hover:bg-surface-4 transition-colors">
+                  <EventTypeBadge type={event.type} />
+                  <span className="text-sm text-gray-300 truncate flex-1">{event.label}</span>
+                  <span className="text-[11px] text-gray-600 flex-shrink-0">{timeAgo(event.detectedAt)}</span>
                 </div>
               ))}
             </div>
