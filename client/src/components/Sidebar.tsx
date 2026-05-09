@@ -18,6 +18,7 @@ import {
   Coins,
   Wrench,
   Monitor,
+  FileKey,
   Plus,
 } from "lucide-react";
 import { NewProjectDialog } from "./NewProjectDialog";
@@ -29,6 +30,7 @@ const PRIMARY_ITEMS = [
   { to: "/services", icon: Server, label: "Services" },
   { to: "/usage", icon: Coins, label: "Usage" },
   { to: "/config", icon: Wrench, label: "Config" },
+  { to: "/env", icon: FileKey, label: "Environment" },
   { to: "/server", icon: Monitor, label: "Server" },
 ] as const;
 
