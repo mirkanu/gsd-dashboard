@@ -44,7 +44,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
 | 52. GSD Command Discoverability | 2/2 | Complete    | 2026-05-09 |
 | 54. Global Env Editor | 2/2 | Complete ✅ (v5.1) | 2026-05-09 |
-| 56. CLI Verbosity Contract + Portfolio Feed | 3/3 | Complete   | 2026-05-09 |
+| 56. CLI Verbosity Contract + Portfolio Feed | 3/3 | Complete    | 2026-05-09 |
 | 56B. Non-Programmer Behavioural Contract | 0/0 | Not planned | - |
 | 58. Project Maturity Stages | 0/0 | Not planned | - |
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
@@ -160,7 +160,7 @@ Plans:
 **Goal:** Reduce how much Claude/GSD says in the terminal so the fully-visible tmux pane is pleasant to watch. Extract landmark events from terminal output for surfacing in the Dashboard surround, without replacing the CLI itself.
 **Requirements:** NAR-01 through NAR-05
 **Depends on:** Phase 43 (project state broadcaster — already shipped)
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1** (parallel)
