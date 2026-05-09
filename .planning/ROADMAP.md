@@ -40,7 +40,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 50.5. Original-Repo Cleanup | 4/4 | Complete ✅ (v5.1) | 2026-04-18 |
 | 51. GUI Project Creation + Import | 4/4 | Complete ✅ (v5.1) | 2026-04-20 |
 | 53. Auto-Verify by Default | 4/4 | Complete ✅ (v5.1) | 2026-05-05 |
-| 52. GSD Command Discoverability | 0/2 | Planned    |  |
+| 52. GSD Command Discoverability | 2/2 | Complete    | 2026-05-09 |
 | 54. Admin-API Onboarding for External Services | 0/0 | Not planned | - |
 | 55. MCP Tool Router Evaluation (decision) | 0/0 | Not planned | - |
 | 56. CLI Verbosity Contract + Portfolio Feed | 0/0 | Not planned | - |
@@ -299,11 +299,11 @@ Verifiable by walking a non-programmer (Emily-Kate or equivalent) through the fu
 **Goal:** Make the GSD command toolkit discoverable through natural conversation (CLAUDE.md guidance) and one-tap chip buttons on mobile (Dashboard UI). Two parallel deliverables: CLAUDE.md natural-language → command mapping table; /gsd-next shortcut chip wired into the terminal panel.
 **Requirements**: GSD Command Discoverability — CLAUDE.md guidance + /gsd-next UI button
 **Depends on:** Phase 51
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 52-01-PLAN.md — Add GSD Command Suggestions section to CLAUDE.md (NL → /gsd-* mapping table)
-- [ ] 52-02-PLAN.md — Add /gsd-next to GSD_CHIPS and render CommandChips in TerminalOverlay (GSD.tsx)
+- [x] 52-01-PLAN.md — Add GSD Command Suggestions section to CLAUDE.md (NL → /gsd-* mapping table)
+- [x] 52-02-PLAN.md — Add /gsd-next to GSD_CHIPS and render CommandChips in TerminalOverlay (GSD.tsx)
 
 ---
 
