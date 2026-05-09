@@ -37,6 +37,7 @@ const { startStateBroadcaster } = require("./gsd/stateBroadcaster");
 
 const sessionsRouter = require("./routes/sessions");
 const agentsRouter = require("./routes/agents");
+const envRouter = require("./routes/env");
 const eventsRouter = require("./routes/events");
 const statsRouter = require("./routes/stats");
 const hooksRouter = require("./routes/hooks");
@@ -113,6 +114,7 @@ function createApp() {
   app.use("/api/auth", authRouter);
   app.use("/api/sessions", sessionsRouter);
   app.use("/api/agents", agentsRouter);
+  app.use("/api/env", envRouter);
   app.use("/api/events", eventsRouter);
   app.use("/api/stats", statsRouter);
   app.use("/api/hooks", hooksRouter);
