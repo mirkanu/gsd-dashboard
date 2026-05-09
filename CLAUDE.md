@@ -46,3 +46,15 @@
 - Use project skills from `.claude/skills/` for repeatable workflows.
 - Use `.claude/agents/` subagents for focused review or investigation passes.
 - After every plan execution completes, run `/gsd-verify-work` before reporting done — do not wait for a dashboard trigger.
+
+---
+
+## Verbosity Contract
+
+These rules apply to every terminal session in this project. They reduce what Claude says in the terminal so the tmux pane stays readable.
+
+1. **Skip CONTEXT.md interrogation when CONTEXT.md already exists.** If `.planning/phases/{phase}/{phase}-CONTEXT.md` is present, do not re-interview the user about the phase — proceed directly to planning.
+2. **Name the phase in plain English in the first line of the session report.** Instead of "I will now begin Phase 56", write "Starting CLI Verbosity Contract + Portfolio Feed work." One line, present tense, specific.
+3. **Don't repeat what the user just said.** If the user said "plan phase 56", do not echo back "You asked me to plan phase 56." Begin the work.
+4. **Prefer one-line status updates.** Instead of a paragraph explaining what you are about to do, emit a single line: "Reading roadmap." "Writing plan 01." "Done." Reserve multi-line output for actual results (lists of tasks, file paths, errors).
+5. **Active voice, present tense.** Write "Creating feedStore.js" not "feedStore.js will be created" and not "I am in the process of creating feedStore.js".
