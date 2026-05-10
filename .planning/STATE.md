@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
 milestone: v5.1
-milestone_name: | Item | Reason |
+milestone_name: Non-Programmer Mode
 status: executing
-stopped_at: Completed 62-09b-PLAN.md (Tasks 0-3 auto; Task 4 awaiting human verification)
-last_updated: "2026-05-09T19:14:08.573Z"
+stopped_at: context exhaustion at 90% (2026-05-09)
+last_updated: "2026-05-09T19:22:52.947Z"
 last_activity: 2026-05-09
 progress:
   total_phases: 10
@@ -168,11 +168,12 @@ None.
 | Phase 48-idle-session-cost-controls P03 | 12 | 2 tasks | 3 files |
 | Phase 48-idle-session-cost-controls P04 | 55min | 3 tasks | 5 files |
 | Phase 62 P09b | 41 | 4 tasks | 10 files |
+| 260510-49 | In the project sidebar, allow re-ordering of tasks by drag and drop | 2026-05-10 | 156bd4b | [260510-49-sidebar-task-drag-and-drop-reorder](./quick/260510-49-sidebar-task-drag-and-drop-reorder/) |
 
 ## Session Continuity
 
-Last session: 2026-04-28T10:56:44.368Z
-Stopped at: Completed 62-09b-PLAN.md (Tasks 0-3 auto; Task 4 awaiting human verification)
+Last session: 2026-05-09T19:22:52.938Z
+Stopped at: context exhaustion at 90% (2026-05-09)
 Resume file: None
 Next action: Run `/gsd-discuss-phase 51` or `/gsd-plan-phase 51` — GUI Project Creation + Import (wizard + import, GitHub-integrated). Now depends only on 50.5 (complete).
 
