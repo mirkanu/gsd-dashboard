@@ -720,6 +720,42 @@ router.get('/projects/:key/tasks', async (req, res) => {
   }
 });
 
+// PATCH /api/gsd/projects/:key/tasks/reorder — update sort_order for a list of task IDs
+// Must be registered before /:id to prevent Express matching "reorder" as an id param
+router.patch('/projects/:key/tasks/reorder', async (req, res) => {
+  const { key } = req.params;
+  if (GSD_DATA_URL) {
+    try {
+      const upstream = await fetch(
+        `${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(key)}/tasks/reorder`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req.body),
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+      const data = await upstream.json();
+      return res.status(upstream.status).json(data);
+    } catch (err) {
+      return res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message });
+    }
+  }
+  const { ids } = req.body || {};
+  if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'number')) {
+    return res.status(400).json({ error: 'ids must be an array of numbers' });
+  }
+  try {
+    const reorder = db.transaction((orderedIds) => {
+      orderedIds.forEach((id, idx) => stmts.updateTaskSortOrder.run(idx, id));
+    });
+    reorder(ids);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reorder tasks', detail: err.message });
+  }
+});
+
 // PATCH /api/gsd/projects/:key/tasks/:id — update a task
 router.patch('/projects/:key/tasks/:id', async (req, res) => {
   const { key, id } = req.params;

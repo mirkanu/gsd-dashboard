@@ -214,6 +214,7 @@ export interface GsdTask {
   description: string | null;
   archived: 0 | 1;
   created_at: string;
+  sort_order?: number;
 }
 
 export type AutopilotRunStatus = 'running' | 'paused' | 'completed' | 'failed' | 'idle' | 'halted' | 'pending_confirmation' | 'queued' | 'queue_timeout';

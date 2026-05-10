@@ -448,6 +448,21 @@ try {
   `);
 }
 
+// Migration: add sort_order to project_tasks for drag-and-drop reordering
+try {
+  db.prepare("SELECT sort_order FROM project_tasks LIMIT 1").get();
+} catch {
+  db.exec(`ALTER TABLE project_tasks ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0`);
+  // Backfill existing tasks: assign sort_order based on creation order per project
+  db.exec(`
+    UPDATE project_tasks
+    SET sort_order = (
+      SELECT COUNT(*) FROM project_tasks t2
+      WHERE t2.project_key = project_tasks.project_key AND t2.id < project_tasks.id
+    )
+  `);
+}
+
 // Startup cleanup: mark stale active sessions as completed.
 // Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
 // so they stay "active" forever. Complete any active session whose last event is older than
@@ -676,7 +691,7 @@ const stmts = {
     `SELECT * FROM project_tasks WHERE id = ?`
   ),
   listTasks: db.prepare(
-    `SELECT * FROM project_tasks WHERE project_key = ? AND archived = ? ORDER BY created_at ASC`
+    `SELECT * FROM project_tasks WHERE project_key = ? AND archived = ? ORDER BY sort_order ASC, created_at ASC`
   ),
   updateTask: db.prepare(
     `UPDATE project_tasks SET
@@ -685,6 +700,9 @@ const stmts = {
        archived = COALESCE(?, archived)
      WHERE id = ?
      RETURNING *`
+  ),
+  updateTaskSortOrder: db.prepare(
+    `UPDATE project_tasks SET sort_order = ? WHERE id = ?`
   ),
 
   // Project settings (Phase 42 — Configuration UI)

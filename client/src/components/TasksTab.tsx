@@ -1,20 +1,28 @@
 import { useState, useEffect, useRef } from "react";
-import { Archive, ArchiveRestore, ClipboardCopy, Pencil, Plus } from "lucide-react";
+import { Archive, ArchiveRestore, ClipboardCopy, GripVertical, Pencil, Plus } from "lucide-react";
 import { api } from "../lib/api";
 import type { GsdTask } from "../lib/types";
 
 function TaskRow({
   task,
   showArchived,
+  isDragOver,
   onArchive,
   onUnarchive,
   onEdit,
+  onDragStart,
+  onDragOver,
+  onDrop,
 }: {
   task: GsdTask;
   showArchived: boolean;
+  isDragOver: boolean;
   onArchive: (id: number) => void;
   onUnarchive: (id: number) => void;
   onEdit: (task: GsdTask) => void;
+  onDragStart: (id: number) => void;
+  onDragOver: (id: number) => void;
+  onDrop: () => void;
 }) {
   const [rowCopied, setRowCopied] = useState(false);
   async function handleCopyRow() {
@@ -26,7 +34,23 @@ function TaskRow({
     setTimeout(() => setRowCopied(false), 1500);
   }
   return (
-    <div className="flex items-start justify-between gap-2 py-2 border-b border-border last:border-0">
+    <div
+      draggable={!showArchived}
+      onDragStart={() => onDragStart(task.id)}
+      onDragOver={(e) => { e.preventDefault(); onDragOver(task.id); }}
+      onDrop={(e) => { e.preventDefault(); onDrop(); }}
+      className={`flex items-start justify-between gap-2 py-2 border-b border-border last:border-0 transition-colors ${
+        isDragOver ? "bg-accent/10 rounded" : ""
+      } ${!showArchived ? "cursor-default" : ""}`}
+    >
+      {!showArchived && (
+        <div
+          className="flex-shrink-0 mt-0.5 text-gray-600 hover:text-gray-400 cursor-grab active:cursor-grabbing"
+          title="Drag to reorder"
+        >
+          <GripVertical className="w-3.5 h-3.5" />
+        </div>
+      )}
       <button
         type="button"
         className="w-full text-left min-w-0 flex-1"
@@ -83,6 +107,8 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
   const [copied, setCopied] = useState(false);
   const [editingTask, setEditingTask] = useState<GsdTask | null>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
+  const dragIdRef = useRef<number | null>(null);
+  const [dragOverId, setDragOverId] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -198,6 +224,40 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
     }
   }
 
+  function handleDragStart(id: number) {
+    dragIdRef.current = id;
+  }
+
+  function handleDragOver(id: number) {
+    if (dragIdRef.current !== null && dragIdRef.current !== id) {
+      setDragOverId(id);
+    }
+  }
+
+  function handleDrop() {
+    const fromId = dragIdRef.current;
+    const toId = dragOverId;
+    dragIdRef.current = null;
+    setDragOverId(null);
+    if (fromId === null || toId === null || fromId === toId) return;
+
+    setTasks((prev) => {
+      const next = [...prev];
+      const fromIdx = next.findIndex((t) => t.id === fromId);
+      const toIdx = next.findIndex((t) => t.id === toId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const moved = next.splice(fromIdx, 1)[0];
+      if (!moved) return prev;
+      next.splice(toIdx, 0, moved);
+      const ids = next.map((t) => t.id);
+      api.gsd.tasks.reorder(projectKey, ids).catch(() => {
+        // Revert on failure
+        api.gsd.tasks.list(projectKey, false).then(({ tasks }) => setTasks(tasks)).catch(() => {});
+      });
+      return next;
+    });
+  }
+
   return (
     <div className="space-y-4">
       {/* Add / Edit task form */}
@@ -284,15 +344,19 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
             {showArchived ? "No archived tasks." : "No open tasks yet."}
           </p>
         ) : (
-          <div>
+          <div onDragLeave={() => setDragOverId(null)}>
             {tasks.map((task) => (
               <TaskRow
                 key={task.id}
                 task={task}
                 showArchived={showArchived}
+                isDragOver={dragOverId === task.id}
                 onArchive={handleArchive}
                 onUnarchive={handleUnarchive}
                 onEdit={handleEdit}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
               />
             ))}
           </div>

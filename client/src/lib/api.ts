@@ -180,6 +180,11 @@ export const api = {
           method: "PATCH",
           body: JSON.stringify(patch),
         }),
+      reorder: (projectKey: string, ids: number[]) =>
+        request<{ ok: boolean }>(`/gsd/projects/${encodeURIComponent(projectKey)}/tasks/reorder`, {
+          method: "PATCH",
+          body: JSON.stringify({ ids }),
+        }),
     },
   },
 
