@@ -72,6 +72,30 @@ function readProcesses() {
   }
 }
 
+router.get("/disk-detail", (_req, res) => {
+  try {
+    const dirs = [
+      "/var/log",
+      "/home/services",
+      "/home/claude/.pm2/logs",
+      "/home/services/gsddashboard/data",
+      "/home/services/gsddashboard/logs",
+    ];
+    const results = dirs.map((dir) => {
+      try {
+        const out = execSync(`du -sh "${dir}" 2>/dev/null`, { timeout: 5000 }).toString().trim();
+        const parts = out.split(/\s+/);
+        return { dir, size: parts[0] || "?", error: null };
+      } catch {
+        return { dir, size: null, error: "unavailable" };
+      }
+    });
+    res.json(results);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.get("/", (_req, res) => {
   const [load1, load5, load15] = os.loadavg();
   const total = os.totalmem();

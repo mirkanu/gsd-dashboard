@@ -285,6 +285,7 @@ if (require.main === module) {
           if (diskPct >= 95 && lastDiskAlertLevel < 2) {
             lastDiskAlertLevel = 2;
             console.error(`[CRITICAL] Disk at ${diskPct}% — SQLite write failures imminent`);
+            broadcast("system:disk-warning", { pct: diskPct, level: "critical" });
             if (telegramEnabled) {
               sendNotification('dashboard',
                 `[CRITICAL] Disk at ${diskPct}% on VPS — SQLite write failures imminent. Emergency: pm2 flush && truncate -s 0 /home/services/gsddashboard/logs/gsd-tunnel.log`
@@ -293,6 +294,7 @@ if (require.main === module) {
           } else if (diskPct >= 85 && lastDiskAlertLevel < 1) {
             lastDiskAlertLevel = 1;
             console.warn(`[maintenance] Disk at ${diskPct}% — warning threshold crossed`);
+            broadcast("system:disk-warning", { pct: diskPct, level: "warning" });
             if (telegramEnabled) {
               sendNotification('dashboard',
                 `Warning: Disk at ${diskPct}% on VPS — approaching full. Run node scripts/prune-old-data.js to free space.`
@@ -301,6 +303,7 @@ if (require.main === module) {
           } else if (diskPct < 80 && lastDiskAlertLevel > 0) {
             lastDiskAlertLevel = 0;
             console.log(`[maintenance] Disk at ${diskPct}% — disk alert cleared`);
+            broadcast("system:disk-warning", { pct: diskPct, level: "clear" });
           }
         }
       } catch (e) {
