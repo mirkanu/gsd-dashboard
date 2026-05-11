@@ -306,6 +306,8 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
   const wsRef = useRef<WebSocket | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const [connected, setConnected] = useState(false);
+  const [termFailed, setTermFailed] = useState(false);
+  const reconnectRef = useRef<(() => void) | null>(null);
   // Stable ref so onClose never causes the effect to re-run (parent re-renders every 30s)
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -416,7 +418,7 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
           if (event.code === 1000) return; // clean close (e.g. user navigated away)
           if (cancelled) return; // component unmounted
           if (retryCountRef.current >= MAX_RETRIES) {
-            term.write('\r\n\x1b[31mReconnect failed after 10 attempts.\x1b[0m\r\n');
+            setTermFailed(true);
             return;
           }
           retryCountRef.current += 1;
@@ -432,6 +434,13 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
 
         return ws;
       }
+
+      // Expose reconnect so the retry button can reset and reconnect without remounting
+      reconnectRef.current = () => {
+        retryCountRef.current = 0;
+        setTermFailed(false);
+        connectWs(terminal, wsUrl);
+      };
 
       // Initial WebSocket connection
       connectWs(terminal, wsUrl);
@@ -691,8 +700,21 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         <div ref={containerRef} className="absolute inset-0 p-2" />
         {/* Connecting placeholder — visible until xterm canvas initializes */}
         {!connected && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ background: getTermTheme().background }}>
-            <span className="font-mono text-sm" style={{ color: getTermTheme().foreground }}>Connecting to terminal...</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: getTermTheme().background, pointerEvents: termFailed ? 'auto' : 'none' }}>
+            {termFailed ? (
+              <>
+                <span className="font-mono text-sm mb-3" style={{ color: '#ef4444' }}>Connection failed. Your network may be blocking this terminal.</span>
+                <button
+                  onClick={() => reconnectRef.current?.()}
+                  className="px-3 py-1.5 text-xs rounded font-mono border border-gray-500 hover:border-gray-300 transition-colors"
+                  style={{ color: getTermTheme().foreground }}
+                >
+                  Retry
+                </button>
+              </>
+            ) : (
+              <span className="font-mono text-sm" style={{ color: getTermTheme().foreground }}>Connecting to terminal...</span>
+            )}
           </div>
         )}
         {/* Selectable text overlay — appears on top of terminal canvas in select mode */}

@@ -41,35 +41,6 @@ export function AutopilotControls({ project, autopilotRun }: {
     return unsub;
   }, [project.name]);
 
-  const handlePlanAll = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (busy) return;
-    if (!window.confirm(`Plan all remaining phases for "${project.name}"?`)) return;
-    setBusy(true);
-    try { await api.autopilot.planAll(project.name); }
-    catch (err) { showError(err); }
-    finally { setBusy(false); }
-  };
-
-  const handleStart = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (busy) return;
-    if (!window.confirm(`Start autopilot for "${project.name}"? This will plan and execute all remaining phases automatically.`)) return;
-    setBusy(true);
-    try {
-      const result = await api.autopilot.start(project.name);
-      // Optimistic update -- set status to running immediately so UI reflects it
-      if (result.runId) {
-        eventBus.publish({
-          type: 'autopilot_progress',
-          data: { projectName: project.name, runId: result.runId, status: 'started', phaseNum: null },
-        } as any);
-      }
-    }
-    catch (err) { showError(err); }
-    finally { setBusy(false); }
-  };
-
   const handlePause = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (busy) return;
@@ -108,27 +79,8 @@ export function AutopilotControls({ project, autopilotRun }: {
 
   return (
     <div className="flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
-      {/* Plan All -- visible when idle/completed/failed/queue_timeout */}
-      {(status === 'idle' || status === 'completed' || status === 'failed' || status === 'queue_timeout') ? (
-        <button
-          onClick={handlePlanAll}
-          disabled={busy}
-          className="text-[10px] px-2 py-1 rounded border border-border text-gray-500 hover:text-accent hover:border-accent/30 transition-colors disabled:opacity-40"
-        >
-          Plan All
-        </button>
-      ) : null}
-
-      {/* Run Autopilot / Pause / Resume / Confirmation UI */}
-      {(status === 'idle' || status === 'completed' || status === 'failed' || status === 'queue_timeout') ? (
-        <button
-          onClick={handleStart}
-          disabled={busy}
-          className="text-[10px] px-2 py-1 rounded border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-40"
-        >
-          {busy ? 'Starting...' : 'Run Autopilot'}
-        </button>
-      ) : status === 'pending_confirmation' ? (
+      {/* Autopilot in-flight UI only — Plan All and Run Autopilot removed (defunct) */}
+      {status === 'pending_confirmation' ? (
         <div className="w-full flex flex-col gap-1.5 py-1">
           <p className="text-[10px] text-gray-400">
             Ready to send: <span className="font-mono text-accent">{pendingCommand ?? '/gsd-execute-phase'}</span>

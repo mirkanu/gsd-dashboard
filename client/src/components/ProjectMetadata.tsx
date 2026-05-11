@@ -1,5 +1,6 @@
 import { DollarSign } from "lucide-react";
 import type { GsdProject } from "../lib/types";
+import { useShowSidebarPricing } from "../lib/prefs";
 
 function formatCost(cost: number): string {
   if (cost < 0.01) return "< $0.01";
@@ -37,6 +38,7 @@ function ContextGauge({ tokens }: { tokens: number }) {
 }
 
 export function ProjectMetadata({ project }: { project: GsdProject }) {
+  const [showPricing] = useShowSidebarPricing();
   const { state } = project;
   const progress = state?.progress;
   const hasPhaseProgress = progress?.percent != null && progress.percent > 0;
@@ -77,8 +79,8 @@ export function ProjectMetadata({ project }: { project: GsdProject }) {
         <ContextGauge tokens={project.contextTokens} />
       )}
 
-      {/* Session cost */}
-      {project.sessionCost != null && project.sessionCost > 0 && (
+      {/* Session cost — hidden unless user enables pricing in /usage */}
+      {showPricing && project.sessionCost != null && project.sessionCost > 0 && (
         <div className="flex items-center gap-1">
           <DollarSign className="w-3 h-3 text-gray-500" />
           <span className="text-[10px] text-gray-500">Session</span>

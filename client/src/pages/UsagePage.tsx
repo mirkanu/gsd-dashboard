@@ -3,6 +3,7 @@ import { RefreshCw } from "lucide-react";
 import { api } from "../lib/api";
 import type { UsageWindow, UsageHistory } from "../lib/types";
 import { PricingEditor } from "../components/PricingEditor";
+import { useShowSidebarPricing } from "../lib/prefs";
 
 const WEEKLY_LIMIT = 50;
 
@@ -79,6 +80,7 @@ function SkeletonChart() {
 }
 
 export function UsagePage() {
+  const [showPricing, setShowPricing] = useShowSidebarPricing();
   const [windowData, setWindowData] = useState<UsageWindow | null>(null);
   const [historyData, setHistoryData] = useState<UsageHistory | null>(null);
   const [loading, setLoading] = useState(true);
@@ -402,6 +404,25 @@ export function UsagePage() {
                 No per-project breakdown available
               </p>
             )}
+          </div>
+
+          {/* Sidebar display preferences */}
+          <div className="bg-surface-1 border border-border rounded-lg p-4">
+            <h2 className="text-sm font-medium text-gray-300 mb-3">Display Preferences</h2>
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-sm text-gray-300">Show pricing in project sidebar</span>
+                <p className="text-xs text-gray-500 mt-0.5">Session cost and weekly usage gauge in the right panel</p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={showPricing}
+                onClick={() => setShowPricing(!showPricing)}
+                className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${showPricing ? "bg-accent" : "bg-surface-3"}`}
+              >
+                <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${showPricing ? "translate-x-4" : "translate-x-0"}`} />
+              </button>
+            </label>
           </div>
 
           {/* Pricing Editor */}

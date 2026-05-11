@@ -8,6 +8,7 @@ import { TasksTab } from "./TasksTab";
 import { ProjectControls } from "./ProjectControls";
 import { ProjectMetadata } from "./ProjectMetadata";
 import { UsagePanel } from "./UsagePanel";
+import { useShowSidebarPricing } from "../lib/prefs";
 
 type TabId = "tasks" | "state" | "roadmap" | "requirements" | "plan";
 
@@ -38,6 +39,7 @@ interface ProjectDetailsPanelProps {
 }
 
 export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onArchive, onUnarchive, onOpenTerminal, onReopenTmux, onExpand }: ProjectDetailsPanelProps) {
+  const [showPricing] = useShowSidebarPricing();
   const [activeTab, setActiveTab] = useState<TabId>("tasks");
   const [content, setContent]     = useState<string | null>(null);
   const [loading, setLoading]     = useState(false);
@@ -86,9 +88,11 @@ export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onA
 
       {/* Metadata + Controls */}
       <ProjectMetadata project={project} />
-      <div className="px-4 py-2 border-b border-border">
-        <UsagePanel />
-      </div>
+      {showPricing && (
+        <div className="px-4 py-2 border-b border-border">
+          <UsagePanel />
+        </div>
+      )}
       <ProjectControls
         project={project}
         autopilotRun={autopilotRun}
@@ -97,6 +101,7 @@ export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onA
         onUnarchive={onUnarchive}
         onOpenTerminal={onOpenTerminal}
         onReopenTmux={onReopenTmux}
+        hideOpenTerminal={true}
       />
       <div className="border-b border-border" />
 

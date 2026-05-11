@@ -11,6 +11,7 @@ interface ProjectControlsProps {
   onUnarchive: () => void;
   onOpenTerminal: () => void;
   onReopenTmux: () => void;
+  hideOpenTerminal?: boolean;
 }
 
 export function ProjectControls({
@@ -21,6 +22,7 @@ export function ProjectControls({
   onUnarchive,
   onOpenTerminal,
   onReopenTmux,
+  hideOpenTerminal = false,
 }: ProjectControlsProps) {
   const [reopening, setReopening] = useState(false);
 
@@ -37,14 +39,14 @@ export function ProjectControls({
       {/* Action buttons */}
       <div className="flex flex-wrap items-center gap-3" onClick={(e) => e.stopPropagation()}>
         {/* Terminal buttons */}
-        {project.tmuxActive ? (
+        {project.tmuxActive && !hideOpenTerminal ? (
           <button
             onClick={(e) => { e.stopPropagation(); onOpenTerminal(); }}
             className="text-[10px] px-2 py-1 rounded border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
           >
             Open Terminal
           </button>
-        ) : project.tmuxSession && (
+        ) : !project.tmuxActive && project.tmuxSession && (
           <button
             onClick={async (e) => {
               e.stopPropagation();
