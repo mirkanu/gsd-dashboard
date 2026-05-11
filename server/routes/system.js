@@ -155,6 +155,8 @@ router.post("/run-cron/:name", (req, res) => {
 
   const child = execFile(cmd, args, { timeout: 60000 }, (err, stdout, stderr) => {
     const output = (stdout || "") + (stderr || "");
+    // Write to log file so lastRun timestamp updates (mirrors what cron does)
+    try { fs.appendFileSync(cfg.logFile, output); } catch { /* log write failure is non-fatal */ }
     if (err && err.killed) {
       return res.status(504).json({ ok: false, output, error: "Timed out after 60s" });
     }
