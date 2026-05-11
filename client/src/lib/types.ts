@@ -418,6 +418,21 @@ export interface DiskWarningEvent {
   level: "warning" | "critical" | "clear";
 }
 
+export interface CronJobStatus {
+  name: string;
+  schedule: string;
+  lastRun: string | null;
+  lastOutput: string | null;
+  running: boolean;
+}
+
+export interface RunCronResult {
+  ok: boolean;
+  output: string;
+  exitCode: number;
+  error?: string;
+}
+
 export interface WSMessage {
   type:
     | "session_created"

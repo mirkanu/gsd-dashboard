@@ -5,12 +5,14 @@ import type {
   CostResult,
   CostsResponse,
   CreateCostBody,
+  CronJobStatus,
   DashboardEvent,
   DiskDetailEntry,
   GsdTask,
   MappingRule,
   ModelPricing,
   ProjectSettings,
+  RunCronResult,
   SecretKey,
   Session,
   Stats,
@@ -302,6 +304,11 @@ export const api = {
   system: {
     get: () => request<SystemStats>("/system"),
     diskDetail: () => request<DiskDetailEntry[]>("/system/disk-detail"),
+    cronStatus: () => request<CronJobStatus[]>("/system/cron-status"),
+    runCron: (name: string) =>
+      request<RunCronResult>(`/system/run-cron/${encodeURIComponent(name)}`, {
+        method: "POST",
+      }),
   },
 
   pricing: {
