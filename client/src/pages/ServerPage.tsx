@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { RefreshCw, Cpu, HardDrive, Activity, MemoryStick } from "lucide-react";
+import { RefreshCw, Cpu, HardDrive, Activity, MemoryStick, Terminal } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
-import type { SystemStats, DiskDetailEntry, DiskWarningEvent } from "../lib/types";
+import type { SystemStats, DiskDetailEntry, DiskWarningEvent, CronJobStatus } from "../lib/types";
 
 export function ServerPage() {
   const [data, setData] = useState<SystemStats | null>(null);
@@ -11,6 +11,10 @@ export function ServerPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [diskDetail, setDiskDetail] = useState<DiskDetailEntry[]>([]);
   const [diskWarning, setDiskWarning] = useState<{ pct: number; level: string } | null>(null);
+  const [cronJobs, setCronJobs] = useState<CronJobStatus[]>([]);
+  const [cronRunning, setCronRunning] = useState<Record<string, boolean>>({});
+  const [cronOutput, setCronOutput] = useState<Record<string, string | null>>({});
+  const [cronExpanded, setCronExpanded] = useState<Record<string, boolean>>({});
 
   const refresh = useCallback(async () => {
     try {
@@ -25,9 +29,24 @@ export function ServerPage() {
     }
   }, []);
 
+  const runCron = useCallback(async (name: string) => {
+    setCronRunning(prev => ({ ...prev, [name]: true }));
+    setCronOutput(prev => ({ ...prev, [name]: null }));
+    try {
+      const result = await api.system.runCron(name);
+      setCronOutput(prev => ({ ...prev, [name]: result.output || "(no output)" }));
+      api.system.cronStatus().then(setCronJobs).catch(() => {});
+    } catch (e) {
+      setCronOutput(prev => ({ ...prev, [name]: e instanceof Error ? e.message : "Error" }));
+    } finally {
+      setCronRunning(prev => ({ ...prev, [name]: false }));
+    }
+  }, []);
+
   useEffect(() => {
     refresh();
     api.system.diskDetail().then(setDiskDetail).catch(() => {});
+    api.system.cronStatus().then(setCronJobs).catch(() => {});
     const id = setInterval(refresh, 30_000);
     const unsub = eventBus.subscribe((msg) => {
       if (msg.type === "system:disk-warning") {
@@ -205,6 +224,72 @@ export function ServerPage() {
           </div>
         </div>
       )}
+
+      {/* Maintenance — Cron Jobs */}
+      <div className="rounded-lg border bg-card">
+        <div className="flex items-center gap-2 p-4 font-medium border-b">
+          <Terminal className="h-4 w-4 text-muted-foreground" /> Maintenance
+        </div>
+        <div className="divide-y">
+          {cronJobs.length === 0 && (
+            <div className="p-4 text-sm text-muted-foreground">Loading cron status...</div>
+          )}
+          {cronJobs.map((job) => {
+            const isRunning = cronRunning[job.name] ?? false;
+            const output = cronOutput[job.name] ?? null;
+            const expanded = cronExpanded[job.name] ?? false;
+            const displayOutput = output ?? job.lastOutput;
+            return (
+              <div key={job.name} className="p-4 space-y-2">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-mono text-sm font-medium">{job.name}</span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground shrink-0">
+                      {job.schedule}
+                    </span>
+                    {job.lastRun && (
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        Last run: {new Date(job.lastRun).toLocaleString()}
+                      </span>
+                    )}
+                    {!job.lastRun && (
+                      <span className="text-xs text-muted-foreground italic shrink-0">Never run</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => runCron(job.name)}
+                    disabled={isRunning}
+                    className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                  >
+                    {isRunning ? (
+                      <>
+                        <RefreshCw className="h-3 w-3 animate-spin" /> Running...
+                      </>
+                    ) : (
+                      "Run Now"
+                    )}
+                  </button>
+                </div>
+                {displayOutput && (
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => setCronExpanded(prev => ({ ...prev, [job.name]: !expanded }))}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {expanded ? "Hide output" : "Show output"}
+                    </button>
+                    {expanded && (
+                      <pre className="rounded bg-muted px-3 py-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap max-h-48 overflow-y-auto">
+                        {displayOutput}
+                      </pre>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
