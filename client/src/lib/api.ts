@@ -6,6 +6,7 @@ import type {
   CostsResponse,
   CreateCostBody,
   DashboardEvent,
+  DiskDetailEntry,
   GsdTask,
   MappingRule,
   ModelPricing,
@@ -13,6 +14,7 @@ import type {
   SecretKey,
   Session,
   Stats,
+  SystemStats,
   UsageHistory,
   UsageWindow,
 } from "./types";
@@ -295,6 +297,11 @@ export const api = {
       request<{ ok: true }>(`/app-settings/${encodeURIComponent(key)}`, {
         method: "DELETE",
       }),
+  },
+
+  system: {
+    get: () => request<SystemStats>("/system"),
+    diskDetail: () => request<DiskDetailEntry[]>("/system/disk-detail"),
   },
 
   pricing: {

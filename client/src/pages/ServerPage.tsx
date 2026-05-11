@@ -1,22 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { RefreshCw, Cpu, HardDrive, Activity, MemoryStick } from "lucide-react";
 import { api } from "../lib/api";
-
-interface CpuStats { load1: number; load5: number; load15: number; }
-interface MemStats { total_mb: number; used_mb: number; free_mb: number; swap_total_mb: number; swap_used_mb: number; }
-interface DiskEntry { mount: string; size: string; used: string; avail: string; pct: string; }
-interface ProcessEntry { user: string; pid: string; cpu: string; mem: string; command: string; }
-interface SystemStats { cpu: CpuStats; memory: MemStats; disk: DiskEntry[]; processes: ProcessEntry[]; }
+import { eventBus } from "../lib/eventBus";
+import type { SystemStats, DiskDetailEntry, DiskWarningEvent } from "../lib/types";
 
 export function ServerPage() {
   const [data, setData] = useState<SystemStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [diskDetail, setDiskDetail] = useState<DiskDetailEntry[]>([]);
+  const [diskWarning, setDiskWarning] = useState<{ pct: number; level: string } | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      const res = await api.get<SystemStats>("/api/system");
+      const res = await api.system.get();
       setData(res);
       setLastUpdated(new Date());
       setError(null);
@@ -29,8 +27,18 @@ export function ServerPage() {
 
   useEffect(() => {
     refresh();
+    api.system.diskDetail().then(setDiskDetail).catch(() => {});
     const id = setInterval(refresh, 30_000);
-    return () => clearInterval(id);
+    const unsub = eventBus.subscribe((msg) => {
+      if (msg.type === "system:disk-warning") {
+        const d = msg.data as DiskWarningEvent;
+        setDiskWarning(d.level === "clear" ? null : { pct: d.pct, level: d.level });
+      }
+    });
+    return () => {
+      clearInterval(id);
+      unsub();
+    };
   }, [refresh]);
 
   const pct = (used: number, total: number) =>
@@ -59,6 +67,14 @@ export function ServerPage() {
           </button>
         </div>
       </div>
+
+      {diskWarning && (
+        <div className={`rounded-lg border p-3 text-sm flex items-center gap-2 ${diskWarning.level === "critical" ? "border-destructive bg-destructive/10 text-destructive" : "border-orange-500/50 bg-orange-500/10 text-orange-400"}`}>
+          <HardDrive className="h-4 w-4 shrink-0" />
+          Disk usage at {diskWarning.pct}% — {diskWarning.level === "critical" ? "critical: SQLite write failures imminent" : "warning: approaching full"}.
+          Run <code className="font-mono">node scripts/prune-old-data.js</code> to free space.
+        </div>
+      )}
 
       {/* CPU + RAM cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -170,6 +186,25 @@ export function ServerPage() {
           </table>
         </div>
       </div>
+
+      {/* Directory breakdown */}
+      {diskDetail.length > 0 && (
+        <div className="rounded-lg border bg-card">
+          <div className="flex items-center gap-2 p-4 font-medium border-b">
+            <HardDrive className="h-4 w-4 text-muted-foreground" /> Directory Breakdown
+          </div>
+          <div className="divide-y">
+            {diskDetail.map((d) => (
+              <div key={d.dir} className="flex items-center justify-between px-4 py-2 text-sm">
+                <span className="font-mono text-muted-foreground truncate">{d.dir}</span>
+                <span className={d.error ? "text-muted-foreground italic" : "font-medium tabular-nums"}>
+                  {d.error ? "unavailable" : d.size}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

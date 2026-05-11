@@ -368,6 +368,56 @@ export interface CostResult {
   breakdown: CostBreakdown[];
 }
 
+// ─── System Stats Types ───────────────────────────────────────────────────────
+
+export interface SystemCpuStats {
+  load1: number;
+  load5: number;
+  load15: number;
+}
+
+export interface SystemMemStats {
+  total_mb: number;
+  used_mb: number;
+  free_mb: number;
+  swap_total_mb: number;
+  swap_used_mb: number;
+}
+
+export interface SystemDiskEntry {
+  mount: string;
+  size: string;
+  used: string;
+  avail: string;
+  pct: string;
+}
+
+export interface SystemProcessEntry {
+  user: string;
+  pid: string;
+  cpu: string;
+  mem: string;
+  command: string;
+}
+
+export interface SystemStats {
+  cpu: SystemCpuStats;
+  memory: SystemMemStats;
+  disk: SystemDiskEntry[];
+  processes: SystemProcessEntry[];
+}
+
+export interface DiskDetailEntry {
+  dir: string;
+  size: string | null;
+  error: string | null;
+}
+
+export interface DiskWarningEvent {
+  pct: number;
+  level: "warning" | "critical" | "clear";
+}
+
 export interface WSMessage {
   type:
     | "session_created"
@@ -376,8 +426,10 @@ export interface WSMessage {
     | "agent_updated"
     | "new_event"
     | "autopilot_progress"
-    | "project_state_change";
-  data: Session | Agent | DashboardEvent | AutopilotProgressEvent | ProjectStateChangeEvent;
+    | "project_state_change"
+    | "system:disk-warning"
+    | "feed_event";
+  data: Session | Agent | DashboardEvent | AutopilotProgressEvent | ProjectStateChangeEvent | DiskWarningEvent | FeedEntry;
   timestamp: string;
 }
 
