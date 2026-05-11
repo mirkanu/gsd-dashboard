@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const os = require("os");
-const { execSync } = require("child_process");
+const { execSync, execFile } = require("child_process");
 const fs = require("fs");
 
 const router = Router();
@@ -94,6 +94,76 @@ router.get("/disk-detail", (_req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+const CRON_WHITELIST = {
+  "docker-prune": {
+    schedule: "Sun 4:00 AM",
+    logFile: "/var/log/docker-prune.log",
+    cmd: "docker",
+    args: ["system", "prune", "-f"],
+    useSudo: true,
+  },
+  "prune-old-data": {
+    schedule: "Daily 3:00 AM",
+    logFile: "/home/claude/.pm2/logs/prune-old-data.log",
+    cmd: "node",
+    args: ["/home/services/gsddashboard/scripts/prune-old-data.js"],
+    useSudo: false,
+  },
+  "memory-guard": {
+    schedule: "Every 5 min",
+    logFile: "/home/claude/.pm2/logs/memory-guard.log",
+    cmd: "bash",
+    args: ["/home/services/gsddashboard/scripts/memory-guard.sh"],
+    useSudo: false,
+  },
+};
+
+router.get("/cron-status", (_req, res) => {
+  const result = Object.entries(CRON_WHITELIST).map(([name, cfg]) => {
+    let lastRun = null;
+    let lastOutput = null;
+    try {
+      const stat = fs.statSync(cfg.logFile);
+      lastRun = stat.mtime.toISOString();
+      // Read last 2KB so we don't load huge logs
+      const size = stat.size;
+      const fd = fs.openSync(cfg.logFile, "r");
+      const readSize = Math.min(2048, size);
+      const buf = Buffer.alloc(readSize);
+      fs.readSync(fd, buf, 0, readSize, Math.max(0, size - readSize));
+      fs.closeSync(fd);
+      lastOutput = buf.toString("utf8").replace(/^\n/, "");
+    } catch {
+      // log file absent = never run
+    }
+    return { name, schedule: cfg.schedule, lastRun, lastOutput, running: false };
+  });
+  res.json(result);
+});
+
+router.post("/run-cron/:name", (req, res) => {
+  const { name } = req.params;
+  const cfg = CRON_WHITELIST[name];
+  if (!cfg) {
+    return res.status(400).json({ error: `Unknown cron job: ${name}. Allowed: ${Object.keys(CRON_WHITELIST).join(", ")}` });
+  }
+
+  const cmd = cfg.useSudo ? "sudo" : cfg.cmd;
+  const args = cfg.useSudo ? [cfg.cmd, ...cfg.args] : cfg.args;
+
+  const child = execFile(cmd, args, { timeout: 60000 }, (err, stdout, stderr) => {
+    const output = (stdout || "") + (stderr || "");
+    if (err && err.killed) {
+      return res.status(504).json({ ok: false, output, error: "Timed out after 60s" });
+    }
+    res.json({ ok: !err || err.code === 0, output, exitCode: err ? err.code : 0 });
+  });
+
+  child.on("error", (e) => {
+    if (!res.headersSent) res.status(500).json({ error: e.message });
+  });
 });
 
 router.get("/", (_req, res) => {
