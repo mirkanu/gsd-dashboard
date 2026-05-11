@@ -47,7 +47,10 @@ export function ServerPage() {
     refresh();
     api.system.diskDetail().then(setDiskDetail).catch(() => {});
     api.system.cronStatus().then(setCronJobs).catch(() => {});
-    const id = setInterval(refresh, 30_000);
+    const id = setInterval(() => {
+      refresh();
+      api.system.cronStatus().then(setCronJobs).catch(() => {});
+    }, 30_000);
     const unsub = eventBus.subscribe((msg) => {
       if (msg.type === "system:disk-warning") {
         const d = msg.data as DiskWarningEvent;
