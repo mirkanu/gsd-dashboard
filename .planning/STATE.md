@@ -29,7 +29,7 @@ Phase: 56B
 Plan: Not started
 Milestone: v5.1 Non-Programmer Mode
 Status: Ready to execute
-Last activity: 2026-05-09
+Last activity: 2026-05-11 - Completed quick task 260511-n5f: sidebar pricing cleanup
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
@@ -169,6 +169,7 @@ None.
 | Phase 48-idle-session-cost-controls P04 | 55min | 3 tasks | 5 files |
 | Phase 62 P09b | 41 | 4 tasks | 10 files |
 | 260510-49 | In the project sidebar, allow re-ordering of tasks by drag and drop | 2026-05-10 | 156bd4b | [260510-49-sidebar-task-drag-and-drop-reorder](./quick/260510-49-sidebar-task-drag-and-drop-reorder/) |
+| 260511-n5f | Hide sidebar pricing + remove Plan All/Run Autopilot + hide Open Terminal on desktop | 2026-05-11 | 189c4f1 | [260511-n5f-sidebar-pricing-cleanup](./quick/260511-n5f-sidebar-pricing-cleanup/) |
 
 ## Session Continuity
 
