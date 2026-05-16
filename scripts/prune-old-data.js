@@ -1,37 +1,50 @@
 #!/usr/bin/env node
 'use strict';
 
-// Phase 72 D-06: prune sessions/agents/events older than 90 days.
-// Preserves rows belonging to status='active' sessions regardless of age.
-// Run via system cron: 0 3 * * 0 (Sunday 3am)
+// Prune old event data to keep disk usage bounded.
+// Strategy:
+//   - Null event.data (raw payloads) older than 2 days — keeps row structure intact
+//   - Delete events older than 30 days from non-active sessions
+//   - Delete agents older than 30 days from non-active sessions
+//   - Delete sessions older than 30 days that are not active
+//   - VACUUM to reclaim freed pages
+// Run via system cron: 0 3 * * * (daily 3am)
 // Pattern: try/catch wrapper, never exit non-zero (matches busyMarkers-sweep.cjs).
 
 try {
   const { db } = require('../server/db');
-  const CUTOFF = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  const DATA_CUTOFF = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+  const DELETE_CUTOFF = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Step 1: events older than 90d that belong to non-active sessions
-  // (active sessions may have old events — preserve them)
+  // Step 1: null raw payload on events older than 2d (preserves row for display)
+  const dataNulled = db.prepare(
+    `UPDATE events SET data = NULL WHERE created_at < ? AND data IS NOT NULL`
+  ).run(DATA_CUTOFF).changes;
+
+  // Step 2: delete events older than 30d from non-active sessions
   const eventsDeleted = db.prepare(
     `DELETE FROM events
      WHERE created_at < ?
        AND session_id NOT IN (SELECT id FROM sessions WHERE status = 'active')`
-  ).run(CUTOFF).changes;
+  ).run(DELETE_CUTOFF).changes;
 
-  // Step 2: agents older than 90d that belong to non-active sessions
+  // Step 3: agents older than 30d from non-active sessions
   const agentsDeleted = db.prepare(
     `DELETE FROM agents
      WHERE started_at < ?
        AND session_id NOT IN (SELECT id FROM sessions WHERE status = 'active')`
-  ).run(CUTOFF).changes;
+  ).run(DELETE_CUTOFF).changes;
 
-  // Step 3: sessions older than 90d that are not active
+  // Step 4: sessions older than 30d that are not active
   const sessionsDeleted = db.prepare(
     `DELETE FROM sessions WHERE started_at < ? AND status != 'active'`
-  ).run(CUTOFF).changes;
+  ).run(DELETE_CUTOFF).changes;
+
+  // Step 5: reclaim freed pages
+  db.exec('VACUUM');
 
   process.stdout.write(
-    `[prune-old-data] ${new Date().toISOString()} Deleted: ${eventsDeleted} events, ${agentsDeleted} agents, ${sessionsDeleted} sessions (cutoff: ${CUTOFF})\n`
+    `[prune-old-data] ${new Date().toISOString()} Nulled data: ${dataNulled} events | Deleted: ${eventsDeleted} events, ${agentsDeleted} agents, ${sessionsDeleted} sessions | VACUUM done\n`
   );
   process.exit(0);
 } catch (e) {

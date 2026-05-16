@@ -165,6 +165,11 @@
       "tmux_session": "psalter"
     },
     {
+      "name": "utilities-tracker",
+      "root": "/data/home/utilities-tracker",
+      "tmux_session": "utilities-tracker"
+    },
+    {
       "name": "arch-test-proj-p12",
       "root": "/tmp/arch-test-p12",
       "tmux_session": "nonexistent-arch-session-p12",
