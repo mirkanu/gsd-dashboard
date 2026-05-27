@@ -66,7 +66,8 @@ router.post("/", (req, res) => {
     ws.on("finish", () => {
       pendingWrite = false;
       if (!limitHit) {
-        pendingResult = { url: `/uploads/${destName}` };
+        const port = req.socket.localPort || 4820;
+        pendingResult = { url: `http://localhost:${port}/uploads/${destName}` };
       }
       sendResult();
     });
