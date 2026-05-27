@@ -25,7 +25,7 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
       const data = await res.json();
       if (res.ok) {
         setStatus("done");
-        setUrl(data.url);
+        setUrl(window.location.origin + data.url);
       } else {
         setStatus("error");
       }

@@ -18,22 +18,38 @@ router.post("/", (req, res) => {
     return res.status(500).json({ error: "Upload failed" });
   }
 
-  let finished = false;
+  let responded = false;
+  let bbFinished = false;
+  let pendingWrite = false; // true while a file write is in progress
+  let pendingResult = null; // { url } or { error } to send after write completes
+
+  function sendResult() {
+    // Only send when both busboy is done AND the write stream has closed
+    if (!bbFinished || pendingWrite) return;
+    if (responded) return;
+    responded = true;
+    if (pendingResult && pendingResult.url) {
+      res.json({ url: pendingResult.url });
+    } else if (pendingResult && pendingResult.status) {
+      res.status(pendingResult.status).json({ error: pendingResult.error });
+    } else {
+      res.status(400).json({ error: "No file provided" });
+    }
+  }
 
   const bb = busboy({
     headers: req.headers,
     limits: { fileSize: MAX_FILE_SIZE, files: 1 },
   });
 
-  let fileWritten = false;
-
   bb.on("file", (fieldname, fileStream, info) => {
-    const { filename, mimeType } = info;
+    const { filename } = info;
     const ext = filename ? path.extname(filename) || ".bin" : ".bin";
     const slug = crypto.randomBytes(4).toString("hex");
     const destName = `${slug}${ext}`;
     const destPath = path.join(UPLOADS_DIR, destName);
 
+    pendingWrite = true;
     const ws = fs.createWriteStream(destPath);
     let limitHit = false;
 
@@ -42,47 +58,37 @@ router.post("/", (req, res) => {
       fileStream.resume(); // drain
       ws.destroy();
       try { fs.unlinkSync(destPath); } catch {}
-      if (!finished) {
-        finished = true;
-        res.status(413).json({ error: "File too large (max 50MB)" });
-      }
+      pendingResult = { status: 413, error: "File too large (max 50MB)" };
     });
 
     fileStream.pipe(ws);
 
     ws.on("finish", () => {
-      if (limitHit) return;
-      fileWritten = true;
-      const port = req.socket.localPort || 4820;
-      const url = `http://localhost:${port}/uploads/${destName}`;
-      if (!finished) {
-        finished = true;
-        res.json({ url });
+      pendingWrite = false;
+      if (!limitHit) {
+        pendingResult = { url: `/uploads/${destName}` };
       }
+      sendResult();
     });
 
     ws.on("error", (err) => {
       console.error("[upload] Write stream error:", err.message);
-      if (!finished) {
-        finished = true;
-        res.status(500).json({ error: "Upload failed" });
-      }
+      pendingWrite = false;
+      pendingResult = { status: 500, error: "Upload failed" };
+      sendResult();
     });
   });
 
   bb.on("error", (err) => {
     console.error("[upload] Busboy error:", err.message);
-    if (!finished) {
-      finished = true;
-      res.status(500).json({ error: "Upload failed" });
-    }
+    bbFinished = true;
+    pendingResult = { status: 500, error: "Upload failed" };
+    sendResult();
   });
 
   bb.on("finish", () => {
-    if (!fileWritten && !finished) {
-      finished = true;
-      res.status(400).json({ error: "No file provided" });
-    }
+    bbFinished = true;
+    sendResult();
   });
 
   req.pipe(bb);
