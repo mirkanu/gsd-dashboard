@@ -21,9 +21,11 @@ import {
   Monitor,
   FileKey,
   Plus,
+  Upload,
 } from "lucide-react";
 import { NewProjectDialog } from "./NewProjectDialog";
 import { ImportProjectDialog } from "./ImportProjectDialog";
+import { UploadPanel } from "./UploadPanel";
 
 // ─── Primary nav (always visible at top) ─────────────────────────────────────
 const PRIMARY_ITEMS = [
@@ -272,6 +274,18 @@ export function Sidebar({ wsConnected, collapsed, onToggle, isMobile, mobileOpen
           isMobile={isMobile}
           onClick={onNavClick}
         />
+
+        {/* Divider */}
+        {!slim && <div className="border-t border-border/50 my-2" />}
+        {slim && <div className="my-1" />}
+
+        {/* Upload panel */}
+        {!slim && <UploadPanel slim={false} />}
+        {slim && (
+          <div className="flex items-center justify-center px-2 py-2.5 text-gray-500" title="Upload">
+            <Upload className="w-4 h-4 flex-shrink-0" />
+          </div>
+        )}
       </nav>
 
       {/* Collapse toggle — desktop only */}
