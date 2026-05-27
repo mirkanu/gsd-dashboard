@@ -59,6 +59,7 @@ const { authRouter, isValidToken } = require("./routes/auth");
 const projectsRouter = require("./routes/projects");
 const dockerOpsRouter = require("./routes/docker-ops");
 const systemRouter = require("./routes/system");
+const uploadRouter = require("./routes/upload");
 const { execSync } = require("child_process");
 
 // Compute once at startup — date of last git commit formatted as "07May2026"
@@ -135,6 +136,7 @@ function createApp() {
   app.use("/api/docker", dockerOpsRouter);
   app.use("/api/system", systemRouter);
   app.use("/api/feed", feedRouter);
+  app.use("/api/upload", uploadRouter);
   app.use("/mcp", mcpRemote);
 
   app.get("/api/health", (_req, res) => {
@@ -178,6 +180,8 @@ function startServer(app, port) {
   const isProduction = process.env.NODE_ENV === "production";
   if (isProduction) {
     const clientDist = path.join(__dirname, "..", "client", "dist");
+    const uploadsDir = path.join(__dirname, "..", "uploads");
+    app.use("/uploads", express.static(uploadsDir));
     app.use(express.static(clientDist));
     app.get("*", (_req, res) => {
       res.sendFile(path.join(clientDist, "index.html"));
