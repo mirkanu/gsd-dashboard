@@ -45,7 +45,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 52. GSD Command Discoverability | 2/2 | Complete    | 2026-05-09 |
 | 54. Global Env Editor | 2/2 | Complete ✅ (v5.1) | 2026-05-09 |
 | 56. CLI Verbosity Contract + Portfolio Feed | 3/3 | Complete    | 2026-05-09 |
-| 56B. Non-Programmer Behavioural Contract | 0/0 | Not planned | - |
+| 56B. Non-Programmer Behavioural Contract | 0/3 | Planned | - |
 | 58. Project Maturity Stages | 0/0 | Not planned | - |
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
 | 59. Task Backend Migration + Issue GUI Wrapper | 0/0 | Not planned | - |
@@ -191,7 +191,12 @@ Plans:
 | Technical disambiguation questions mid-plan | Use CLAUDE.md defaults; only escalate if truly stuck, framed in user terms |
 **Requirements:** NPB-01 through NPB-07
 **Depends on:** Phase 54 (global env editor), Phase 56 (verbosity contract it builds on)
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 56B-01-PLAN.md — Add Non-Programmer Contract to global template + inject into 5 project CLAUDE.md files
+- [ ] 56B-02-PLAN.md — Add user-outcome framing rule to discuss-phase and plan-phase workflows
+- [ ] 56B-03-PLAN.md — Create 20-prompt behavioural eval rubric + NPB-07 user testing plan
 
 ---
 
@@ -209,7 +214,9 @@ Plans:
 | Retired | Not touched | Archived on GitHub | Closed/migrated | Paused or torn down | Archived, tmux stopped |
 **Requirements:** MAT-01 through MAT-08
 **Depends on:** Phase 51, Phase 54
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans: TBD
 
 ---
 
@@ -231,7 +238,9 @@ Plans:
 | Claude finished responding (per turn) | Off | Intra-session |
 **Requirements:** NTF-01 through NTF-05
 **Depends on:** Phase 42 (existing Telegram infra to refactor), Phase 43 (state broadcaster as event source), Phase 58 (stage-aware policies)
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans: TBD
 
 ---
 
@@ -240,7 +249,9 @@ Plans:
 **Goal:** When a project transitions Beta → Launched, its task backlog migrates to GitHub Issues, and all subsequent task reads/writes go through a Dashboard-native GUI wrapping GitHub Issues. GitHub's web UI is never needed for day-to-day issue work.
 **Requirements:** TSK-01 through TSK-09
 **Depends on:** Phase 54, Phase 58
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans: TBD
 
 ---
 
@@ -249,7 +260,9 @@ Plans:
 **Goal:** Launched projects get provisioned dev + production environments automatically during Beta→Launched transition, with a GUI-driven "Promote dev → prod" action that enforces verify-work passing and documents the change. Railway-first provisioning.
 **Requirements:** ENV-01 through ENV-05
 **Depends on:** Phase 54, Phase 58
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans: TBD
 
 ---
 
