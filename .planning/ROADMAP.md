@@ -194,7 +194,10 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
+**Wave 1**
 - [ ] 56B-01-PLAN.md — Add Non-Programmer Contract to global template + inject into 5 project CLAUDE.md files
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 56B-02-PLAN.md — Add user-outcome framing rule to discuss-phase and plan-phase workflows
 - [ ] 56B-03-PLAN.md — Create 20-prompt behavioural eval rubric + NPB-07 user testing plan
 
