@@ -29,7 +29,7 @@ Phase: 56B
 Plan: Not started
 Milestone: v5.1 Non-Programmer Mode
 Status: Ready to execute
-Last activity: 2026-05-11 - Completed quick task 260511-t7k: fix /server page crash + disk-detail widget
+Last activity: 2026-05-27 - Completed quick task 260527-pfk: Add Upload panel to dashboard sidebar
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
@@ -172,6 +172,7 @@ None.
 | 260511-n5f | Hide sidebar pricing + remove Plan All/Run Autopilot + hide Open Terminal on desktop | 2026-05-11 | 189c4f1 | [260511-n5f-sidebar-pricing-cleanup](./quick/260511-n5f-sidebar-pricing-cleanup/) |
 | 260511-t7k | Fix /server page crash + add disk-detail widget + WS disk-warning banner | 2026-05-11 | 161df3f | [260511-t7k-fix-server-page-disk-detail-widget](./quick/260511-t7k-fix-server-page-disk-detail-widget/) |
 | 260511-m3p | Maintenance cron panel on /server — schedule, last run, output, Run Now | 2026-05-11 | 4ca2624 | [260511-m3p-server-maintenance-cron-panel](./quick/260511-m3p-server-maintenance-cron-panel/) |
+| 260527-pfk | Add Upload panel to dashboard sidebar (paste/file-picker, localhost URL, iOS-safe copy) | 2026-05-27 | c52b030 | [260527-pfk-add-upload-panel-to-dashboard-sidebar](./quick/260527-pfk-add-upload-panel-to-dashboard-sidebar/) |
 
 ## Session Continuity
 
