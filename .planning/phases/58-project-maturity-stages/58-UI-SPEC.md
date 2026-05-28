@@ -54,14 +54,14 @@ Existing GSD Dashboard typography (verified from existing components):
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 (regular) | 1.5 |
-| Label/Small | 12px | 500 (medium) | 1.4 |
+| Label/Small | 12px | 600 (semibold) | 1.4 |
 | Heading | 18px | 600 (semibold) | 1.2 |
-| Display | 24px | 700 (bold) | 1.1 |
+| Display | 24px | 600 (semibold) | 1.1 |
 
 **Font family:** Inter (sans), JetBrains Mono (monospace)
 
 **Rationale for Phase 58 scope:**
-- Stage badge: 12px, weight 500, label role (uppercase or dense)
+- Stage badge: 12px, weight 600, label role (uppercase or dense)
 - Stage transition modal title: 18px, weight 600, heading role
 - Gate validation messages: 14px, weight 400, body role
 - Stage grouping section headers: 14px, weight 600 (semibold, slightly prominent)
@@ -277,14 +277,14 @@ Established surface and accent palette:
 
 ### ProjectCard Stage Badge
 
-- Badge padding: 2.5px (horizontal), 1px (vertical) — from existing `.badge` class
+- Badge padding: 4px (horizontal), 4px (vertical)
 - Badge margin-left: 8px (sm) from project title
-- Font size: 12px, weight 500
+- Font size: 12px, weight 600
 
 ### Backfill Chip
 
 - Chip padding: 6px 12px (inline-flex with gap-2)
-- Font size: 12px, weight 500
+- Font size: 12px, weight 600
 - Background: var(--surface-3)
 - Border: 1px solid var(--border)
 - Hover: background darkens to var(--surface-4)
@@ -380,7 +380,7 @@ This UI-SPEC was pre-populated from upstream artifacts to minimize design ambigu
 |---------|----------------|-----------------|
 | Design System | RESEARCH.md §Standard Stack | No new design system; inherit Tailwind + CSS variables |
 | Spacing Scale | Existing Tailwind + verified from client/src/index.css | All tokens 4px multiples; no exceptions |
-| Typography | Existing components (ProjectCard, VerifyBadge, EventTypeBadge) | 14px body (400), 12px label (500), 18px heading (600), 24px display (700) |
+| Typography | Existing components (ProjectCard, VerifyBadge, EventTypeBadge) | 14px body (400), 12px label (600), 18px heading (600), 24px display (600) |
 | Color Palette | RESEARCH.md §Architecture + client/src/index.css | Dark surface-1 #0c0c14, accent #6366f1, destructive red-500 |
 | Copywriting | CONTEXT.md §Decisions + REQUIREMENTS.md §MAT | Stage enum, gate labels, kill flow tiers, nudge format |
 | Component Inventory | CONTEXT.md §Canonical Refs + RESEARCH.md §Architectural Responsibility Map | New: StageTransitionModal, StageBackfillChip, StageBadge, KillArchiveModal; Updated: ProjectCard, ChatListFilters |
