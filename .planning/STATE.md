@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.1
 milestone_name: Non-Programmer Mode
-status: executing
+status: ready_to_plan
 stopped_at: Phase 58 UI-SPEC approved
-last_updated: "2026-05-28T11:13:57.451Z"
-last_activity: 2026-05-28 -- Phase 58 planning complete
+last_updated: "2026-05-28T11:37:18.378Z"
+last_activity: 2026-05-28 -- Phase 58 execution started
 progress:
   total_phases: 10
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 24
   completed_plans: 20
-  percent: 83
+  percent: 60
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
-**Current focus:** Phase 52 — gsd-command-discoverability
+**Current focus:** Phase 58 — project-maturity-stages
 
 ## Current Position
 
-Phase: 56B
+Phase: 59
 Plan: Not started
 Milestone: v5.1 Non-Programmer Mode
-Status: Ready to execute
-Last activity: 2026-05-28 -- Phase 58 planning complete
+Status: Ready to plan
+Last activity: 2026-05-28
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 

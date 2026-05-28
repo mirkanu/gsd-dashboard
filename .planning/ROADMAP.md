@@ -46,7 +46,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 54. Global Env Editor | 2/2 | Complete ✅ (v5.1) | 2026-05-09 |
 | 56. CLI Verbosity Contract + Portfolio Feed | 3/3 | Complete    | 2026-05-09 |
 | 56B. Non-Programmer Behavioural Contract | 0/3 | Planned | - |
-| 58. Project Maturity Stages | 0/5 | Planned | - |
+| 58. Project Maturity Stages | 5/5 | Complete    | 2026-05-28 |
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
 | 59. Task Backend Migration + Issue GUI Wrapper | 0/0 | Not planned | - |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
@@ -221,17 +221,17 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
+- [x] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
 
 **Wave 2** *(parallel)*
-- [ ] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
-- [ ] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
+- [x] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
+- [x] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
 
 **Wave 3** *(blocked on 58-02 + 58-03)*
-- [ ] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
+- [x] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
 
 **Wave 4** *(blocked on 58-04)*
-- [ ] 58-05-PLAN.md — Dashboard wiring: ChatListFilters grouping, ProjectControls stage buttons, nudge cron, DELETE route
+- [x] 58-05-PLAN.md — Dashboard wiring: ChatListFilters grouping, ProjectControls stage buttons, nudge cron, DELETE route
 
 ---
 
@@ -257,17 +257,17 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
+- [x] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
 
 **Wave 2** *(parallel)*
-- [ ] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
-- [ ] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
+- [x] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
+- [x] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
 
 **Wave 3** *(blocked on 58-02 + 58-03)*
-- [ ] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
+- [x] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
 
 **Wave 4** *(blocked on 58-04)*
-- [ ] 58-05-PLAN.md — Dashboard wiring: ChatListFilters grouping, ProjectControls stage buttons, nudge cron, DELETE route
+- [x] 58-05-PLAN.md — Dashboard wiring: ChatListFilters grouping, ProjectControls stage buttons, nudge cron, DELETE route
 
 ---
 
@@ -280,14 +280,14 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
+- [x] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
 
 **Wave 2** *(parallel)*
-- [ ] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
-- [ ] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
+- [x] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
+- [x] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
 
 **Wave 3** *(blocked on 58-02 + 58-03)*
-- [ ] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
+- [x] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
 
 **Wave 4** *(blocked on 58-04)*
 - [ ] 58-05-PLAN.md — Dashboard wiring: ChatListFilters grouping, ProjectControls stage buttons, nudge cron, DELETE route
@@ -303,11 +303,11 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
+- [x] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
 
 **Wave 2** *(parallel)*
-- [ ] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
-- [ ] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
+- [x] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
+- [x] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
 
 **Wave 3** *(blocked on 58-02 + 58-03)*
 - [ ] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
