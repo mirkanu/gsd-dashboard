@@ -13,7 +13,7 @@ import {
 import type { Terminal } from "@xterm/xterm";
 import type { FitAddon } from "@xterm/addon-fit";
 import { api } from "../lib/api";
-import type { GsdProject, SessionState, ProjectStateChangeEvent } from "../lib/types";
+import type { GsdProject, SessionState, ProjectStateChangeEvent, ProjectStage } from "../lib/types";
 import { formatElapsed } from "../lib/format";
 import { GsdDrawer } from "../components/GsdDrawer";
 import { MarkdownViewer } from "../components/MarkdownViewer";
@@ -1072,6 +1072,18 @@ export function GSD() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<SessionState | null>("waiting");
+  const [groupBy, setGroupBy] = useState<'state' | 'stage'>('state');
+
+  // Stage grouping constants
+  const STAGE_ORDER: ProjectStage[] = ['launched', 'beta', 'alpha', 'draft', 'maintenance', 'retired'];
+  const STAGE_GROUP_HEADERS: Record<ProjectStage, string> = {
+    launched: '🚀 Launched',
+    beta: '🧪 Beta',
+    alpha: '🔬 Alpha',
+    draft: '📝 Draft',
+    maintenance: '🔧 Maintenance',
+    retired: '📦 Retired',
+  };
 
   // Derive the selected project object from selectedProject name
   const selectedProj = selectedProject
@@ -1363,14 +1375,39 @@ export function GSD() {
                   projects={projects}
                   activeFilter={activeFilter}
                   onFilterChange={setActiveFilter}
+                  groupBy={groupBy}
+                  onGroupByChange={setGroupBy}
                 />
                 <div className="flex-1 overflow-y-auto">
-                  <ChatListView
-                    projects={filteredProjects}
-                    activeProject={selectedProject ?? undefined}
-                    onSelectProject={(name) => setSelectedProject(name)}
-                    nowMs={nowMs}
-                  />
+                  {groupBy === 'stage' ? (
+                    <div className="flex flex-col gap-0">
+                      {STAGE_ORDER.map((stage) => {
+                        const stageProjects = projects.filter(p => (p.stage ?? 'draft') === stage && p.sessionState !== 'archived');
+                        if (stageProjects.length === 0) return null;
+                        return (
+                          <div key={stage}>
+                            <div className="px-4 py-2 bg-surface-2 border-b border-[var(--border)] text-xs font-semibold text-gray-400 sticky top-0 z-10">
+                              {STAGE_GROUP_HEADERS[stage]}
+                              <span className="ml-1.5 text-gray-600 font-normal">({stageProjects.length})</span>
+                            </div>
+                            <ChatListView
+                              projects={stageProjects}
+                              activeProject={selectedProject ?? undefined}
+                              onSelectProject={(name) => setSelectedProject(name)}
+                              nowMs={nowMs}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <ChatListView
+                      projects={filteredProjects}
+                      activeProject={selectedProject ?? undefined}
+                      onSelectProject={(name) => setSelectedProject(name)}
+                      nowMs={nowMs}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -1483,12 +1520,36 @@ export function GSD() {
             projects={projects}
             activeFilter={activeFilter}
             onFilterChange={setActiveFilter}
+            groupBy={groupBy}
+            onGroupByChange={setGroupBy}
           />
-          <ChatListView
-            projects={filteredProjects}
-            onSelectProject={(name) => setSelectedProject(name)}
-            nowMs={nowMs}
-          />
+          {groupBy === 'stage' ? (
+            <div className="flex flex-col gap-0">
+              {STAGE_ORDER.map((stage) => {
+                const stageProjects = projects.filter(p => (p.stage ?? 'draft') === stage && p.sessionState !== 'archived');
+                if (stageProjects.length === 0) return null;
+                return (
+                  <div key={stage}>
+                    <div className="px-4 py-2 bg-surface-2 border-b border-[var(--border)] text-xs font-semibold text-gray-400 sticky top-0 z-10">
+                      {STAGE_GROUP_HEADERS[stage]}
+                      <span className="ml-1.5 text-gray-600 font-normal">({stageProjects.length})</span>
+                    </div>
+                    <ChatListView
+                      projects={stageProjects}
+                      onSelectProject={(name) => setSelectedProject(name)}
+                      nowMs={nowMs}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <ChatListView
+              projects={filteredProjects}
+              onSelectProject={(name) => setSelectedProject(name)}
+              nowMs={nowMs}
+            />
+          )}
         </div>
       )}
 
