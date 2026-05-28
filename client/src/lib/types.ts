@@ -73,6 +73,25 @@ export interface SecretKey {
 
 export type SessionState = "working" | "waiting" | "paused" | "archived";
 
+export type ProjectStage = "draft" | "alpha" | "beta" | "launched" | "maintenance" | "retired";
+
+/** Gate result from POST /stage/validate */
+export interface GateResult {
+  gate: string;
+  label: string;
+  pass: boolean;
+}
+
+/** Response from POST /stage/validate */
+export interface StageValidationResult {
+  valid: boolean;
+  blocked?: boolean;
+  reason?: string;
+  hardGates: GateResult[];
+  softGates: GateResult[];
+  requiresProvisioning: string[];
+}
+
 export interface GsdPhase {
   name: string;
   plans_done: number | null;
@@ -139,6 +158,12 @@ export interface GsdProject {
   verifyState?: 'verifying' | 'verify-passed' | 'verify-failed';
   /** Plain-English summary of why verification failed. Null when verifyState is not 'verify-failed'. */
   verifyFailureSummary?: string | null;
+  /** Phase 58: project maturity stage. Undefined on older projects until backfill chip is used. */
+  stage?: ProjectStage;
+  /** ISO timestamp of last stage transition. */
+  stageUpdatedAt?: string | null;
+  /** Phase 58: true if a stage nudge has been dismissed for this project. */
+  stageNudgeDismissed?: boolean;
 }
 
 export interface BusyMarkers {
@@ -248,7 +273,8 @@ export interface ProjectSettings {
 
 export interface FeedEntry {
   id: string;
-  type: 'plan_complete' | 'verify_passed' | 'verify_failed' | 'waiting_input' | 'phase_complete';
+  type: 'plan_complete' | 'verify_passed' | 'verify_failed' | 'waiting_input' | 'phase_complete'
+      | 'stage_change' | 'stage_nudge';
   projectName: string;
   projectDisplayName: string;
   label: string;
@@ -443,7 +469,8 @@ export interface WSMessage {
     | "autopilot_progress"
     | "project_state_change"
     | "system:disk-warning"
-    | "feed_event";
+    | "feed_event"
+    | "project_stage_change";
   data: Session | Agent | DashboardEvent | AutopilotProgressEvent | ProjectStateChangeEvent | DiskWarningEvent | FeedEntry;
   timestamp: string;
 }

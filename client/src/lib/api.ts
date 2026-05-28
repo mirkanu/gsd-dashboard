@@ -8,13 +8,16 @@ import type {
   CronJobStatus,
   DashboardEvent,
   DiskDetailEntry,
+  GsdProject,
   GsdTask,
   MappingRule,
   ModelPricing,
   ProjectSettings,
+  ProjectStage,
   RunCronResult,
   SecretKey,
   Session,
+  StageValidationResult,
   Stats,
   SystemStats,
   UsageHistory,
@@ -165,6 +168,18 @@ export const api = {
         `/gsd/projects/${encodeURIComponent(name)}/verify`,
         { method: 'POST' }
       ),
+    stageTransition: (projectName: string, targetStage: ProjectStage) =>
+      request<{ success: boolean; stage: ProjectStage; project: GsdProject }>(
+        `/gsd/projects/${encodeURIComponent(projectName)}/stage`,
+        { method: 'PATCH', body: JSON.stringify({ to: targetStage }) }
+      ),
+
+    validateStageTransition: (projectName: string, targetStage: ProjectStage) =>
+      request<StageValidationResult>(
+        `/gsd/projects/${encodeURIComponent(projectName)}/stage/validate`,
+        { method: 'POST', body: JSON.stringify({ to: targetStage }) }
+      ),
+
     tasks: {
       list: (projectKey: string, archived = false) =>
         request<{ tasks: GsdTask[] }>(
