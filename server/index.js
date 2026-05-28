@@ -241,7 +241,7 @@ if (require.main === module) {
         for (const project of (config.projects || [])) {
           if (project.stage !== 'beta' && project.stage !== 'alpha') continue;
           if (project.stageNudgeDismissed) continue;
-          if (meetsNudgeCriteria(project)) {
+          if (await meetsNudgeCriteria(project)) {
             pushEvent({
               type: 'stage_nudge',
               projectName: project.name,
