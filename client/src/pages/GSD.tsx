@@ -1394,7 +1394,6 @@ export function GSD() {
                               projects={stageProjects}
                               activeProject={selectedProject ?? undefined}
                               onSelectProject={(name) => setSelectedProject(name)}
-                              nowMs={nowMs}
                             />
                           </div>
                         );
@@ -1405,7 +1404,6 @@ export function GSD() {
                       projects={filteredProjects}
                       activeProject={selectedProject ?? undefined}
                       onSelectProject={(name) => setSelectedProject(name)}
-                      nowMs={nowMs}
                     />
                   )}
                 </div>
@@ -1537,7 +1535,6 @@ export function GSD() {
                     <ChatListView
                       projects={stageProjects}
                       onSelectProject={(name) => setSelectedProject(name)}
-                      nowMs={nowMs}
                     />
                   </div>
                 );
@@ -1547,7 +1544,6 @@ export function GSD() {
             <ChatListView
               projects={filteredProjects}
               onSelectProject={(name) => setSelectedProject(name)}
-              nowMs={nowMs}
             />
           )}
         </div>
