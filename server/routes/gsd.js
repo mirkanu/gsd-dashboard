@@ -525,6 +525,13 @@ router.patch('/projects/:name/stage', async (req, res) => {
     if (!ALLOWED_TRANSITIONS.has(transitionKey)) {
       return res.status(422).json({ error: `Cannot transition from ${currentStage} to ${targetStage}.` });
     }
+    // Enforce hard gates at write time (not just in the validate endpoint)
+    const { validateGates } = require('../gsd/provisioning/stageGates/validateGates');
+    const gateResult = await validateGates(project, targetStage);
+    if (!gateResult.valid) {
+      const failed = gateResult.hardGates.filter(g => !g.pass).map(g => g.label).join('; ');
+      return res.status(422).json({ error: `Stage transition blocked: ${failed}` });
+    }
     // Retired: stop tmux session and archive GitHub repo
     if (targetStage === 'retired') {
       try {
@@ -545,7 +552,16 @@ router.patch('/projects/:name/stage', async (req, res) => {
     const { broadcast } = require('../websocket');
     broadcast('project_stage_change', { project: req.params.name, from: currentStage, to: targetStage, timestamp: project.stageUpdatedAt });
     pushEvent({ type: 'stage_change', projectName: req.params.name, projectDisplayName: project.display_name || req.params.name, label: `Advanced from ${currentStage} to ${targetStage}`, detectedAt: project.stageUpdatedAt });
-    res.json({ success: true, stage: targetStage, project });
+    res.json({
+      success: true,
+      stage: targetStage,
+      project: {
+        name: project.name,
+        display_name: project.display_name || null,
+        stage: project.stage,
+        stageUpdatedAt: project.stageUpdatedAt,
+      },
+    });
   } catch (err) {
     res.status(500).json({ error: 'Stage transition failed', detail: err.message.split('\n')[0] });
   }
