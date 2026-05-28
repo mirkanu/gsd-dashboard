@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const { gracefulShutdown } = require('../gsd/gracefulShutdown');
+const { pushEvent } = require('../gsd/feedStore');
 const { readProject } = require("../gsd/readers");
 const { resolveFile } = require("../gsd/fileResolver");
 const { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
@@ -44,6 +45,30 @@ function saveConfig(config) {
   const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../../gsd-projects.json');
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', 'utf8');
 }
+
+function loadConfigWithBackfill() {
+  const config = loadConfig();
+  let dirty = false;
+  for (const p of (config.projects || [])) {
+    if (!p.stage) {
+      p.stage = 'draft';
+      p.stageUpdatedAt = new Date().toISOString();
+      dirty = true;
+    }
+  }
+  if (dirty) saveConfig(config);
+  return config;
+}
+
+const VALID_STAGES = ['draft', 'alpha', 'beta', 'launched', 'maintenance', 'retired'];
+const ALLOWED_TRANSITIONS = new Set([
+  'draft->alpha', 'alpha->draft',
+  'alpha->beta', 'beta->alpha',
+  'beta->launched', 'launched->beta',
+  'launched->maintenance', 'maintenance->launched',
+  'draft->retired', 'alpha->retired', 'beta->retired', 'launched->retired', 'maintenance->retired',
+  'retired->draft',
+]);
 
 // GET /api/gsd/ws-base — always returns null so browser connects to current host.
 // When GSD_DATA_URL is set (Railway proxy mode), terminal WS is proxied server-side
@@ -474,6 +499,91 @@ router.get('/projects/:name/tmux-cost', async (req, res) => {
     return res.json({ ok: true, project: name, ...cost });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to compute tmux cost', detail: err.message });
+  }
+});
+
+// PATCH /api/gsd/projects/:name/stage — change project stage
+router.patch('/projects/:name/stage', async (req, res) => {
+  if (GSD_DATA_URL) {
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/stage`,
+      { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(req.body), signal: AbortSignal.timeout(15000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+  const { to: targetStage } = req.body || {};
+  if (!targetStage || !VALID_STAGES.includes(targetStage)) {
+    return res.status(400).json({ error: `Invalid stage "${targetStage}". Valid stages: ${VALID_STAGES.join(', ')}.` });
+  }
+  try {
+    const config = loadConfigWithBackfill();
+    const projectIndex = (config.projects || []).findIndex(p => p.name === req.params.name);
+    if (projectIndex === -1) return res.status(404).json({ error: `Project "${req.params.name}" not found.` });
+    const project = config.projects[projectIndex];
+    const currentStage = project.stage || 'draft';
+    const transitionKey = `${currentStage}->${targetStage}`;
+    if (!ALLOWED_TRANSITIONS.has(transitionKey)) {
+      return res.status(422).json({ error: `Cannot transition from ${currentStage} to ${targetStage}.` });
+    }
+    // Retired: stop tmux session and archive GitHub repo
+    if (targetStage === 'retired') {
+      try {
+        if (project.tmux_session) await gracefulShutdown(project.tmux_session, project.name);
+      } catch { /* already stopped */ }
+      if (project.github_url) {
+        try {
+          const match = project.github_url.match(/github\.com\/([^/]+\/[^/]+?)(?:\.git)?$/);
+          if (match) {
+            execFileSync('gh', ['repo', 'archive', match[1], '--yes'], { timeout: 15000, stdio: 'ignore' });
+          }
+        } catch { /* gh not available or repo not found — non-fatal */ }
+      }
+    }
+    project.stage = targetStage;
+    project.stageUpdatedAt = new Date().toISOString();
+    saveConfig(config);
+    const { broadcast } = require('../websocket');
+    broadcast('project_stage_change', { project: req.params.name, from: currentStage, to: targetStage, timestamp: project.stageUpdatedAt });
+    pushEvent({ type: 'stage_change', projectName: req.params.name, projectDisplayName: project.display_name || req.params.name, label: `Advanced from ${currentStage} to ${targetStage}`, detectedAt: project.stageUpdatedAt });
+    res.json({ success: true, stage: targetStage, project });
+  } catch (err) {
+    res.status(500).json({ error: 'Stage transition failed', detail: err.message.split('\n')[0] });
+  }
+});
+
+// POST /api/gsd/projects/:name/stage/validate — preview gate results without writing state
+router.post('/projects/:name/stage/validate', async (req, res) => {
+  if (GSD_DATA_URL) {
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/stage/validate`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(req.body), signal: AbortSignal.timeout(15000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+  const { to: targetStage } = req.body || {};
+  if (!targetStage || !VALID_STAGES.includes(targetStage)) {
+    return res.status(400).json({ error: `Invalid stage "${targetStage}". Valid stages: ${VALID_STAGES.join(', ')}.` });
+  }
+  try {
+    const config = loadConfigWithBackfill();
+    const project = (config.projects || []).find(p => p.name === req.params.name);
+    if (!project) return res.status(404).json({ error: `Project "${req.params.name}" not found.` });
+    const currentStage = project.stage || 'draft';
+    const transitionKey = `${currentStage}->${targetStage}`;
+    if (!ALLOWED_TRANSITIONS.has(transitionKey)) {
+      return res.status(422).json({ valid: false, blocked: true, reason: `Cannot transition from ${currentStage} to ${targetStage}.`, hardGates: [], softGates: [], requiresProvisioning: [] });
+    }
+    // Real gate validation injected by Plan 02 — for now return permissive stub
+    let gateResult = { valid: true, hardGates: [], softGates: [], requiresProvisioning: [] };
+    try {
+      const { validateGates } = require('../gsd/provisioning/stageGates/validateGates');
+      gateResult = await validateGates(project, targetStage);
+    } catch {
+      // validateGates module not yet available (Plan 02) — return permissive stub
+    }
+    res.json(gateResult);
+  } catch (err) {
+    res.status(500).json({ error: 'Gate validation failed', detail: err.message.split('\n')[0] });
   }
 });
 

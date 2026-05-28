@@ -315,6 +315,8 @@ async function runCreationPipeline(opts) {
             root: projectRoot,
             tmux_session: sanitizedName,
             services: DEFAULT_SERVICES,
+            stage: 'draft',
+            stageUpdatedAt: new Date().toISOString(),
           });
           saveConfig(config);
         }
