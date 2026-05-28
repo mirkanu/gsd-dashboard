@@ -227,6 +227,36 @@ if (require.main === module) {
     process.exit(0);
   });
 
+  // Phase 58: stage nudge eligibility check — runs every 6 hours
+  // Only run locally (not in proxy/Railway mode) since config lives on this machine.
+  if (!process.env.GSD_DATA_URL) {
+    const STAGE_NUDGE_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
+    setInterval(async () => {
+      try {
+        const configPath = process.env.GSD_PROJECTS_PATH || path.resolve(__dirname, '../gsd-projects.json');
+        const fs = require('fs');
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        const { meetsNudgeCriteria } = require('./gsd/provisioning/stageGates/eligibilityChecker');
+        const { pushEvent } = require('./gsd/feedStore');
+        for (const project of (config.projects || [])) {
+          if (project.stage !== 'beta' && project.stage !== 'alpha') continue;
+          if (project.stageNudgeDismissed) continue;
+          if (meetsNudgeCriteria(project)) {
+            pushEvent({
+              type: 'stage_nudge',
+              projectName: project.name,
+              projectDisplayName: project.display_name || project.name,
+              label: `🚀 ${project.display_name || project.name} has been in ${project.stage} for 14+ days with 12+ commits — ready to advance?`,
+              detectedAt: new Date().toISOString(),
+            });
+          }
+        }
+      } catch (err) {
+        console.error('[stage-nudge] cron error:', err.message);
+      }
+    }, STAGE_NUDGE_INTERVAL);
+  }
+
   // Auto-install Claude Code hooks on every startup so users don't have to
   try {
     const { installHooks } = require("../scripts/install-hooks");

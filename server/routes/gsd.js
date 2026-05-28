@@ -673,6 +673,69 @@ router.post('/projects/:name/unarchive', (req, res) => {
   }
 });
 
+// DELETE /api/gsd/projects/:name — permanently destroy project (Draft stage only)
+router.delete('/projects/:name', async (req, res) => {
+  if (GSD_DATA_URL) {
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}`,
+      { method: 'DELETE', signal: AbortSignal.timeout(15000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+  try {
+    const config = loadConfigWithBackfill();
+    const projectIndex = (config.projects || []).findIndex(p => p.name === req.params.name);
+    if (projectIndex === -1) return res.status(404).json({ error: `Project "${req.params.name}" not found.` });
+    const project = config.projects[projectIndex];
+
+    // Safety: only allow deletion of Draft-stage projects
+    const stage = project.stage || 'draft';
+    if (stage !== 'draft') {
+      return res.status(422).json({ error: `Cannot delete a ${stage}-stage project. Retire it first, or use Archive.` });
+    }
+
+    // Stop tmux session if active
+    if (project.tmux_session) {
+      try {
+        execFileSync('tmux', ['kill-session', '-t', project.tmux_session], { stdio: 'ignore', timeout: 5000 });
+      } catch { /* already stopped */ }
+    }
+
+    // Delete GitHub repo
+    if (project.github_url) {
+      try {
+        const match = project.github_url.match(/github\.com\/([^/]+\/[^/]+?)(?:\.git)?$/);
+        if (match) {
+          execFileSync('gh', ['repo', 'delete', match[1], '--yes'], { timeout: 15000, stdio: 'ignore' });
+        }
+      } catch { /* gh not available or repo already gone — non-fatal */ }
+    }
+
+    // Delete project root directory (SAFETY: only if under /data/home/)
+    if (project.root && project.root.startsWith('/data/home/')) {
+      try {
+        execFileSync('rm', ['-rf', project.root], { timeout: 30000, stdio: 'ignore' });
+      } catch (e) {
+        console.error(`Failed to delete project root ${project.root}:`, e.message);
+      }
+    }
+
+    // Remove from config
+    config.projects.splice(projectIndex, 1);
+    saveConfig(config);
+
+    // Broadcast removal
+    const { broadcast } = require('../websocket');
+    broadcast('project_removed', { project: req.params.name, timestamp: new Date().toISOString() });
+
+    pushEvent({ type: 'stage_change', projectName: req.params.name, projectDisplayName: project.display_name || req.params.name, label: 'Project permanently deleted', detectedAt: new Date().toISOString() });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Delete failed', detail: err.message.split('\n')[0] });
+  }
+});
+
 // POST /api/gsd/projects/create — create a new project directory, tmux session, and config entry
 router.post('/projects/create', async (req, res) => {
   if (GSD_DATA_URL) {
