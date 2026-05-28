@@ -1382,7 +1382,11 @@ export function GSD() {
                   {groupBy === 'stage' ? (
                     <div className="flex flex-col gap-0">
                       {STAGE_ORDER.map((stage) => {
-                        const stageProjects = projects.filter(p => (p.stage ?? 'draft') === stage && p.sessionState !== 'archived');
+                        const stageProjects = projects.filter(p => {
+                          if (p.sessionState === 'archived') return false;
+                          if (activeFilter !== null && p.sessionState !== activeFilter) return false;
+                          return (p.stage ?? 'draft') === stage;
+                        });
                         if (stageProjects.length === 0) return null;
                         return (
                           <div key={stage}>
