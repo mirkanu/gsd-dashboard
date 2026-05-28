@@ -48,9 +48,13 @@ export function KillArchiveModal({
     setIsLoading(true);
     setError(null);
     try {
-      await fetch(`/api/gsd/projects/${encodeURIComponent(project.name)}`, {
+      const resp = await fetch(`/api/gsd/projects/${encodeURIComponent(project.name)}`, {
         method: "DELETE",
       });
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        throw new Error((body as any)?.error || `Delete failed (${resp.status})`);
+      }
       handleClose();
       onDeleted();
     } catch (e) {
