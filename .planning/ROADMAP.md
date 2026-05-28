@@ -48,7 +48,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 56B. Non-Programmer Behavioural Contract | 0/3 | Planned | - |
 | 58. Project Maturity Stages | 5/5 | Complete    | 2026-05-28 |
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
-| 59. Task Backend Migration + Issue GUI Wrapper | 0/0 | Not planned | - |
+| 59. Task Backend Migration + Issue GUI Wrapper | 0/4 | Planned | - |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
 | 62. Hetzner VPS Migration | 10/11 | Complete ✅ (v5.0) | 2026-05-08 |
 | 67. Cockpit VPS Monitoring | 1/1 | Complete ✅ (v5.0) | 2026-05-07 |
@@ -273,24 +273,21 @@ Plans:
 
 ### Phase 59: Task Backend Migration + Basic Issue GUI Wrapper
 
-**Goal:** When a project transitions Beta → Launched, its task backlog migrates to GitHub Issues, and all subsequent task reads/writes go through a Dashboard-native GUI wrapping GitHub Issues. GitHub's web UI is never needed for day-to-day issue work.
-**Requirements:** TSK-01 through TSK-09
+**Goal:** When a project transitions Beta → Launched, its task backlog optionally migrates to GitHub Issues. After migration, the TasksTab shows a link to GitHub Issues instead of a task list. GitHub is the source of truth post-migration. Scope narrowed from original spec (TSK-03–07 dropped per user decision; GitHub's native UI used instead of in-app wrapper).
+**Requirements:** TSK-01, TSK-02, TSK-08, TSK-09
 **Depends on:** Phase 54, Phase 58
-**Plans:** 5 plans
+**Plans:** 4 plans
 
 Plans:
 **Wave 1**
-- [x] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
+- [ ] 59-01-PLAN.md — Type contracts (GsdProject fields) + taskMigration.js service + test scaffold
 
-**Wave 2** *(parallel)*
-- [x] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
-- [x] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
+**Wave 2** *(blocked on 59-01)*
+- [ ] 59-02-PLAN.md — Backend routes: POST /migrate + POST /rollback-migration in gsd.js + proxy.js update
 
-**Wave 3** *(blocked on 58-02 + 58-03)*
-- [x] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
-
-**Wave 4** *(blocked on 58-04)*
-- [ ] 58-05-PLAN.md — Dashboard wiring: ChatListFilters grouping, ProjectControls stage buttons, nudge cron, DELETE route
+**Wave 3** *(parallel, blocked on 59-02)*
+- [ ] 59-03-PLAN.md — Frontend: api.ts migration methods + StageTransitionModal migration step
+- [ ] 59-04-PLAN.md — Frontend: TasksTab GitHub backend render + rollback UI + migration banner
 
 ---
 
