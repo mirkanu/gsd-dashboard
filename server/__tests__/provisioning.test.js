@@ -99,7 +99,13 @@ describe('provisioning', () => {
     });
 
     it('beta->launched: adds provisioning requirements when monitor and bucket missing', async () => {
-      mockFetch = async () => ({ ok: true, json: async () => ({ data: [] }) }); // empty list = not found
+      // BetterStack list returns empty array (no monitor); R2 returns 404 (no bucket)
+      mockFetch = async (url) => {
+        if (url.includes('betterstack.com')) {
+          return { ok: true, json: async () => ({ data: [] }) }; // empty list = not found
+        }
+        return { ok: false, json: async () => ({}) }; // R2 404 = bucket not found
+      };
       ['betterStackProvisioner', 'r2Provisioner', 'stageGates/validateGates'].forEach(m => {
         try { delete require.cache[require.resolve(`../gsd/provisioning/${m}`)]; } catch {}
       });
