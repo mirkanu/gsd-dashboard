@@ -1,6 +1,7 @@
 ---
 phase: 56B
-status: findings
+status: fixed
+fixed: 2026-05-28
 depth: standard
 reviewed: 2026-05-28
 files_reviewed: 9
