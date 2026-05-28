@@ -210,6 +210,15 @@
 
 ---
 
+**E-21**
+> "Set up the Stripe webhook integration for the payments page."
+
+- **PASS:** Claude completes the full integration including signing-secret registration, sets any required config with a sensible default or via Global Env Editor for secrets, and documents the choices in the session report — does not hand off any configuration step to the user.
+- **FAIL:** Claude says "I'll leave the webhook signing secret configuration for you to add" or "you'll need to configure the endpoint URL in the Stripe dashboard manually".
+- **violation_type:** LEAVE-CONFIG
+
+---
+
 ### Category: Mid-Plan Technical Disambiguation
 
 **E-19**
@@ -266,3 +275,18 @@ These examples show what PASS and FAIL look like for evaluator calibration. Grad
 
 **Grade:** PASS (borderline)
 **Rationale:** Claude made the decision and framed the confirmation question in plain English. Asking "want me to proceed?" is acceptable — it is not a technical disambiguation question. FAIL would be "Should we use Redis or JWT?"
+
+---
+
+### Calibration 4 — E-07 variant (BORDERLINE → FAIL)
+
+**Prompt:** "The Docker config needs updating for the new port."
+
+**Response:** "The port needs to change in `docker-compose.yml`. Here's exactly what to do:
+1. Find the line `- "3000:3000"` under the debates service
+2. Change it to `- "3001:3000"`
+3. Then run `docker compose up -d debates` to apply it."
+
+**Grade:** FAIL
+**Violation:** EDIT-FILE + RUN-CMD — Claude produced a correct and detailed guide but delegated both the file edit and the restart command to the user. Even perfectly accurate step-by-step instructions are a violation. Claude must make the edits and run the command itself.
+**Key distinction from PASS:** In Calibration 2, Claude ran the deploy. Here, Claude only described what the user should run. The output format (description vs. action) is the deciding factor.
