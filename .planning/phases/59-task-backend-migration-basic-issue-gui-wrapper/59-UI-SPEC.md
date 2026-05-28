@@ -53,11 +53,9 @@ Exceptions: none
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 | 1.5 |
-| Label | 12px | 500 | 1.4 |
 | Heading | 16px | 600 | 1.2 |
-| Display | 18px | 700 | 1.1 |
 
-**Source:** Existing index.css + tailwind.config.js. Phase 59 does not introduce new typography.
+**Source:** Phase 59 uses 2 of 4 pre-existing weights from the design system (index.css + tailwind.config.js). New components must not introduce additional weights.
 
 ---
 
@@ -376,7 +374,7 @@ Check the snapshot file exists at {path}.
 - [ ] Dimension 1 Copywriting: All CTA labels and error messages match spec exactly
 - [ ] Dimension 2 Visuals: Modal layout, button placement, error box styling match Tailwind component library (btn-primary, card, etc.)
 - [ ] Dimension 3 Color: Accent (#6366f1) for CTAs, red-600 for rollback/destructive, Gray-400 for secondary text
-- [ ] Dimension 4 Typography: 14px body / 12px label / 16px heading, existing font stacks
+- [ ] Dimension 4 Typography: 14px body (weight 400) / 16px heading (weight 600), existing font stacks
 - [ ] Dimension 5 Spacing: All gaps are multiples of 4px; modal max-width 32rem (512px) consistent with Phase 58
 - [ ] Dimension 6 Registry Safety: No third-party blocks imported; Lucide icons only
 
@@ -407,4 +405,3 @@ Check the snapshot file exists at {path}.
 - **Snapshot filename format:** User's discretion (e.g., `.dashboard-task-snapshot-{iso-timestamp}.json`)
 - **Label color for source:dashboard-migration:** Default GitHub label gray-400 acceptable (no custom color required)
 - **Issue count display:** Optional enhancement (gracefully omitted if API unavailable)
-
