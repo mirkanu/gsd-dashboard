@@ -173,6 +173,7 @@ None.
 | 260511-t7k | Fix /server page crash + add disk-detail widget + WS disk-warning banner | 2026-05-11 | 161df3f | [260511-t7k-fix-server-page-disk-detail-widget](./quick/260511-t7k-fix-server-page-disk-detail-widget/) |
 | 260511-m3p | Maintenance cron panel on /server — schedule, last run, output, Run Now | 2026-05-11 | 4ca2624 | [260511-m3p-server-maintenance-cron-panel](./quick/260511-m3p-server-maintenance-cron-panel/) |
 | 260527-pfk | Add Upload panel to dashboard sidebar (paste/file-picker, localhost URL, iOS-safe copy) | 2026-05-27 | c52b030 | [260527-pfk-add-upload-panel-to-dashboard-sidebar](./quick/260527-pfk-add-upload-panel-to-dashboard-sidebar/) |
+| 260529-vpz | Build shared Playwright daemon PM2 service (localhost:3099, FIFO queue, single Chromium) | 2026-05-29 | 74ebcb3 | [260529-vpz-shared-playwright-daemon](./quick/260529-vpz-shared-playwright-daemon/) |
 
 ## Session Continuity
 
