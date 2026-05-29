@@ -164,6 +164,12 @@ export interface GsdProject {
   stageUpdatedAt?: string | null;
   /** Phase 58: true if a stage nudge has been dismissed for this project. */
   stageNudgeDismissed?: boolean;
+  /** Phase 59: task backend source ('dashboard' or 'github'). Defaults to 'dashboard'. */
+  task_backend?: 'dashboard' | 'github';
+  /** Phase 59: GitHub repository URL (e.g. 'https://github.com/owner/repo'). Set after successful migration. */
+  github_repo?: string | null;
+  /** Phase 59: ISO timestamp of task migration to GitHub. Null until migrated. */
+  taskMigratedAt?: string | null;
 }
 
 export interface BusyMarkers {
