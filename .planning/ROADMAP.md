@@ -460,8 +460,13 @@ Plans:
 
 ### Phase 73: Volume Lifecycle Management
 
-**Goal:** Prevent Hetzner volume OOM/disk-full crises through automated Docker cleanup, volume space visibility, and dashboard integration. Add Docker space breakdown (build cache, images, volumes) to /server page, smarter weekly prune cron with `--keep-storage`, immediate services.bak cleanup, and earlyoom/cgroup status widget.
+**Goal:** Prevent Hetzner volume OOM/disk-full crises through automated Docker cleanup, volume space visibility, and dashboard integration. Add Docker space breakdown (build cache, images, volumes) to /server page, smarter weekly prune cron with `--keep-storage`, and earlyoom/cgroup status widget.
 **Depends on:** Phase 69, Phase 72
+**Plans:** 2 plans
+
+Plans:
+- [ ] 73-01-PLAN.md — Backend: GET /system/docker-df, GET /system/oom-status, fix docker-prune cron
+- [ ] 73-02-PLAN.md — Frontend: types + api.ts + Docker sub-section in Disk card + OOM sub-section in Memory card
 
 ---
 
