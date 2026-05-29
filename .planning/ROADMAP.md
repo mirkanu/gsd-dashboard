@@ -458,6 +458,13 @@ Plans:
 
 ---
 
+### Phase 73: Volume Lifecycle Management
+
+**Goal:** Prevent Hetzner volume OOM/disk-full crises through automated Docker cleanup, volume space visibility, and dashboard integration. Add Docker space breakdown (build cache, images, volumes) to /server page, smarter weekly prune cron with `--keep-storage`, immediate services.bak cleanup, and earlyoom/cgroup status widget.
+**Depends on:** Phase 69, Phase 72
+
+---
+
 ## Seeds (parked ideas that may surface in v5.x)
 
 - **SEED-001** — AI-Guided CLAUDE.md Editor (former Phase 47; may surface if non-programmer mode needs a settings transparency surface)
