@@ -23,6 +23,11 @@ export function StageTransitionModal({
   const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Phase 59: migration step state
+  const [migrateTasks, setMigrateTasks] = useState(false); // toggle — unchecked by default
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [migrationError, setMigrationError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
@@ -72,16 +77,46 @@ export function StageTransitionModal({
     }
   }
 
+  async function handleMigrateAndConfirm() {
+    setIsMigrating(true);
+    setMigrationError(null);
+    try {
+      const result = await api.gsd.migrateTasksToGithub(project.name);
+      if (result.failed.length > 0) {
+        setMigrationError(
+          `Failed to export ${result.failed.length} tasks to GitHub. Check your PAT and repo access, then retry.`
+        );
+        setIsMigrating(false);
+        return; // Don't proceed to stage transition on partial failure
+      }
+      // Full success: proceed to stage transition
+      await handleConfirm();
+    } catch (err) {
+      setMigrationError(err instanceof Error ? err.message : 'Migration failed');
+      setIsMigrating(false);
+    }
+  }
+
   if (!isOpen) return null;
 
   const canConfirm = !isValidating && gates !== null && gates.valid;
   const needsProvisioning =
     gates?.requiresProvisioning && gates.requiresProvisioning.length > 0;
-  const confirmLabel = isConfirming
-    ? "Advancing..."
-    : needsProvisioning
-      ? "Confirm & Auto-Create"
-      : "Confirm";
+
+  const showMigrationStep =
+    targetStage === 'launched' &&
+    project.stage === 'beta' &&
+    Boolean(project.github_repo);
+
+  const confirmLabel = isMigrating
+    ? 'Confirming & Migrating…'
+    : showMigrationStep && migrateTasks
+      ? 'Confirm & Migrate'
+      : isConfirming
+        ? "Advancing..."
+        : needsProvisioning
+          ? "Confirm & Auto-Create"
+          : "Confirm";
 
   return (
     <div
@@ -142,20 +177,49 @@ export function StageTransitionModal({
 
         {error && <div className="text-sm text-red-400 mb-4">{error}</div>}
 
+        {showMigrationStep && (
+          <div className="space-y-3 border border-[var(--border)] rounded-lg p-4 bg-surface-2 mb-4">
+            <h3 className="text-sm font-semibold text-gray-200">Back up your tasks to GitHub?</h3>
+            <p className="text-sm text-gray-400">
+              Your Dashboard tasks will be exported as GitHub Issues, labeled{' '}
+              <code className="text-xs bg-surface-3 px-1 rounded">source:dashboard-migration</code>.{' '}
+              You can roll back within 7 days.
+            </p>
+
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={migrateTasks}
+                onChange={e => setMigrateTasks(e.target.checked)}
+                disabled={isMigrating || isConfirming}
+                className="mt-0.5 rounded border-border accent-indigo-500"
+              />
+              <span className="text-sm text-gray-300">Migrate tasks to GitHub</span>
+            </label>
+            <p className="text-xs text-gray-500 ml-6">
+              If unchecked, tasks stay in the Dashboard. You can migrate anytime later.
+            </p>
+
+            {migrationError && (
+              <p role="alert" className="text-sm text-red-400">{migrationError}</p>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            disabled={isConfirming}
+            disabled={isConfirming || isMigrating}
             className="flex-1 px-4 py-2 rounded-md bg-surface-3 text-gray-300 hover:text-white text-sm transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
-            onClick={handleConfirm}
-            disabled={isConfirming || !canConfirm}
+            onClick={showMigrationStep && migrateTasks ? handleMigrateAndConfirm : handleConfirm}
+            disabled={isConfirming || isMigrating || !canConfirm}
             className="flex-1 px-4 py-2 rounded-md bg-accent text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {!canConfirm && !isConfirming ? "Cannot advance" : confirmLabel}
+            {!canConfirm && !isConfirming && !isMigrating ? "Cannot advance" : confirmLabel}
           </button>
         </div>
       </div>
