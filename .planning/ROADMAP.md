@@ -47,7 +47,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 56. CLI Verbosity Contract + Portfolio Feed | 3/3 | Complete    | 2026-05-09 |
 | 56B. Non-Programmer Behavioural Contract | 0/3 | Planned | - |
 | 58. Project Maturity Stages | 5/5 | Complete    | 2026-05-28 |
-| 54B. Unified Notification Centre | 0/0 | Not planned | - |
+| 54B. Unified Notification Centre | 0/4 | Planned | - |
 | 59. Task Backend Migration + Issue GUI Wrapper | 4/4 | Complete   | 2026-05-29 |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
 | 62. Hetzner VPS Migration | 10/11 | Complete ✅ (v5.0) | 2026-05-08 |
@@ -253,21 +253,18 @@ Plans:
 | Claude finished responding (per turn) | Off | Intra-session |
 **Requirements:** NTF-01 through NTF-05
 **Depends on:** Phase 42 (existing Telegram infra to refactor), Phase 43 (state broadcaster as event source), Phase 58 (stage-aware policies)
-**Plans:** 5 plans
+**Plans:** 4 plans
 
 Plans:
 **Wave 1**
-- [x] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
+- [ ] 54B-01-PLAN.md — DB schema migrations (notification_policy, notification_log, project_settings columns) + notificationCentre.js module (policy engine, rate limit, quiet hours, dedup)
 
-**Wave 2** *(parallel)*
-- [x] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
-- [x] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
+**Wave 2** *(parallel, blocked on 54B-01)*
+- [ ] 54B-02-PLAN.md — API routes: GET/PUT /api/notifications/policy + POST /api/notifications/test + proxy.js prefix + server/index.js mount
+- [ ] 54B-03-PLAN.md — Frontend: api.ts notifications namespace + NotificationPolicyPanel.tsx + ConfigPage Notifications tab
 
-**Wave 3** *(blocked on 58-02 + 58-03)*
-- [x] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
-
-**Wave 4** *(blocked on 58-04)*
-- [x] 58-05-PLAN.md — Dashboard wiring: ChatListFilters grouping, ProjectControls stage buttons, nudge cron, DELETE route
+**Wave 3** *(blocked on 54B-02 + 54B-03)*
+- [ ] 54B-04-PLAN.md — Call site migration: gsd.js, gracefulShutdown.js, stateBroadcaster.js, index.js disk alerts + Phase 42 startup migration + telegram.js JSDoc deprecation
 
 ---
 
@@ -296,21 +293,7 @@ Plans:
 **Goal:** Launched projects get provisioned dev + production environments automatically during Beta→Launched transition, with a GUI-driven "Promote dev → prod" action that enforces verify-work passing and documents the change. Railway-first provisioning.
 **Requirements:** ENV-01 through ENV-05
 **Depends on:** Phase 54, Phase 58
-**Plans:** 5 plans
-
-Plans:
-**Wave 1**
-- [x] 58-01-PLAN.md — Stage storage foundation: backfill logic, PATCH /stage + POST /validate endpoints, test scaffolds
-
-**Wave 2** *(parallel)*
-- [x] 58-02-PLAN.md — Provisioning helpers: betterStackProvisioner, r2Provisioner, validateGates, eligibilityChecker
-- [x] 58-03-PLAN.md — Frontend contracts: types.ts + api.ts extensions
-
-**Wave 3** *(blocked on 58-02 + 58-03)*
-- [ ] 58-04-PLAN.md — UI components: StageBadge, StageTransitionModal, StageBackfillChip, KillArchiveModal
-
-**Wave 4** *(blocked on 58-04)*
-- [ ] 58-05-PLAN.md — Dashboard wiring: ChatListFilters grouping, ProjectControls stage buttons, nudge cron, DELETE route
+**Plans:** 0/0 (not yet planned)
 
 ---
 
