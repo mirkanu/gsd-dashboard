@@ -48,7 +48,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 56B. Non-Programmer Behavioural Contract | 0/3 | Planned | - |
 | 58. Project Maturity Stages | 5/5 | Complete    | 2026-05-28 |
 | 54B. Unified Notification Centre | 0/0 | Not planned | - |
-| 59. Task Backend Migration + Issue GUI Wrapper | 0/4 | Planned | - |
+| 59. Task Backend Migration + Issue GUI Wrapper | 4/4 | Complete   | 2026-05-29 |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
 | 62. Hetzner VPS Migration | 10/11 | Complete ✅ (v5.0) | 2026-05-08 |
 | 67. Cockpit VPS Monitoring | 1/1 | Complete ✅ (v5.0) | 2026-05-07 |
@@ -280,14 +280,14 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 59-01-PLAN.md — Type contracts (GsdProject fields) + taskMigration.js service + test scaffold
+- [x] 59-01-PLAN.md — Type contracts (GsdProject fields) + taskMigration.js service + test scaffold
 
 **Wave 2** *(blocked on 59-01)*
-- [ ] 59-02-PLAN.md — Backend routes: POST /migrate + POST /rollback-migration in gsd.js + proxy.js update
+- [x] 59-02-PLAN.md — Backend routes: POST /migrate + POST /rollback-migration in gsd.js + proxy.js update
 
 **Wave 3** *(parallel, blocked on 59-02)*
-- [ ] 59-03-PLAN.md — Frontend: api.ts migration methods + StageTransitionModal migration step
-- [ ] 59-04-PLAN.md — Frontend: TasksTab GitHub backend render + rollback UI + migration banner
+- [x] 59-03-PLAN.md — Frontend: api.ts migration methods + StageTransitionModal migration step
+- [x] 59-04-PLAN.md — Frontend: TasksTab GitHub backend render + rollback UI + migration banner
 
 ---
 
