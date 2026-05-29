@@ -136,7 +136,7 @@ export function ProjectDetailsPanel({ project, autopilotRun, onPauseSession, onA
       {/* Content area */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
         {activeTab === "tasks" ? (
-          <TasksTab projectKey={project.name} />
+          <TasksTab projectKey={project.name} project={project} />
         ) : (
           <>
             {loading && (

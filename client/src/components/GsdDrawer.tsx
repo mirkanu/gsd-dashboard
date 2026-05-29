@@ -135,7 +135,7 @@ export function GsdDrawer({ project, autopilotRun, onPauseSession, onArchive, on
           {/* Content area */}
           <div className="flex-1 overflow-y-auto">
             {activeTab === "tasks" ? (
-              <TasksTab projectKey={project.name} />
+              <TasksTab projectKey={project.name} project={project} />
             ) : (
               <>
                 {loading && (

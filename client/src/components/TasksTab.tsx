@@ -1,7 +1,20 @@
 import { useState, useEffect, useRef } from "react";
-import { Archive, ArchiveRestore, ClipboardCopy, GripVertical, Pencil, Plus } from "lucide-react";
+import { Archive, ArchiveRestore, ClipboardCopy, ExternalLink, GripVertical, Pencil, Plus } from "lucide-react";
 import { api } from "../lib/api";
-import type { GsdTask } from "../lib/types";
+import type { GsdProject, GsdTask } from "../lib/types";
+
+function extractOrgRepoFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const match = url.match(/github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?\/?$/i);
+  return match ? `${match[1]}/${match[2]}` : null;
+}
+
+function isWithin7Days(timestamp: string | null | undefined): boolean {
+  if (!timestamp) return false;
+  const migrationDate = new Date(timestamp);
+  const daysSince = (Date.now() - migrationDate.getTime()) / (1000 * 60 * 60 * 24);
+  return daysSince < 7;
+}
 
 function TaskRow({
   task,
@@ -97,7 +110,7 @@ function TaskRow({
   );
 }
 
-export function TasksTab({ projectKey }: { projectKey: string }) {
+export function TasksTab({ projectKey, project }: { projectKey: string; project: GsdProject }) {
   const [tasks, setTasks] = useState<GsdTask[]>([]);
   const [showArchived, setShowArchived] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -109,6 +122,13 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
   const descRef = useRef<HTMLTextAreaElement>(null);
   const dragIdRef = useRef<number | null>(null);
   const [dragOverId, setDragOverId] = useState<number | null>(null);
+
+  // GitHub backend state
+  const [rollbackConfirm, setRollbackConfirm] = useState(false);
+  const [rollbackError, setRollbackError] = useState<string | null>(null);
+  const [isRollingBack, setIsRollingBack] = useState(false);
+  const [isMigratingLater, setIsMigratingLater] = useState(false);
+  const [migrateLaterError, setMigrateLaterError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -258,8 +278,124 @@ export function TasksTab({ projectKey }: { projectKey: string }) {
     });
   }
 
+  async function handleRollback() {
+    if (!rollbackConfirm) {
+      setRollbackConfirm(true);
+      return;
+    }
+    setIsRollingBack(true);
+    setRollbackError(null);
+    try {
+      await api.gsd.rollbackTaskMigration(project.name);
+      // Parent will update via WebSocket task_backend_change broadcast
+      setRollbackConfirm(false);
+    } catch (err) {
+      setRollbackError(err instanceof Error ? err.message : 'Rollback failed');
+    } finally {
+      setIsRollingBack(false);
+    }
+  }
+
+  async function handleMigrateLater() {
+    setIsMigratingLater(true);
+    setMigrateLaterError(null);
+    try {
+      await api.gsd.migrateTasksToGithub(project.name);
+      // Parent will update via WebSocket
+    } catch (err) {
+      setMigrateLaterError(err instanceof Error ? err.message : 'Migration failed');
+    } finally {
+      setIsMigratingLater(false);
+    }
+  }
+
+  // GitHub backend: early return — renders link panel instead of task list
+  if (project.task_backend === 'github') {
+    const orgRepo = extractOrgRepoFromUrl(project.github_repo);
+    // D-09: Link goes directly to Issues tab, not repo root
+    const issuesUrl = orgRepo ? `https://github.com/${orgRepo}/issues` : null;
+
+    return (
+      <div className="space-y-4 p-6 border border-border rounded-lg bg-gray-950/30">
+        <p className="text-sm text-gray-400">
+          Tasks migrated to GitHub
+        </p>
+
+        {issuesUrl ? (
+          <a
+            href={issuesUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            Open GitHub Issues → <ExternalLink className="w-4 h-4" />
+          </a>
+        ) : (
+          <p className="text-xs text-gray-500">GitHub repository URL unavailable.</p>
+        )}
+
+        {/* D-11: Rollback button — visible within 7-day window only */}
+        {isWithin7Days(project.taskMigratedAt) && (
+          <div className="space-y-2 pt-2">
+            {!rollbackConfirm ? (
+              <button
+                onClick={() => setRollbackConfirm(true)}
+                className="text-xs text-gray-500 hover:text-red-400 underline transition-colors"
+              >
+                Roll back to Dashboard tasks?
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-400">
+                  This will restore your Dashboard tasks to their state at migration time. GitHub issues will remain in your repo but won't sync.
+                </p>
+                {rollbackError && (
+                  <p role="alert" className="text-xs text-red-400">{rollbackError}</p>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleRollback}
+                    disabled={isRollingBack}
+                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors"
+                  >
+                    {isRollingBack ? 'Restoring…' : 'Restore Dashboard Tasks'}
+                  </button>
+                  <button
+                    onClick={() => setRollbackConfirm(false)}
+                    disabled={isRollingBack}
+                    className="px-3 py-1.5 bg-surface-3 hover:bg-surface-4 text-gray-400 text-xs rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      {/* Migration banner: shown when project has github_repo but hasn't migrated yet (D-02 skip option) */}
+      {(!project.task_backend || project.task_backend === 'dashboard') && project.github_repo && (
+        <div className="mb-3 p-3 border border-border rounded-lg bg-surface-2 flex items-center justify-between gap-3">
+          <p className="text-xs text-gray-400">Migrate your tasks to GitHub</p>
+          <div className="flex items-center gap-2">
+            {migrateLaterError && <span className="text-xs text-red-400">{migrateLaterError}</span>}
+            <button
+              onClick={handleMigrateLater}
+              disabled={isMigratingLater}
+              title="Export your Dashboard tasks as GitHub Issues"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-4 hover:bg-border text-gray-300 hover:text-gray-200 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isMigratingLater ? 'Migrating…' : 'Migrate to GitHub'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Add / Edit task form */}
       <form onSubmit={handleSubmit} className="space-y-2">
         <input
