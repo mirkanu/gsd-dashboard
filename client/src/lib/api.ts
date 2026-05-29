@@ -8,10 +8,12 @@ import type {
   CronJobStatus,
   DashboardEvent,
   DiskDetailEntry,
+  DockerDf,
   GsdProject,
   GsdTask,
   MappingRule,
   ModelPricing,
+  OomStatus,
   ProjectSettings,
   ProjectStage,
   RunCronResult,
@@ -342,6 +344,8 @@ export const api = {
       request<RunCronResult>(`/system/run-cron/${encodeURIComponent(name)}`, {
         method: "POST",
       }),
+    dockerDf: () => request<DockerDf>("/system/docker-df"),
+    oomStatus: () => request<OomStatus>("/system/oom-status"),
   },
 
   pricing: {

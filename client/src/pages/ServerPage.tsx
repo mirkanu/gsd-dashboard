@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { RefreshCw, Cpu, HardDrive, Activity, MemoryStick, Terminal } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
-import type { SystemStats, DiskDetailEntry, DiskWarningEvent, CronJobStatus } from "../lib/types";
+import type { SystemStats, DiskDetailEntry, DiskWarningEvent, CronJobStatus, DockerDf, OomStatus } from "../lib/types";
 
 export function ServerPage() {
   const [data, setData] = useState<SystemStats | null>(null);
@@ -15,6 +15,8 @@ export function ServerPage() {
   const [cronRunning, setCronRunning] = useState<Record<string, boolean>>({});
   const [cronOutput, setCronOutput] = useState<Record<string, string | null>>({});
   const [cronExpanded, setCronExpanded] = useState<Record<string, boolean>>({});
+  const [dockerDf, setDockerDf] = useState<DockerDf | null>(null);
+  const [oomStatus, setOomStatus] = useState<OomStatus | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -47,6 +49,8 @@ export function ServerPage() {
     refresh();
     api.system.diskDetail().then(setDiskDetail).catch(() => {});
     api.system.cronStatus().then(setCronJobs).catch(() => {});
+    api.system.dockerDf().then(setDockerDf).catch(() => {});
+    api.system.oomStatus().then(setOomStatus).catch(() => {});
     const id = setInterval(() => {
       refresh();
       api.system.cronStatus().then(setCronJobs).catch(() => {});
@@ -141,6 +145,26 @@ export function ServerPage() {
                 </div>
               </>
             )}
+            {/* OOM Protection status — D-06, D-07 */}
+            <div className="border-t pt-2 mt-1 space-y-1.5">
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                OOM Protection
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>earlyoom</span>
+                <span className={oomStatus?.earlyoom === "active" ? "text-emerald-400" : "text-destructive"}>
+                  {oomStatus == null
+                    ? "—"
+                    : oomStatus.earlyoom === "active"
+                    ? "● active"
+                    : "● inactive"}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Claude cap</span>
+                <span className="text-muted-foreground">2.4 GB cgroup</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -175,6 +199,41 @@ export function ServerPage() {
               ))}
             </tbody>
           </table>
+        </div>
+        {/* Docker space breakdown — D-01, D-03 */}
+        <div className="border-t">
+          <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Docker
+          </div>
+          {dockerDf === null ? (
+            <div className="px-4 py-2 text-sm text-muted-foreground italic">Loading...</div>
+          ) : dockerDf.error ? (
+            <div className="px-4 py-2 text-sm text-muted-foreground italic">unavailable</div>
+          ) : (
+            <div className="grid grid-cols-2 gap-x-4 px-4 pb-3">
+              {dockerDf.entries.map((entry) => {
+                const reclaimStr = entry.reclaimable ?? "";
+                const gbMatch = reclaimStr.match(/([\d.]+)\s*GB/i);
+                const mbMatch = reclaimStr.match(/([\d.]+)\s*MB/i);
+                const reclaimMb = gbMatch
+                  ? parseFloat(gbMatch[1]) * 1024
+                  : mbMatch
+                  ? parseFloat(mbMatch[1])
+                  : 0;
+                const isBuildCache = entry.type === "Build Cache";
+                const isAmber = isBuildCache && reclaimMb > 5120;
+                return (
+                  <div key={entry.type} className="py-1.5">
+                    <div className="text-xs text-muted-foreground">{entry.type}</div>
+                    <div className="text-sm font-medium tabular-nums">{entry.size}</div>
+                    <div className={`text-xs tabular-nums ${isAmber ? "text-amber-400" : "text-muted-foreground"}`}>
+                      {entry.reclaimable} reclaimable
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

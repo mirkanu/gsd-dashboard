@@ -72,6 +72,25 @@ function readProcesses() {
   }
 }
 
+function readDockerDf() {
+  try {
+    const out = execSync("docker system df --format '{{json .}}'", { timeout: 5000 }).toString().trim();
+    // docker system df --format '{{json .}}' outputs one JSON object per line
+    const lines = out.split("\n").filter(Boolean);
+    const entries = lines.map((line) => {
+      const obj = JSON.parse(line);
+      return {
+        type: obj.Type,          // "Images", "Containers", "Local Volumes", "Build Cache"
+        size: obj.Size,          // e.g. "13.8GB"
+        reclaimable: obj.Reclaimable, // e.g. "7.2GB (52%)"
+      };
+    });
+    return { entries, error: null };
+  } catch {
+    return { entries: [], error: "unavailable" };
+  }
+}
+
 router.get("/disk-detail", (_req, res) => {
   try {
     const dirs = [
@@ -96,13 +115,39 @@ router.get("/disk-detail", (_req, res) => {
   }
 });
 
+function readOomStatus() {
+  try {
+    const out = execSync("systemctl is-active earlyoom", { timeout: 3000 }).toString().trim();
+    return { earlyoom: out === "active" ? "active" : "inactive" };
+  } catch {
+    // systemctl exits non-zero when inactive — catch means inactive
+    return { earlyoom: "inactive" };
+  }
+}
+
+router.get("/docker-df", (_req, res) => {
+  try {
+    res.json(readDockerDf());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.get("/oom-status", (_req, res) => {
+  try {
+    res.json(readOomStatus());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 const CRON_WHITELIST = {
   "docker-prune": {
     schedule: "Sun 4:00 AM",
     logFile: "/var/log/docker-prune.log",
-    cmd: "docker",
-    args: ["system", "prune", "-f"],
-    useSudo: true,
+    cmd: "bash",
+    args: ["-c", "docker builder prune --keep-storage 2gb -f && docker image prune -f"],
+    useSudo: false,
   },
   "prune-old-data": {
     schedule: "Daily 3:00 AM",
