@@ -24,6 +24,7 @@ must_haves:
     - "server/gsd/gracefulShutdown.js no longer calls sendNotification() directly (default notifyFn routes through NotificationCentre)"
     - "server/index.js disk alerts call notify('system_alert', ...) instead of sendNotification()"
     - "server/gsd/stateBroadcaster.js calls notify('waiting_input', ...) after feedStore push"
+    - "server/gsd/stateBroadcaster.js calls notify(landmark.type, ...) after feedStore.pushEvent(landmark) in the landmark block"
     - "proxy mode guard (GSD_DATA_URL) prevents notify() calls on proxy instances"
     - "telegram.js sendNotification has @deprecated JSDoc comment"
     - "Phase 42 legacy telegram_alerts migration runs at startup and sets archived_legacy_alerts=1 after first successful delivery"
@@ -31,7 +32,7 @@ must_haves:
     - "grep sendNotification server/index.js returns 0 matches for disk alerts"
   artifacts:
     - path: "server/gsd/stateBroadcaster.js"
-      provides: "notify('waiting_input') call after feedStore push"
+      provides: "notify('waiting_input') call after feedStore push; notify(landmark.type) call after feedStore.pushEvent(landmark)"
       contains: "notificationCentre"
     - path: "server/gsd/gracefulShutdown.js"
       provides: "Default notifyFn routes through notify('idle_session_closed')"
@@ -45,7 +46,7 @@ must_haves:
   key_links:
     - from: "server/gsd/stateBroadcaster.js"
       to: "server/gsd/notificationCentre.js"
-      via: "lazy require inside if(!GSD_DATA_URL) block"
+      via: "lazy require inside if(!GSD_DATA_URL) block — both waiting_input and landmark hooks"
       pattern: "require.*notificationCentre"
     - from: "server/gsd/gracefulShutdown.js"
       to: "server/gsd/notificationCentre.js"
@@ -54,9 +55,9 @@ must_haves:
 ---
 
 <objective>
-Migrate all three existing sendNotification() call sites through NotificationCentre and add Phase 42 legacy migration.
+Migrate all three existing sendNotification() call sites through NotificationCentre, wire landmark events in stateBroadcaster, and add Phase 42 legacy migration.
 
-Purpose: Completes NTF-01 — makes NotificationCentre the single delivery path. After this plan, no production code calls telegram.sendNotification() directly for event-driven notifications.
+Purpose: Completes NTF-01 — makes NotificationCentre the single delivery path. After this plan, no production code calls telegram.sendNotification() directly for event-driven notifications. Landmark events (plan_complete, verify_failed, verify_passed, phase_complete) are wired to notify() so Default=On events actually fire.
 Output: Modified stateBroadcaster.js, gracefulShutdown.js, gsd.js, index.js. Phase 42 migration function added to index.js startup block.
 </objective>
 
@@ -134,6 +135,19 @@ if (!process.env.GSD_DATA_URL) {
 }
 ```
 
+From server/gsd/stateBroadcaster.js (landmark detection block — find the block where landmark events
+are pushed via feedStore.pushEvent(landmark)):
+```js
+// After feedStore.pushEvent(landmark) — add:
+if (!process.env.GSD_DATA_URL && landmark) {
+  const { notify } = require('./notificationCentre');
+  notify(landmark.type, project.name, landmark.text).catch(() => {});
+}
+// landmark.type is one of: plan_complete, verify_failed, verify_passed, phase_complete
+// These map directly to EVENT_DEFAULTS keys — no translation needed.
+// The require() must be INSIDE the if block (lazy require, avoids circular dep).
+```
+
 From server/index.js (disk alert block ~lines 319-344):
 ```js
 // Current:
@@ -169,7 +183,7 @@ const MAP = {
   <read_first>
     - server/routes/gsd.js — read the notification block (~lines 155-185) and the top-level require/import block to know which imports to remove (shouldNotify, sendNotification)
     - server/gsd/gracefulShutdown.js — read lines 1-60 to see the DI block and sendNotification import
-    - server/gsd/stateBroadcaster.js — read lines 130-175 to find the feedStore.pushEvent call for waiting_input and where to insert the notify() call
+    - server/gsd/stateBroadcaster.js — read lines 130-200 to find the feedStore.pushEvent call for waiting_input AND the landmark detection block (look for `landmark.type` or a block that calls feedStore.pushEvent for plan_complete/verify_failed events)
   </read_first>
 
   <action>
@@ -200,7 +214,7 @@ notifyFn = (project, text) => {
 
 3. Check whether `sendNotification` is still referenced elsewhere in gracefulShutdown.js. If its only use was the `notifyFn` default, remove it from the destructured require at the top of the file. Do NOT remove `require('./telegram')` entirely — the import may still be needed by tests via the DI interface.
 
-**server/gsd/stateBroadcaster.js:**
+**server/gsd/stateBroadcaster.js — waiting_input hook:**
 
 1. Find the `waiting_input` block — where `sessionState === 'waiting' && prevRaw !== 'waiting'` is true and `feedStore.pushEvent(waitingEntry)` is called followed by `broadcastFn(...)`.
 
@@ -214,7 +228,21 @@ if (!process.env.GSD_DATA_URL) {
 
 The `require('./notificationCentre')` must be INSIDE the if block (lazy require, avoids circular dep).
 
-Do NOT add notify calls for plan_complete, verify_failed, etc. in stateBroadcaster — those events come from feedStore landmark events which will be wired later if needed. This plan only adds the waiting_input hook since it is the most critical and already has a clear trigger point.
+**server/gsd/stateBroadcaster.js — landmark event hook:**
+
+3. Find the landmark detection block — the block where `feedStore.pushEvent(landmark)` is called for landmark events (plan_complete, verify_failed, verify_passed, phase_complete). This is a separate block from the waiting_input block above.
+
+4. Add the following 3-line notify call IMMEDIATELY AFTER `feedStore.pushEvent(landmark)` in that block:
+```js
+if (!process.env.GSD_DATA_URL && landmark) {
+  const { notify } = require('./notificationCentre');
+  notify(landmark.type, project.name, landmark.text).catch(() => {});
+}
+```
+
+`landmark.type` is already one of `plan_complete`, `verify_failed`, `verify_passed`, `phase_complete` — these map directly to EVENT_DEFAULTS keys. `landmark.text` is the human-readable description already present on the landmark object. The require() must be INSIDE the if block.
+
+This closes the gap where `plan_complete` and `verify_failed` were defined as Default=On in EVENT_DEFAULTS but had no call site invoking notify() for them.
   </action>
 
   <verify>
@@ -228,10 +256,11 @@ Do NOT add notify calls for plan_complete, verify_failed, etc. in stateBroadcast
     - grep "idle_session_closed" /home/services/gsddashboard/server/gsd/gracefulShutdown.js
     - grep "notificationCentre" /home/services/gsddashboard/server/gsd/stateBroadcaster.js
     - grep "GSD_DATA_URL" /home/services/gsddashboard/server/gsd/stateBroadcaster.js shows proxy guard
+    - grep "landmark.type" /home/services/gsddashboard/server/gsd/stateBroadcaster.js shows the landmark hook
     - npm run test:server exits 0
   </acceptance_criteria>
 
-  <done>All three call sites migrated through notificationCentre. shouldNotify removed from gsd.js. npm test passes.</done>
+  <done>All three call sites migrated through notificationCentre. Landmark events (plan_complete, verify_failed, verify_passed, phase_complete) wired via notify(landmark.type) after feedStore.pushEvent(landmark). shouldNotify removed from gsd.js. npm test passes.</done>
 </task>
 
 <task type="auto">
@@ -377,6 +406,7 @@ async function sendNotification(projectName, text, options) {
 <verification>
 grep -rn "sendNotification" /home/services/gsddashboard/server/routes/gsd.js — returns 0 matches.
 grep -c "sendNotification" /home/services/gsddashboard/server/index.js — returns 0 (or 1 if still in require for startReplyPoller — check that it's not in a call site).
+grep "landmark.type" /home/services/gsddashboard/server/gsd/stateBroadcaster.js — shows the landmark notify hook.
 npm run test:server exits 0.
 pm2 restart gsd-dashboard then curl http://localhost:3001/api/notifications/policy returns policy JSON.
 </verification>
@@ -384,6 +414,7 @@ pm2 restart gsd-dashboard then curl http://localhost:3001/api/notifications/poli
 <success_criteria>
 - sendNotification() not called directly in gsd.js, gracefulShutdown.js, stateBroadcaster.js, or index.js disk alert block
 - All three event sources (state transition, idle close, disk alert) route through notify()
+- Landmark events (plan_complete, verify_failed, verify_passed, phase_complete) fire notify(landmark.type) after feedStore.pushEvent(landmark) in stateBroadcaster.js
 - Phase 42 migration runs at startup and is idempotent
 - telegram.js sendNotification has @deprecated JSDoc
 - npm run test:server passes
