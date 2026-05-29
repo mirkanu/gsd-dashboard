@@ -180,6 +180,23 @@ export const api = {
         { method: 'POST', body: JSON.stringify({ to: targetStage }) }
       ),
 
+    migrateTasksToGithub: (projectName: string) =>
+      request<{
+        success: boolean;
+        exported: number;
+        failed: Array<{ task_id: number; error: string }>;
+        snapshotPath: string;
+      }>(
+        `/gsd/projects/${encodeURIComponent(projectName)}/migrate`,
+        { method: 'POST', body: JSON.stringify({}) }
+      ),
+
+    rollbackTaskMigration: (projectName: string) =>
+      request<{ success: boolean; task_backend: 'dashboard' }>(
+        `/gsd/projects/${encodeURIComponent(projectName)}/rollback-migration`,
+        { method: 'POST', body: JSON.stringify({}) }
+      ),
+
     tasks: {
       list: (projectKey: string, archived = false) =>
         request<{ tasks: GsdTask[] }>(
