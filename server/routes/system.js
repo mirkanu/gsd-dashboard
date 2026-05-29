@@ -72,6 +72,25 @@ function readProcesses() {
   }
 }
 
+function readDockerDf() {
+  try {
+    const out = execSync("docker system df --format '{{json .}}'", { timeout: 5000 }).toString().trim();
+    // docker system df --format '{{json .}}' outputs one JSON object per line
+    const lines = out.split("\n").filter(Boolean);
+    const entries = lines.map((line) => {
+      const obj = JSON.parse(line);
+      return {
+        type: obj.Type,          // "Images", "Containers", "Local Volumes", "Build Cache"
+        size: obj.Size,          // e.g. "13.8GB"
+        reclaimable: obj.Reclaimable, // e.g. "7.2GB (52%)"
+      };
+    });
+    return { entries, error: null };
+  } catch {
+    return { entries: [], error: "unavailable" };
+  }
+}
+
 router.get("/disk-detail", (_req, res) => {
   try {
     const dirs = [
@@ -91,6 +110,14 @@ router.get("/disk-detail", (_req, res) => {
       }
     });
     res.json(results);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.get("/docker-df", (_req, res) => {
+  try {
+    res.json(readDockerDf());
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
