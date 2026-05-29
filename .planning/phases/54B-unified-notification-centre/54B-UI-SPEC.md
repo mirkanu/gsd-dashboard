@@ -49,11 +49,13 @@ Exceptions: **None** — all spacing adheres to 4px grid per existing project pa
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 (regular) | 1.5 |
-| Label | 12px | 500 (medium) | 1.4 |
+| Label | 12px | 600 (semibold) | 1.4 |
 | Heading | 18px | 600 (semibold) | 1.2 |
 | Display | 20px | 600 (semibold) | 1.1 |
 
 **Font family:** Inter for all text. JetBrains Mono for code/timestamps in notification preview.
+
+**Font weights (maximum 2):** 400 (regular) for body text, 600 (semibold) for Label, Heading, and Display.
 
 **Line height ratios (unitless):** Body 1.5, Label 1.4, Heading 1.2, Display 1.1 — calculated to 21px, 17px, 21.6px, 22px respectively.
 
