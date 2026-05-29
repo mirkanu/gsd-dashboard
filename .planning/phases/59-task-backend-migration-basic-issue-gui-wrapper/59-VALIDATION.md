@@ -17,7 +17,7 @@ created: 2026-05-28
 
 | Property | Value |
 |----------|-------|
-| **Framework** | Jest (server) + Vitest (client) |
+| **Framework** | node:test (server) + Vitest (client) |
 | **Config file** | `package.json` (jest/vitest config) |
 | **Quick run command** | `npm run test:server` |
 | **Full suite command** | `npm run test:server && npm run test:client` |
@@ -58,7 +58,7 @@ created: 2026-05-28
 - [ ] `client/src/components/__tests__/TasksTab.test.tsx` — stubs for dashboard vs. github backend branches
 - [ ] `client/src/components/__tests__/StageTransitionModal.test.tsx` — stub for migration step in Beta→Launched flow
 
-*Note: Jest and Vitest infrastructure already present — no new framework installs needed.*
+*Note: node:test and Vitest infrastructure already present — no new framework installs needed.*
 
 ---
 
