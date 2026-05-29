@@ -55,6 +55,10 @@ function loadConfigWithBackfill() {
       p.stageUpdatedAt = new Date().toISOString();
       dirty = true;
     }
+    if (!p.task_backend) {
+      p.task_backend = 'dashboard';
+      dirty = true;
+    }
   }
   if (dirty) saveConfig(config);
   return config;
@@ -978,6 +982,136 @@ router.patch('/projects/:key/tasks/:id', async (req, res) => {
     res.json(task);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update task', detail: err.message });
+  }
+});
+
+// Phase 59: Task migration — export Dashboard tasks to GitHub Issues
+router.post('/projects/:name/migrate', async (req, res) => {
+  if (GSD_DATA_URL) {
+    upstreamFetch(
+      `${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/migrate`,
+      { method: 'POST', body: JSON.stringify(req.body || {}), signal: AbortSignal.timeout(30000) }
+    )
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+
+  const { name } = req.params;
+  try {
+    // D-12: Dashboard itself cannot migrate
+    if (name === 'gsddashboard') {
+      return res.status(422).json({ error: 'GSD Dashboard cannot migrate its own tasks' });
+    }
+
+    const config = loadConfigWithBackfill();
+    const projectIndex = (config.projects || []).findIndex(p => p.name === name);
+    if (projectIndex === -1) return res.status(404).json({ error: 'Project not found' });
+
+    const project = config.projects[projectIndex];
+
+    // D-07: Prevent re-migration
+    if (project.task_backend === 'github') {
+      return res.status(409).json({ error: 'Tasks already migrated to GitHub' });
+    }
+
+    const { detectRepoUrl, createSnapshot, exportTasks } = require('../gsd/taskMigration');
+
+    // D-03: Only projects with GitHub remote are eligible
+    const repoUrl = await detectRepoUrl(project.root);
+    if (!repoUrl) {
+      return res.status(400).json({ error: 'No GitHub remote found in git config' });
+    }
+
+    // Require PAT before starting
+    const { getSecret } = require('../crypto');
+    const githubPat = getSecret('github_pat');
+    if (!githubPat) {
+      return res.status(422).json({ error: 'GitHub PAT not configured. Add it via the Credentials settings.' });
+    }
+
+    // D-10: Create snapshot BEFORE any GitHub writes
+    const snapshotPath = await createSnapshot(project.root, name);
+
+    // D-05: Export tasks with label source:dashboard-migration
+    const result = await exportTasks({ projectName: name, repoUrl, githubPat });
+
+    // D-07: Only flip backend if all tasks succeeded
+    if (result.failed.length === 0) {
+      project.task_backend = 'github';
+      project.github_repo = repoUrl;  // D-04: store repo URL from git remote
+      project.taskMigratedAt = new Date().toISOString();
+      saveConfig(config);
+
+      const { broadcast } = require('../websocket');
+      broadcast('task_backend_change', {
+        project: name,
+        task_backend: 'github',
+        github_repo: repoUrl,
+        taskMigratedAt: project.taskMigratedAt,
+      });
+    }
+
+    res.json({
+      success: result.failed.length === 0,
+      exported: result.exported.length,
+      failed: result.failed,
+      snapshotPath,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Migration failed', detail: err.message.split('\n')[0] });
+  }
+});
+
+// Phase 59: Rollback task migration — restore tasks from snapshot (D-11)
+router.post('/projects/:name/rollback-migration', async (req, res) => {
+  if (GSD_DATA_URL) {
+    upstreamFetch(
+      `${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/rollback-migration`,
+      { method: 'POST', body: JSON.stringify(req.body || {}), signal: AbortSignal.timeout(30000) }
+    )
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+
+  const { name } = req.params;
+  try {
+    const config = loadConfigWithBackfill();
+    const projectIndex = (config.projects || []).findIndex(p => p.name === name);
+    if (projectIndex === -1) return res.status(404).json({ error: 'Project not found' });
+
+    const project = config.projects[projectIndex];
+
+    if (project.task_backend !== 'github') {
+      return res.status(400).json({ error: 'Project is not using GitHub backend' });
+    }
+
+    // D-11: Enforce 7-day window server-side (client button is UX only)
+    const migratedAt = new Date(project.taskMigratedAt);
+    const daysSince = (Date.now() - migratedAt.getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSince > 7) {
+      return res.status(410).json({ error: 'Rollback window (7 days) has expired' });
+    }
+
+    const { restoreSnapshot } = require('../gsd/taskMigration');
+    await restoreSnapshot(project.root, name);
+
+    project.task_backend = 'dashboard';
+    project.github_repo = null;
+    project.taskMigratedAt = null;
+    saveConfig(config);
+
+    const { broadcast } = require('../websocket');
+    broadcast('task_backend_change', {
+      project: name,
+      task_backend: 'dashboard',
+      github_repo: null,
+    });
+
+    res.json({ success: true, task_backend: 'dashboard' });
+  } catch (err) {
+    res.status(500).json({ error: 'Rollback failed', detail: err.message.split('\n')[0] });
   }
 });
 
