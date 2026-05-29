@@ -223,17 +223,6 @@ export const api = {
         }),
     },
 
-    migrateTasksToGithub: (projectName: string) =>
-      request<{ success: boolean; task_backend: 'github'; migratedAt: string }>(
-        `/gsd/projects/${encodeURIComponent(projectName)}/migrate`,
-        { method: 'POST' }
-      ),
-
-    rollbackTaskMigration: (projectName: string) =>
-      request<{ success: boolean; task_backend: 'dashboard' }>(
-        `/gsd/projects/${encodeURIComponent(projectName)}/rollback-migration`,
-        { method: 'POST' }
-      ),
   },
 
   autopilot: {
