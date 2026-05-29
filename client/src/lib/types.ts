@@ -465,6 +465,21 @@ export interface RunCronResult {
   error?: string;
 }
 
+export interface DockerDfEntry {
+  type: string;
+  size: string;
+  reclaimable: string;
+}
+
+export interface DockerDf {
+  entries: DockerDfEntry[];
+  error: string | null;
+}
+
+export interface OomStatus {
+  earlyoom: "active" | "inactive";
+}
+
 export interface WSMessage {
   type:
     | "session_created"
