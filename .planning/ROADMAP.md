@@ -47,7 +47,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 56. CLI Verbosity Contract + Portfolio Feed | 3/3 | Complete    | 2026-05-09 |
 | 56B. Non-Programmer Behavioural Contract | 0/3 | Planned | - |
 | 58. Project Maturity Stages | 5/5 | Complete    | 2026-05-28 |
-| 54B. Unified Notification Centre | 4/4 | Complete   | 2026-05-30 |
+| 54B. Unified Notification Centre | 4/4 | Complete    | 2026-05-30 |
 | 59. Task Backend Migration + Issue GUI Wrapper | 4/4 | Complete   | 2026-05-29 |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
 | 62. Hetzner VPS Migration | 10/11 | Complete ✅ (v5.0) | 2026-05-08 |

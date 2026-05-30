@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.1
 milestone_name: Non-Programmer Mode
-status: executing
+status: ready_to_plan
 stopped_at: Phase 54B UI-SPEC approved
 last_updated: "2026-05-30T00:32:11.398Z"
 last_activity: 2026-05-30 -- Phase 54B execution started
 progress:
   total_phases: 10
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 32
   completed_plans: 29
-  percent: 91
+  percent: 80
 ---
 
 # Project State
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Phase: 54B (unified-notification-centre) — EXECUTING
-Plan: 1 of 4
+Phase: 56
+Plan: Not started
 Milestone: v5.1 Non-Programmer Mode
-Status: Executing Phase 54B
-Last activity: 2026-05-30 -- Phase 54B execution started
+Status: Ready to plan
+Last activity: 2026-05-30
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
