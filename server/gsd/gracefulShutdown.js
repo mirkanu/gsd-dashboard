@@ -2,7 +2,7 @@
 
 const { execFileSync } = require('child_process');
 const { isTmuxSessionActive, capturePaneText } = require('./tmux');
-const { sendNotification } = require('./telegram');
+// telegram.js kept available for DI injection (tests may pass sendNotification directly via notifyFn)
 
 const PAUSE_WORK_TIMEOUT_MS = 30_000;
 const POLL_INTERVAL_MS = 1_000;
@@ -43,7 +43,10 @@ async function _testGracefulShutdown(sessionName, projectName, opts = {}, fns = 
     sendKeysFn = _sendKeysToTmux,
     captureFn = capturePaneText,
     killFn = _killTmuxSession,
-    notifyFn = sendNotification,
+    notifyFn = (project, text) => {
+      const { notify } = require('./notificationCentre');
+      return notify('idle_session_closed', project, text);
+    },
     sleepFn = _sleep,
   } = fns;
 

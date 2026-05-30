@@ -147,6 +147,10 @@ async function _testPollOnce(
     };
     feedStore.pushEvent(waitingEntry);
     broadcastFn('feed_event', feedStore.getEvents()[0]);
+    if (!process.env.GSD_DATA_URL) {
+      const { notify } = require('./notificationCentre');
+      notify('waiting_input', project.name, `Waiting for input on ${displayName}`).catch(() => {});
+    }
   }
 
   // Regex-based landmark detection (plan_complete, verify_passed, verify_failed, phase_complete)
@@ -160,6 +164,10 @@ async function _testPollOnce(
       const displayName = project.display_name || project.name;
       feedStore.pushEvent({ ...landmark, projectDisplayName: displayName });
       broadcastFn('feed_event', feedStore.getEvents()[0]);
+      if (!process.env.GSD_DATA_URL && landmark) {
+        const { notify } = require('./notificationCentre');
+        notify(landmark.type, project.name, landmark.text).catch(() => {});
+      }
       // Update lastLandmarkAt on the snapshot (merge into existing entry)
       const current = snapshot.get(project.name);
       if (current) snapshot.set(project.name, { ...current, lastLandmarkAt: nowIso });

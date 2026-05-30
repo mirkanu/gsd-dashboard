@@ -8,7 +8,7 @@ const { resolveFile } = require("../gsd/fileResolver");
 const { isTmuxSessionActive, isTmuxSessionActiveAsync, capturePaneText, detectSessionState, detectRateLimit, extractStatusLine, extractCurrentTask, capturePaneTextAsync, detectSessionStateAsync, detectRateLimitAsync } = require('../gsd/tmux');
 const { getProjectStateSnapshot } = require('../gsd/stateBroadcaster');
 const { execFileSync, spawnSync } = require('child_process');
-const { sendNotification, parseOptions, shouldNotify, formatForTelegram, ENABLED: telegramEnabled } = require('../gsd/telegram');
+const { parseOptions, formatForTelegram } = require('../gsd/telegram');
 const { db, stmts } = require('../db');
 const { calculateCost } = require('./pricing');
 const { getTmuxCostForSession } = require('../gsd/costMeasurement');
@@ -158,24 +158,23 @@ router.get("/projects", async (_req, res) => {
         const idleMs = now - new Date(row.updated_at).getTime();
         if (idleMs > IDLE_PAUSED_MS) sessionState = 'paused';
       }
-      // Detect state transitions and send Telegram notifications
-      if (telegramEnabled && tmux_session) {
+      // Detect state transitions and route through NotificationCentre
+      if (tmux_session && !GSD_DATA_URL) {
         const prevState = previousStates.get(name);
         previousStates.set(name, sessionState);
 
         if (prevState && prevState !== sessionState) {
           // working → waiting/paused: Claude stopped, user input may be needed
           if (prevState === 'working' && (sessionState === 'waiting' || sessionState === 'paused')) {
-            if (shouldNotify(name)) {
-              const paneText = await capturePaneTextAsync(tmux_session);
-              const options = paneText ? parseOptions(paneText) : [];
-              const label = sessionState === 'waiting' ? 'is waiting for your input' : 'has paused';
-              const cleanText = paneText ? formatForTelegram(paneText) : '';
-              const body = cleanText
-                ? `${label}:\n\n${cleanText}`
-                : label;
-              sendNotification(name, body, options).catch(() => {});
-            }
+            const { notify } = require('../gsd/notificationCentre');
+            const paneText = await capturePaneTextAsync(tmux_session);
+            const options = paneText ? parseOptions(paneText) : [];
+            const label = sessionState === 'waiting' ? 'is waiting for your input' : 'has paused';
+            const cleanText = paneText ? formatForTelegram(paneText) : '';
+            const body = cleanText
+              ? `${label}:\n\n${cleanText}`
+              : label;
+            notify('waiting_input', name, body, options).catch(() => {});
           }
         }
       }
