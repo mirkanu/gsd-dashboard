@@ -51,6 +51,7 @@ const servicesRulesRouter = require("./routes/services-rules");
 const appSettingsRouter = require("./routes/app-settings");
 const webhooksEmailRouter = require("./routes/webhooks-email");
 const configRouter = require("./routes/config");
+const notificationsRouter = require("./routes/notifications");
 const feedRouter = require("./routes/feed");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
@@ -132,6 +133,7 @@ function createApp() {
   app.use("/api/app-settings", appSettingsRouter);
   app.use("/api/webhooks/email", webhooksEmailRouter);
   app.use("/api/config", configRouter);
+  app.use("/api/notifications", notificationsRouter);
   app.use("/api/projects", projectsRouter);
   app.use("/api/docker", dockerOpsRouter);
   app.use("/api/system", systemRouter);
