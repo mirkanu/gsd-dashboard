@@ -80,13 +80,6 @@ function Toggle({
 
 // ─── Alert type definitions ──────────────────────────────────────────────────
 
-const ALERT_TYPES: { key: string; label: string }[] = [
-  { key: "state_change", label: "Session state changes" },
-  { key: "error", label: "Error notifications" },
-  { key: "completion", label: "Session completed" },
-  { key: "waiting_input", label: "Waiting for input" },
-];
-
 // ─── Main component ─────────────────────────────────────────────────────────
 
 export function ConfigPage() {
@@ -337,13 +330,6 @@ export function ConfigPage() {
     saveSettings({ verbosity: v }, "verbosity");
   };
 
-  const handleAlertToggle = (key: string, value: boolean) => {
-    if (!settings) return;
-    const newAlerts = { ...settings.telegram_alerts, [key]: value };
-    setSettings({ ...settings, telegram_alerts: newAlerts });
-    saveSettings({ telegram_alerts: newAlerts }, key);
-  };
-
   const handleGsdToggle = (key: 'suppress_context_reask' | 'suppress_plan_ceremony', value: boolean) => {
     if (!settings) return;
     setSettings({ ...settings, [key]: value });
@@ -560,45 +546,6 @@ export function ConfigPage() {
             )}
           </div>
 
-          {/* Telegram Alerts */}
-          <div className="bg-surface-2 border border-border rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Bell className="w-4 h-4 text-gray-400" />
-              <h2 className="text-sm font-semibold text-gray-200">
-                Telegram Alerts
-              </h2>
-            </div>
-
-            {settingsLoading ? (
-              <SettingsSkeleton />
-            ) : (
-              <div className="space-y-1">
-                {ALERT_TYPES.map(({ key, label }) => (
-                  <div key={key} className="flex items-center">
-                    <Toggle
-                      checked={settings?.telegram_alerts?.[key] ?? false}
-                      onChange={(v) => handleAlertToggle(key, v)}
-                      label={label}
-                    />
-                    {settingsSaved === key && (
-                      <span className="flex items-center gap-1 text-emerald-400 text-xs ml-2 flex-shrink-0">
-                        <Check className="w-3 h-3" />
-                      </span>
-                    )}
-                  </div>
-                ))}
-                <p className="text-xs text-gray-600 mt-3">
-                  Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID environment
-                  variables to be set on the server.
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Notification settings have moved to the <strong>Notifications</strong> section below.
-                  Your existing preferences were preserved.
-                </p>
-              </div>
-            )}
-          </div>
-
           {/* Idle Auto-Close */}
           <div className="bg-surface-2 border border-border rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2 mb-1">
@@ -704,8 +651,8 @@ export function ConfigPage() {
               Apply to all existing projects?
             </h3>
             <p className="text-sm text-gray-400 mb-5">
-              This will override the current verbosity and Telegram alert
-              settings for every existing project with your new global defaults.
+              This will override the current verbosity settings for every
+              existing project with your new global defaults.
               This cannot be undone.
             </p>
             <div className="flex justify-end gap-2">
