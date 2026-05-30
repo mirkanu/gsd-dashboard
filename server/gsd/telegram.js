@@ -106,6 +106,10 @@ async function apiCall(method, payload) {
 }
 
 /**
+ * @deprecated Use notificationCentre.notify() instead.
+ * Direct calls bypass policy evaluation, rate limiting, and quiet hours.
+ * This export is kept for: (1) test injection via DI, (2) POST /api/notifications/test route.
+ *
  * Send a notification to Telegram.
  * @param {string} projectName
  * @param {string} text

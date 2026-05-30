@@ -55,7 +55,7 @@ const notificationsRouter = require("./routes/notifications");
 const feedRouter = require("./routes/feed");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
-const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled, sendNotification } = require("./gsd/telegram");
+const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
 const { authRouter, isValidToken } = require("./routes/auth");
 const projectsRouter = require("./routes/projects");
 const dockerOpsRouter = require("./routes/docker-ops");
@@ -209,6 +209,63 @@ function startServer(app, port) {
   });
 }
 
+// Phase 54B: migrate Phase 42 telegram_alerts to notification_policy (one-time, idempotent)
+function migratePhase42Notifications() {
+  try {
+    const { stmts, getGlobalSettings } = require('./db');
+    const { EVENT_DEFAULTS } = require('./gsd/notificationCentre');
+
+    // Skip if already migrated
+    const existing = stmts.getNotificationPolicy.get();
+    if (existing && existing.archived_legacy_alerts === 1) return;
+
+    // Read legacy global settings
+    const globalSettings = getGlobalSettings();
+    const legacyAlerts = globalSettings.telegram_alerts || {};
+
+    // Build event_toggles from legacy values
+    const MAP = {
+      state_change:   'waiting_input',
+      completion:     'plan_complete',
+      error:          'verify_failed',
+      waiting_input:  'waiting_input',
+      taskComplete:   'plan_complete',
+      waitingOnUser:  'waiting_input',
+    };
+
+    const event_toggles = {};
+    // Start from defaults
+    for (const [key, def] of Object.entries(EVENT_DEFAULTS)) {
+      event_toggles[key] = def.enabled;
+    }
+    // Override with legacy values
+    for (const [oldKey, newType] of Object.entries(MAP)) {
+      if (legacyAlerts[oldKey] === true && newType in event_toggles) {
+        event_toggles[newType] = true;
+      } else if (legacyAlerts[oldKey] === false && newType in event_toggles) {
+        event_toggles[newType] = false;
+      }
+    }
+
+    // Insert/update notification_policy (archived_legacy_alerts = 0 initially)
+    // It becomes 1 after first successful delivery — not set here
+    stmts.upsertNotificationPolicy.run(
+      1,                           // enabled
+      null,                        // quiet_hours_from
+      null,                        // quiet_hours_to
+      5,                           // rate_limit_per_hour
+      JSON.stringify(event_toggles),
+      0,                           // archived_legacy_alerts (stays 0 until first delivery)
+    );
+
+    console.log('[54B] Migrated Phase 42 telegram_alerts to notification_policy');
+  } catch (err) {
+    console.warn('[54B] Phase 42 migration skipped:', err.message);
+  }
+}
+
+migratePhase42Notifications();
+
 if (require.main === module) {
   const PORT = parseInt(process.env.PORT || process.env.DASHBOARD_PORT || "4820", 10);
 
@@ -322,20 +379,18 @@ if (require.main === module) {
             lastDiskAlertLevel = 2;
             console.error(`[CRITICAL] Disk at ${diskPct}% — SQLite write failures imminent`);
             broadcast("system:disk-warning", { pct: diskPct, level: "critical" });
-            if (telegramEnabled) {
-              sendNotification('dashboard',
-                `[CRITICAL] Disk at ${diskPct}% on VPS — SQLite write failures imminent. Emergency: pm2 flush && truncate -s 0 /home/services/gsddashboard/logs/gsd-tunnel.log`
-              );
-            }
+            const { notify: _notifyCrit } = require('./gsd/notificationCentre');
+            _notifyCrit('system_alert', 'dashboard',
+              `[CRITICAL] Disk at ${diskPct}% on VPS — SQLite write failures imminent. Emergency: pm2 flush && truncate -s 0 /home/services/gsddashboard/logs/gsd-tunnel.log`
+            ).catch(() => {});
           } else if (diskPct >= 85 && lastDiskAlertLevel < 1) {
             lastDiskAlertLevel = 1;
             console.warn(`[maintenance] Disk at ${diskPct}% — warning threshold crossed`);
             broadcast("system:disk-warning", { pct: diskPct, level: "warning" });
-            if (telegramEnabled) {
-              sendNotification('dashboard',
-                `Warning: Disk at ${diskPct}% on VPS — approaching full. Run node scripts/prune-old-data.js to free space.`
-              );
-            }
+            const { notify: _notifyWarn } = require('./gsd/notificationCentre');
+            _notifyWarn('system_alert', 'dashboard',
+              `Warning: Disk at ${diskPct}% on VPS — approaching full. Run node scripts/prune-old-data.js to free space.`
+            ).catch(() => {});
           } else if (diskPct < 80 && lastDiskAlertLevel > 0) {
             lastDiskAlertLevel = 0;
             console.log(`[maintenance] Disk at ${diskPct}% — disk alert cleared`);
