@@ -47,7 +47,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 56. CLI Verbosity Contract + Portfolio Feed | 3/3 | Complete    | 2026-05-09 |
 | 56B. Non-Programmer Behavioural Contract | 0/3 | Planned | - |
 | 58. Project Maturity Stages | 5/5 | Complete    | 2026-05-28 |
-| 54B. Unified Notification Centre | 1/4 | In Progress|  |
+| 54B. Unified Notification Centre | 3/4 | In Progress|  |
 | 59. Task Backend Migration + Issue GUI Wrapper | 4/4 | Complete   | 2026-05-29 |
 | 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
 | 62. Hetzner VPS Migration | 10/11 | Complete ✅ (v5.0) | 2026-05-08 |
@@ -260,8 +260,8 @@ Plans:
 - [x] 54B-01-PLAN.md — DB schema migrations (notification_policy, notification_log, project_settings columns) + notificationCentre.js module (policy engine, rate limit, quiet hours, dedup)
 
 **Wave 2** *(parallel, blocked on 54B-01)*
-- [ ] 54B-02-PLAN.md — API routes: GET/PUT /api/notifications/policy + POST /api/notifications/test + proxy.js prefix + server/index.js mount
-- [ ] 54B-03-PLAN.md — Frontend: api.ts notifications namespace + NotificationPolicyPanel.tsx + ConfigPage Notifications tab
+- [x] 54B-02-PLAN.md — API routes: GET/PUT /api/notifications/policy + POST /api/notifications/test + proxy.js prefix + server/index.js mount
+- [x] 54B-03-PLAN.md — Frontend: api.ts notifications namespace + NotificationPolicyPanel.tsx + ConfigPage Notifications tab
 
 **Wave 3** *(blocked on 54B-02 + 54B-03)*
 - [ ] 54B-04-PLAN.md — Call site migration: gsd.js, gracefulShutdown.js, stateBroadcaster.js, index.js disk alerts + Phase 42 startup migration + telegram.js JSDoc deprecation
