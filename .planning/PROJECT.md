@@ -67,7 +67,7 @@ A terminal-first web dashboard for managing multiple Claude Code GSD projects fr
 - ✓ Idle session cost controls: RSS → $/day cost measurement; graceful pause on waiting idle; Railway $/day surfaced on Services; Config page Idle Auto-Close section — v4.3
 - ✓ Idle detector busy-work awareness: Claude Code hook-sourced busy markers prevent auto-close of sessions waiting on in-flight bg work; state reads "Working" when busy; JSONL audit log + weekly disk-prune sweep — v4.3 (Phase 49 + quick task 260418-khw)
 - ✓ Hetzner VPS migration: all 7 services moved from Railway (~$120/month) to Hetzner CAX21 ARM (€5/month); Cloudflare Tunnel + gsdlabs.dev subdomains; Railway account deleted 2026-05-08 — v5.0 (Phase 62)
-- ✓ VPS management tooling: Cockpit at cockpit.gsdlabs.dev, Portainer at portainer.gsdlabs.dev, Server stats page in GSD Dashboard sidebar — v5.0 (Phases 67–69)
+- ✓ VPS management tooling: Cockpit, Portainer, Server stats page in GSD Dashboard sidebar — v5.0 (Phases 67–69)
 - ✓ Non-root claude user: PM2/Docker/SSH/Claude config migrated; --dangerously-skip-permissions works; isRoot workaround removed; all GitHub Actions deploy workflows deleted — v5.0 (Phase 70)
 - ✓ CLAUDE.md-first automation: removed server-side maybeStartVerify trigger and Autopilot auto-dispatch; Dashboard is passive observer — v5.0 (Phase 71)
 - ✓ Disk full prevention: pm2-logrotate, cloudflared warn-level logging, WAL checkpoint, weekly data pruning, disk monitoring + Telegram alerts, DISK-RUNBOOK.md — v5.0 (Phase 72)
@@ -141,8 +141,8 @@ v4.2 lessons:
 
 - **Tech stack**: Fork of Claude Code Agent Monitor — React frontend, Express backend, must stay compatible
 - **Data source**: Read-only filesystem access to `.planning/` directories on the same machine
-- **Deployment**: Hetzner CAX21 ARM VPS (Helsinki) with Cloudflare named tunnel; all services at *.gsdlabs.dev; runs as `claude` OS user under PM2 + systemd
-- **Memory**: Hetzner VPS (8GB RAM); pm2-logrotate + weekly SQLite pruning prevent disk exhaustion
+- **Deployment**: Hetzner VPS with Cloudflare named tunnel; all services at *.gsdlabs.dev; PM2 + systemd
+- **Memory**: VPS with limited RAM; pm2-logrotate + weekly SQLite pruning prevent disk exhaustion
 
 ## Current Milestone: v5.1 Non-Programmer Mode
 
