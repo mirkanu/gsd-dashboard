@@ -31,6 +31,7 @@
 - Frontend changes: run `npm run test:client` when relevant.
 - MCP changes: run `npm run mcp:typecheck` and `npm run mcp:build`.
 - If you cannot run a verification step, state exactly what was not run and why.
+- **Playwright UAT order**: deploy first (`npm run build` is a stub — use `cd client && npx vite build`, then `pm2 restart gsd-dashboard`), then run Playwright against **https://dashboard.gsdlabs.dev** (the live Cloudflare tunnel), not localhost. Testing localhost before deploying does not verify the user's actual experience.
 
 ## Change guidelines by area
 - API routes: preserve response shapes unless change is requested and documented.
