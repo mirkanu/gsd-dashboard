@@ -82,7 +82,7 @@ A terminal-first web dashboard for managing multiple Claude Code GSD projects fr
 - [ ] CLI verbosity contract + Portfolio Feed: reduce CLI output; extract landmark events into Dashboard cards without replacing the terminal — Phase 56
 - [ ] Non-programmer behavioural contract: Claude never asks the user to do programmer things; behavioural eval against 20 representative prompts; user-testing checkpoint — Phase 56B
 - [ ] Project maturity stages (draft/alpha/beta/launched/maintenance/retired) with stage-appropriate Dashboard defaults and GUI transition wizard — Phase 58
-- [ ] Unified notification centre: single Dashboard-owned Telegram sender, event-bus driven, rate-limited + deduplicated + quiet-hours policy; old tmux-level Telegram removed — Phase 54B
+- ✓ Unified notification centre: single Dashboard-owned Telegram sender, event-bus driven, rate-limited + deduplicated + quiet-hours policy; old tmux-level Telegram removed — Phase 54B (Validated in Phase 54B)
 - [ ] Task backend migration + issue GUI wrapper: Beta→Launched migrates tasks to GitHub Issues; Dashboard-native issue list/detail/create/close — Phase 59
 - [ ] Dev/production environment manager: Beta→Launched provisions dev + prod envs on Railway; GUI "Promote dev → prod" button with verify-work gating; one-click rollback — Phase 60
 
