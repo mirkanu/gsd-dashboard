@@ -247,15 +247,14 @@ function migratePhase42Notifications() {
       }
     }
 
-    // Insert/update notification_policy (archived_legacy_alerts = 0 initially)
-    // It becomes 1 after first successful delivery — not set here
+    // Insert/update notification_policy (archived_legacy_alerts = 1 so this migration never re-runs)
     stmts.upsertNotificationPolicy.run(
       1,                           // enabled
       null,                        // quiet_hours_from
       null,                        // quiet_hours_to
       5,                           // rate_limit_per_hour
       JSON.stringify(event_toggles),
-      0,                           // archived_legacy_alerts (stays 0 until first delivery)
+      1,                           // archived_legacy_alerts — set to 1 so this migration never re-runs
     );
 
     console.log('[54B] Migrated Phase 42 telegram_alerts to notification_policy');
