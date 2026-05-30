@@ -463,6 +463,53 @@ try {
   `);
 }
 
+// Migration: notification_policy table (Phase 54B)
+try {
+  db.prepare('SELECT 1 FROM notification_policy LIMIT 1').get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS notification_policy (
+      key TEXT PRIMARY KEY DEFAULT '__global__',
+      enabled INTEGER NOT NULL DEFAULT 1,
+      quiet_hours_from TEXT,
+      quiet_hours_to TEXT,
+      rate_limit_per_hour INTEGER NOT NULL DEFAULT 5,
+      event_toggles TEXT NOT NULL DEFAULT '{}',
+      archived_legacy_alerts INTEGER NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+  `);
+}
+
+// Migration: notification_log table (Phase 54B)
+try {
+  db.prepare('SELECT 1 FROM notification_log LIMIT 1').get();
+} catch {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS notification_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_type TEXT NOT NULL,
+      project_name TEXT,
+      message_text TEXT,
+      delivered INTEGER NOT NULL DEFAULT 0,
+      suppress_reason TEXT,
+      created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_notification_log_type_project
+      ON notification_log(event_type, project_name, created_at);
+  `);
+}
+
+// Migration: notification override columns in project_settings (Phase 54B)
+try {
+  db.prepare('SELECT notification_enabled FROM project_settings LIMIT 1').get();
+} catch {
+  db.exec(`
+    ALTER TABLE project_settings ADD COLUMN notification_enabled INTEGER;
+    ALTER TABLE project_settings ADD COLUMN notification_quiet_override INTEGER NOT NULL DEFAULT 0;
+  `);
+}
+
 // Startup cleanup: mark stale active sessions as completed.
 // Legacy sessions (created before SessionEnd hook) will never receive a SessionEnd event,
 // so they stay "active" forever. Complete any active session whose last event is older than
@@ -726,6 +773,32 @@ const stmts = {
     `UPDATE project_settings
      SET verbosity = ?, telegram_alerts = ?, updated_at = ?
      WHERE project_key != '__global__'`
+  ),
+
+  // Notification policy (Phase 54B)
+  getNotificationPolicy: db.prepare(
+    `SELECT * FROM notification_policy WHERE key = '__global__'`
+  ),
+  upsertNotificationPolicy: db.prepare(
+    `INSERT INTO notification_policy (key, enabled, quiet_hours_from, quiet_hours_to, rate_limit_per_hour, event_toggles, archived_legacy_alerts, updated_at)
+     VALUES ('__global__', ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+     ON CONFLICT(key) DO UPDATE SET
+       enabled = excluded.enabled,
+       quiet_hours_from = excluded.quiet_hours_from,
+       quiet_hours_to = excluded.quiet_hours_to,
+       rate_limit_per_hour = excluded.rate_limit_per_hour,
+       event_toggles = excluded.event_toggles,
+       archived_legacy_alerts = COALESCE(excluded.archived_legacy_alerts, archived_legacy_alerts),
+       updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`
+  ),
+  insertNotificationLog: db.prepare(
+    `INSERT INTO notification_log (event_type, project_name, message_text, delivered, suppress_reason)
+     VALUES (?, ?, ?, ?, ?)`
+  ),
+  getRecentNotificationLog: db.prepare(
+    `SELECT id FROM notification_log
+     WHERE event_type = ? AND project_name = ? AND delivered = 1 AND created_at > ?
+     LIMIT 1`
   ),
 };
 

@@ -4,8 +4,8 @@ milestone: v5.1
 milestone_name: Non-Programmer Mode
 status: executing
 stopped_at: Phase 54B UI-SPEC approved
-last_updated: "2026-05-29T22:23:45.805Z"
-last_activity: 2026-05-29 -- Phase 54B planning complete
+last_updated: "2026-05-30T00:32:11.398Z"
+last_activity: 2026-05-30 -- Phase 54B execution started
 progress:
   total_phases: 10
   completed_phases: 7
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
-**Current focus:** Phase 73 — volume-lifecycle-management
+**Current focus:** Phase 54B — unified-notification-centre
 
 ## Current Position
 
-Phase: 73 (volume-lifecycle-management) — EXECUTING
-Plan: 1 of 2
+Phase: 54B (unified-notification-centre) — EXECUTING
+Plan: 1 of 4
 Milestone: v5.1 Non-Programmer Mode
-Status: Ready to execute
-Last activity: 2026-05-29 -- Phase 54B planning complete
+Status: Executing Phase 54B
+Last activity: 2026-05-30 -- Phase 54B execution started
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
