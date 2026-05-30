@@ -26,6 +26,14 @@ import type {
   UsageWindow,
 } from "./types";
 
+export interface NotificationPolicy {
+  enabled: boolean;
+  quiet_hours_from: string | null;
+  quiet_hours_to: string | null;
+  rate_limit_per_hour: number;
+  event_toggles: Record<string, boolean>;
+}
+
 const BASE = "/api";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -255,6 +263,18 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ projectName }),
       }),
+  },
+
+  notifications: {
+    getPolicy: () =>
+      request<{ policy: NotificationPolicy }>('/notifications/policy'),
+    savePolicy: (policy: Partial<NotificationPolicy>) =>
+      request<{ ok: boolean; policy: NotificationPolicy }>('/notifications/policy', {
+        method: 'PUT',
+        body: JSON.stringify(policy),
+      }),
+    sendTest: () =>
+      request<{ ok: boolean }>('/notifications/test', { method: 'POST' }),
   },
 
   config: {
