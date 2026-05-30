@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
-**Current focus:** Phase 54B — unified-notification-centre
+**Current focus:** Phase 56 — CLI Verbosity Contract + Portfolio Feed
 
 ## Current Position
 
@@ -29,7 +29,7 @@ Phase: 56
 Plan: Not started
 Milestone: v5.1 Non-Programmer Mode
 Status: Ready to plan
-Last activity: 2026-05-30
+Last activity: 2026-05-30 - Completed quick task 260530-c4s: rebuild client dist, fix WR-01, Playwright UAT passed
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
@@ -152,6 +152,7 @@ None.
 | 47 | Fix terminal send-to-tmux missing Enter / iOS keyboard guard | 2026-04-16 | abf19db | [47-fix-terminal-send-to-tmux-missing-enter-](./quick/47-fix-terminal-send-to-tmux-missing-enter-/) |
 | 48 | Stop Re-open Tmux from auto-sending /gsd-resume-work | 2026-04-17 | 78ffe2b | [48-stop-reopen-tmux-auto-resume-work](./quick/48-stop-reopen-tmux-auto-resume-work/) |
 | 260417-rqs | Fix auto-close/pause settings not persisting after reload | 2026-04-17 | 8908a02 | [260417-rqs-fix-auto-close-pause-settings-not-persis](./quick/260417-rqs-fix-auto-close-pause-settings-not-persis/) |
+| 260530-c4s | Rebuild client dist, fix WR-01, Playwright UAT on /config | 2026-05-30 | 6f6bbd1 | [260530-c4s-rebuild-client-dist-fix-wr-01-run-playwr](./quick/260530-c4s-rebuild-client-dist-fix-wr-01-run-playwr/) |
 | Phase 43 P01 | 25min | 2 tasks | 2 files |
 | Phase 43 P02 | 15min | 2 tasks | 4 files |
 | Phase 43 P03 | ~13min | 3 tasks | 7 files |
