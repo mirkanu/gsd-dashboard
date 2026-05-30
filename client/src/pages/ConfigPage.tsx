@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { api } from "../lib/api";
 import type { ProjectSettings, GsdProject } from "../lib/types";
+import { NotificationPolicyPanel } from "../components/NotificationPolicyPanel";
 
 // ─── Skeleton components ─────────────────────────────────────────────────────
 
@@ -590,6 +591,10 @@ export function ConfigPage() {
                   Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID environment
                   variables to be set on the server.
                 </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Notification settings have moved to the <strong>Notifications</strong> section below.
+                  Your existing preferences were preserved.
+                </p>
               </div>
             )}
           </div>
@@ -673,6 +678,15 @@ export function ConfigPage() {
           </div>
         </>
       )}
+
+      {/* Notification Policy */}
+      <div className="bg-surface-2 border border-border rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Bell className="w-4 h-4 text-gray-400" />
+          <h2 className="text-sm font-semibold text-gray-200">Notification Policy</h2>
+        </div>
+        <NotificationPolicyPanel />
+      </div>
 
       {/* Apply-to-all confirmation dialog */}
       {applyDialogOpen && (
