@@ -457,11 +457,11 @@ Plans:
 
 **Goal:** Make the /server page genuinely useful as a first-stop diagnostic tool. Fix visual issues, surface actionable system data, and align the UI with what's been built in the Hetzner repo (zram, crons, Docker per-project attribution).
 **Depends on:** Phase 73
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 74-01-PLAN.md — Backend: num_cpus in /system, GET /system/zram, GET /system/disk-attribution, extend CRON_WHITELIST (tmux-save, claude-code-update), TypeScript types + api.ts methods
+- [x] 74-01-PLAN.md — Backend: num_cpus in /system, GET /system/zram, GET /system/disk-attribution, extend CRON_WHITELIST (tmux-save, claude-code-update), TypeScript types + api.ts methods
 
 **Wave 2** *(parallel, blocked on 74-01)*
 - [ ] 74-02-PLAN.md — Frontend core: CPU load card (Avg%/Max%), RAM bar fix (bg-indigo-500), zram widget, disk attribution card, Top Processes sort toggle
