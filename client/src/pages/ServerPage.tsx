@@ -2,14 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { RefreshCw, Cpu, HardDrive, Activity, MemoryStick, Terminal } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
-import type { SystemStats, DiskDetailEntry, DiskWarningEvent, CronJobStatus, DockerDf, OomStatus, ZramStats } from "../lib/types";
+import type { SystemStats, DiskWarningEvent, CronJobStatus, DockerDf, OomStatus, ZramStats, DiskAttribution } from "../lib/types";
 
 export function ServerPage() {
   const [data, setData] = useState<SystemStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [diskDetail, setDiskDetail] = useState<DiskDetailEntry[]>([]);
   const [diskWarning, setDiskWarning] = useState<{ pct: number; level: string } | null>(null);
   const [cronJobs, setCronJobs] = useState<CronJobStatus[]>([]);
   const [cronRunning, setCronRunning] = useState<Record<string, boolean>>({});
@@ -18,6 +17,8 @@ export function ServerPage() {
   const [dockerDf, setDockerDf] = useState<DockerDf | null>(null);
   const [oomStatus, setOomStatus] = useState<OomStatus | null>(null);
   const [zramStats, setZramStats] = useState<ZramStats | null>(null);
+  const [diskAttribution, setDiskAttribution] = useState<DiskAttribution | null>(null);
+  const [sortMode, setSortMode] = useState<"cpu" | "mem">("cpu");
 
   const refresh = useCallback(async () => {
     try {
@@ -48,11 +49,11 @@ export function ServerPage() {
 
   useEffect(() => {
     refresh();
-    api.system.diskDetail().then(setDiskDetail).catch(() => {});
     api.system.cronStatus().then(setCronJobs).catch(() => {});
     api.system.dockerDf().then(setDockerDf).catch(() => {});
     api.system.oomStatus().then(setOomStatus).catch(() => {});
     api.system.zram().then(setZramStats).catch(() => {});
+    api.system.diskAttribution().then(setDiskAttribution).catch(() => {});
     const id = setInterval(() => {
       refresh();
       api.system.cronStatus().then(setCronJobs).catch(() => {});
@@ -78,6 +79,11 @@ export function ServerPage() {
 
   const ramPct = pct(data.memory.used_mb, data.memory.total_mb);
   const swapPct = pct(data.memory.swap_used_mb, data.memory.swap_total_mb);
+
+  const sortedProcesses = [...(data?.processes ?? [])].sort((a, b) => {
+    if (sortMode === "cpu") return parseFloat(b.cpu) - parseFloat(a.cpu);
+    return parseFloat(b.mem) - parseFloat(a.mem);
+  });
 
   return (
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
@@ -204,32 +210,44 @@ export function ServerPage() {
         <div className="flex items-center gap-2 p-4 font-medium border-b">
           <HardDrive className="h-4 w-4 text-muted-foreground" /> Disk Usage
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-muted-foreground border-b">
-                <th className="text-left p-3 font-normal">Mount</th>
-                <th className="text-right p-3 font-normal">Size</th>
-                <th className="text-right p-3 font-normal">Used</th>
-                <th className="text-right p-3 font-normal">Avail</th>
-                <th className="text-right p-3 font-normal">Use%</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.disk.map((d, i) => (
-                <tr key={i} className="border-b last:border-0 hover:bg-muted/30">
-                  <td className="p-3 font-mono">{d.mount}</td>
-                  <td className="p-3 text-right text-muted-foreground">{d.size}</td>
-                  <td className="p-3 text-right">{d.used}</td>
-                  <td className="p-3 text-right text-muted-foreground">{d.avail}</td>
-                  <td className="p-3 text-right">
-                    <span className={parseInt(d.pct) > 85 ? "text-destructive font-medium" : ""}>{d.pct}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+        {/* Total disk line — from df data (first non-loop mount) */}
+        {data.disk.length > 0 && (
+          <div className="px-4 py-2 text-sm font-medium border-b">
+            Total: {data.disk[0]?.used} used of {data.disk[0]?.size} ({data.disk[0]?.pct})
+          </div>
+        )}
+
+        {/* Per-project attribution rows */}
+        {diskAttribution == null ? (
+          <div className="px-4 py-3 text-sm text-muted-foreground">Loading attribution...</div>
+        ) : (
+          <div className="divide-y">
+            {diskAttribution.rows.map((row, i) => (
+              <div key={i} className="px-4 py-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className={`font-mono truncate ${row.project ? "" : "text-muted-foreground"}`}>
+                    {row.dir}
+                  </span>
+                  <span className={`tabular-nums shrink-0 ml-3 ${row.dir_error ? "text-muted-foreground italic" : "font-medium"}`}>
+                    {row.dir_error ? "unavailable" : (row.dir_size ?? "—")}
+                  </span>
+                </div>
+                {row.docker_size && (
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mt-0.5 pl-4">
+                    <span>└─ Docker</span>
+                    <span className="tabular-nums">{row.docker_size}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+            {/* Other: unattributed — shown as note */}
+            <div className="px-4 py-2 text-xs text-muted-foreground italic">
+              Other: see Docker subsection below for unattributed build cache / images
+            </div>
+          </div>
+        )}
+
         {/* Docker space breakdown — D-01, D-03 */}
         <div className="border-t">
           <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -269,8 +287,33 @@ export function ServerPage() {
 
       {/* Top processes */}
       <div className="rounded-lg border bg-card">
-        <div className="flex items-center gap-2 p-4 font-medium border-b">
-          <Activity className="h-4 w-4 text-muted-foreground" /> Top Processes (by Memory)
+        <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center gap-2 font-medium">
+            <Activity className="h-4 w-4 text-muted-foreground" />
+            Top Processes — sorted by {sortMode === "cpu" ? "CPU" : "RAM"} (refreshes every 30 seconds)
+          </div>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setSortMode("cpu")}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                sortMode === "cpu"
+                  ? "bg-indigo-500 text-white"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              CPU
+            </button>
+            <button
+              onClick={() => setSortMode("mem")}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                sortMode === "mem"
+                  ? "bg-indigo-500 text-white"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              RAM
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -284,7 +327,7 @@ export function ServerPage() {
               </tr>
             </thead>
             <tbody>
-              {data.processes.map((p, i) => (
+              {sortedProcesses.map((p, i) => (
                 <tr key={i} className="border-b last:border-0 hover:bg-muted/30">
                   <td className="p-3 font-mono text-muted-foreground">{p.pid}</td>
                   <td className="p-3">{p.user}</td>
@@ -297,25 +340,6 @@ export function ServerPage() {
           </table>
         </div>
       </div>
-
-      {/* Directory breakdown */}
-      {diskDetail.length > 0 && (
-        <div className="rounded-lg border bg-card">
-          <div className="flex items-center gap-2 p-4 font-medium border-b">
-            <HardDrive className="h-4 w-4 text-muted-foreground" /> Directory Breakdown
-          </div>
-          <div className="divide-y">
-            {diskDetail.map((d) => (
-              <div key={d.dir} className="flex items-center justify-between px-4 py-2 text-sm">
-                <span className="font-mono text-muted-foreground truncate">{d.dir}</span>
-                <span className={d.error ? "text-muted-foreground italic" : "font-medium tabular-nums"}>
-                  {d.error ? "unavailable" : d.size}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Maintenance — Cron Jobs */}
       <div className="rounded-lg border bg-card">
