@@ -453,8 +453,24 @@ Plans:
 
 ---
 
+### Phase 74: /server Page Overhaul
+
+**Goal:** Make the /server page genuinely useful as a first-stop diagnostic tool. Fix visual issues, surface actionable system data, and align the UI with what's been built in the Hetzner repo (zram, crons, Docker per-project attribution).
+**Depends on:** Phase 73
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+- [ ] 74-01-PLAN.md — Backend: num_cpus in /system, GET /system/zram, GET /system/disk-attribution, extend CRON_WHITELIST (tmux-save, claude-code-update), TypeScript types + api.ts methods
+
+**Wave 2** *(parallel, blocked on 74-01)*
+- [ ] 74-02-PLAN.md — Frontend core: CPU load card (Avg%/Max%), RAM bar fix (bg-indigo-500), zram widget, disk attribution card, Top Processes sort toggle
+- [ ] 74-03-PLAN.md — Frontend finish: Maintenance schedule inline display + Playwright visual regression (dark + light modes)
+
+---
+
 ## Seeds (parked ideas that may surface in v5.x)
 
 - **SEED-001** — AI-Guided CLAUDE.md Editor (former Phase 47; may surface if non-programmer mode needs a settings transparency surface)
-- **SEED-002** — Light/day theme contrast bug (former task #82; surface during next UI audit)
+- **SEED-002** — Light/day theme contrast bug (former task #82; surface during next UI audit) — resolved in Phase 74
 - **SEED-003** — MCP Tool Router / per-project MCP scoping (former Phase 55; dropped because global .env already handles credential distribution — revisit if Claude starts failing to use external services correctly despite having the keys)
