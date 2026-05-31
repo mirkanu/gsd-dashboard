@@ -141,6 +141,136 @@ router.get("/oom-status", (_req, res) => {
   }
 });
 
+// Path to project registry
+const GSD_PROJECTS_PATH = "/home/services/gsddashboard/gsd-projects.json";
+
+function readZram() {
+  try {
+    const stat = fs.readFileSync("/sys/block/zram0/mm_stat", "utf8").trim();
+    const parts = stat.split(/\s+/).map(Number);
+    const orig = parts[0] ?? 0;   // original uncompressed bytes
+    const compr = parts[1] ?? 0;  // compressed bytes stored
+    const savings_pct = orig > 0 ? Math.round((1 - compr / orig) * 100) : 0;
+    return {
+      available: true,
+      compressed_bytes: compr,
+      original_bytes: orig,
+      savings_pct,
+    };
+  } catch {
+    return { available: false, compressed_bytes: 0, original_bytes: 0, savings_pct: 0 };
+  }
+}
+
+router.get("/zram", (_req, res) => {
+  try {
+    res.json(readZram());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+function readDiskAttribution() {
+  // 1. Load project list
+  let projects = [];
+  try {
+    const raw = JSON.parse(fs.readFileSync(GSD_PROJECTS_PATH, "utf8"));
+    projects = (raw.projects || []).filter(p => p.root && p.root.startsWith("/"));
+  } catch {
+    // fallback: no projects known
+  }
+
+  // 2. Get docker volume sizes per project via name-prefix heuristic
+  let dockerSizeByProject = {};
+  try {
+    const dfOut = execSync(
+      "docker system df -v --format '{{json .}}'",
+      { timeout: 5000 }
+    ).toString().trim();
+    // docker system df -v outputs a single JSON object (not line-delimited)
+    const dfData = JSON.parse(dfOut);
+    // Volumes: Name, Size
+    const volumes = dfData.Volumes ?? [];
+    for (const proj of projects) {
+      const name = proj.name.toLowerCase();
+      let totalBytes = 0;
+      for (const vol of volumes) {
+        if ((vol.Name || "").toLowerCase().startsWith(name)) {
+          // parse size string like "1.2GB" or "500MB"
+          const s = vol.Size || "";
+          const gbM = s.match(/([\d.]+)\s*GB/i);
+          const mbM = s.match(/([\d.]+)\s*MB/i);
+          if (gbM) totalBytes += parseFloat(gbM[1]) * 1073741824;
+          else if (mbM) totalBytes += parseFloat(mbM[1]) * 1048576;
+        }
+      }
+      dockerSizeByProject[proj.name] = totalBytes;
+    }
+  } catch {
+    // docker unavailable or parse error — skip attribution
+  }
+
+  // 3. Build rows: one per project
+  const rows = [];
+
+  for (const proj of projects) {
+    let dirSize = null;
+    let dirError = null;
+    let dirBytes = 0;
+    try {
+      const out = execSync(`du -sb "${proj.root}" 2>/dev/null`, { timeout: 5000 }).toString().trim();
+      const parts = out.split(/\s+/);
+      dirBytes = parseInt(parts[0]) || 0;
+      // Human-readable for display
+      const hr = execSync(`du -sh "${proj.root}" 2>/dev/null`, { timeout: 3000 }).toString().trim().split(/\s+/)[0];
+      dirSize = hr || null;
+    } catch {
+      dirError = "unavailable";
+    }
+
+    const dockerBytes = dockerSizeByProject[proj.name] ?? 0;
+    const dockerSizeHuman = dockerBytes > 1073741824
+      ? (dockerBytes / 1073741824).toFixed(1) + "G"
+      : dockerBytes > 1048576
+      ? (dockerBytes / 1048576).toFixed(0) + "M"
+      : null;
+
+    rows.push({
+      project: proj.name,
+      dir: proj.root,
+      dir_size: dirSize,
+      dir_error: dirError,
+      docker_size: dockerSizeHuman,
+      docker_bytes: dockerBytes,
+    });
+  }
+
+  // 4. Add a static fallback for /home/services/docker-data (not under /data/home)
+  try {
+    const dockerDataOut = execSync('du -sh "/home/services/docker-data" 2>/dev/null', { timeout: 5000 }).toString().trim().split(/\s+/)[0];
+    rows.push({
+      project: null,
+      dir: "/home/services/docker-data",
+      dir_size: dockerDataOut || null,
+      dir_error: null,
+      docker_size: null,
+      docker_bytes: 0,
+    });
+  } catch {
+    rows.push({ project: null, dir: "/home/services/docker-data", dir_size: null, dir_error: "unavailable", docker_size: null, docker_bytes: 0 });
+  }
+
+  return { rows };
+}
+
+router.get("/disk-attribution", (_req, res) => {
+  try {
+    res.json(readDiskAttribution());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 const CRON_WHITELIST = {
   "docker-prune": {
     schedule: "Sun 4:00 AM",
@@ -161,6 +291,21 @@ const CRON_WHITELIST = {
     logFile: "/home/claude/.pm2/logs/memory-guard.log",
     cmd: "bash",
     args: ["/home/services/gsddashboard/scripts/memory-guard.sh"],
+    useSudo: false,
+  },
+  // WAL checkpoint: runs in-process every 20min via maintenance loop in server/index.js — not exposed here
+  "tmux-save": {
+    schedule: "*/15 * * * *",
+    logFile: "/home/claude/.tmux-sessions-cron.log",
+    cmd: "bash",
+    args: ["/home/services/gsddashboard/scripts/tmux-save.sh"],
+    useSudo: false,
+  },
+  "claude-code-update": {
+    schedule: "0 3 * * 1",
+    logFile: "/var/log/claude-code-update.log",
+    cmd: "npm",
+    args: ["install", "-g", "@anthropic-ai/claude-code"],
     useSudo: false,
   },
 };
@@ -224,6 +369,7 @@ router.get("/", (_req, res) => {
       load1: Math.round(load1 * 100) / 100,
       load5: Math.round(load5 * 100) / 100,
       load15: Math.round(load15 * 100) / 100,
+      num_cpus: os.cpus().length,
     },
     memory: {
       total_mb: Math.round(total / 1024 / 1024),
