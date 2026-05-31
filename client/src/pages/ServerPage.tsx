@@ -360,8 +360,8 @@ export function ServerPage() {
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="font-mono text-sm font-medium">{job.name}</span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground shrink-0">
-                      {job.schedule}
+                    <span className="text-xs text-muted-foreground font-mono shrink-0">
+                      Schedule: {job.schedule}
                     </span>
                     {job.lastRun && (
                       <span className="text-xs text-muted-foreground shrink-0">
