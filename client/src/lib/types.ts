@@ -406,6 +406,7 @@ export interface SystemCpuStats {
   load1: number;
   load5: number;
   load15: number;
+  num_cpus: number;
 }
 
 export interface SystemMemStats {
@@ -478,6 +479,26 @@ export interface DockerDf {
 
 export interface OomStatus {
   earlyoom: "active" | "inactive";
+}
+
+export interface ZramStats {
+  available: boolean;
+  compressed_bytes: number;
+  original_bytes: number;
+  savings_pct: number;
+}
+
+export interface DiskAttributionRow {
+  project: string | null;
+  dir: string;
+  dir_size: string | null;
+  dir_error: string | null;
+  docker_size: string | null;
+  docker_bytes: number;
+}
+
+export interface DiskAttribution {
+  rows: DiskAttributionRow[];
 }
 
 export interface WSMessage {

@@ -7,6 +7,7 @@ import type {
   CreateCostBody,
   CronJobStatus,
   DashboardEvent,
+  DiskAttribution,
   DiskDetailEntry,
   DockerDf,
   GsdProject,
@@ -24,6 +25,7 @@ import type {
   SystemStats,
   UsageHistory,
   UsageWindow,
+  ZramStats,
 } from "./types";
 
 export interface NotificationPolicy {
@@ -366,6 +368,8 @@ export const api = {
       }),
     dockerDf: () => request<DockerDf>("/system/docker-df"),
     oomStatus: () => request<OomStatus>("/system/oom-status"),
+    zram: () => request<ZramStats>("/system/zram"),
+    diskAttribution: () => request<DiskAttribution>("/system/disk-attribution"),
   },
 
   pricing: {
