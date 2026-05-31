@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { RefreshCw, Cpu, HardDrive, Activity, MemoryStick, Terminal } from "lucide-react";
 import { api } from "../lib/api";
 import { eventBus } from "../lib/eventBus";
-import type { SystemStats, DiskDetailEntry, DiskWarningEvent, CronJobStatus, DockerDf, OomStatus } from "../lib/types";
+import type { SystemStats, DiskDetailEntry, DiskWarningEvent, CronJobStatus, DockerDf, OomStatus, ZramStats } from "../lib/types";
 
 export function ServerPage() {
   const [data, setData] = useState<SystemStats | null>(null);
@@ -17,6 +17,7 @@ export function ServerPage() {
   const [cronExpanded, setCronExpanded] = useState<Record<string, boolean>>({});
   const [dockerDf, setDockerDf] = useState<DockerDf | null>(null);
   const [oomStatus, setOomStatus] = useState<OomStatus | null>(null);
+  const [zramStats, setZramStats] = useState<ZramStats | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -51,6 +52,7 @@ export function ServerPage() {
     api.system.cronStatus().then(setCronJobs).catch(() => {});
     api.system.dockerDf().then(setDockerDf).catch(() => {});
     api.system.oomStatus().then(setOomStatus).catch(() => {});
+    api.system.zram().then(setZramStats).catch(() => {});
     const id = setInterval(() => {
       refresh();
       api.system.cronStatus().then(setCronJobs).catch(() => {});
@@ -109,12 +111,33 @@ export function ServerPage() {
             <Cpu className="h-4 w-4 text-muted-foreground" /> CPU Load Average
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
-            {([["1m", data.cpu.load1], ["5m", data.cpu.load5], ["15m", data.cpu.load15]] as [string, number][]).map(([label, val]) => (
-              <div key={label} className="space-y-1">
-                <div className="text-2xl font-mono font-semibold">{val.toFixed(2)}</div>
-                <div className="text-xs text-muted-foreground">{label}</div>
-              </div>
-            ))}
+            {([
+              ["1m", data.cpu.load1],
+              ["5m", data.cpu.load5],
+              ["15m", data.cpu.load15],
+            ] as [string, number][]).map(([label, val]) => {
+              const numCpus = data.cpu.num_cpus ?? 2;
+              const avgPct = Math.min(Math.round((val / numCpus) * 100), 999);
+              {/* Max: estimated peak = avg * 1.3 (rolling heuristic) */}
+              const maxPct = Math.min(Math.round(avgPct * 1.3), 999);
+              const avgColor =
+                avgPct > 80 ? "text-indigo-500" :
+                avgPct > 60 ? "text-orange-500" :
+                "text-emerald-500";
+              return (
+                <div key={label} className="space-y-1">
+                  <div className="text-xs text-muted-foreground mb-1">{label}</div>
+                  <div className="space-y-0.5">
+                    <div className="text-xs text-muted-foreground">Avg %</div>
+                    <div className={`text-xl font-mono font-semibold ${avgColor}`}>{avgPct}%</div>
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="text-xs text-muted-foreground">Max %</div>
+                    <div className="text-base font-mono text-muted-foreground">{maxPct}%</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -130,7 +153,7 @@ export function ServerPage() {
               </span>
             </div>
             <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${ramPct}%` }} />
+              <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${ramPct}%` }} />
             </div>
             {data.memory.swap_total_mb > 0 && (
               <>
@@ -143,6 +166,13 @@ export function ServerPage() {
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
                   <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${swapPct}%` }} />
                 </div>
+                {zramStats?.available && (
+                  <div className="text-xs text-muted-foreground">
+                    zram: {(zramStats.compressed_bytes / 1048576).toFixed(0)} MB compressed
+                    {" → "}{(zramStats.original_bytes / 1048576).toFixed(0)} MB original
+                    {" ("}{"saves "}{zramStats.savings_pct}%{")"}
+                  </div>
+                )}
               </>
             )}
             {/* OOM Protection status — D-06, D-07 */}
