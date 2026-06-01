@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const os = require("os");
-const { execSync, execFile } = require("child_process");
+const { execSync, execFile, exec } = require("child_process");
 const fs = require("fs");
 
 const router = Router();
@@ -170,97 +170,73 @@ router.get("/zram", (_req, res) => {
   }
 });
 
-function readDiskAttribution() {
-  // 1. Load project list
-  let projects = [];
+const SERVICES_ROOT = "/home/services";
+const SKIP_DIRS = new Set(["lost+found", "services.bak", "docker-data", "containerd-data"]);
+let diskAttrCache = null;
+let diskAttrCacheTime = 0;
+const DISK_ATTR_TTL_MS = 60000;
+
+function bytesToHuman(bytes) {
+  if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1) + "G";
+  if (bytes >= 1048576) return (bytes / 1048576).toFixed(0) + "M";
+  if (bytes >= 1024) return Math.round(bytes / 1024) + "K";
+  return bytes + "B";
+}
+
+let diskAttrRefreshing = false;
+
+function parseDiskRows(stdout) {
+  let projectByName = {};
   try {
     const raw = JSON.parse(fs.readFileSync(GSD_PROJECTS_PATH, "utf8"));
-    projects = (raw.projects || []).filter(p => p.root && p.root.startsWith("/"));
-  } catch {
-    // fallback: no projects known
-  }
+    (raw.projects || []).forEach(p => { projectByName[p.name.toLowerCase()] = p.name; });
+  } catch {}
 
-  // 2. Get docker volume sizes per project via name-prefix heuristic
-  let dockerSizeByProject = {};
-  try {
-    const dfOut = execSync(
-      "docker system df -v --format '{{json .}}'",
-      { timeout: 5000 }
-    ).toString().trim();
-    // docker system df -v outputs a single JSON object (not line-delimited)
-    const dfData = JSON.parse(dfOut);
-    // Volumes: Name, Size
-    const volumes = dfData.Volumes ?? [];
-    for (const proj of projects) {
-      const name = proj.name.toLowerCase();
-      let totalBytes = 0;
-      for (const vol of volumes) {
-        if ((vol.Name || "").toLowerCase().startsWith(name)) {
-          // parse size string like "1.2GB" or "500MB"
-          const s = vol.Size || "";
-          const gbM = s.match(/([\d.]+)\s*GB/i);
-          const mbM = s.match(/([\d.]+)\s*MB/i);
-          if (gbM) totalBytes += parseFloat(gbM[1]) * 1073741824;
-          else if (mbM) totalBytes += parseFloat(mbM[1]) * 1048576;
-        }
-      }
-      dockerSizeByProject[proj.name] = totalBytes;
-    }
-  } catch {
-    // docker unavailable or parse error — skip attribution
-  }
-
-  // 3. Build rows: one per project
   const rows = [];
-
-  for (const proj of projects) {
-    let dirSize = null;
-    let dirError = null;
-    let dirBytes = 0;
-    try {
-      const out = execSync(`du -sb "${proj.root}" 2>/dev/null`, { timeout: 5000 }).toString().trim();
-      const parts = out.split(/\s+/);
-      dirBytes = parseInt(parts[0]) || 0;
-      // Human-readable for display
-      const hr = execSync(`du -sh "${proj.root}" 2>/dev/null`, { timeout: 3000 }).toString().trim().split(/\s+/)[0];
-      dirSize = hr || null;
-    } catch {
-      dirError = "unavailable";
-    }
-
-    const dockerBytes = dockerSizeByProject[proj.name] ?? 0;
-    const dockerSizeHuman = dockerBytes > 1073741824
-      ? (dockerBytes / 1073741824).toFixed(1) + "G"
-      : dockerBytes > 1048576
-      ? (dockerBytes / 1048576).toFixed(0) + "M"
-      : null;
-
+  for (const line of stdout.trim().split('\n')) {
+    const tab = line.indexOf('\t');
+    if (tab < 0) continue;
+    const bytes = parseInt(line.slice(0, tab)) || 0;
+    const dirPath = line.slice(tab + 1).trim();
+    if (dirPath === SERVICES_ROOT) continue;
+    const name = dirPath.split('/').pop();
+    if (SKIP_DIRS.has(name)) continue;
     rows.push({
-      project: proj.name,
-      dir: proj.root,
-      dir_size: dirSize,
-      dir_error: dirError,
-      docker_size: dockerSizeHuman,
-      docker_bytes: dockerBytes,
-    });
-  }
-
-  // 4. Add a static fallback for /home/services/docker-data (not under /data/home)
-  try {
-    const dockerDataOut = execSync('du -sh "/home/services/docker-data" 2>/dev/null', { timeout: 5000 }).toString().trim().split(/\s+/)[0];
-    rows.push({
-      project: null,
-      dir: "/home/services/docker-data",
-      dir_size: dockerDataOut || null,
+      project: projectByName[name.toLowerCase()] || null,
+      dir: dirPath,
+      dir_size: bytesToHuman(bytes),
+      dir_bytes: bytes,
       dir_error: null,
       docker_size: null,
       docker_bytes: 0,
     });
-  } catch {
-    rows.push({ project: null, dir: "/home/services/docker-data", dir_size: null, dir_error: "unavailable", docker_size: null, docker_bytes: 0 });
   }
-
+  rows.sort((a, b) => b.dir_bytes - a.dir_bytes);
   return { rows };
+}
+
+function triggerDiskAttrRefresh() {
+  if (diskAttrRefreshing) return;
+  diskAttrRefreshing = true;
+  exec(
+    `du -b --max-depth=1 "${SERVICES_ROOT}" 2>/dev/null`,
+    { timeout: 30000 },
+    (_err, stdout) => {
+      diskAttrRefreshing = false;
+      if (stdout) {
+        diskAttrCache = parseDiskRows(stdout);
+        diskAttrCacheTime = Date.now();
+      }
+    }
+  );
+}
+
+function readDiskAttribution() {
+  const now = Date.now();
+  if (!diskAttrCache || (now - diskAttrCacheTime) >= DISK_ATTR_TTL_MS) {
+    triggerDiskAttrRefresh();
+  }
+  return diskAttrCache || { rows: [] };
 }
 
 router.get("/disk-attribution", (_req, res) => {
