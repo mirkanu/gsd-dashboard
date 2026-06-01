@@ -123,24 +123,15 @@ export function ServerPage() {
               ["15m", data.cpu.load15],
             ] as [string, number][]).map(([label, val]) => {
               const numCpus = data.cpu.num_cpus ?? 2;
-              const avgPct = Math.min(Math.round((val / numCpus) * 100), 999);
-              {/* Max: estimated peak = avg * 1.3 (rolling heuristic) */}
-              const maxPct = Math.min(Math.round(avgPct * 1.3), 999);
-              const avgColor =
-                avgPct > 80 ? "text-indigo-500" :
-                avgPct > 60 ? "text-orange-500" :
+              const pct = Math.min(Math.round((val / numCpus) * 100), 999);
+              const color =
+                pct > 80 ? "text-indigo-500" :
+                pct > 60 ? "text-orange-500" :
                 "text-emerald-500";
               return (
                 <div key={label} className="space-y-1">
                   <div className="text-xs text-muted-foreground mb-1">{label}</div>
-                  <div className="space-y-0.5">
-                    <div className="text-xs text-muted-foreground">Avg %</div>
-                    <div className={`text-xl font-mono font-semibold ${avgColor}`}>{avgPct}%</div>
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="text-xs text-muted-foreground">Max %</div>
-                    <div className="text-base font-mono text-muted-foreground">{maxPct}%</div>
-                  </div>
+                  <div className={`text-xl font-mono font-semibold ${color}`}>{pct}%</div>
                 </div>
               );
             })}
@@ -219,8 +210,8 @@ export function ServerPage() {
         )}
 
         {/* Per-project attribution rows */}
-        {diskAttribution == null ? (
-          <div className="px-4 py-3 text-sm text-muted-foreground">Loading attribution...</div>
+        {diskAttribution == null || diskAttribution.rows.length === 0 ? (
+          <div className="px-4 py-3 text-sm text-muted-foreground">Loading attribution…</div>
         ) : (
           <div className="divide-y">
             {diskAttribution.rows.map((row, i) => (
