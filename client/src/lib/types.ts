@@ -407,6 +407,7 @@ export interface SystemCpuStats {
   load5: number;
   load15: number;
   num_cpus: number;
+  utilization?: { avg: number | null; min: number | null; max: number | null };
 }
 
 export interface SystemMemStats {

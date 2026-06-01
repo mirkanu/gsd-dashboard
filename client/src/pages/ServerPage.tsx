@@ -114,27 +114,41 @@ export function ServerPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border bg-card p-4 space-y-3">
           <div className="flex items-center gap-2 font-medium">
-            <Cpu className="h-4 w-4 text-muted-foreground" /> CPU Load Average
+            <Cpu className="h-4 w-4 text-muted-foreground" /> CPU
           </div>
-          <div className="grid grid-cols-3 gap-2 text-center">
+          {/* Real-time per-core utilization */}
+          {data.cpu.utilization?.avg != null ? (
+            <div className="grid grid-cols-3 gap-2 text-center">
+              {([
+                ["Min", data.cpu.utilization.min],
+                ["Avg", data.cpu.utilization.avg],
+                ["Max", data.cpu.utilization.max],
+              ] as [string, number | null][]).map(([label, val]) => {
+                const v = val ?? 0;
+                const color = v > 80 ? "text-indigo-500" : v > 60 ? "text-orange-500" : "text-emerald-500";
+                return (
+                  <div key={label} className="space-y-0.5">
+                    <div className="text-xs text-muted-foreground">{label} %</div>
+                    <div className={`text-xl font-mono font-semibold ${color}`}>{v}%</div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">Sampling…</div>
+          )}
+          {/* Load averages as context */}
+          <div className="grid grid-cols-3 gap-2 text-center border-t pt-2">
             {([
               ["1m", data.cpu.load1],
               ["5m", data.cpu.load5],
               ["15m", data.cpu.load15],
-            ] as [string, number][]).map(([label, val]) => {
-              const numCpus = data.cpu.num_cpus ?? 2;
-              const pct = Math.min(Math.round((val / numCpus) * 100), 999);
-              const color =
-                pct > 80 ? "text-indigo-500" :
-                pct > 60 ? "text-orange-500" :
-                "text-emerald-500";
-              return (
-                <div key={label} className="space-y-1">
-                  <div className="text-xs text-muted-foreground mb-1">{label}</div>
-                  <div className={`text-xl font-mono font-semibold ${color}`}>{pct}%</div>
-                </div>
-              );
-            })}
+            ] as [string, number][]).map(([label, val]) => (
+              <div key={label} className="space-y-0.5">
+                <div className="text-xs text-muted-foreground">{label} load</div>
+                <div className="text-sm font-mono text-muted-foreground">{val.toFixed(2)}</div>
+              </div>
+            ))}
           </div>
         </div>
 

@@ -5,6 +5,42 @@ const fs = require("fs");
 
 const router = Router();
 
+// Per-CPU utilization via /proc/stat snapshot delta
+let cpuSnapshot = null;
+function readProcStatCpus() {
+  const lines = fs.readFileSync("/proc/stat", "utf8").split("\n");
+  const cpus = {};
+  for (const line of lines) {
+    const m = line.match(/^(cpu\d*)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
+    if (!m) continue;
+    const [, name, user, nice, sys, idle, iowait, irq, softirq] = m;
+    const total = [user, nice, sys, idle, iowait, irq, softirq].reduce((a, b) => a + parseInt(b), 0);
+    cpus[name] = { idle: parseInt(idle) + parseInt(iowait), total };
+  }
+  return cpus;
+}
+function getCpuUtilization() {
+  const now = readProcStatCpus();
+  const result = { avg: null, min: null, max: null };
+  if (!cpuSnapshot) { cpuSnapshot = { snap: now, ts: Date.now() }; return result; }
+  const perCore = [];
+  for (const key of Object.keys(now)) {
+    if (key === "cpu") continue;
+    const prev = cpuSnapshot.snap[key];
+    if (!prev) continue;
+    const dIdle = now[key].idle - prev.idle;
+    const dTotal = now[key].total - prev.total;
+    if (dTotal <= 0) continue;
+    perCore.push(Math.round((1 - dIdle / dTotal) * 100));
+  }
+  cpuSnapshot = { snap: now, ts: Date.now() };
+  if (!perCore.length) return result;
+  result.avg = Math.round(perCore.reduce((a, b) => a + b, 0) / perCore.length);
+  result.min = Math.min(...perCore);
+  result.max = Math.max(...perCore);
+  return result;
+}
+
 function readSwap() {
   try {
     const meminfo = fs.readFileSync("/proc/meminfo", "utf8");
@@ -346,6 +382,7 @@ router.get("/", (_req, res) => {
       load5: Math.round(load5 * 100) / 100,
       load15: Math.round(load15 * 100) / 100,
       num_cpus: os.cpus().length,
+      utilization: getCpuUtilization(),
     },
     memory: {
       total_mb: Math.round(total / 1024 / 1024),
