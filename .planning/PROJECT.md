@@ -71,6 +71,7 @@ A terminal-first web dashboard for managing multiple Claude Code GSD projects fr
 - ✓ Non-root claude user: PM2/Docker/SSH/Claude config migrated; --dangerously-skip-permissions works; isRoot workaround removed; all GitHub Actions deploy workflows deleted — v5.0 (Phase 70)
 - ✓ CLAUDE.md-first automation: removed server-side maybeStartVerify trigger and Autopilot auto-dispatch; Dashboard is passive observer — v5.0 (Phase 71)
 - ✓ Disk full prevention: pm2-logrotate, cloudflared warn-level logging, WAL checkpoint, weekly data pruning, disk monitoring + Telegram alerts, DISK-RUNBOOK.md — v5.0 (Phase 72)
+- ✓ Server page overhaul: CPU cards show load% (not raw numbers), RAM bar indigo, zram widget, disk attribution from /home/services/* (async/cached), Maintenance inline schedule, 5-job cron whitelist — v5.1 (Phase 74)
 - ✓ Original-repo cleanup: stripped Sessions/SessionDetail/ActivityFeed/Kanban route, useNotifications, seed/import scripts, unused routes + schema — v5.1 (Phase 50.5)
 - ✓ GUI project creation + import: New Project wizard (name → repo → tmux → new-project interview), Import Existing Project with auto codebase analysis — v5.1 (Phase 51)
 - ✓ One-click project creation: POST /api/gsd/projects/create backend endpoint + NewProjectDialog frontend; optimistic card prepend with tmux controls — v5.1 (Phase 15)
