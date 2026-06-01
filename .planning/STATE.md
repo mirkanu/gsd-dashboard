@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.1
 milestone_name: Non-Programmer Mode
-status: verifying
+status: milestone_complete
 stopped_at: Completed 74-03-PLAN.md
 last_updated: "2026-06-01T07:23:28.799Z"
 last_activity: 2026-06-01
 progress:
   total_phases: 10
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 32
   completed_plans: 33
-  percent: 100
+  percent: 90
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Phase: 74 (server-page-overhaul) — EXECUTING
-Plan: 3 of 3
+Phase: 74
+Plan: Not started
 Milestone: v5.1 Non-Programmer Mode
-Status: Phase complete — ready for verification
+Status: Milestone complete
 Last activity: 2026-06-01
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
