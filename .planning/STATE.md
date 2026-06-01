@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v5.1
 milestone_name: Non-Programmer Mode
-status: executing
-stopped_at: Completed 74-02-PLAN.md
-last_updated: "2026-05-31T23:17:19.445Z"
-last_activity: 2026-05-31
+status: verifying
+stopped_at: Completed 74-03-PLAN.md
+last_updated: "2026-06-01T07:23:28.799Z"
+last_activity: 2026-06-01
 progress:
   total_phases: 10
   completed_phases: 8
@@ -28,8 +28,8 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 Phase: 74 (server-page-overhaul) — EXECUTING
 Plan: 3 of 3
 Milestone: v5.1 Non-Programmer Mode
-Status: Ready to execute
-Last activity: 2026-05-31
+Status: Phase complete — ready for verification
+Last activity: 2026-06-01
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
@@ -120,6 +120,7 @@ Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅
 - [Phase 62]: DASHBOARD_PASS added for VPS: VPS dashboard is public-facing (dashboard.gsdlabs.dev); 24-char generated password stored in /home/services/gsddashboard/.env
 - [Phase 74]: docker system df -v outputs single JSON object not line-delimited; WAL checkpoint not in CRON_WHITELIST (runs in-process)
 - [Phase 74]: diskDetail state + Directory Breakdown section removed — superseded by diskAttribution rows from Plan 01 API
+- [Phase 74]: Schedule display changed from pill badge to inline monospace text per UI-SPEC
 
 ### Pending Todos
 
@@ -180,11 +181,12 @@ None.
 | 260530-q0d | Fix tmux lag via zram and VM tuning | 2026-05-30 | 76759af | [260530-q0d-fix-tmux-lag-via-zram-and-vm-tuning](./quick/260530-q0d-fix-tmux-lag-via-zram-and-vm-tuning/) |
 | Phase 74 P01 | 10 | 2 tasks | 3 files |
 | Phase 74 P02 | 15min | 2 tasks | 1 files |
+| Phase 74 P03 | 20 | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-05-31T23:17:19.437Z
-Stopped at: Completed 74-02-PLAN.md
+Last session: 2026-06-01T07:23:28.791Z
+Stopped at: Completed 74-03-PLAN.md
 Resume file: None
 Next action: Run `/gsd-discuss-phase 51` or `/gsd-plan-phase 51` — GUI Project Creation + Import (wizard + import, GitHub-integrated). Now depends only on 50.5 (complete).
 

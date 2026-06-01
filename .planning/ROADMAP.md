@@ -457,7 +457,7 @@ Plans:
 
 **Goal:** Make the /server page genuinely useful as a first-stop diagnostic tool. Fix visual issues, surface actionable system data, and align the UI with what's been built in the Hetzner repo (zram, crons, Docker per-project attribution).
 **Depends on:** Phase 73
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -465,7 +465,7 @@ Plans:
 
 **Wave 2** *(parallel, blocked on 74-01)*
 - [x] 74-02-PLAN.md — Frontend core: CPU load card (Avg%/Max%), RAM bar fix (bg-indigo-500), zram widget, disk attribution card, Top Processes sort toggle
-- [ ] 74-03-PLAN.md — Frontend finish: Maintenance schedule inline display + Playwright visual regression (dark + light modes)
+- [x] 74-03-PLAN.md — Frontend finish: Maintenance schedule inline display + Playwright visual regression (dark + light modes)
 
 ---
 
