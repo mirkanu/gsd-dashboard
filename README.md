@@ -1,8 +1,8 @@
 # GSD Dashboard
 
-> **Personal project:** This was built for the author's own use and has not been tested or optimised for deployment by others. It is shared in the hope it may be useful — no support is implied.
+> **Personal project:** This was built to solve a specific problem for the author. It works for that purpose. It has not been tested for general deployment and is not actively maintained — use it as inspiration or a starting point, not a supported tool.
 
-> **Note:** This project was written entirely using [Claude Code](https://claude.ai/claude-code) and the [GSD workflow](https://github.com/pablof7z/gsd). No code was written by hand.
+> **100% AI-generated:** No code was written by hand. Every file was produced by [Claude Code](https://claude.ai/claude-code) via the [GSD workflow](https://github.com/pablof7z/gsd). The author is a non-programmer building personal tools with AI. PRs are welcome — if one arrives, Claude Code will review and merge it. Issues are unlikely to receive a response.
 
 A personal developer dashboard for tracking Claude Code projects. Built on top of [Claude Code Agent Monitor](https://github.com/hoangsonww/Claude-Code-Agent-Monitor) with a GSD (Get Shit Done) layer added.
 
