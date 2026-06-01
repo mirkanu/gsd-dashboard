@@ -1,0 +1,24 @@
+{
+  "projects": [
+    {
+      "name": "myproject",
+      "root": "/path/to/myproject",
+      "tmux_session": "myproject"
+    },
+    {
+      "name": "another-project",
+      "root": "/path/to/another-project",
+      "tmux_session": "another-project",
+      "services": [
+        {
+          "name": "GitHub",
+          "statusUrl": "https://www.githubstatus.com/api/v2/status.json"
+        },
+        {
+          "name": "Claude",
+          "statusUrl": "https://status.anthropic.com/api/v2/status.json"
+        }
+      ]
+    }
+  ]
+}

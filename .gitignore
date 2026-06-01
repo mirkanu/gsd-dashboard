@@ -9,6 +9,7 @@ client/tsconfig.tsbuildinfo
 .vs/
 .tunnel-url
 logs/
+gsd-projects.json
 
 # .planning operational history — may contain infra-specific details
 # Keep: ROADMAP.md, PROJECT.md, REQUIREMENTS.md, milestones/, seeds/, notes/, research/, todos/
