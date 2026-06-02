@@ -22,7 +22,18 @@ This phase does NOT change stage-gate UI, project card layout, or non-provisioni
 ### Stack Categories (D-02)
 Two categories, carried from last session:
 - **`infrastructure`** — provisioned at stage gates, same for every web project: Umami, BetterStack, R2/Cloudflare, Sentry.
-- **`functional`** — provisioned when a feature needs it, not every project uses all: PostgreSQL, Resend, Cloudflare Tunnel, GitHub.
+- **`functional`** — provisioned when a feature needs it, not every project uses all: PostgreSQL, Resend, Cloudflare Tunnel, GitHub, Pipedream.
+
+### Pipedream (D-08)
+- Category: **functional** — not auto-provisioned; only relevant when a project needs webhook automation or workflow triggers.
+- Global key: `PIPEDREAM_API_KEY` (already in `.env.production`).
+- Per-project keys: none standardised yet — document as a known option in the registry with no `gateTriggeredAt` and no provisioner module.
+- Registry entry documents its existence so Claude knows to reach for it rather than suggest an alternative automation tool.
+
+### Discovery Pass (D-09)
+- As part of building `stackRegistry.js`, the executor scans `server/gsd/gsd-projects.json` and `/home/services/.env.production` for service key patterns already in use across projects (e.g. `*_RESEND_API_KEY`, `*_PIPEDREAM_*`, `*_POSTGRES_*`).
+- Any service found in use but not yet in the registry is surfaced as a proposed addition (with suggested shape).
+- No code changes to existing projects — discovery only. Output goes into a comment block at the top of `stackRegistry.js` listing "services found in use, not yet formalised" so future phases can pick them up.
 
 ### Sentry Provisioner (D-03)
 - Provisioner: `server/gsd/provisioning/sentryProvisioner.js` — create project in `gsdlabs` org via Sentry API → store `{PROJECT}_SENTRY_DSN` in `.env.production`.
