@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const os = require("os");
 const { injectStackSection } = require('../gsd/provisioning/claudeMdInjector');
+const { validateGates, canTransition, ALLOWED_TRANSITIONS } = require('../gsd/provisioning/stageGates/validateGates');
 const { gracefulShutdown } = require('../gsd/gracefulShutdown');
 const { pushEvent } = require('../gsd/feedStore');
 const { readProject } = require("../gsd/readers");
@@ -69,47 +70,47 @@ function loadConfigWithBackfill() {
 // --- Auto-provisioning helpers (Phase 75) ---
 const ENV_FILE_PATH_PROV = '/home/services/.env.production';
 
+// Serialise concurrent env-file writes to avoid read-modify-write races.
+let envWriteLock = Promise.resolve();
+
 /**
  * Atomically update or append a KEY=VALUE line in .env.production.
  * Uses tmp+rename pattern from server/routes/env.js.
+ * Serialised via envWriteLock to prevent concurrent-write races.
  *
  * SECURITY: ENV_FILE_PATH_PROV is hardcoded. Value is never logged.
  * Writes use mode 0o600 consistent with existing env file permissions.
  */
 async function appendEnvKey(key, value) {
-  const content = fs.readFileSync(ENV_FILE_PATH_PROV, 'utf8');
-  const lines = content.split('\n');
-  const idx = lines.findIndex(l => l.startsWith(`${key}=`));
-  if (idx >= 0) {
-    lines[idx] = `${key}=${value}`;
-  } else {
-    lines.push(`${key}=${value}`);
-  }
-  const tmpPath = path.join(os.tmpdir(), `env-prov-${Date.now()}.tmp`);
-  fs.writeFileSync(tmpPath, lines.join('\n'), { encoding: 'utf8', mode: 0o600 });
-  try {
-    fs.renameSync(tmpPath, ENV_FILE_PATH_PROV);
-  } catch (e) {
-    if (e.code === 'EXDEV') {
-      fs.copyFileSync(tmpPath, ENV_FILE_PATH_PROV);
-      fs.unlinkSync(tmpPath);
+  envWriteLock = envWriteLock.then(async () => {
+    const content = fs.readFileSync(ENV_FILE_PATH_PROV, 'utf8');
+    const lines = content.split('\n');
+    const idx = lines.findIndex(l => l.startsWith(`${key}=`));
+    if (idx >= 0) {
+      lines[idx] = `${key}=${value}`;
     } else {
-      try { fs.unlinkSync(tmpPath); } catch {}
-      throw e;
+      lines.push(`${key}=${value}`);
     }
-  }
+    const tmpPath = path.join(os.tmpdir(), `env-prov-${Date.now()}.tmp`);
+    fs.writeFileSync(tmpPath, lines.join('\n'), { encoding: 'utf8', mode: 0o600 });
+    try {
+      fs.renameSync(tmpPath, ENV_FILE_PATH_PROV);
+    } catch (e) {
+      if (e.code === 'EXDEV') {
+        fs.copyFileSync(tmpPath, ENV_FILE_PATH_PROV);
+        fs.unlinkSync(tmpPath);
+      } else {
+        try { fs.unlinkSync(tmpPath); } catch {}
+        throw e;
+      }
+    }
+  });
+  return envWriteLock;
 }
 // --- End auto-provisioning helpers ---
 
 const VALID_STAGES = ['draft', 'alpha', 'beta', 'launched', 'maintenance', 'retired'];
-const ALLOWED_TRANSITIONS = new Set([
-  'draft->alpha', 'alpha->draft',
-  'alpha->beta', 'beta->alpha',
-  'beta->launched', 'launched->beta',
-  'launched->maintenance', 'maintenance->launched',
-  'draft->retired', 'alpha->retired', 'beta->retired', 'launched->retired', 'maintenance->retired',
-  'retired->draft',
-]);
+// ALLOWED_TRANSITIONS is imported from validateGates (single source of truth)
 
 // GET /api/gsd/ws-base — always returns null so browser connects to current host.
 // When GSD_DATA_URL is set (Railway proxy mode), terminal WS is proxied server-side
@@ -566,7 +567,6 @@ router.patch('/projects/:name/stage', async (req, res) => {
       return res.status(422).json({ error: `Cannot transition from ${currentStage} to ${targetStage}.` });
     }
     // Enforce hard gates at write time (not just in the validate endpoint)
-    const { validateGates } = require('../gsd/provisioning/stageGates/validateGates');
     const gateResult = await validateGates(project, targetStage);
     if (!gateResult.valid) {
       const failed = gateResult.hardGates.filter(g => !g.pass).map(g => g.label).join('; ');
@@ -685,7 +685,6 @@ router.post('/projects/:name/stage/validate', async (req, res) => {
     // Real gate validation injected by Plan 02 — for now return permissive stub
     let gateResult = { valid: true, hardGates: [], softGates: [], requiresProvisioning: [] };
     try {
-      const { validateGates } = require('../gsd/provisioning/stageGates/validateGates');
       gateResult = await validateGates(project, targetStage);
     } catch {
       // validateGates module not yet available (Plan 02) — return permissive stub

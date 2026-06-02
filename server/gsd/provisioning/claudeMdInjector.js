@@ -18,6 +18,10 @@ const STACK_CLOSE = '<!-- /Stack -->';
  * @param {string} projectName   Used to derive env var names
  */
 function injectStackSection(claudeMdPath, projectName) {
+  if (!projectName || typeof projectName !== 'string' || projectName.trim() === '') {
+    console.warn('[claudeMdInjector] projectName is required — skipping');
+    return;
+  }
   if (!fs.existsSync(claudeMdPath)) {
     console.warn(`[claudeMdInjector] CLAUDE.md not found at ${claudeMdPath} — skipping`);
     return;

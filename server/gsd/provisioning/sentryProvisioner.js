@@ -53,6 +53,9 @@ async function createProject(projectName) {
     throw new Error(`Sentry keys fetch failed: ${keysResp.statusText}`);
   }
   const keys = await keysResp.json();
+  if (!Array.isArray(keys) || keys.length === 0) {
+    throw new Error(`Sentry keys endpoint returned unexpected shape: ${JSON.stringify(keys).slice(0, 200)}`);
+  }
   const dsn = keys[0]?.dsn?.public;
   if (!dsn) throw new Error('Sentry project created but no DSN found in client keys');
 
