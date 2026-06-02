@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.1
 milestone_name: Non-Programmer Mode
-status: executing
+status: milestone_complete
 stopped_at: Phase 75 context gathered
 last_updated: "2026-06-02T11:06:43.204Z"
 last_activity: 2026-06-02 -- Phase 75 execution started
 progress:
   total_phases: 10
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 32
   completed_plans: 33
-  percent: 100
+  percent: 90
 ---
 
 # Project State
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 
 ## Current Position
 
-Phase: 75 (unified-stack-registry) — EXECUTING
-Plan: 1 of 3
+Phase: 75
+Plan: Not started
 Milestone: v5.1 Non-Programmer Mode
-Status: Executing Phase 75
-Last activity: 2026-06-02 -- Phase 75 execution started
+Status: Milestone complete
+Last activity: 2026-06-02
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
