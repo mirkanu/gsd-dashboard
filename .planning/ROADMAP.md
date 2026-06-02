@@ -469,6 +469,14 @@ Plans:
 
 ---
 
+### Phase 75: Unified Stack Registry
+
+**Goal:** Build a single canonical `stackRegistry` that documents every service in the GSD infrastructure stack (category, global/per-project key names, provisioner module, stage gate). Extend stage-gate auto-provisioning to include Sentry and Umami. Update global CLAUDE.md to reference the registry as the source of truth.
+**Depends on:** Phase 58 (stage gates), Phase 62 (infra inventory)
+**Plans:** 0/0 (not yet planned)
+
+---
+
 ## Seeds (parked ideas that may surface in v5.x)
 
 - **SEED-001** — AI-Guided CLAUDE.md Editor (former Phase 47; may surface if non-programmer mode needs a settings transparency surface)
