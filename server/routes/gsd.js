@@ -1,6 +1,8 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
+const { injectStackSection } = require('../gsd/provisioning/claudeMdInjector');
 const { gracefulShutdown } = require('../gsd/gracefulShutdown');
 const { pushEvent } = require('../gsd/feedStore');
 const { readProject } = require("../gsd/readers");
@@ -63,6 +65,41 @@ function loadConfigWithBackfill() {
   if (dirty) saveConfig(config);
   return config;
 }
+
+// --- Auto-provisioning helpers (Phase 75) ---
+const ENV_FILE_PATH_PROV = '/home/services/.env.production';
+
+/**
+ * Atomically update or append a KEY=VALUE line in .env.production.
+ * Uses tmp+rename pattern from server/routes/env.js.
+ *
+ * SECURITY: ENV_FILE_PATH_PROV is hardcoded. Value is never logged.
+ * Writes use mode 0o600 consistent with existing env file permissions.
+ */
+async function appendEnvKey(key, value) {
+  const content = fs.readFileSync(ENV_FILE_PATH_PROV, 'utf8');
+  const lines = content.split('\n');
+  const idx = lines.findIndex(l => l.startsWith(`${key}=`));
+  if (idx >= 0) {
+    lines[idx] = `${key}=${value}`;
+  } else {
+    lines.push(`${key}=${value}`);
+  }
+  const tmpPath = path.join(os.tmpdir(), `env-prov-${Date.now()}.tmp`);
+  fs.writeFileSync(tmpPath, lines.join('\n'), { encoding: 'utf8', mode: 0o600 });
+  try {
+    fs.renameSync(tmpPath, ENV_FILE_PATH_PROV);
+  } catch (e) {
+    if (e.code === 'EXDEV') {
+      fs.copyFileSync(tmpPath, ENV_FILE_PATH_PROV);
+      fs.unlinkSync(tmpPath);
+    } else {
+      try { fs.unlinkSync(tmpPath); } catch {}
+      throw e;
+    }
+  }
+}
+// --- End auto-provisioning helpers ---
 
 const VALID_STAGES = ['draft', 'alpha', 'beta', 'launched', 'maintenance', 'retired'];
 const ALLOWED_TRANSITIONS = new Set([
@@ -535,6 +572,59 @@ router.patch('/projects/:name/stage', async (req, res) => {
       const failed = gateResult.hardGates.filter(g => !g.pass).map(g => g.label).join('; ');
       return res.status(422).json({ error: `Stage transition blocked: ${failed}` });
     }
+    // Execute auto-provisioning for services in requiresProvisioning (Phase 75)
+    if (gateResult.requiresProvisioning.length > 0 && targetStage === 'launched') {
+      const betterStack = require('../gsd/provisioning/betterStackProvisioner');
+      const r2 = require('../gsd/provisioning/r2Provisioner');
+      const umami = require('../gsd/provisioning/umamiProvisioner');
+      const sentry = require('../gsd/provisioning/sentryProvisioner');
+
+      const provisioningMap = {
+        betterStackMonitor: () => betterStack.provisionMonitor(project.name, project.productionUrl),
+        r2Bucket:           () => r2.createBucket(project.name),
+        umamiWebsite:       () => umami.createWebsite(project.name, project.productionUrl),
+        sentryProject:      () => sentry.createProject(project.name),
+      };
+
+      // sentryProject is a soft gate — failure warns but does not block the transition
+      const softGateItems = new Set(['sentryProject']);
+
+      for (const item of gateResult.requiresProvisioning) {
+        if (!provisioningMap[item]) continue;
+        try {
+          const result = await provisioningMap[item]();
+          // Persist per-project env keys returned by provisioners
+          if (item === 'umamiWebsite' && result.websiteId) {
+            await appendEnvKey(`${project.name.toUpperCase()}_UMAMI_WEBSITE_ID`, result.websiteId);
+          }
+          if (item === 'sentryProject' && result.dsn) {
+            await appendEnvKey(`${project.name.toUpperCase()}_SENTRY_DSN`, result.dsn);
+          }
+        } catch (err) {
+          if (softGateItems.has(item)) {
+            // Soft gate: log warning, continue with transition
+            console.warn(`[provisioning] ${item} soft-gate provisioning failed (non-blocking):`, err.message);
+          } else {
+            // Hard gate: block the transition
+            return res.status(500).json({
+              error: `Auto-provisioning failed for ${item}`,
+              detail: err.message.split('\n')[0],
+            });
+          }
+        }
+      }
+
+      // Write ## Stack (auto-managed) section to project's CLAUDE.md
+      if (project.path) {
+        try {
+          injectStackSection(path.join(project.path, 'CLAUDE.md'), project.name);
+        } catch (err) {
+          // Non-blocking: CLAUDE.md injection failure does not abort the stage transition
+          console.warn('[provisioning] CLAUDE.md Stack injection failed (non-blocking):', err.message);
+        }
+      }
+    }
+
     // Retired: stop tmux session and archive GitHub repo
     if (targetStage === 'retired') {
       try {
