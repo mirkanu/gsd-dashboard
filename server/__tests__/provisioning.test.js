@@ -138,4 +138,150 @@ describe('provisioning', () => {
       assert.equal(result.hardGates.length, 0);
     });
   });
+
+  describe('sentryProvisioner', () => {
+    beforeEach(() => {
+      process.env.SENTRY_AUTH_TOKEN = 'test-sentry-token';
+      process.env.SENTRY_ORG = 'test-org';
+    });
+    afterEach(() => {
+      delete process.env.SENTRY_AUTH_TOKEN;
+      delete process.env.SENTRY_ORG;
+      delete require.cache[require.resolve('../gsd/provisioning/sentryProvisioner')];
+    });
+
+    it('PROV-01: createProject returns { dsn, projectSlug } on success', async () => {
+      // Two-step: POST /teams/.../projects/ → {slug}, GET /projects/.../keys/ → [{dsn:{public:...}}]
+      mockFetch = async (url) => {
+        if (url.includes('/projects/') && url.endsWith('/keys/')) {
+          return { ok: true, json: async () => [{ dsn: { public: 'https://abc@sentry.io/123' } }] };
+        }
+        // Project creation
+        return { ok: true, json: async () => ({ slug: 'gsd-testproj' }) };
+      };
+      delete require.cache[require.resolve('../gsd/provisioning/sentryProvisioner')];
+      const { createProject } = require('../gsd/provisioning/sentryProvisioner');
+      const result = await createProject('testproj');
+      assert.ok(result.dsn, 'dsn must be present');
+      assert.ok(result.projectSlug, 'projectSlug must be present');
+    });
+
+    it('PROV-02: createProject throws when SENTRY_AUTH_TOKEN missing', async () => {
+      delete process.env.SENTRY_AUTH_TOKEN;
+      delete require.cache[require.resolve('../gsd/provisioning/sentryProvisioner')];
+      const { createProject } = require('../gsd/provisioning/sentryProvisioner');
+      await assert.rejects(() => createProject('testproj'), /SENTRY_AUTH_TOKEN/);
+    });
+
+    it('PROV-03: checkProject returns false on 404', async () => {
+      mockFetch = async () => ({ ok: false, status: 404, json: async () => ({}) });
+      delete require.cache[require.resolve('../gsd/provisioning/sentryProvisioner')];
+      const { checkProject } = require('../gsd/provisioning/sentryProvisioner');
+      const result = await checkProject('nonexistent');
+      assert.equal(result, false);
+    });
+  });
+
+  describe('umamiProvisioner', () => {
+    beforeEach(() => {
+      process.env.UMAMI_ADMIN_PASSWORD = 'test-umami-pass';
+    });
+    afterEach(() => {
+      delete process.env.UMAMI_ADMIN_PASSWORD;
+      delete require.cache[require.resolve('../gsd/provisioning/umamiProvisioner')];
+    });
+
+    it('PROV-04: createWebsite returns { websiteId } on success', async () => {
+      mockFetch = async (url) => {
+        if (url.includes('/auth/login')) {
+          return { ok: true, json: async () => ({ token: 'test-token-123' }) };
+        }
+        return { ok: true, json: async () => ({ id: 'website-uuid-456', name: 'gsd-testproj' }) };
+      };
+      delete require.cache[require.resolve('../gsd/provisioning/umamiProvisioner')];
+      const { createWebsite } = require('../gsd/provisioning/umamiProvisioner');
+      const result = await createWebsite('testproj', 'testproj.gsdlabs.dev');
+      assert.equal(result.websiteId, 'website-uuid-456');
+    });
+
+    it('PROV-05: checkWebsite uses domain matching not just env var', async () => {
+      mockFetch = async (url) => {
+        if (url.includes('/auth/login')) {
+          return { ok: true, json: async () => ({ token: 'test-token-123' }) };
+        }
+        // Returns list with matching domain
+        return { ok: true, json: async () => [{ id: 'site-1', domain: 'testproj.gsdlabs.dev', name: 'other-name' }] };
+      };
+      delete require.cache[require.resolve('../gsd/provisioning/umamiProvisioner')];
+      const { checkWebsite } = require('../gsd/provisioning/umamiProvisioner');
+      const exists = await checkWebsite('testproj', 'testproj.gsdlabs.dev');
+      assert.equal(exists, true);
+    });
+
+    it('PROV-06: checkWebsite returns false on login failure', async () => {
+      mockFetch = async (url) => {
+        if (url.includes('/auth/login')) {
+          return { ok: false, statusText: 'Unauthorized', json: async () => ({}) };
+        }
+        return { ok: true, json: async () => [] };
+      };
+      delete require.cache[require.resolve('../gsd/provisioning/umamiProvisioner')];
+      const { checkWebsite } = require('../gsd/provisioning/umamiProvisioner');
+      const result = await checkWebsite('testproj', 'testproj.gsdlabs.dev');
+      assert.equal(result, false);
+    });
+  });
+
+  describe('validateGates with sentry + umami', () => {
+    afterEach(() => {
+      delete require.cache[require.resolve('../gsd/provisioning/stageGates/validateGates')];
+      try { delete require.cache[require.resolve('../gsd/provisioning/sentryProvisioner')]; } catch {}
+      try { delete require.cache[require.resolve('../gsd/provisioning/umamiProvisioner')]; } catch {}
+    });
+
+    it('GATE-01: beta->launched includes umamiWebsite in requiresProvisioning when missing', async () => {
+      // Mock all provisioners as "not provisioned" (return false)
+      mockFetch = async (url) => {
+        if (url.includes('betterstack.com')) return { ok: true, json: async () => ({ data: [] }) };
+        if (url.includes('cloudflare.com')) return { ok: false, json: async () => ({}) };
+        if (url.includes('/auth/login')) return { ok: true, json: async () => ({ token: 'tok' }) };
+        if (url.includes('api/websites')) return { ok: true, json: async () => [] };
+        if (url.includes('sentry.io')) return { ok: false, status: 404, json: async () => ({}) };
+        return { ok: false };
+      };
+      process.env.SENTRY_AUTH_TOKEN = 'test-token';
+      process.env.SENTRY_ORG = 'test-org';
+      process.env.UMAMI_ADMIN_PASSWORD = 'test-pass';
+      delete require.cache[require.resolve('../gsd/provisioning/stageGates/validateGates')];
+      const { validateGates } = require('../gsd/provisioning/stageGates/validateGates');
+      const project = { name: 'testproj', stage: 'beta', productionUrl: 'https://testproj.com' };
+      const result = await validateGates(project, 'launched');
+      assert.ok(result.requiresProvisioning.includes('umamiWebsite'), `expected umamiWebsite in ${JSON.stringify(result.requiresProvisioning)}`);
+      delete process.env.SENTRY_AUTH_TOKEN;
+      delete process.env.SENTRY_ORG;
+      delete process.env.UMAMI_ADMIN_PASSWORD;
+    });
+
+    it('GATE-02: beta->launched includes sentryProject in requiresProvisioning when missing', async () => {
+      mockFetch = async (url) => {
+        if (url.includes('betterstack.com')) return { ok: true, json: async () => ({ data: [] }) };
+        if (url.includes('cloudflare.com')) return { ok: false, json: async () => ({}) };
+        if (url.includes('/auth/login')) return { ok: true, json: async () => ({ token: 'tok' }) };
+        if (url.includes('api/websites')) return { ok: true, json: async () => [] };
+        if (url.includes('sentry.io')) return { ok: false, status: 404, json: async () => ({}) };
+        return { ok: false };
+      };
+      process.env.SENTRY_AUTH_TOKEN = 'test-token';
+      process.env.SENTRY_ORG = 'test-org';
+      process.env.UMAMI_ADMIN_PASSWORD = 'test-pass';
+      delete require.cache[require.resolve('../gsd/provisioning/stageGates/validateGates')];
+      const { validateGates } = require('../gsd/provisioning/stageGates/validateGates');
+      const project = { name: 'testproj', stage: 'beta', productionUrl: 'https://testproj.com' };
+      const result = await validateGates(project, 'launched');
+      assert.ok(result.requiresProvisioning.includes('sentryProject'), `expected sentryProject in ${JSON.stringify(result.requiresProvisioning)}`);
+      delete process.env.SENTRY_AUTH_TOKEN;
+      delete process.env.SENTRY_ORG;
+      delete process.env.UMAMI_ADMIN_PASSWORD;
+    });
+  });
 });
