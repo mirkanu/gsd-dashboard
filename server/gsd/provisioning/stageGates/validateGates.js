@@ -2,6 +2,8 @@
 
 const betterStackProvisioner = require('../betterStackProvisioner');
 const r2Provisioner = require('../r2Provisioner');
+const sentryProvisioner = require('../sentryProvisioner');
+const umamiProvisioner = require('../umamiProvisioner');
 
 const ALLOWED_TRANSITIONS = new Set([
   'draft->alpha', 'alpha->draft',
@@ -55,6 +57,19 @@ async function validateGates(project, targetStage) {
     const hasBucket = await r2Provisioner.checkBucket(project.name);
     if (!hasBucket) {
       requiresProvisioning.push('r2Bucket');
+    }
+
+    // Hard gate: Umami analytics website (auto-provisionable) — per D-04
+    const hasUmami = await umamiProvisioner.checkWebsite(project.name, project.productionUrl);
+    if (!hasUmami) {
+      requiresProvisioning.push('umamiWebsite');
+    }
+
+    // Soft gate: Sentry error tracking (advisory only — does not block launch) — per D-03
+    const hasSentry = await sentryProvisioner.checkProject(project.name);
+    if (!hasSentry) {
+      softGates.push({ gate: 'sentryProject', label: 'Sentry error tracking recommended for Launched stage', pass: false });
+      requiresProvisioning.push('sentryProject');
     }
 
     // Soft gate: GitHub Issues (advisory only — does not block)
