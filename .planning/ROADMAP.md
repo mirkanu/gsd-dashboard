@@ -473,7 +473,17 @@ Plans:
 
 **Goal:** Build a single canonical `stackRegistry` that documents every service in the GSD infrastructure stack (category, global/per-project key names, provisioner module, stage gate). Extend stage-gate auto-provisioning to include Sentry and Umami. Update global CLAUDE.md to reference the registry as the source of truth.
 **Depends on:** Phase 58 (stage gates), Phase 62 (infra inventory)
-**Plans:** 0/0 (not yet planned)
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+- [ ] 75-01-PLAN.md — stackRegistry.js (9 services, D-01 shape) + test scaffolds (stack-registry.test.js, claude-md-inject.test.js stubs, provisioning.test.js extensions RED)
+
+**Wave 2** *(blocked on 75-01)*
+- [ ] 75-02-PLAN.md — sentryProvisioner.js + umamiProvisioner.js + validateGates.js extension (Umami hard gate + Sentry soft gate); turns PROV/GATE tests GREEN
+
+**Wave 3** *(blocked on 75-02)*
+- [ ] 75-03-PLAN.md — PATCH /stage auto-provisioning execution block + claudeMdInjector.js extraction + INJECT tests GREEN + global CLAUDE.md update
 
 ---
 
