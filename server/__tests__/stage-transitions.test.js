@@ -105,4 +105,68 @@ describe('stage-transitions', () => {
     const r = await fetchJson('/api/gsd/projects/unknown-xyz/stage', { method: 'PATCH', body: { to: 'alpha' } });
     assert.equal(r.status, 404);
   });
+
+  it('EXEC-01: beta->launched with requiresProvisioning calls provisioners and completes transition', async () => {
+    // Set up a beta-stage project with a productionUrl
+    writeProjects([{
+      name: 'launch-test',
+      root: '/tmp/launch-test',
+      tmux_session: 'launch-test',
+      stage: 'beta',
+      productionUrl: 'https://launch-test.gsdlabs.dev',
+    }]);
+
+    // Mock validateGates to return requiresProvisioning=['betterStackMonitor']
+    // and inject a mock betterStackProvisioner into require.cache
+    let provisionerCalled = false;
+
+    const bsPath = require.resolve('../gsd/provisioning/betterStackProvisioner');
+    const vgPath = require.resolve('../gsd/provisioning/stageGates/validateGates');
+
+    const originalBs = require.cache[bsPath];
+    const originalVg = require.cache[vgPath];
+
+    // Replace betterStackProvisioner with a mock that records the call
+    require.cache[bsPath] = {
+      id: bsPath,
+      filename: bsPath,
+      loaded: true,
+      exports: {
+        provisionMonitor: async () => { provisionerCalled = true; return { monitorId: 'mock-monitor-123' }; },
+        checkMonitor: async () => false,
+        deleteMonitor: async () => {},
+      },
+    };
+
+    // Replace validateGates with a mock that returns requiresProvisioning=['betterStackMonitor']
+    require.cache[vgPath] = {
+      id: vgPath,
+      filename: vgPath,
+      loaded: true,
+      exports: {
+        validateGates: async () => ({
+          valid: true,
+          hardGates: [],
+          softGates: [],
+          requiresProvisioning: ['betterStackMonitor'],
+        }),
+        canTransition: () => true,
+        ALLOWED_TRANSITIONS: {},
+      },
+    };
+
+    try {
+      const r = await fetchJson('/api/gsd/projects/launch-test/stage', {
+        method: 'PATCH',
+        body: { to: 'launched' },
+      });
+      assert.equal(r.status, 200, `expected 200, got ${r.status}: ${JSON.stringify(r.body)}`);
+      assert.equal(r.body.stage, 'launched', 'stage must be launched');
+      assert.ok(provisionerCalled, 'betterStackProvisioner.provisionMonitor must have been called');
+    } finally {
+      // Restore originals
+      if (originalBs) { require.cache[bsPath] = originalBs; } else { delete require.cache[bsPath]; }
+      if (originalVg) { require.cache[vgPath] = originalVg; } else { delete require.cache[vgPath]; }
+    }
+  });
 });
