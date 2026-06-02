@@ -2,7 +2,7 @@
 
 > **Personal project:** This was built to solve a specific problem for the author. It works for that purpose. It has not been tested for general deployment and is not actively maintained — use it as inspiration or a starting point, not a supported tool.
 
-> **100% AI-generated:** No code was written by hand. Every file was produced by [Claude Code](https://claude.ai/claude-code) via the [GSD workflow](https://github.com/pablof7z/gsd). The author is a non-programmer building personal tools with AI. PRs are welcome — if one arrives, Claude Code will review and merge it. Issues are unlikely to receive a response.
+> **100% AI-generated:** No code was written by hand. Every file was produced by [Claude Code](https://claude.ai/claude-code) via the [GSD workflow](https://github.com/open-gsd/gsd-core). The author is a non-programmer building personal tools with AI. PRs are welcome — if one arrives, Claude Code will review and merge it. Issues are unlikely to receive a response.
 
 A personal developer dashboard for tracking Claude Code projects and agent sessions in real time. It combines a GSD project tracker (phase progress, blockers, velocity, completion estimates from `.planning/` files) with live Claude Code session monitoring (tool use, cost, Kanban view, browser notifications) — all in one browser tab.
 
