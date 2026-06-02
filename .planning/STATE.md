@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v5.1
 milestone_name: Non-Programmer Mode
-status: completed
+status: executing
 stopped_at: Phase 75 context gathered
-last_updated: "2026-06-02T09:08:09.652Z"
-last_activity: 2026-06-01
+last_updated: "2026-06-02T10:46:21.043Z"
+last_activity: 2026-06-02 -- Phase 75 planning complete
 progress:
   total_phases: 10
   completed_phases: 8
@@ -28,8 +28,8 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 Phase: 74
 Plan: Not started
 Milestone: v5.1 Non-Programmer Mode
-Status: Milestone complete
-Last activity: 2026-06-01
+Status: Ready to execute
+Last activity: 2026-06-02 -- Phase 75 planning complete
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
