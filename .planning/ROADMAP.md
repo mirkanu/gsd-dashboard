@@ -57,6 +57,10 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 70. Hetzner Non-Root User | 3/3 | Complete ✅ (v5.0) | 2026-05-05 |
 | 71. CLAUDE.md-First Automation Refactor | 2/2 | Complete ✅ (v5.0) | 2026-05-06 |
 | 72. Disk Full Prevention | 5/5 | Complete ✅ (v5.0) | 2026-05-08 |
+| 73. Volume Lifecycle Management | 2/2 | Complete | 2026-06-05 |
+| 74. /server Page Overhaul | 3/3 | Complete | 2026-06-05 |
+| 75. Unified Stack Registry | 3/3 | Complete | 2026-06-05 |
+| 76. Umami Combined Analytics View | 0/2 | Planned | - |
 
 ---
 
@@ -484,6 +488,27 @@ Plans:
 
 **Wave 3** *(blocked on 75-02)*
 - [x] 75-03-PLAN.md — PATCH /stage auto-provisioning execution block + claudeMdInjector.js extraction + INJECT tests GREEN + global CLAUDE.md update
+
+---
+
+### Phase 76: Umami Combined Analytics View
+
+**Goal:** A new `/umami` page in the GSD Dashboard that fetches pageview and unique visitor time-series from the Umami API for every registered website and renders them as an overlaid multi-line chart — one colored series per project. Fills the gap that Umami's own Boards feature cannot: a single chart comparing all projects side-by-side.
+**Key behaviours:**
+- Time range selector: last 7 days / last month / all time
+- Two chart modes: pageviews and unique visitors (by day)
+- Per-project color assignment (stable, derived from website ID hash mod 12)
+- Website list fetched dynamically from Umami's `GET /api/websites`
+- Data fetched via a backend proxy route (keeps Umami credentials server-side)
+**Depends on:** Phase 75 (Umami provisioner confirms the integration pattern)
+**Plans:** 2 plans
+
+Plans:
+**Wave 1**
+- [ ] 76-01-PLAN.md — Backend: server/routes/umami.js (/websites + /stats proxy) + server/index.js registration
+
+**Wave 2** *(blocked on 76-01)*
+- [ ] 76-02-PLAN.md — Frontend: UmamiPage.tsx (multi-line SVG chart, legend, controls) + App.tsx route + Sidebar.tsx nav item
 
 ---
 
