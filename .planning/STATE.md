@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.1
 milestone_name: Non-Programmer Mode
-status: milestone_complete
-stopped_at: Phase 75 context gathered
-last_updated: "2026-06-02T11:06:43.204Z"
-last_activity: 2026-06-02 -- Phase 75 execution started
+status: executing
+stopped_at: Phase 76 UI-SPEC approved
+last_updated: "2026-06-05T21:35:14.740Z"
+last_activity: 2026-06-05 -- Phase 76 planning complete
 progress:
   total_phases: 10
-  completed_phases: 9
+  completed_phases: 8
   total_plans: 32
   completed_plans: 33
-  percent: 90
+  percent: 100
 ---
 
 # Project State
@@ -28,8 +28,8 @@ See: .planning/PROJECT.md (updated 2026-05-08)
 Phase: 75
 Plan: Not started
 Milestone: v5.1 Non-Programmer Mode
-Status: Milestone complete
-Last activity: 2026-06-02
+Status: Ready to execute
+Last activity: 2026-06-05 -- Phase 76 planning complete
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 
@@ -185,9 +185,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-06-02T09:08:09.624Z
-Stopped at: Phase 75 context gathered
-Resume file: .planning/phases/75-unified-stack-registry/75-CONTEXT.md
+Last session: 2026-06-05T18:50:17.832Z
+Stopped at: Phase 76 UI-SPEC approved
+Resume file: .planning/phases/76-umami-combined-analytics-view/76-UI-SPEC.md
 Next action: Run `/gsd-discuss-phase 51` or `/gsd-plan-phase 51` — GUI Project Creation + Import (wizard + import, GitHub-integrated). Now depends only on 50.5 (complete).
 
 ## Blockers/Concerns
