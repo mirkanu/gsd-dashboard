@@ -53,6 +53,7 @@ const webhooksEmailRouter = require("./routes/webhooks-email");
 const configRouter = require("./routes/config");
 const notificationsRouter = require("./routes/notifications");
 const feedRouter = require("./routes/feed");
+const umamiRouter = require("./routes/umami");
 const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
 const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
@@ -134,6 +135,7 @@ function createApp() {
   app.use("/api/webhooks/email", webhooksEmailRouter);
   app.use("/api/config", configRouter);
   app.use("/api/notifications", notificationsRouter);
+  app.use("/api/umami", umamiRouter);
   app.use("/api/projects", projectsRouter);
   app.use("/api/docker", dockerOpsRouter);
   app.use("/api/system", systemRouter);
