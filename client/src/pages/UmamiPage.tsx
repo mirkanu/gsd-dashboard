@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RefreshCw } from "lucide-react";
 
 // ── Color palette ─────────────────────────────────────────────────────────────
@@ -39,13 +39,15 @@ function rangeLabel(range: TimeRange): string {
   return "all time";
 }
 
+// Normalize Umami date strings to YYYY-MM-DD (Umami may return full datetimes)
+function normalizeDate(x: string): string {
+  return x.substring(0, 10);
+}
+
 // ── SVG multi-line chart ──────────────────────────────────────────────────────
 
-const PAD = { left: 48, right: 16, top: 12, bottom: 32 };
-const VIEW_W = 800;
-const VIEW_H = 240;
-const PLOT_W = VIEW_W - PAD.left - PAD.right;
-const PLOT_H = VIEW_H - PAD.top - PAD.bottom;
+const SVG_H = 220;
+const PAD = { left: 52, right: 12, top: 12, bottom: 36 };
 
 interface TooltipState {
   x: number;
@@ -60,6 +62,7 @@ function UmamiMultiLineChart({
   chartMode,
   chartLoading,
   timeRange,
+  containerWidth,
   onTooltip,
   onTooltipClear,
 }: {
@@ -68,12 +71,15 @@ function UmamiMultiLineChart({
   chartMode: ChartMode;
   chartLoading: boolean;
   timeRange: TimeRange;
+  containerWidth: number;
   onTooltip: (t: TooltipState) => void;
   onTooltipClear: () => void;
 }) {
+  const PLOT_W = containerWidth - PAD.left - PAD.right;
+  const PLOT_H = SVG_H - PAD.top - PAD.bottom;
+
   const visibleSeries = series.filter(s => !hiddenIds.has(s.website.id));
 
-  // Collect all date strings across visible series
   const allDates = Array.from(
     new Set(
       visibleSeries.flatMap(s =>
@@ -98,17 +104,16 @@ function UmamiMultiLineChart({
     return PAD.top + PLOT_H - (value / globalMax) * PLOT_H;
   }
 
-  // Build date lookup map
   const dateIndexMap = new Map<string, number>(allDates.map((d, i) => [d, i]));
 
-  // Y-axis gridlines: 0%, 33%, 66%, 100%
-  const yTicks = [0, 0.33, 0.66, 1].map(frac => ({
+  const yTicks = [0, 0.5, 1].map(frac => ({
     y: PAD.top + PLOT_H - frac * PLOT_H,
     label: frac === 0 ? "0" : Math.round(frac * globalMax).toLocaleString(),
   }));
 
-  // X-axis ticks: roughly 1 per 7 days
-  const xTickStep = Math.max(1, Math.ceil(allDates.length / (PLOT_W / 80)));
+  // Limit x-axis ticks based on available pixel width (~1 per 60px, max 8)
+  const maxTicks = Math.max(2, Math.min(8, Math.floor(PLOT_W / 60)));
+  const xTickStep = Math.max(1, Math.ceil(allDates.length / maxTicks));
   const xTicks = allDates
     .filter((_, i) => i % xTickStep === 0 || i === allDates.length - 1)
     .map(d => ({ date: d, x: toX(dateIndexMap.get(d) ?? 0) }));
@@ -117,9 +122,7 @@ function UmamiMultiLineChart({
     if (allDates.length === 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const relX = e.clientX - rect.left;
-    const svgX = (relX / rect.width) * VIEW_W;
-    const plotX = Math.max(PAD.left, Math.min(PAD.left + PLOT_W, svgX));
-    const frac = (plotX - PAD.left) / PLOT_W;
+    const frac = Math.max(0, Math.min(1, relX / rect.width));
     const idx = Math.round(frac * (allDates.length - 1));
     const date = allDates[idx];
     if (!date) return;
@@ -130,18 +133,17 @@ function UmamiMultiLineChart({
       return { name: s.website.name, color: s.color, value: pt?.y ?? 0 };
     }).sort((a, b) => b.value - a.value);
 
-    const crosshairX = toX(idx);
-    // Scale the crosshair X back to client coords
     const svgEl = e.currentTarget.closest("svg");
     let clientX = e.clientX;
     let clientY = e.clientY;
     if (svgEl) {
       const svgRect = svgEl.getBoundingClientRect();
-      clientX = svgRect.left + (crosshairX / VIEW_W) * svgRect.width;
+      // crosshair snaps to nearest date index
+      const crosshairFrac = allDates.length <= 1 ? 0.5 : idx / (allDates.length - 1);
+      clientX = svgRect.left + PAD.left / containerWidth * svgRect.width + crosshairFrac * (PLOT_W / containerWidth) * svgRect.width;
       clientY = svgRect.top + PAD.top;
     }
 
-    // Format date for display
     const dateObj = new Date(date + "T12:00:00");
     const displayDate = dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
@@ -149,64 +151,36 @@ function UmamiMultiLineChart({
   }
 
   if (chartLoading) {
-    return <div className="animate-pulse bg-surface-2 rounded" style={{ height: VIEW_H }} />;
+    return <div className="animate-pulse bg-surface-2 rounded" style={{ height: SVG_H }} />;
   }
 
   if (allDates.length === 0) {
     return (
-      <svg
-        width="100%"
-        height={VIEW_H}
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        preserveAspectRatio="none"
-        className="w-full h-40 md:h-60"
-        role="img"
-        aria-label={`Multi-line chart of ${chartMode} over ${rangeLabel(timeRange)}`}
-      >
-        <text
-          x={VIEW_W / 2}
-          y={VIEW_H / 2}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fill="#6b7280"
-          fontSize={14}
-        >
+      <svg width={containerWidth} height={SVG_H} role="img" aria-label={`Multi-line chart of ${chartMode} over ${rangeLabel(timeRange)}`}>
+        <text x={containerWidth / 2} y={SVG_H / 2} textAnchor="middle" dominantBaseline="middle" fill="#6b7280" fontSize={14}>
           No data
         </text>
       </svg>
     );
   }
 
-  // Crosshair tracking state lives in parent via callback; we draw the crosshair
-  // via an invisible overlay. For the crosshair line itself, we need a local approach.
-  // We'll draw the SVG chart without internal state and let the parent position the tooltip.
-
   return (
     <svg
-      width="100%"
-      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-      preserveAspectRatio="none"
-      className="w-full h-40 md:h-60"
+      width={containerWidth}
+      height={SVG_H}
       role="img"
       aria-label={`Multi-line chart of ${chartMode} over ${rangeLabel(timeRange)}`}
     >
-      {/* Gridlines */}
+      {/* Y gridlines + labels */}
       {yTicks.map(tick => (
         <g key={tick.y}>
-          <line
-            x1={PAD.left}
-            x2={PAD.left + PLOT_W}
-            y1={tick.y}
-            y2={tick.y}
-            stroke="#2a2a3d"
-            strokeWidth={1}
-          />
+          <line x1={PAD.left} x2={PAD.left + PLOT_W} y1={tick.y} y2={tick.y} stroke="#2a2a3d" strokeWidth={1} />
           <text
-            x={PAD.left - 4}
+            x={PAD.left - 6}
             y={tick.y}
             textAnchor="end"
             dominantBaseline="middle"
-            fill="#4b5563"
+            fill="#6b7280"
             fontSize={11}
             fontFamily="monospace"
           >
@@ -220,9 +194,9 @@ function UmamiMultiLineChart({
         <text
           key={tick.date}
           x={tick.x}
-          y={VIEW_H - 6}
+          y={SVG_H - 8}
           textAnchor="middle"
-          fill="#4b5563"
+          fill="#6b7280"
           fontSize={11}
           fontFamily="monospace"
         >
@@ -291,10 +265,7 @@ function UmamiLegend({
             }
           }}
         >
-          <span
-            className="w-3 h-3 rounded-sm flex-shrink-0"
-            style={{ backgroundColor: s.color }}
-          />
+          <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
           <span title={s.website.name}>
             {s.website.name.slice(0, 18)}{s.website.name.length > 18 ? "…" : ""}
           </span>
@@ -319,6 +290,17 @@ export function UmamiPage() {
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
+  // Measure chart container width for responsive SVG
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(760);
+  useEffect(() => {
+    const el = chartContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => setChartWidth(Math.floor(entries[0].contentRect.width)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   async function fetchAll(range: TimeRange, isInitial: boolean) {
     if (isInitial) setLoading(true); else setChartLoading(true);
     setError(null);
@@ -339,8 +321,9 @@ export function UmamiPage() {
           const data = await r.json();
           return {
             website: w,
-            pageviews: data.pageviews ?? [],
-            sessions: data.sessions ?? [],
+            // Normalize date strings to YYYY-MM-DD (Umami may return full datetimes)
+            pageviews: (data.pageviews ?? []).map((p: DataPoint) => ({ x: normalizeDate(p.x), y: p.y })),
+            sessions: (data.sessions ?? []).map((p: DataPoint) => ({ x: normalizeDate(p.x), y: p.y })),
             color: hashColor(w.id),
           } as SeriesData;
         })
@@ -380,7 +363,7 @@ export function UmamiPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4 p-6" aria-label="Loading web analytics data">
+      <div className="space-y-4 p-4 sm:p-6" aria-label="Loading web analytics data">
         <div className="h-9 bg-surface-2 rounded-lg w-56 animate-pulse" />
         <div className="h-10 bg-surface-2 rounded-lg animate-pulse" />
         <div className="h-64 bg-surface-2 rounded-lg animate-pulse" />
@@ -393,7 +376,7 @@ export function UmamiPage() {
 
   if (error === "credentials-missing") {
     return (
-      <div className="m-6 p-6 bg-surface-1 border border-border rounded-lg">
+      <div className="m-4 sm:m-6 p-6 bg-surface-1 border border-border rounded-lg">
         <h2 className="text-base font-semibold text-gray-100 mb-1">Web analytics not configured</h2>
         <p className="text-sm text-gray-400 mb-4">
           Add <code className="text-gray-300 bg-surface-2 px-1 rounded">UMAMI_ADMIN_PASSWORD</code> to the Environment settings, then reload.
@@ -406,7 +389,7 @@ export function UmamiPage() {
   // ── Main layout ────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6">
       {/* Tooltip */}
       {tooltip && (
         <div
@@ -425,15 +408,15 @@ export function UmamiPage() {
         </div>
       )}
 
-      {/* Header row */}
-      <div className="flex items-center justify-between">
+      {/* Header row — stacks on mobile */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-100">Web Analytics</h1>
           <p className="text-xs text-gray-500 mt-0.5">
             Pageviews and visitors across all projects — {rangeLabel(timeRange)}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start sm:self-auto">
           {lastFetched && (
             <span className="text-xs text-gray-500">
               Updated {lastFetched.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -444,40 +427,38 @@ export function UmamiPage() {
             className="px-3 py-1.5 text-xs font-semibold bg-surface-2 hover:bg-surface-3 text-gray-300 rounded-md border border-border transition-colors flex items-center gap-1"
           >
             <RefreshCw className="w-3 h-3" />
-            Refresh Analytics
+            Refresh
           </button>
         </div>
       </div>
 
-      {/* Controls row */}
-      <div className="flex items-center justify-between">
-        {/* TimeRangeSelector */}
+      {/* Controls row — wraps on mobile */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-between">
         <div role="group" aria-label="Time range" className="flex bg-surface-2 rounded-lg p-1 gap-0.5">
           {(["7d", "30d", "all"] as TimeRange[]).map(r => (
             <button
               key={r}
               onClick={() => handleRangeChange(r)}
               aria-pressed={timeRange === r}
-              className={`px-3 py-2 text-xs font-semibold rounded-md transition-colors ${
+              className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
                 timeRange === r ? "bg-surface-4 text-gray-200" : "text-gray-500 hover:text-gray-300"
               }`}
             >
-              {r === "7d" ? "7 days" : r === "30d" ? "30 days" : "All time"}
+              {r === "7d" ? "7d" : r === "30d" ? "30d" : "All"}
             </button>
           ))}
         </div>
-        {/* ChartModeToggle */}
         <div role="group" aria-label="Chart mode" className="flex bg-surface-2 rounded-lg p-1 gap-0.5">
           {(["pageviews", "sessions"] as ChartMode[]).map(m => (
             <button
               key={m}
               onClick={() => setChartMode(m)}
               aria-pressed={chartMode === m}
-              className={`px-3 py-2 text-xs font-semibold rounded-md transition-colors ${
+              className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
                 chartMode === m ? "bg-surface-4 text-gray-200" : "text-gray-500 hover:text-gray-300"
               }`}
             >
-              {m === "pageviews" ? "Pageviews" : "Unique visitors"}
+              {m === "pageviews" ? "Pageviews" : "Visitors"}
             </button>
           ))}
         </div>
@@ -491,16 +472,19 @@ export function UmamiPage() {
       )}
 
       {/* Chart card */}
-      <div className="bg-surface-1 border border-border rounded-lg p-6">
-        <UmamiMultiLineChart
-          series={series}
-          hiddenIds={hiddenIds}
-          chartMode={chartMode}
-          chartLoading={chartLoading}
-          timeRange={timeRange}
-          onTooltip={setTooltip}
-          onTooltipClear={() => setTooltip(null)}
-        />
+      <div className="bg-surface-1 border border-border rounded-lg p-3 sm:p-6 overflow-hidden">
+        <div ref={chartContainerRef}>
+          <UmamiMultiLineChart
+            series={series}
+            hiddenIds={hiddenIds}
+            chartMode={chartMode}
+            chartLoading={chartLoading}
+            timeRange={timeRange}
+            containerWidth={chartWidth}
+            onTooltip={setTooltip}
+            onTooltipClear={() => setTooltip(null)}
+          />
+        </div>
       </div>
 
       {/* Legend card */}
