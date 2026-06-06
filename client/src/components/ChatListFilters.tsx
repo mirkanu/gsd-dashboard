@@ -26,34 +26,8 @@ export function ChatListFilters({ projects, activeFilter, onFilterChange, groupB
 
   return (
     <div>
-      <div className="flex gap-1 px-3 py-2 overflow-x-auto">
-        {FILTERS.map(({ label, state }) => {
-          const isActive = activeFilter === state;
-          const count = getCount(state);
-          return (
-            <button
-              key={label}
-              onClick={() => onFilterChange(state)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 flex-shrink-0 ${
-                isActive
-                  ? "bg-accent/20 text-accent"
-                  : "bg-surface-3 text-gray-400 hover:text-gray-200"
-              }`}
-            >
-              {label}
-              <span
-                className={`text-[10px] px-1.5 rounded-full ${
-                  isActive ? "bg-accent/30 text-accent" : "bg-surface-2 text-gray-500"
-                }`}
-              >
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
       {onGroupByChange && (
-        <div className="flex items-center gap-1.5 px-3 py-1 border-t border-[var(--border)] mt-1">
+        <div className="flex items-center gap-1.5 px-3 py-2">
           <span className="text-[10px] text-gray-500 font-medium">Group by:</span>
           {(['state', 'stage'] as const).map((mode) => (
             <button
@@ -66,6 +40,34 @@ export function ChatListFilters({ projects, activeFilter, onFilterChange, groupB
               {mode === 'state' ? 'State' : 'Stage'}
             </button>
           ))}
+        </div>
+      )}
+      {groupBy !== 'stage' && (
+        <div className="flex gap-1 px-3 py-1.5 overflow-x-auto border-t border-[var(--border)]">
+          {FILTERS.map(({ label, state }) => {
+            const isActive = activeFilter === state;
+            const count = getCount(state);
+            return (
+              <button
+                key={label}
+                onClick={() => onFilterChange(state)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 flex-shrink-0 ${
+                  isActive
+                    ? "bg-accent/20 text-accent"
+                    : "bg-surface-3 text-gray-400 hover:text-gray-200"
+                }`}
+              >
+                {label}
+                <span
+                  className={`text-[10px] px-1.5 rounded-full ${
+                    isActive ? "bg-accent/30 text-accent" : "bg-surface-2 text-gray-500"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

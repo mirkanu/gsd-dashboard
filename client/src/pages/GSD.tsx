@@ -1384,7 +1384,6 @@ export function GSD() {
                       {STAGE_ORDER.map((stage) => {
                         const stageProjects = projects.filter(p => {
                           if (p.sessionState === 'archived') return false;
-                          if (activeFilter !== null && p.sessionState !== activeFilter) return false;
                           return (p.stage ?? 'draft') === stage;
                         });
                         if (stageProjects.length === 0) return null;
