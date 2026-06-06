@@ -1,5 +1,23 @@
 const path = require('path');
+const fs = require('fs');
 const ROOT = __dirname;
+
+// Parse /home/services/.env.production into an object
+function loadEnv(filePath) {
+  try {
+    return Object.fromEntries(
+      fs.readFileSync(filePath, 'utf8')
+        .split('\n')
+        .filter(line => line && !line.startsWith('#') && line.includes('='))
+        .map(line => {
+          const idx = line.indexOf('=');
+          return [line.slice(0, idx).trim(), line.slice(idx + 1).trim()];
+        })
+    );
+  } catch { return {}; }
+}
+
+const sharedEnv = loadEnv('/home/services/.env.production');
 
 module.exports = {
   apps: [
@@ -9,6 +27,7 @@ module.exports = {
       cwd: ROOT,
       env: {
         NODE_ENV: 'production',
+        ...sharedEnv,
       },
       restart_delay: 3000,
       exp_backoff_restart_delay: 100,
