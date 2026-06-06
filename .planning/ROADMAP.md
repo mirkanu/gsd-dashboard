@@ -60,7 +60,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 73. Volume Lifecycle Management | 2/2 | Complete | 2026-06-05 |
 | 74. /server Page Overhaul | 3/3 | Complete | 2026-06-05 |
 | 75. Unified Stack Registry | 3/3 | Complete | 2026-06-05 |
-| 76. Umami Combined Analytics View | 1/2 | In Progress|  |
+| 76. Umami Combined Analytics View | 2/2 | Complete   | 2026-06-06 |
 
 ---
 
@@ -501,14 +501,14 @@ Plans:
 - Website list fetched dynamically from Umami's `GET /api/websites`
 - Data fetched via a backend proxy route (keeps Umami credentials server-side)
 **Depends on:** Phase 75 (Umami provisioner confirms the integration pattern)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 **Wave 1**
 - [x] 76-01-PLAN.md — Backend: server/routes/umami.js (/websites + /stats proxy) + server/index.js registration
 
 **Wave 2** *(blocked on 76-01)*
-- [ ] 76-02-PLAN.md — Frontend: UmamiPage.tsx (multi-line SVG chart, legend, controls) + App.tsx route + Sidebar.tsx nav item
+- [x] 76-02-PLAN.md — Frontend: UmamiPage.tsx (multi-line SVG chart, legend, controls) + App.tsx route + Sidebar.tsx nav item
 
 ---
 
