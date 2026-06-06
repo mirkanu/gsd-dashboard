@@ -334,7 +334,7 @@ export function UmamiPage() {
       const { startAt, endAt } = getTimeRange(range);
       const results = await Promise.allSettled(
         websites.map(async (w) => {
-          const r = await fetch(`/api/umami/stats?websiteId=${w.id}&startAt=${startAt}&endAt=${endAt}`);
+          const r = await fetch(`/api/umami/stats?websiteId=${encodeURIComponent(w.id)}&startAt=${startAt}&endAt=${endAt}`);
           if (!r.ok) throw new Error(`Failed for ${w.id}`);
           const data = await r.json();
           return {
@@ -396,7 +396,7 @@ export function UmamiPage() {
       <div className="m-6 p-6 bg-surface-1 border border-border rounded-lg">
         <h2 className="text-base font-semibold text-gray-100 mb-1">Web analytics not configured</h2>
         <p className="text-sm text-gray-400 mb-4">
-          Add UMAMI_API_URL and UMAMI_API_KEY to the Environment settings, then reload.
+          Add <code className="text-gray-300 bg-surface-2 px-1 rounded">UMAMI_ADMIN_PASSWORD</code> to the Environment settings, then reload.
         </p>
         <a href="/env" className="text-sm text-accent hover:underline">Go to Environment settings</a>
       </div>
@@ -411,7 +411,7 @@ export function UmamiPage() {
       {tooltip && (
         <div
           className="fixed z-50 px-2 py-2 text-xs bg-[#12121f] border border-[#2a2a4a] rounded shadow-xl text-gray-200 pointer-events-none whitespace-nowrap"
-          style={{ top: tooltip.y + 12, left: tooltip.x + 12 }}
+          style={{ top: Math.min(tooltip.y + 12, window.innerHeight - 120), left: Math.min(tooltip.x + 12, window.innerWidth - 180) }}
         >
           <div className="font-semibold mb-1 text-gray-400">{tooltip.date}</div>
           {tooltip.values.map(v => (
@@ -486,7 +486,7 @@ export function UmamiPage() {
       {/* Unreachable error banner */}
       {error === "unreachable" && (
         <div className="px-4 py-3 text-xs text-amber-400 bg-amber-950/30 border border-amber-900/40 rounded-lg">
-          Could not reach Umami — check that the dashboard server can connect to umami.gsdlabs.dev.
+          Could not reach Umami — verify it is running and the server can connect to it.
         </div>
       )}
 

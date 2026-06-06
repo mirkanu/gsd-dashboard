@@ -45,6 +45,9 @@ router.get("/websites", async (_req, res) => {
     const data = await umamiGet("/api/websites?pageSize=100");
     // Umami v2 wraps in { data: [...] }
     const websites = Array.isArray(data) ? data : (data.data ?? []);
+    if (data.count && websites.length < data.count) {
+      console.warn(`[umami] truncated: got ${websites.length} of ${data.count} websites (pageSize=100)`);
+    }
     return res.json(
       websites.map(({ id, name, domain }) => ({ id, name, domain }))
     );
