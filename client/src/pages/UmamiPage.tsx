@@ -1,0 +1,521 @@
+import { useEffect, useState } from "react";
+import { RefreshCw } from "lucide-react";
+
+// ── Color palette ─────────────────────────────────────────────────────────────
+
+const SERIES_COLORS = [
+  "#6366f1", "#10b981", "#f59e0b", "#3b82f6", "#ec4899",
+  "#8b5cf6", "#14b8a6", "#f97316", "#84cc16", "#06b6d4",
+  "#a855f7", "#ef4444",
+];
+
+function hashColor(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return SERIES_COLORS[h % SERIES_COLORS.length] as string;
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface UmamiWebsite { id: string; name: string; domain: string; }
+interface DataPoint { x: string; y: number; }
+interface SeriesData { website: UmamiWebsite; pageviews: DataPoint[]; sessions: DataPoint[]; color: string; }
+type TimeRange = "7d" | "30d" | "all";
+type ChartMode = "pageviews" | "sessions";
+
+// ── Time range helpers ────────────────────────────────────────────────────────
+
+function getTimeRange(range: TimeRange): { startAt: number; endAt: number } {
+  const now = Date.now();
+  const endAt = now;
+  if (range === "7d") return { startAt: now - 7 * 86400000, endAt };
+  if (range === "30d") return { startAt: now - 30 * 86400000, endAt };
+  return { startAt: new Date("2020-01-01").getTime(), endAt };
+}
+
+function rangeLabel(range: TimeRange): string {
+  if (range === "7d") return "last 7 days";
+  if (range === "30d") return "last 30 days";
+  return "all time";
+}
+
+// ── SVG multi-line chart ──────────────────────────────────────────────────────
+
+const PAD = { left: 48, right: 16, top: 12, bottom: 32 };
+const VIEW_W = 800;
+const VIEW_H = 240;
+const PLOT_W = VIEW_W - PAD.left - PAD.right;
+const PLOT_H = VIEW_H - PAD.top - PAD.bottom;
+
+interface TooltipState {
+  x: number;
+  y: number;
+  date: string;
+  values: { name: string; color: string; value: number }[];
+}
+
+function UmamiMultiLineChart({
+  series,
+  hiddenIds,
+  chartMode,
+  chartLoading,
+  timeRange,
+  onTooltip,
+  onTooltipClear,
+}: {
+  series: SeriesData[];
+  hiddenIds: Set<string>;
+  chartMode: ChartMode;
+  chartLoading: boolean;
+  timeRange: TimeRange;
+  onTooltip: (t: TooltipState) => void;
+  onTooltipClear: () => void;
+}) {
+  const visibleSeries = series.filter(s => !hiddenIds.has(s.website.id));
+
+  // Collect all date strings across visible series
+  const allDates = Array.from(
+    new Set(
+      visibleSeries.flatMap(s =>
+        (chartMode === "pageviews" ? s.pageviews : s.sessions).map(p => p.x)
+      )
+    )
+  ).sort();
+
+  const globalMax = Math.max(
+    1,
+    ...visibleSeries.flatMap(s =>
+      (chartMode === "pageviews" ? s.pageviews : s.sessions).map(p => p.y)
+    )
+  );
+
+  function toX(dateIndex: number): number {
+    if (allDates.length <= 1) return PAD.left + PLOT_W / 2;
+    return PAD.left + (dateIndex / (allDates.length - 1)) * PLOT_W;
+  }
+
+  function toY(value: number): number {
+    return PAD.top + PLOT_H - (value / globalMax) * PLOT_H;
+  }
+
+  // Build date lookup map
+  const dateIndexMap = new Map<string, number>(allDates.map((d, i) => [d, i]));
+
+  // Y-axis gridlines: 0%, 33%, 66%, 100%
+  const yTicks = [0, 0.33, 0.66, 1].map(frac => ({
+    y: PAD.top + PLOT_H - frac * PLOT_H,
+    label: frac === 0 ? "0" : Math.round(frac * globalMax).toLocaleString(),
+  }));
+
+  // X-axis ticks: roughly 1 per 7 days
+  const xTickStep = Math.max(1, Math.ceil(allDates.length / (PLOT_W / 80)));
+  const xTicks = allDates
+    .filter((_, i) => i % xTickStep === 0 || i === allDates.length - 1)
+    .map(d => ({ date: d, x: toX(dateIndexMap.get(d) ?? 0) }));
+
+  function handleMouseMove(e: React.MouseEvent<SVGRectElement>) {
+    if (allDates.length === 0) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relX = e.clientX - rect.left;
+    const svgX = (relX / rect.width) * VIEW_W;
+    const plotX = Math.max(PAD.left, Math.min(PAD.left + PLOT_W, svgX));
+    const frac = (plotX - PAD.left) / PLOT_W;
+    const idx = Math.round(frac * (allDates.length - 1));
+    const date = allDates[idx];
+    if (!date) return;
+
+    const values = visibleSeries.map(s => {
+      const points = chartMode === "pageviews" ? s.pageviews : s.sessions;
+      const pt = points.find(p => p.x === date);
+      return { name: s.website.name, color: s.color, value: pt?.y ?? 0 };
+    }).sort((a, b) => b.value - a.value);
+
+    const crosshairX = toX(idx);
+    // Scale the crosshair X back to client coords
+    const svgEl = e.currentTarget.closest("svg");
+    let clientX = e.clientX;
+    let clientY = e.clientY;
+    if (svgEl) {
+      const svgRect = svgEl.getBoundingClientRect();
+      clientX = svgRect.left + (crosshairX / VIEW_W) * svgRect.width;
+      clientY = svgRect.top + PAD.top;
+    }
+
+    // Format date for display
+    const dateObj = new Date(date + "T12:00:00");
+    const displayDate = dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+    onTooltip({ x: clientX, y: clientY, date: displayDate, values });
+  }
+
+  if (chartLoading) {
+    return <div className="animate-pulse bg-surface-2 rounded" style={{ height: VIEW_H }} />;
+  }
+
+  if (allDates.length === 0) {
+    return (
+      <svg
+        width="100%"
+        height={VIEW_H}
+        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+        preserveAspectRatio="none"
+        className="w-full h-40 md:h-60"
+        role="img"
+        aria-label={`Multi-line chart of ${chartMode} over ${rangeLabel(timeRange)}`}
+      >
+        <text
+          x={VIEW_W / 2}
+          y={VIEW_H / 2}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill="#6b7280"
+          fontSize={14}
+        >
+          No data
+        </text>
+      </svg>
+    );
+  }
+
+  // Crosshair tracking state lives in parent via callback; we draw the crosshair
+  // via an invisible overlay. For the crosshair line itself, we need a local approach.
+  // We'll draw the SVG chart without internal state and let the parent position the tooltip.
+
+  return (
+    <svg
+      width="100%"
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      preserveAspectRatio="none"
+      className="w-full h-40 md:h-60"
+      role="img"
+      aria-label={`Multi-line chart of ${chartMode} over ${rangeLabel(timeRange)}`}
+    >
+      {/* Gridlines */}
+      {yTicks.map(tick => (
+        <g key={tick.y}>
+          <line
+            x1={PAD.left}
+            x2={PAD.left + PLOT_W}
+            y1={tick.y}
+            y2={tick.y}
+            stroke="#2a2a3d"
+            strokeWidth={1}
+          />
+          <text
+            x={PAD.left - 4}
+            y={tick.y}
+            textAnchor="end"
+            dominantBaseline="middle"
+            fill="#4b5563"
+            fontSize={11}
+            fontFamily="monospace"
+          >
+            {tick.label}
+          </text>
+        </g>
+      ))}
+
+      {/* X-axis ticks */}
+      {xTicks.map(tick => (
+        <text
+          key={tick.date}
+          x={tick.x}
+          y={VIEW_H - 6}
+          textAnchor="middle"
+          fill="#4b5563"
+          fontSize={11}
+          fontFamily="monospace"
+        >
+          {tick.date.slice(5)}
+        </text>
+      ))}
+
+      {/* Series polylines */}
+      {visibleSeries.map(s => {
+        const points = (chartMode === "pageviews" ? s.pageviews : s.sessions)
+          .filter(p => dateIndexMap.has(p.x))
+          .map(p => `${toX(dateIndexMap.get(p.x) as number)},${toY(p.y)}`);
+        if (points.length === 0) return null;
+        return (
+          <polyline
+            key={s.website.id}
+            fill="none"
+            stroke={s.color}
+            strokeWidth={2}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            points={points.join(" ")}
+          />
+        );
+      })}
+
+      {/* Mouse capture overlay */}
+      <rect
+        x={PAD.left}
+        y={PAD.top}
+        width={PLOT_W}
+        height={PLOT_H}
+        fill="transparent"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={onTooltipClear}
+        style={{ cursor: "crosshair" }}
+      />
+    </svg>
+  );
+}
+
+// ── Legend ────────────────────────────────────────────────────────────────────
+
+function UmamiLegend({
+  series,
+  hiddenIds,
+  onToggle,
+}: {
+  series: SeriesData[];
+  hiddenIds: Set<string>;
+  onToggle: (id: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-3 px-4 py-3">
+      {series.map(s => (
+        <button
+          key={s.website.id}
+          className={`flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer select-none transition-opacity ${hiddenIds.has(s.website.id) ? "opacity-40" : ""}`}
+          onClick={() => onToggle(s.website.id)}
+          tabIndex={0}
+          title="Click to show/hide this project"
+          onKeyDown={e => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onToggle(s.website.id);
+            }
+          }}
+        >
+          <span
+            className="w-3 h-3 rounded-sm flex-shrink-0"
+            style={{ backgroundColor: s.color }}
+          />
+          <span title={s.website.name}>
+            {s.website.name.slice(0, 18)}{s.website.name.length > 18 ? "…" : ""}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
+
+export function UmamiPage() {
+  const [timeRange, setTimeRange] = useState<TimeRange>("7d");
+  const [chartMode, setChartMode] = useState<ChartMode>("pageviews");
+  const [series, setSeries] = useState<SeriesData[]>([]);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [chartLoading, setChartLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loadedCount, setLoadedCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [lastFetched, setLastFetched] = useState<Date | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+
+  async function fetchAll(range: TimeRange, isInitial: boolean) {
+    if (isInitial) setLoading(true); else setChartLoading(true);
+    setError(null);
+    try {
+      const wRes = await fetch("/api/umami/websites");
+      if (wRes.status === 503) {
+        setError("credentials-missing");
+        return;
+      }
+      if (!wRes.ok) throw new Error("unreachable");
+      const websites: UmamiWebsite[] = await wRes.json();
+      setTotalCount(websites.length);
+      const { startAt, endAt } = getTimeRange(range);
+      const results = await Promise.allSettled(
+        websites.map(async (w) => {
+          const r = await fetch(`/api/umami/stats?websiteId=${w.id}&startAt=${startAt}&endAt=${endAt}`);
+          if (!r.ok) throw new Error(`Failed for ${w.id}`);
+          const data = await r.json();
+          return {
+            website: w,
+            pageviews: data.pageviews ?? [],
+            sessions: data.sessions ?? [],
+            color: hashColor(w.id),
+          } as SeriesData;
+        })
+      );
+      const loaded = results
+        .filter((r): r is PromiseFulfilledResult<SeriesData> => r.status === "fulfilled")
+        .map(r => r.value);
+      setLoadedCount(loaded.length);
+      setSeries(loaded);
+      setLastFetched(new Date());
+    } catch {
+      setError("unreachable");
+    } finally {
+      if (isInitial) setLoading(false); else setChartLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchAll(timeRange, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleRangeChange(r: TimeRange) {
+    setTimeRange(r);
+    fetchAll(r, false);
+  }
+
+  function toggleHidden(id: string) {
+    setHiddenIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  // ── Loading skeleton ───────────────────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="space-y-4 p-6" aria-label="Loading web analytics data">
+        <div className="h-9 bg-surface-2 rounded-lg w-56 animate-pulse" />
+        <div className="h-10 bg-surface-2 rounded-lg animate-pulse" />
+        <div className="h-64 bg-surface-2 rounded-lg animate-pulse" />
+        <div className="h-16 bg-surface-2 rounded-lg animate-pulse" />
+      </div>
+    );
+  }
+
+  // ── Credentials error ──────────────────────────────────────────────────────
+
+  if (error === "credentials-missing") {
+    return (
+      <div className="m-6 p-6 bg-surface-1 border border-border rounded-lg">
+        <h2 className="text-base font-semibold text-gray-100 mb-1">Web analytics not configured</h2>
+        <p className="text-sm text-gray-400 mb-4">
+          Add UMAMI_API_URL and UMAMI_API_KEY to the Environment settings, then reload.
+        </p>
+        <a href="/env" className="text-sm text-accent hover:underline">Go to Environment settings</a>
+      </div>
+    );
+  }
+
+  // ── Main layout ────────────────────────────────────────────────────────────
+
+  return (
+    <div className="flex flex-col gap-6 p-6">
+      {/* Tooltip */}
+      {tooltip && (
+        <div
+          className="fixed z-50 px-2 py-2 text-xs bg-[#12121f] border border-[#2a2a4a] rounded shadow-xl text-gray-200 pointer-events-none whitespace-nowrap"
+          style={{ top: tooltip.y + 12, left: tooltip.x + 12 }}
+        >
+          <div className="font-semibold mb-1 text-gray-400">{tooltip.date}</div>
+          {tooltip.values.map(v => (
+            <div key={v.name} className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ backgroundColor: v.color }} />
+              <span>
+                {v.name}: {v.value} {chartMode === "pageviews" ? "pageviews" : "visitors"}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-100">Web Analytics</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Pageviews and visitors across all projects — {rangeLabel(timeRange)}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {lastFetched && (
+            <span className="text-xs text-gray-500">
+              Updated {lastFetched.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+          <button
+            onClick={() => fetchAll(timeRange, false)}
+            className="px-3 py-1.5 text-xs font-semibold bg-surface-2 hover:bg-surface-3 text-gray-300 rounded-md border border-border transition-colors flex items-center gap-1"
+          >
+            <RefreshCw className="w-3 h-3" />
+            Refresh Analytics
+          </button>
+        </div>
+      </div>
+
+      {/* Controls row */}
+      <div className="flex items-center justify-between">
+        {/* TimeRangeSelector */}
+        <div role="group" aria-label="Time range" className="flex bg-surface-2 rounded-lg p-1 gap-0.5">
+          {(["7d", "30d", "all"] as TimeRange[]).map(r => (
+            <button
+              key={r}
+              onClick={() => handleRangeChange(r)}
+              aria-pressed={timeRange === r}
+              className={`px-3 py-2 text-xs font-semibold rounded-md transition-colors ${
+                timeRange === r ? "bg-surface-4 text-gray-200" : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              {r === "7d" ? "7 days" : r === "30d" ? "30 days" : "All time"}
+            </button>
+          ))}
+        </div>
+        {/* ChartModeToggle */}
+        <div role="group" aria-label="Chart mode" className="flex bg-surface-2 rounded-lg p-1 gap-0.5">
+          {(["pageviews", "sessions"] as ChartMode[]).map(m => (
+            <button
+              key={m}
+              onClick={() => setChartMode(m)}
+              aria-pressed={chartMode === m}
+              className={`px-3 py-2 text-xs font-semibold rounded-md transition-colors ${
+                chartMode === m ? "bg-surface-4 text-gray-200" : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              {m === "pageviews" ? "Pageviews" : "Unique visitors"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Unreachable error banner */}
+      {error === "unreachable" && (
+        <div className="px-4 py-3 text-xs text-amber-400 bg-amber-950/30 border border-amber-900/40 rounded-lg">
+          Could not reach Umami — check that the dashboard server can connect to umami.gsdlabs.dev.
+        </div>
+      )}
+
+      {/* Chart card */}
+      <div className="bg-surface-1 border border-border rounded-lg p-6">
+        <UmamiMultiLineChart
+          series={series}
+          hiddenIds={hiddenIds}
+          chartMode={chartMode}
+          chartLoading={chartLoading}
+          timeRange={timeRange}
+          onTooltip={setTooltip}
+          onTooltipClear={() => setTooltip(null)}
+        />
+      </div>
+
+      {/* Legend card */}
+      <div className="bg-surface-1 border border-border rounded-lg">
+        {loadedCount < totalCount && totalCount > 0 && (
+          <p className="text-xs text-gray-500 px-4 pt-3">
+            {loadedCount} of {totalCount} projects loaded
+          </p>
+        )}
+        <UmamiLegend
+          series={series}
+          hiddenIds={hiddenIds}
+          onToggle={toggleHidden}
+        />
+      </div>
+    </div>
+  );
+}
