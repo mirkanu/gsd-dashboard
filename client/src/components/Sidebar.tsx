@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Activity,
+  BarChart2,
   BarChart3,
   Settings,
   MapPin,
@@ -42,6 +43,7 @@ const PRIMARY_ITEMS = [
 const AGENT_ITEMS = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/analytics", icon: BarChart3, label: "Analytics", end: false },
+  { to: "/umami", icon: BarChart2, label: "Web Analytics", end: false },
 ] as const;
 
 const STORAGE_KEY = "sidebar-collapsed";
