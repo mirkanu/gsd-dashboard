@@ -60,7 +60,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 73. Volume Lifecycle Management | 2/2 | Complete | 2026-06-05 |
 | 74. /server Page Overhaul | 3/3 | Complete | 2026-06-05 |
 | 75. Unified Stack Registry | 3/3 | Complete | 2026-06-05 |
-| 76. Umami Combined Analytics View | 2/2 | Complete   | 2026-06-06 |
+| 76. Umami Combined Analytics View | 2/2 | Complete    | 2026-06-06 |
 
 ---
 
