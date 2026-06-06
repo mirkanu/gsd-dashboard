@@ -78,8 +78,10 @@ router.get("/stats", async (req, res) => {
   }
 
   try {
+    const rangeDays = (end - start) / 86400000;
+    const unit = rangeDays <= 90 ? "day" : "month";
     const data = await umamiGet(
-      `/api/websites/${websiteId}/pageviews?startAt=${start}&endAt=${end}&unit=day&timezone=UTC`
+      `/api/websites/${websiteId}/pageviews?startAt=${start}&endAt=${end}&unit=${unit}&timezone=UTC`
     );
     return res.json(data);
   } catch (err) {

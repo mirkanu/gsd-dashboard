@@ -31,6 +31,7 @@ import { UploadPanel } from "./UploadPanel";
 // ─── Primary nav (always visible at top) ─────────────────────────────────────
 const PRIMARY_ITEMS = [
   { to: "/gsd", icon: MapPin, label: "GSD Projects" },
+  { to: "/umami", icon: BarChart2, label: "Web Analytics", end: false },
   { to: "/feed", icon: Rss, label: "Feed" },
   { to: "/services", icon: Server, label: "Services" },
   { to: "/usage", icon: Coins, label: "Usage" },
@@ -43,7 +44,6 @@ const PRIMARY_ITEMS = [
 const AGENT_ITEMS = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/analytics", icon: BarChart3, label: "Analytics", end: false },
-  { to: "/umami", icon: BarChart2, label: "Web Analytics", end: false },
 ] as const;
 
 const STORAGE_KEY = "sidebar-collapsed";

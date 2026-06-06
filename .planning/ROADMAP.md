@@ -510,6 +510,13 @@ Plans:
 **Wave 2** *(blocked on 76-01)*
 - [x] 76-02-PLAN.md — Frontend: UmamiPage.tsx (multi-line SVG chart, legend, controls) + App.tsx route + Sidebar.tsx nav item
 
+**Post-ship polish (2026-06-06):**
+- SVG chart made fully responsive: `width="100%"` + `viewBox` so chart fills card on desktop and doesn't overflow on mobile
+- "All time" range: server auto-selects `unit=month` for ranges >90 days (was `unit=day`, causing Umami to return a single year-bucket and render an invisible chart)
+- "All time" x-axis: leading zero-traffic dates trimmed so axis starts at first real data point
+- "All time" view uses grouped vertical bar chart (one bar per month per project) instead of polyline; month-name labels ("May", "Jun", "May '26")
+- "Web Analytics" nav entry moved from Agents Dashboard submenu to main sidebar, directly under GSD Projects
+
 ---
 
 ## Seeds (parked ideas that may surface in v5.x)

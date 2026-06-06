@@ -80,13 +80,26 @@ function UmamiMultiLineChart({
 
   const visibleSeries = series.filter(s => !hiddenIds.has(s.website.id));
 
-  const allDates = Array.from(
+  const allDatesRaw = Array.from(
     new Set(
       visibleSeries.flatMap(s =>
         (chartMode === "pageviews" ? s.pageviews : s.sessions).map(p => p.x)
       )
     )
   ).sort();
+
+  // Build a lookup of total value per date across all visible series
+  const dateTotals = new Map<string, number>();
+  for (const d of allDatesRaw) {
+    const total = visibleSeries.reduce((sum, s) => {
+      const pt = (chartMode === "pageviews" ? s.pageviews : s.sessions).find(p => p.x === d);
+      return sum + (pt?.y ?? 0);
+    }, 0);
+    dateTotals.set(d, total);
+  }
+  // Trim leading dates where all series have zero traffic
+  const firstNonZero = allDatesRaw.findIndex(d => (dateTotals.get(d) ?? 0) > 0);
+  const allDates = firstNonZero <= 0 ? allDatesRaw : allDatesRaw.slice(firstNonZero);
 
   const globalMax = Math.max(
     1,
@@ -95,7 +108,10 @@ function UmamiMultiLineChart({
     )
   );
 
+  const slotW = PLOT_W / Math.max(1, allDates.length);
+
   function toX(dateIndex: number): number {
+    if (isMonthly) return PAD.left + dateIndex * slotW + slotW / 2;
     if (allDates.length <= 1) return PAD.left + PLOT_W / 2;
     return PAD.left + (dateIndex / (allDates.length - 1)) * PLOT_W;
   }
@@ -110,6 +126,21 @@ function UmamiMultiLineChart({
     y: PAD.top + PLOT_H - frac * PLOT_H,
     label: frac === 0 ? "0" : Math.round(frac * globalMax).toLocaleString(),
   }));
+
+  // Detect monthly granularity (all dates land on the 1st of the month)
+  const isMonthly = allDates.length > 0 && allDates.every(d => d.endsWith("-01"));
+  const spansMultipleYears = allDates.length > 1 &&
+    allDates[0]!.slice(0, 4) !== allDates[allDates.length - 1]!.slice(0, 4);
+  const MONTH_ABBR = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  function formatXLabel(date: string): string {
+    if (isMonthly) {
+      const month = parseInt(date.slice(5, 7), 10) - 1;
+      const year = date.slice(2, 4);
+      return spansMultipleYears ? `${MONTH_ABBR[month]} '${year}` : (MONTH_ABBR[month] ?? date.slice(5));
+    }
+    return date.slice(5);
+  }
 
   // Limit x-axis ticks based on available pixel width (~1 per 60px, max 8)
   const maxTicks = Math.max(2, Math.min(8, Math.floor(PLOT_W / 60)));
@@ -156,7 +187,7 @@ function UmamiMultiLineChart({
 
   if (allDates.length === 0) {
     return (
-      <svg width={containerWidth} height={SVG_H} role="img" aria-label={`Multi-line chart of ${chartMode} over ${rangeLabel(timeRange)}`}>
+      <svg width="100%" height={SVG_H} viewBox={`0 0 ${containerWidth} ${SVG_H}`} role="img" aria-label={`Multi-line chart of ${chartMode} over ${rangeLabel(timeRange)}`}>
         <text x={containerWidth / 2} y={SVG_H / 2} textAnchor="middle" dominantBaseline="middle" fill="#6b7280" fontSize={14}>
           No data
         </text>
@@ -166,8 +197,9 @@ function UmamiMultiLineChart({
 
   return (
     <svg
-      width={containerWidth}
+      width="100%"
       height={SVG_H}
+      viewBox={`0 0 ${containerWidth} ${SVG_H}`}
       role="img"
       aria-label={`Multi-line chart of ${chartMode} over ${rangeLabel(timeRange)}`}
     >
@@ -200,12 +232,37 @@ function UmamiMultiLineChart({
           fontSize={11}
           fontFamily="monospace"
         >
-          {tick.date.slice(5)}
+          {formatXLabel(tick.date)}
         </text>
       ))}
 
-      {/* Series polylines */}
-      {visibleSeries.map(s => {
+      {/* Series bars (monthly) or polylines (daily) */}
+      {isMonthly ? (() => {
+        const numVisible = visibleSeries.length;
+        const groupGap = Math.max(2, slotW * 0.15);
+        const groupW = slotW - groupGap;
+        const barW = Math.max(1, groupW / Math.max(1, numVisible));
+        return visibleSeries.flatMap((s, si) =>
+          (chartMode === "pageviews" ? s.pageviews : s.sessions)
+            .filter(p => dateIndexMap.has(p.x))
+            .map(p => {
+              const di = dateIndexMap.get(p.x) as number;
+              const barH = (p.y / globalMax) * PLOT_H;
+              return (
+                <rect
+                  key={`${s.website.id}-${p.x}`}
+                  x={PAD.left + di * slotW + groupGap / 2 + si * barW}
+                  y={PAD.top + PLOT_H - barH}
+                  width={Math.max(1, barW - 1)}
+                  height={barH}
+                  fill={s.color}
+                  opacity={0.85}
+                  rx={2}
+                />
+              );
+            })
+        );
+      })() : visibleSeries.map(s => {
         const points = (chartMode === "pageviews" ? s.pageviews : s.sessions)
           .filter(p => dateIndexMap.has(p.x))
           .map(p => `${toX(dateIndexMap.get(p.x) as number)},${toY(p.y)}`);
@@ -473,7 +530,7 @@ export function UmamiPage() {
 
       {/* Chart card */}
       <div className="bg-surface-1 border border-border rounded-lg p-3 sm:p-6 overflow-hidden">
-        <div ref={chartContainerRef}>
+        <div ref={chartContainerRef} style={{ width: "100%" }}>
           <UmamiMultiLineChart
             series={series}
             hiddenIds={hiddenIds}
