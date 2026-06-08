@@ -110,7 +110,7 @@ export function ServerPage() {
         </div>
       )}
 
-      {/* CPU + RAM cards */}
+      {/* CPU + RAM + Disk + Docker cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border bg-card p-4 space-y-3">
           <div className="flex items-center gap-2 font-medium">
@@ -208,62 +208,52 @@ export function ServerPage() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Disk usage */}
-      <div className="rounded-lg border bg-card">
-        <div className="flex items-center gap-2 p-4 font-medium border-b">
-          <HardDrive className="h-4 w-4 text-muted-foreground" /> Disk Usage
+        {/* Disk progress bars */}
+        <div className="rounded-lg border bg-card p-4 space-y-3">
+          <div className="flex items-center gap-2 font-medium">
+            <HardDrive className="h-4 w-4 text-muted-foreground" /> Disk
+          </div>
+          {data.disk.length > 0 ? (
+            <div className="space-y-2">
+              {data.disk
+                .filter(disk => disk.mount === "/" || disk.mount === "/home/services")
+                .map(disk => {
+                  const isRoot = disk.mount === "/";
+                  const label = isRoot ? "Root" : "Volume";
+                  const pct = parseInt(disk.pct, 10) || 0;
+                  const color = pct > 80 ? "bg-indigo-500" : pct > 60 ? "bg-orange-500" : "bg-emerald-500";
+                  return (
+                    <div key={disk.mount} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{label}</span>
+                        <span className="text-muted-foreground">
+                          {disk.used} of {disk.size} ({disk.pct})
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">Loading…</div>
+          )}
         </div>
 
-        {/* Total disk line — from df data (first non-loop mount) */}
-        {data.disk.length > 0 && (
-          <div className="px-4 py-2 text-sm font-medium border-b">
-            Total: {data.disk[0]?.used} used of {data.disk[0]?.size} ({data.disk[0]?.pct})
-          </div>
-        )}
-
-        {/* Per-project attribution rows */}
-        {diskAttribution == null || diskAttribution.rows.length === 0 ? (
-          <div className="px-4 py-3 text-sm text-muted-foreground">Loading attribution…</div>
-        ) : (
-          <div className="divide-y">
-            {diskAttribution.rows.map((row, i) => (
-              <div key={i} className="px-4 py-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className={`font-mono truncate ${row.project ? "" : "text-muted-foreground"}`}>
-                    {row.dir}
-                  </span>
-                  <span className={`tabular-nums shrink-0 ml-3 ${row.dir_error ? "text-muted-foreground italic" : "font-medium"}`}>
-                    {row.dir_error ? "unavailable" : (row.dir_size ?? "—")}
-                  </span>
-                </div>
-                {row.docker_size && (
-                  <div className="flex items-center justify-between text-xs text-muted-foreground mt-0.5 pl-4">
-                    <span>└─ Docker</span>
-                    <span className="tabular-nums">{row.docker_size}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-            {/* Other: unattributed — shown as note */}
-            <div className="px-4 py-2 text-xs text-muted-foreground italic">
-              Other: see Docker subsection below for unattributed build cache / images
-            </div>
-          </div>
-        )}
-
-        {/* Docker space breakdown — D-01, D-03 */}
-        <div className="border-t">
-          <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Docker
+        {/* Docker space breakdown */}
+        <div className="rounded-lg border bg-card p-4 space-y-3">
+          <div className="flex items-center gap-2 font-medium">
+            <Activity className="h-4 w-4 text-muted-foreground" /> Docker Space
           </div>
           {dockerDf === null ? (
-            <div className="px-4 py-2 text-sm text-muted-foreground italic">Loading...</div>
+            <div className="text-sm text-muted-foreground italic">Loading...</div>
           ) : dockerDf.error ? (
-            <div className="px-4 py-2 text-sm text-muted-foreground italic">unavailable</div>
+            <div className="text-sm text-muted-foreground italic">unavailable</div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-4 px-4 pb-3">
+            <div className="grid grid-cols-2 gap-x-4">
               {dockerDf.entries.map((entry) => {
                 const reclaimStr = entry.reclaimable ?? "";
                 const gbMatch = reclaimStr.match(/([\d.]+)\s*GB/i);
