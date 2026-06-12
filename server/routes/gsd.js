@@ -187,7 +187,7 @@ router.get("/projects", async (_req, res) => {
     const IDLE_PAUSED_MS = 48 * 60 * 60 * 1000;
     const pricingRules = stmts.listPricing.all();
 
-    const data = await Promise.all(projects.map(async ({ name, root, tmux_session, archived, display_name }) => {
+    const data = await Promise.all(projects.map(async ({ name, root, tmux_session, archived, display_name, stagingEnabled, stagingPort, stagingUrl, stagingStatus }) => {
       const row = sessionQuery.get(root);
       let sessionState = archived
         ? 'archived'
@@ -264,6 +264,10 @@ router.get("/projects", async (_req, res) => {
       return {
         ...projectData,
         display_name: display_name || null,
+        stagingEnabled: stagingEnabled ?? null,
+        stagingPort: stagingPort ?? null,
+        stagingUrl: stagingUrl ?? null,
+        stagingStatus: stagingStatus ?? null,
         tmuxActive: await isTmuxSessionActiveAsync(tmux_session),
         tmuxSession: tmux_session ?? null,
         sessionState,
@@ -709,6 +713,9 @@ router.post('/projects/:name/staging/enable', async (req, res) => {
     const config = loadConfigWithBackfill();
     const project = await stagingProvisioner.enableStaging(req.params.name, config);
     saveConfig(config);
+    projectsCache = null;
+    const { broadcast } = require('../websocket');
+    broadcast('project_update', { project: req.params.name, stagingEnabled: true, stagingStatus: project.stagingStatus, stagingUrl: project.stagingUrl, stagingPort: project.stagingPort, timestamp: new Date().toISOString() });
     res.json({ success: true, stagingUrl: project.stagingUrl, stagingPort: project.stagingPort, stagingStatus: project.stagingStatus });
   } catch (err) {
     const status = err.message.includes('not found') ? 404 : 500;
@@ -729,6 +736,9 @@ router.post('/projects/:name/staging/disable', async (req, res) => {
     const config = loadConfigWithBackfill();
     const project = await stagingProvisioner.disableStaging(req.params.name, config);
     saveConfig(config);
+    projectsCache = null;
+    const { broadcast: broadcastDisable } = require('../websocket');
+    broadcastDisable('project_update', { project: req.params.name, stagingEnabled: false, stagingStatus: project.stagingStatus, stagingUrl: null, stagingPort: null, timestamp: new Date().toISOString() });
     res.json({ success: true, stagingStatus: project.stagingStatus });
   } catch (err) {
     const status = err.message.includes('not found') ? 404 : 500;
