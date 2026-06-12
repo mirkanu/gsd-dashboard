@@ -931,7 +931,7 @@ export function ProjectCard({
                 } else {
                   await api.gsd.enableStaging(project.name);
                 }
-                // Projects list will refresh via WebSocket project_update event
+                // UI refreshes via project_update WebSocket broadcast from server
               } catch (err) {
                 console.error('Staging toggle failed:', err);
               }
@@ -1226,6 +1226,23 @@ export function GSD() {
       if (msg.type === 'project_state_change') {
         const evt = msg.data as ProjectStateChangeEvent;
         setProjects((prev) => patchProjectsOnStateChange(prev, evt));
+      }
+    });
+    return unsub;
+  }, []);
+
+  // Subscribe to project_update WS messages — patches staging fields in-place after toggle
+  useEffect(() => {
+    const unsub = eventBus.subscribe((msg) => {
+      if (msg.type === 'project_update') {
+        const evt = msg.data as { project: string; stagingEnabled: boolean; stagingStatus: string; stagingUrl: string | null; stagingPort: number | null };
+        setProjects((prev) =>
+          prev.map((p) =>
+            p.name === evt.project
+              ? { ...p, stagingEnabled: evt.stagingEnabled, stagingStatus: evt.stagingStatus, stagingUrl: evt.stagingUrl ?? undefined, stagingPort: evt.stagingPort ?? undefined }
+              : p
+          )
+        );
       }
     });
     return unsub;
