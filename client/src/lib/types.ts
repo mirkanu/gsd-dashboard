@@ -170,6 +170,14 @@ export interface GsdProject {
   github_repo?: string | null;
   /** Phase 59: ISO timestamp of task migration to GitHub. Null until migrated. */
   taskMigratedAt?: string | null;
+  /** Phase 60: true if staging environment has been enabled for this project. Undefined = not enabled. */
+  stagingEnabled?: boolean;
+  /** Phase 60: allocated staging port (e.g. 3100). Stable once assigned; present even after disable. */
+  stagingPort?: number;
+  /** Phase 60: staging hostname without protocol (e.g. 'debates-staging.gsdlabs.dev'). Derived from project name. */
+  stagingUrl?: string;
+  /** Phase 60: live health of staging container — updated by backend polling. Absent means unknown. */
+  stagingStatus?: 'running' | 'stopped' | 'unknown';
 }
 
 export interface BusyMarkers {

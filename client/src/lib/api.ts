@@ -209,6 +209,18 @@ export const api = {
         { method: 'POST', body: JSON.stringify({}) }
       ),
 
+    enableStaging: (projectName: string) =>
+      request<{ stagingUrl: string; stagingPort: number }>(
+        `/gsd/projects/${encodeURIComponent(projectName)}/staging/enable`,
+        { method: 'POST' }
+      ),
+
+    disableStaging: (projectName: string) =>
+      request<{ success: boolean }>(
+        `/gsd/projects/${encodeURIComponent(projectName)}/staging/disable`,
+        { method: 'POST' }
+      ),
+
     tasks: {
       list: (projectKey: string, archived = false) =>
         request<{ tasks: GsdTask[] }>(
