@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import {
   RefreshCw,
   MapPin,
-  ExternalLink,
   X,
   Sun,
   Moon,
@@ -26,6 +25,7 @@ import { VerifyBadge } from "../components/VerifyBadge";
 import { useResizableColumns } from "../hooks/useResizableColumns";
 import { useProjectCreationStateSubscriber } from "../hooks/useProjectCreationState";
 import { CommandChips } from "../components/CommandChips";
+import { ProjectEnvironmentChips } from "../components/ProjectEnvironmentChips";
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() =>
@@ -854,18 +854,7 @@ export function ProjectCard({
         {state?.milestone_name && state.milestone_name !== "milestone" && (
           <p className="text-xs text-gray-600 truncate pl-6">{state.milestone_name}</p>
         )}
-        {project.liveUrl && (
-          <a
-            href={project.liveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-[11px] text-accent hover:text-accent/80 truncate pl-6 block mt-0.5 hover:underline"
-          >
-            <ExternalLink className="w-3 h-3 inline mr-1 align-middle" />
-            {project.liveUrl}
-          </a>
-        )}
+        <ProjectEnvironmentChips project={project} />
         {project.currentTask && (project.sessionState === 'working' || project.sessionState === 'waiting') && (
           <p className="text-xs text-gray-400 truncate pl-6 mt-0.5" title={project.currentTask}>
             {project.currentTask}
@@ -927,6 +916,31 @@ export function ProjectCard({
       {project.sessionState !== "archived" && (
         <div className="px-4 pb-3 pt-1">
           <AutopilotControls project={project} autopilotRun={autopilotRun} />
+        </div>
+      )}
+
+      {/* Staging toggle — Launched projects only */}
+      {project.stage === 'launched' && project.sessionState !== "archived" && (
+        <div className="px-4 pb-1 pt-0" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                if (project.stagingEnabled) {
+                  await api.gsd.disableStaging(project.name);
+                } else {
+                  await api.gsd.enableStaging(project.name);
+                }
+                // Projects list will refresh via WebSocket project_update event
+              } catch (err) {
+                console.error('Staging toggle failed:', err);
+              }
+            }}
+            className="text-[11px] text-gray-400 hover:text-accent transition-colors px-1.5 py-0.5 rounded hover:bg-surface-3"
+            title={project.stagingEnabled ? 'Disable staging' : 'Enable staging environment'}
+          >
+            {project.stagingEnabled ? 'Staging: on' : 'Staging: off'}
+          </button>
         </div>
       )}
 
