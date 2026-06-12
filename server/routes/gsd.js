@@ -17,6 +17,7 @@ const { calculateCost } = require('./pricing');
 const { getTmuxCostForSession } = require('../gsd/costMeasurement');
 const busyMarkers = require('../gsd/busyMarkers');
 const verifyOrchestrator = require('../gsd/verifyOrchestrator');
+const stagingProvisioner = require('../gsd/stagingProvisioner');
 
 const router = express.Router();
 
@@ -692,6 +693,46 @@ router.post('/projects/:name/stage/validate', async (req, res) => {
     res.json(gateResult);
   } catch (err) {
     res.status(500).json({ error: 'Gate validation failed', detail: err.message.split('\n')[0] });
+  }
+});
+
+// POST /api/gsd/projects/:name/staging/enable — opt-in staging provisioning for a Launched project
+router.post('/projects/:name/staging/enable', async (req, res) => {
+  if (GSD_DATA_URL) {
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/staging/enable`,
+      { method: 'POST', signal: AbortSignal.timeout(30000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+  try {
+    const config = loadConfigWithBackfill();
+    const project = await stagingProvisioner.enableStaging(req.params.name, config);
+    saveConfig(config);
+    res.json({ success: true, stagingUrl: project.stagingUrl, stagingPort: project.stagingPort, stagingStatus: project.stagingStatus });
+  } catch (err) {
+    const status = err.message.includes('not found') ? 404 : 500;
+    res.status(status).json({ error: err.message.split('\n')[0] });
+  }
+});
+
+// POST /api/gsd/projects/:name/staging/disable — remove staging environment for a project
+router.post('/projects/:name/staging/disable', async (req, res) => {
+  if (GSD_DATA_URL) {
+    upstreamFetch(`${GSD_DATA_URL}/api/gsd/projects/${encodeURIComponent(req.params.name)}/staging/disable`,
+      { method: 'POST', signal: AbortSignal.timeout(30000) })
+      .then(r => r.json().then(d => res.status(r.status).json(d)))
+      .catch(err => res.status(502).json({ error: 'Failed to reach GSD data source', detail: err.message }));
+    return;
+  }
+  try {
+    const config = loadConfigWithBackfill();
+    const project = await stagingProvisioner.disableStaging(req.params.name, config);
+    saveConfig(config);
+    res.json({ success: true, stagingStatus: project.stagingStatus });
+  } catch (err) {
+    const status = err.message.includes('not found') ? 404 : 500;
+    res.status(status).json({ error: err.message.split('\n')[0] });
   }
 });
 
