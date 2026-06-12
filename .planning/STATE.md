@@ -4,14 +4,14 @@ milestone: v5.1
 milestone_name: Non-Programmer Mode
 status: executing
 stopped_at: Completed 76-02-PLAN.md
-last_updated: "2026-06-12T11:02:23.914Z"
-last_activity: 2026-06-12 -- Phase 56B planning complete
+last_updated: "2026-06-12T16:55:32.012Z"
+last_activity: 2026-06-12 -- Phase 60 execution started
 progress:
   total_phases: 10
   completed_phases: 8
-  total_plans: 32
+  total_plans: 34
   completed_plans: 33
-  percent: 100
+  percent: 97
 ---
 
 # Project State
@@ -21,15 +21,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-08)
 
 **Core value:** Build, run, and evolve software by describing what you want — with the Dashboard handling everything that surrounds the CLI.
-**Current focus:** Phase 76 — umami-combined-analytics-view
+**Current focus:** Phase 60 — dev-production-environment-manager
 
 ## Current Position
 
-Phase: 76
-Plan: Not started
+Phase: 60 (dev-production-environment-manager) — EXECUTING
+Plan: 1 of 2
 Milestone: v5.1 Non-Programmer Mode
-Status: Ready to execute
-Last activity: 2026-06-12 -- Phase 56B planning complete
+Status: Executing Phase 60
+Last activity: 2026-06-12 -- Phase 60 execution started
 
 Progress (v5.1): [███░░░░░░░] ~25% (50.5 ✅, 51 ✅, 53 ✅ complete; 52, 54–60 not started)
 

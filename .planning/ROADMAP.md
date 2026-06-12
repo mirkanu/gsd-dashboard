@@ -51,7 +51,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 58. Project Maturity Stages | 5/5 | Complete    | 2026-05-28 |
 | 54B. Unified Notification Centre | 4/4 | Complete    | 2026-05-30 |
 | 59. Task Backend Migration + Issue GUI Wrapper | 4/4 | Complete   | 2026-05-29 |
-| 60. Dev/Production Environment Manager | 0/2 | Planned | - |
+| 60. Dev/Production Environment Manager | 2/2 | Complete   | 2026-06-12 |
 | 62. Hetzner VPS Migration | 10/11 | Complete ✅ (v5.0) | 2026-05-08 |
 | 67. Cockpit VPS Monitoring | 1/1 | Complete ✅ (v5.0) | 2026-05-07 |
 | 68. Portainer Docker UI | 1/1 | Complete ✅ (v5.0) | 2026-05-07 |
@@ -306,10 +306,10 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 60-01-PLAN.md — Backend: stagingProvisioner.js (port allocation, YAML tunnel config editor, enable/disable lifecycle) + staging API routes in gsd.js + unit tests
+- [x] 60-01-PLAN.md — Backend: stagingProvisioner.js (port allocation, YAML tunnel config editor, enable/disable lifecycle) + staging API routes in gsd.js + unit tests
 
 **Wave 2** *(blocked on 60-01)*
-- [ ] 60-02-PLAN.md — Frontend: GsdProject type extensions (stagingEnabled/Port/Url/Status), api.ts methods, ProjectEnvironmentChips component, staging toggle wired into GSD.tsx
+- [x] 60-02-PLAN.md — Frontend: GsdProject type extensions (stagingEnabled/Port/Url/Status), api.ts methods, ProjectEnvironmentChips component, staging toggle wired into GSD.tsx
 
 ---
 
