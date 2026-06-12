@@ -9,6 +9,7 @@
 - ✅ **v5.0 Hetzner Migration** — Phases 62, 67–72 (shipped 2026-05-08) · [archive](milestones/v5.0-ROADMAP.md)
 - ✅ **v4.3 Optimisation & Cost Intelligence** — Phases 43–49 (shipped 2026-04-18)
 - 🚧 **v5.1 Non-Programmer Mode** — Phases 50.5, 51, 53, 52, 54, 56–60 (in progress)
+- 📋 **v5.2 Session Context Architecture** — Phases 77–79 (planned)
   *(Phase 54 scope reduced: guided onboarding replaced by Global Env Editor — simpler, covers real workflow)*
   *(Phase 55 dropped: MCP tool routing is premature — global .env already handles credential distribution)*
 
@@ -29,9 +30,10 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 3. Never ask the user to do programmer things that Claude/GSD can do itself — no "run command X", no "test Y", no "deploy started, check back in a few minutes". Claude runs, waits, verifies, then pings.
 4. Autonomous testing is the default, not a choice — every plan auto-runs verify-work.
 5. Admin-API-first for external services — Dashboard asks for credentials upfront, provisions programmatically.
-6. Minimise external services — prefer Railway-hosted solutions wherever feasible.
+6. Minimise external services — prefer self-hosted solutions on the Hetzner VPS; use managed services only when self-hosting adds disproportionate complexity.
 7. Dashboard is the control plane, tmux sessions are workers — cross-cutting concerns (status, idle detection, notifications, cost) are Dashboard-owned.
 8. Progress narrated in plain English — landmark events pass through a narration layer (Dashboard cards and Portfolio Feed, not the terminal).
+9. Sessions are context-aware — every Claude Code session starts with accurate project state (stage, mode flags, active stack, key decisions) injected from `project-state.md`; the Dashboard is the editor for that context (v5.2).
 
 ---
 
@@ -45,7 +47,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 52. GSD Command Discoverability | 2/2 | Complete    | 2026-05-09 |
 | 54. Global Env Editor | 2/2 | Complete ✅ (v5.1) | 2026-05-09 |
 | 56. CLI Verbosity Contract + Portfolio Feed | 3/3 | Complete    | 2026-05-09 |
-| 56B. Non-Programmer Behavioural Contract | 0/3 | Planned | - |
+| 56B. Non-Programmer Behavioural Contract | 3/3 | Complete    | 2026-05-28 |
 | 58. Project Maturity Stages | 5/5 | Complete    | 2026-05-28 |
 | 54B. Unified Notification Centre | 4/4 | Complete    | 2026-05-30 |
 | 59. Task Backend Migration + Issue GUI Wrapper | 4/4 | Complete   | 2026-05-29 |
@@ -61,6 +63,9 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 74. /server Page Overhaul | 3/3 | Complete | 2026-06-05 |
 | 75. Unified Stack Registry | 3/3 | Complete | 2026-06-05 |
 | 76. Umami Combined Analytics View | 2/2 | Complete    | 2026-06-06 |
+| 77. project-state.md Foundation | 0/3 | Planned (v5.2) | - |
+| 78. CLAUDE.md Architecture Refactor | 0/2 | Planned (v5.2) | - |
+| 79. Dashboard project-state Editor | 0/3 | Planned (v5.2) | - |
 
 ---
 
@@ -199,11 +204,11 @@ Plans:
 
 Plans:
 **Wave 1**
-- [ ] 56B-01-PLAN.md — Add Non-Programmer Contract to global template + inject into 5 project CLAUDE.md files
+- [x] 56B-01-PLAN.md — Add Non-Programmer Contract to global template + inject into 5 project CLAUDE.md files
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 56B-02-PLAN.md — Add user-outcome framing rule to discuss-phase and plan-phase workflows
-- [ ] 56B-03-PLAN.md — Create 20-prompt behavioural eval rubric + NPB-07 user testing plan
+- [x] 56B-02-PLAN.md — Add user-outcome framing rule to discuss-phase and plan-phase workflows
+- [x] 56B-03-PLAN.md — Create 20-prompt behavioural eval rubric + NPB-07 user testing plan
 
 ---
 
@@ -294,7 +299,9 @@ Plans:
 
 ### Phase 60: Dev/Production Environment Manager
 
-**Goal:** Launched projects get provisioned dev + production environments automatically during Beta→Launched transition, with a GUI-driven "Promote dev → prod" action that enforces verify-work passing and documents the change. Railway-first provisioning.
+> ⚠️ **Re-scope required before planning.** The goal below references Railway, which was torn down in v5.0. Run `/gsd-discuss-phase 60` first to redefine what "dev + production environments" means on the current Hetzner VPS stack before creating any plans.
+
+**Goal (OUTDATED — needs rewrite):** Launched projects get provisioned dev + production environments automatically during Beta→Launched transition, with a GUI-driven "Promote dev → prod" action that enforces verify-work passing and documents the change. Railway-first provisioning.
 **Requirements:** ENV-01 through ENV-05
 **Depends on:** Phase 54, Phase 58
 **Plans:** 0/0 (not yet planned)
@@ -519,8 +526,63 @@ Plans:
 
 ---
 
+---
+
+## v5.2: Session Context Architecture
+
+**Problem:** Each Claude Code session starts with incomplete context about the project it's operating in. The global CLAUDE.md is past the ~150-line practical attention limit. Session decisions aren't persisted across sessions. Learnings from one project don't reach others. Phase 58 built stage storage in SQLite and Dashboard UI, but the stage is never injected into Claude's session context — so Claude can't act on it.
+
+**Solution:** A per-project `project-state.md` file Claude reads at session start, a modularised CLAUDE.md architecture that stays within attention limits, and a global learnings file that propagates rules to all sessions automatically. The Dashboard becomes the editor for this context, not just a display layer.
+
+**Milestone success test:** A fresh Claude Code session on any project correctly knows its stage, never asks the user to do programmer things, and any global learning added in one session (e.g. "never put keys in ecosystem.config.js") automatically surfaces in all other projects' context — without the user touching anything.
+
+---
+
+### Phase 77: project-state.md Foundation
+
+**Goal:** Every GSD project has a machine-readable `.planning/project-state.md` that Claude Code reads at session start. It contains: `stage` (bridged from Phase 58), `mode: non-programmer`, `stack` (active services from Phase 75 registry), and a `key-decisions` log. Phase 58's PATCH /stage endpoint writes to this file in addition to SQLite, making it the canonical source of truth for Claude sessions. The GSD CLAUDE.md template gets an `@.planning/project-state.md` import directive so every new project picks it up automatically. Existing projects get a one-time backfill.
+**Retroactive Phase 58 note:** StageTransitionModal + PATCH /stage must write to `project-state.md` — this phase delivers that bridge.
+**Depends on:** Phase 58 (stage model), Phase 75 (stack registry)
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+- [ ] 77-01-PLAN.md — Schema spec + writer utility (`projectStateWriter.js`): generate/update `.planning/project-state.md` from DB stage + stack registry; backfill script for existing projects
+**Wave 2** *(blocked on 77-01)*
+- [ ] 77-02-PLAN.md — Bridge Phase 58: extend PATCH /stage + StageTransitionModal to call writer; test that stage change updates both SQLite and the file
+- [ ] 77-03-PLAN.md — CLAUDE.md template update: `@.planning/project-state.md` import + inject into all active project CLAUDE.md files
+
+---
+
+### Phase 78: CLAUDE.md Architecture Refactor
+
+**Goal:** Global `~/.claude/CLAUDE.md` trimmed to ≤120 lines (core invariants only). Verbose content that doesn't belong in every project moves to GSD skills that load just-in-time. A shared `~/.claude/LEARNINGS.md` file is created — this is where global learnings (like API key safety, deploy sequencing, etc.) live going forward, referenced by all project CLAUDE.md files. When a learning is added anywhere, it propagates to all sessions automatically via the shared import.
+**Depends on:** Phase 77 (project-state.md pattern established before restructuring)
+**Plans:** 2 plans
+
+Plans:
+- [ ] 78-01-PLAN.md — Audit global CLAUDE.md: categorise each section (core invariant / project-specific / learning / skill-candidate); extract to `LEARNINGS.md` and skills; verify ≤120 lines remaining
+- [ ] 78-02-PLAN.md — Update all active project CLAUDE.md files to import `LEARNINGS.md`; add contribution workflow ("new learning → append to LEARNINGS.md, not inline to CLAUDE.md")
+
+---
+
+### Phase 79: Dashboard project-state Editor
+
+**Goal:** Dashboard surfaces `project-state.md` content as editable panels on the project page — stage (existing Phase 58 UI), mode flags (non-programmer: on/off), active stack, and key decisions log. Activates SEED-001. The user can read and update their project's Claude context from the browser without editing files manually. Changes write through to `project-state.md` via the Phase 77 writer.
+**Depends on:** Phase 77 (writer), Phase 79 activates SEED-001
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+- [ ] 79-01-PLAN.md — Backend: GET/PATCH /api/projects/:id/state routes; read/write project-state.md via writer; extend existing project API shape
+**Wave 2** *(blocked on 79-01)*
+- [ ] 79-02-PLAN.md — Frontend: ProjectStatePanel.tsx (mode flags, stack chips, decisions log); wire into project page
+- [ ] 79-03-PLAN.md — Playwright UAT: verify state changes propagate to file; verify Dashboard reflects file changes made externally (e.g. by Claude)
+
+---
+
 ## Seeds (parked ideas that may surface in v5.x)
 
-- **SEED-001** — AI-Guided CLAUDE.md Editor (former Phase 47; may surface if non-programmer mode needs a settings transparency surface)
+- **SEED-001** — AI-Guided CLAUDE.md Editor (former Phase 47; activated by Phase 79 as project-state editor)
 - **SEED-002** — Light/day theme contrast bug (former task #82; surface during next UI audit) — resolved in Phase 74
 - **SEED-003** — MCP Tool Router / per-project MCP scoping (former Phase 55; dropped because global .env already handles credential distribution — revisit if Claude starts failing to use external services correctly despite having the keys)
