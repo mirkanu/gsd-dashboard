@@ -299,10 +299,8 @@ Plans:
 
 ### Phase 60: Dev/Production Environment Manager
 
-> ⚠️ **Re-scope required before planning.** The goal below references Railway, which was torn down in v5.0. Run `/gsd-discuss-phase 60` first to redefine what "dev + production environments" means on the current Hetzner VPS stack before creating any plans.
-
-**Goal (OUTDATED — needs rewrite):** Launched projects get provisioned dev + production environments automatically during Beta→Launched transition, with a GUI-driven "Promote dev → prod" action that enforces verify-work passing and documents the change. Railway-first provisioning.
-**Requirements:** ENV-01 through ENV-05
+**Goal:** Launched projects can opt in to a staging environment provisioned on the same Hetzner VPS as a second Docker Compose service, exposed at `{project}.gsdlabs.dev` via Cloudflare Tunnel + Cloudflare Access (user-only). The Dashboard project card shows both Staging and Production URL chips. A "Promote staging → prod" button gates on verify-work passing and shows a plain-English git commit list before executing production redeploy via the project's `scripts/deploy-prod.sh`. A "Revert last deploy" button runs git revert + redeploy on production.
+**Requirements:** ENV-02 through ENV-05 (ENV-01 replaced by opt-in Hetzner staging model — see 60-CONTEXT.md)
 **Depends on:** Phase 54, Phase 58
 **Plans:** 0/0 (not yet planned)
 
