@@ -27,11 +27,16 @@ stackRegistry provisioners in Phase 75).
   shares the codebase but runs on a port that's separate from production.
 - **Subdomain pattern:** `{project-slug}.gsdlabs.dev` exposed via a new Cloudflare Tunnel
   ingress rule added to `/home/services/hetzner-vps/config.yml`.
+- **No naming conflict:** Personal-use projects (otter, kidai, etc.) already have their
+  production at `{project}.gsdlabs.dev` — but those projects don't need staging. Projects that
+  DO opt in to staging are the ones with real external production domains (e.g.
+  `prc-resources.org`), so `{project}.gsdlabs.dev` is always free for them as the staging URL.
+  No collision check needed.
 - **Access control:** Cloudflare Access restricts staging to the user's email
   (`manuelkuhs@gmail.com`). Staging is never publicly accessible.
 - **Opt-in:** Staging is NOT automatic for every Launched project. A toggle on the project
-  (card or settings) enables it. Small/simple projects that don't need a staging step are not
-  forced into it.
+  (card or settings) enables it. Personal projects at `*.gsdlabs.dev` production will never
+  need to enable it.
 
 ### Provisioning Trigger (D-02)
 - Staging provisioning is triggered by the user explicitly enabling the staging toggle on a
