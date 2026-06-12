@@ -7,15 +7,17 @@
 ## Phase Boundary
 
 When a Launched project opts in, provision a staging environment on the same Hetzner VPS as a
-second Docker Compose service on a different port, exposed at `{project}.gsdlabs.dev` via
-Cloudflare Tunnel + Cloudflare Access (private, user-only). The Dashboard project card shows both
-URLs (Staging + Production). A "Promote staging → prod" button verifies-work-passed and shows a
-plain-English git commit list before executing the production redeploy via the project's own
-`scripts/deploy.sh`. A "Revert last deploy" button runs git revert + redeploy on production.
+second Docker Compose service on a different port, exposed at `{project-slug}-staging.gsdlabs.dev`
+via Cloudflare Tunnel + Cloudflare Access (private, user-only). The Dashboard project card shows
+both URL chips (Staging + Production).
+
+Promote staging → prod and Revert last deploy are **deferred to the next milestone** — they will
+not be implemented in Phase 60. The backend infrastructure (deploy scripts, SSH execution) that
+would support those actions is also out of scope for now.
 
 This phase does NOT cover new project provisioning flows (Phase 51), the stage-gate UI overhaul,
-non-launched project lifecycle, or per-service provisioners for Postgres / email (handled by
-stackRegistry provisioners in Phase 75).
+non-launched project lifecycle, per-service provisioners for Postgres / email (Phase 75), or
+Promote/Revert actions (next milestone).
 
 </domain>
 
@@ -52,46 +54,17 @@ stackRegistry provisioners in Phase 75).
 - If a project has no deploy scripts when staging is enabled, the Dashboard generates sensible
   defaults (`git pull && docker compose up --build -d`) and writes them into the project.
 
-### Promote Staging → Production (D-04)
-- **Gate (hard):** verify-work must have passed on the staging code. If the last verify-work
-  result for this project is a fail, the Promote button is disabled with a plain-English
-  explanation.
-- **Gate (human):** After verify-work passes, a confirmation modal shows the git commits on
-  staging not yet in production (plain-English list from `git log`). User must confirm before
-  execution.
-- **Mechanics:** Dashboard SSHes into VPS, calls `scripts/deploy-prod.sh` which does git pull +
-  docker compose up --build on the production service. Same code that was verified on staging
-  goes live.
-
-### Promote Preview (D-05)
-- Preview reads the git log diff between what's deployed on staging vs production.
-- Displayed as plain English: "I'm about to ship 3 changes: [commit message 1], [commit
-  message 2], [commit message 3]."
-- Uses `git log {prod_commit}..{staging_commit} --oneline --no-merges` as the data source.
-
-### Revert Last Production Deploy (D-06)
-- **Mechanics:** Dashboard SSHes into VPS, creates a git revert commit on the production branch,
-  then runs `scripts/deploy-prod.sh`. History is preserved — the revert is its own commit.
-- No hard delete / reset --hard. Safe, auditable.
-- The Revert button is always visible on the project card/panel after the first production
-  deploy (ENV-05).
-
-### UI Placement (D-07)
+### UI Placement (D-04)
 - **Project card** shows both URL chips (Staging and Production) with status dots, matching
-  ENV-02. The Promote and Revert buttons live in the project detail panel, not the card.
-- The detail panel surface (tab vs inline) is Claude's discretion — fit naturally into the
-  existing panel structure.
+  ENV-02. No Promote or Revert controls in this phase — those are deferred to the next
+  milestone.
 
 ### Claude's Discretion
 - Exact port allocation for staging services (avoid clashes with existing services)
 - How the tunnel config edit and restart are executed safely (idempotent)
 - Whether staging and production share one `docker-compose.yml` with service suffix, or two
   separate compose files
-- The exact shape of the `scripts/deploy-staging.sh` / `scripts/deploy-prod.sh` generated
-  defaults
-- Detail panel layout for Promote + Revert controls
-- How verify-work results are stored and queried (probably from existing
-  `verifyOrchestrator.js`)
+- Status dot logic for staging URL chip (running / stopped / unknown)
 
 </decisions>
 
@@ -118,9 +91,7 @@ stackRegistry provisioners in Phase 75).
 - The `scripts/deploy-prod.sh` approach in this phase mirrors that pattern at the project level
 
 ### Dashboard backend
-- `server/gsd/verifyOrchestrator.js` — understand verify-work result storage before building
-  the promote gate
-- `server/routes/gsd.js` — existing stage-change route; promote/revert may reuse or extend this
+- `server/routes/gsd.js` — existing stage-change route; staging toggle may reuse or extend this
 - `server/gsd/tmux.js` — SSH/shell execution patterns used throughout the backend
 
 ### Requirements
@@ -134,12 +105,8 @@ stackRegistry provisioners in Phase 75).
 ## Existing Code Insights
 
 ### Reusable Assets
-- `server/gsd/provisioning/stageGates/validateGates.js` — gate check pattern is directly
-  reusable for the verify-work promote gate
-- `server/routes/gsd.js` PATCH `/projects/:name/stage` — stage-change handler; promote/revert
-  are deployment actions that may piggyback on this pattern or add parallel routes
-- `server/gsd/verifyOrchestrator.js` — may already store pass/fail results; check before
-  building a new verify-work query endpoint
+- `server/gsd/provisioning/stageGates/validateGates.js` — gate check pattern; understand before adding staging as a gate concept
+- `server/routes/gsd.js` PATCH `/projects/:name/stage` — stage-change handler; staging toggle may piggyback on this pattern
 
 ### Established Patterns
 - **Cloudflare Tunnel ingress editing:** done programmatically; the Dashboard edits
@@ -162,8 +129,8 @@ stackRegistry provisioners in Phase 75).
 - **PRC project as the template:** The PRC project already runs this pattern
   (`prc.gsdlabs.dev` → staging, `prc-resources.org` → production). Before building anything,
   read how PRC is configured to ensure the new provisioning matches what's already working.
-- **"Test here, then ship":** The UX goal is that the user goes to the staging URL, clicks
-  around, and when satisfied, clicks "Promote" in the Dashboard. No branching ceremony.
+- **"Test here, then ship":** The UX goal is that the user goes to the staging URL and clicks
+  around to verify. Promote/Revert actions are deferred to the next milestone.
 - **Staging is behind CF Access:** User-only. Never publicly accessible. This is non-negotiable
   for every staging environment provisioned through this feature.
 
@@ -172,6 +139,9 @@ stackRegistry provisioners in Phase 75).
 <deferred>
 ## Deferred Ideas
 
+- **Promote staging → prod and Revert last deploy:** deferred to the next milestone. The backend
+  deploy-script abstraction (D-03), verify-work gate (D-04 original), and Revert mechanics are
+  all out of scope for Phase 60.
 - Auto-provisioning dev Postgres (separate staging DB): out of scope for this phase. If a
   project needs a staging database, the user sets it up manually via the existing Postgres
   stack. A staging DB provisioner would be a future stackRegistry addition.

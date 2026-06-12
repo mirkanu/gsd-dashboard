@@ -51,7 +51,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 58. Project Maturity Stages | 5/5 | Complete    | 2026-05-28 |
 | 54B. Unified Notification Centre | 4/4 | Complete    | 2026-05-30 |
 | 59. Task Backend Migration + Issue GUI Wrapper | 4/4 | Complete   | 2026-05-29 |
-| 60. Dev/Production Environment Manager | 0/0 | Not planned | - |
+| 60. Dev/Production Environment Manager | 0/2 | Planned | - |
 | 62. Hetzner VPS Migration | 10/11 | Complete ✅ (v5.0) | 2026-05-08 |
 | 67. Cockpit VPS Monitoring | 1/1 | Complete ✅ (v5.0) | 2026-05-07 |
 | 68. Portainer Docker UI | 1/1 | Complete ✅ (v5.0) | 2026-05-07 |
@@ -302,7 +302,14 @@ Plans:
 **Goal:** Launched projects can opt in to a staging environment provisioned on the same Hetzner VPS as a second Docker Compose service, exposed at `{project}.gsdlabs.dev` via Cloudflare Tunnel + Cloudflare Access (user-only). The Dashboard project card shows both Staging and Production URL chips. A "Promote staging → prod" button gates on verify-work passing and shows a plain-English git commit list before executing production redeploy via the project's `scripts/deploy-prod.sh`. A "Revert last deploy" button runs git revert + redeploy on production.
 **Requirements:** ENV-02 through ENV-05 (ENV-01 replaced by opt-in Hetzner staging model — see 60-CONTEXT.md)
 **Depends on:** Phase 54, Phase 58
-**Plans:** 0/0 (not yet planned)
+**Plans:** 2 plans
+
+Plans:
+**Wave 1**
+- [ ] 60-01-PLAN.md — Backend: stagingProvisioner.js (port allocation, YAML tunnel config editor, enable/disable lifecycle) + staging API routes in gsd.js + unit tests
+
+**Wave 2** *(blocked on 60-01)*
+- [ ] 60-02-PLAN.md — Frontend: GsdProject type extensions (stagingEnabled/Port/Url/Status), api.ts methods, ProjectEnvironmentChips component, staging toggle wired into GSD.tsx
 
 ---
 
