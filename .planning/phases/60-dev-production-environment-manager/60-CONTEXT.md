@@ -25,13 +25,12 @@ stackRegistry provisioners in Phase 75).
 ### Staging Environment Model (D-01)
 - **Model:** Same Docker Compose file, second service on a different port. The staging service
   shares the codebase but runs on a port that's separate from production.
-- **Subdomain pattern:** `{project-slug}.gsdlabs.dev` exposed via a new Cloudflare Tunnel
-  ingress rule added to `/home/services/hetzner-vps/config.yml`.
-- **No naming conflict:** Personal-use projects (otter, kidai, etc.) already have their
-  production at `{project}.gsdlabs.dev` — but those projects don't need staging. Projects that
-  DO opt in to staging are the ones with real external production domains (e.g.
-  `prc-resources.org`), so `{project}.gsdlabs.dev` is always free for them as the staging URL.
-  No collision check needed.
+- **Subdomain pattern:** `{project-slug}-staging.gsdlabs.dev` exposed via a new Cloudflare
+  Tunnel ingress rule added to `/home/services/hetzner-vps/config.yml`. The `-staging` suffix
+  avoids collisions with: (a) personal projects that use `{project}.gsdlabs.dev` for production,
+  and (b) public projects that use `{project}.gsdlabs.dev` during alpha/beta before they move
+  to an external production domain (e.g. `reforma.gsdlabs.dev` → `reforma-staging.gsdlabs.dev`
+  as staging, external domain as production).
 - **Access control:** Cloudflare Access restricts staging to the user's email
   (`manuelkuhs@gmail.com`). Staging is never publicly accessible.
 - **Opt-in:** Staging is NOT automatic for every Launched project. A toggle on the project
