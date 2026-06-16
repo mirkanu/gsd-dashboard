@@ -500,7 +500,9 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         // so one standard wheel notch (≈100 px) sends ~2–3 lines instead of ~7.
         const pixelY = ev.deltaMode === 1 ? ev.deltaY * fontSize : ev.deltaY;
         const lines = Math.max(1, Math.round(Math.abs(pixelY) / (fontSize * 3)));
-        const seq = ev.deltaY > 0 ? '\x1b[<65;1;1M' : '\x1b[<64;1;1M';
+        const row = Math.floor(terminal.rows / 2);
+        const col = Math.floor(terminal.cols / 2);
+        const seq = ev.deltaY > 0 ? `\x1b[<65;${col};${row}M` : `\x1b[<64;${col};${row}M`;
         for (let i = 0; i < lines; i++) activeWs.send(seq);
         return false;
       });
@@ -532,7 +534,9 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         touchStartY = e.touches[0].clientY;
         const fontSize = (terminal.options.fontSize as number) ?? 10;
         const lines = Math.max(1, Math.abs(Math.round(dy / (fontSize * SCROLL_DAMPING))));
-        const seq = dy > 0 ? '\x1b[<64;1;1M' : '\x1b[<65;1;1M';
+        const row = Math.floor(terminal.rows / 2);
+        const col = Math.floor(terminal.cols / 2);
+        const seq = dy > 0 ? `\x1b[<64;${col};${row}M` : `\x1b[<65;${col};${row}M`;
         const activeWs = wsRef.current;
         for (let i = 0; i < lines; i++) {
           if (activeWs?.readyState === WebSocket.OPEN) activeWs.send(seq);
