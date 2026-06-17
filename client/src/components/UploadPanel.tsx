@@ -240,7 +240,7 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
             onClick={() => setShowFtpModal(true)}
             className="w-full px-2 py-1.5 rounded-md text-xs font-medium bg-accent/15 text-accent border border-accent/25 hover:bg-accent/25 transition-colors duration-150"
           >
-            Upload >100MB via FTP
+            Upload &gt;100MB via FTP
           </button>
           <button
             onClick={handleReset}
