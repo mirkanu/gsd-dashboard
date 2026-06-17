@@ -1,5 +1,6 @@
 node_modules/
 data/
+uploads/
 # client/dist/ — committed for Railway (no client build on Railway)
 client/tsconfig.tsbuildinfo
 *.db
