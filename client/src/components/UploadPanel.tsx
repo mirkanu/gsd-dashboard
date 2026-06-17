@@ -138,7 +138,7 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
   };
 
   const handleCopyFtp = () => {
-    const ftpCredentials = "FTP Host: localhost\nFTP User: claude\nFTP Pass: (use your SSH key)";
+    const ftpCredentials = "FTP Host: 37.27.212.18\nFTP User: gsddash-ftp\nFTP Pass: GSDupload2024!";
     navigator.clipboard.writeText(ftpCredentials).catch(() => {
       const el = document.createElement("textarea");
       el.value = ftpCredentials;
@@ -268,11 +268,11 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
             <div className="space-y-2 text-xs">
               <p className="text-gray-400">For files larger than 100MB, use FTP:</p>
               <div className="bg-surface-3 border border-border rounded p-2 space-y-1">
-                <p className="font-mono text-gray-300"><span className="text-gray-500">Host:</span> localhost</p>
-                <p className="font-mono text-gray-300"><span className="text-gray-500">User:</span> claude</p>
-                <p className="font-mono text-gray-300"><span className="text-gray-500">Pass:</span> (use SSH key)</p>
+                <p className="font-mono text-gray-300"><span className="text-gray-500">Host:</span> 37.27.212.18</p>
+                <p className="font-mono text-gray-300"><span className="text-gray-500">User:</span> gsddash-ftp</p>
+                <p className="font-mono text-gray-300"><span className="text-gray-500">Pass:</span> GSDupload2024!</p>
               </div>
-              <p className="text-gray-500">Upload to: <span className="font-mono">/home/services/gsddashboard/uploads</span></p>
+              <p className="text-gray-500">Upload to: <span className="font-mono">/home/gsddashboard-ftp/uploads</span></p>
             </div>
             <div className="flex gap-2">
               <button
