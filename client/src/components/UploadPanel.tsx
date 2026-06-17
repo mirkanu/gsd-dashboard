@@ -13,11 +13,22 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
   const [copied, setCopied] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showFtpModal, setShowFtpModal] = useState(false);
+  const [copiedFtp, setCopiedFtp] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File | undefined) => {
     if (!file) return;
     console.log("[upload] Starting upload for file:", file.name, "Size:", (file.size / 1024 / 1024).toFixed(2), "MB");
+
+    // Check file size before upload (100MB limit)
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB
+    if (file.size > MAX_SIZE) {
+      console.error("[upload] File too large:", (file.size / 1024 / 1024).toFixed(2), "MB");
+      setStatus("error");
+      return;
+    }
+
     setStatus("uploading");
     setUrl(null);
     setUploadProgress(0);
@@ -122,6 +133,22 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
     setUrl(null);
     setCopied(false);
     setUploadProgress(0);
+    setShowFtpModal(false);
+    setCopiedFtp(false);
+  };
+
+  const handleCopyFtp = () => {
+    const ftpCredentials = "FTP Host: localhost\nFTP User: claude\nFTP Pass: (use your SSH key)";
+    navigator.clipboard.writeText(ftpCredentials).catch(() => {
+      const el = document.createElement("textarea");
+      el.value = ftpCredentials;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    });
+    setCopiedFtp(true);
+    setTimeout(() => setCopiedFtp(false), 2000);
   };
 
   // Slim mode: icon only
@@ -171,6 +198,7 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
             <>
               <p className="text-xs leading-tight">Paste or drop file</p>
               <p className="text-[11px] text-gray-600 mt-0.5">tap to pick</p>
+              <p className="text-[10px] text-gray-500 mt-1">max 100MB</p>
             </>
           )}
         </div>
@@ -207,12 +235,18 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
       {/* Error state */}
       {status === "error" && (
         <div className="space-y-1.5">
-          <p className="text-xs text-red-400 text-center px-1">Upload failed</p>
+          <p className="text-xs text-red-400 text-center px-1">File too large (max 100MB)</p>
+          <button
+            onClick={() => setShowFtpModal(true)}
+            className="w-full px-2 py-1.5 rounded-md text-xs font-medium bg-accent/15 text-accent border border-accent/25 hover:bg-accent/25 transition-colors duration-150"
+          >
+            Upload >100MB via FTP
+          </button>
           <button
             onClick={handleReset}
             className="w-full text-center text-[11px] text-gray-600 hover:text-gray-400 transition-colors duration-150 py-0.5"
           >
-            Try again
+            Try smaller file
           </button>
         </div>
       )}
@@ -225,6 +259,42 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
         className="hidden"
         onChange={handleInputChange}
       />
+
+      {/* FTP Modal */}
+      {showFtpModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-surface-2 border border-border rounded-lg shadow-xl max-w-sm w-full p-4 space-y-3">
+            <h3 className="text-sm font-medium text-gray-200">Upload via FTP</h3>
+            <div className="space-y-2 text-xs">
+              <p className="text-gray-400">For files larger than 100MB, use FTP:</p>
+              <div className="bg-surface-3 border border-border rounded p-2 space-y-1">
+                <p className="font-mono text-gray-300"><span className="text-gray-500">Host:</span> localhost</p>
+                <p className="font-mono text-gray-300"><span className="text-gray-500">User:</span> claude</p>
+                <p className="font-mono text-gray-300"><span className="text-gray-500">Pass:</span> (use SSH key)</p>
+              </div>
+              <p className="text-gray-500">Upload to: <span className="font-mono">/home/services/gsddashboard/uploads</span></p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCopyFtp}
+                className={`flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors duration-150 ${
+                  copiedFtp
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "bg-accent/15 text-accent border border-accent/25 hover:bg-accent/25"
+                }`}
+              >
+                {copiedFtp ? "Copied ✓" : "Copy credentials"}
+              </button>
+              <button
+                onClick={() => setShowFtpModal(false)}
+                className="flex-1 px-3 py-2 rounded-md text-xs font-medium bg-surface-3 text-gray-400 border border-border hover:text-gray-300 transition-colors duration-150"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
