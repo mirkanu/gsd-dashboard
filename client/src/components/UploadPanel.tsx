@@ -12,26 +12,63 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
   const [url, setUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = async (file: File | undefined) => {
+  const handleFile = (file: File | undefined) => {
     if (!file) return;
+    console.log("[upload] Starting upload for file:", file.name, "Size:", (file.size / 1024 / 1024).toFixed(2), "MB");
     setStatus("uploading");
     setUrl(null);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (res.ok) {
-        setStatus("done");
-        setUrl(data.url);
+    setUploadProgress(0);
+
+    const xhr = new XMLHttpRequest();
+    // Set timeout to 30 minutes for large files (default is often 2 minutes)
+    xhr.timeout = 30 * 60 * 1000;
+
+    const fd = new FormData();
+    fd.append("file", file);
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        const rawPercent = (e.loaded / e.total) * 100;
+        // Show decimal precision for small values, round for larger ones
+        const displayPercent = rawPercent < 1 ? rawPercent.toFixed(1) : Math.round(rawPercent);
+        console.log(`[upload] Progress: ${(e.loaded / 1024 / 1024).toFixed(1)}MB / ${(e.total / 1024 / 1024).toFixed(1)}MB = ${displayPercent}%`);
+        setUploadProgress(Number(displayPercent));
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      console.log("[upload] Load event, status:", xhr.status);
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          setStatus("done");
+          setUrl(data.url);
+        } catch {
+          console.error("[upload] Failed to parse response");
+          setStatus("error");
+        }
       } else {
+        console.error("[upload] Non-200 status:", xhr.status);
         setStatus("error");
       }
-    } catch {
+    });
+
+    xhr.addEventListener("error", () => {
+      console.error("[upload] XHR error event");
       setStatus("error");
-    }
+    });
+
+    xhr.addEventListener("timeout", () => {
+      console.error("[upload] XHR timeout after 30 minutes");
+      setStatus("error");
+    });
+
+    xhr.open("POST", "/api/upload");
+    console.log("[upload] Sending request...");
+    xhr.send(fd);
   };
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -84,6 +121,7 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
     setStatus("idle");
     setUrl(null);
     setCopied(false);
+    setUploadProgress(0);
   };
 
   // Slim mode: icon only
@@ -117,9 +155,17 @@ export function UploadPanel({ slim = false }: UploadPanelProps) {
           }`}
         >
           {status === "uploading" ? (
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-3.5 h-3.5 border-2 border-accent/40 border-t-accent rounded-full animate-spin" />
-              <span className="text-xs text-gray-400">Uploading…</span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-3.5 h-3.5 border-2 border-accent/40 border-t-accent rounded-full animate-spin" />
+                <span className="text-xs text-gray-400">Uploading… {uploadProgress}%</span>
+              </div>
+              <div className="w-full bg-surface-3 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-accent h-full transition-all duration-200 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
             </div>
           ) : (
             <>

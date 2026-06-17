@@ -6,10 +6,12 @@ const fs = require("fs");
 const path = require("path");
 
 const UPLOADS_DIR = path.join(__dirname, "../../uploads");
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
 
 // POST /api/upload — multipart file upload
 router.post("/", (req, res) => {
+  console.log("[upload] Upload request received");
+
   // Ensure uploads directory exists
   try {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -43,7 +45,8 @@ router.post("/", (req, res) => {
   });
 
   bb.on("file", (fieldname, fileStream, info) => {
-    const { filename } = info;
+    const { filename, mimeType } = info;
+    console.log("[upload] File event received:", filename, mimeType);
     const ext = filename ? path.extname(filename) || ".bin" : ".bin";
     const slug = crypto.randomBytes(4).toString("hex");
     const destName = `${slug}${ext}`;
@@ -51,19 +54,28 @@ router.post("/", (req, res) => {
 
     pendingWrite = true;
     const ws = fs.createWriteStream(destPath);
+    let bytesReceived = 0;
     let limitHit = false;
+
+    fileStream.on("data", (chunk) => {
+      bytesReceived += chunk.length;
+      if (bytesReceived % (10 * 1024 * 1024) < chunk.length) { // Log every 10MB
+        console.log(`[upload] Progress: ${(bytesReceived / 1024 / 1024).toFixed(1)}MB received`);
+      }
+    });
 
     fileStream.on("limit", () => {
       limitHit = true;
       fileStream.resume(); // drain
       ws.destroy();
       try { fs.unlinkSync(destPath); } catch {}
-      pendingResult = { status: 413, error: "File too large (max 50MB)" };
+      pendingResult = { status: 413, error: "File too large (max 1GB)" };
     });
 
     fileStream.pipe(ws);
 
     ws.on("finish", () => {
+      console.log("[upload] File write complete:", destName, `Total: ${(bytesReceived / 1024 / 1024).toFixed(1)}MB`);
       pendingWrite = false;
       if (!limitHit) {
         const port = req.socket.localPort || 4820;
@@ -88,6 +100,7 @@ router.post("/", (req, res) => {
   });
 
   bb.on("finish", () => {
+    console.log("[upload] Busboy finished parsing");
     bbFinished = true;
     sendResult();
   });
