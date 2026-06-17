@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 
 const UPLOADS_DIR = path.join(__dirname, "../../uploads");
-const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 // POST /api/upload — multipart file upload
 router.post("/", (req, res) => {
@@ -69,7 +69,7 @@ router.post("/", (req, res) => {
       fileStream.resume(); // drain
       ws.destroy();
       try { fs.unlinkSync(destPath); } catch {}
-      pendingResult = { status: 413, error: "File too large (max 1GB)" };
+      pendingResult = { status: 413, error: "File too large (max 100MB)" };
     });
 
     fileStream.pipe(ws);
