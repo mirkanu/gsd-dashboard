@@ -10,6 +10,7 @@
 - `client/`: React + Vite UI.
 - `scripts/`: hook installer/handler, import, seed, cleanup utilities.
 - `mcp/`: local MCP server exposing dashboard operations as tools.
+- `uploads/`: all uploaded files land here — both direct uploads (<100MB via API) and FTP transfers (>100MB). Served at `http://localhost:4820/uploads/<filename>` locally and `https://dashboard.gsdlabs.dev/uploads/<filename>` via tunnel.
 
 ## Non-negotiable engineering rules
 - Preserve existing behavior unless explicitly asked to change it.
