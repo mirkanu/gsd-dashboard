@@ -11,6 +11,7 @@ import { EnvEditorPage } from "./pages/EnvEditorPage";
 import { FeedPage } from "./pages/FeedPage";
 import { ServerPage } from "./pages/ServerPage";
 import { UmamiPage } from "./pages/UmamiPage";
+import { LLMProviderPage } from "./pages/LLMProviderPage";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/Login";
 import { useWebSocket } from "./hooks/useWebSocket";
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="env" element={<EnvEditorPage />} />
           <Route path="server" element={<ServerPage />} />
           <Route path="umami" element={<UmamiPage />} />
+          <Route path="llm-provider" element={<LLMProviderPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

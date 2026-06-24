@@ -23,6 +23,7 @@ import {
   FileKey,
   Plus,
   Upload,
+  Cpu,
 } from "lucide-react";
 import { NewProjectDialog } from "./NewProjectDialog";
 import { ImportProjectDialog } from "./ImportProjectDialog";
@@ -31,6 +32,7 @@ import { UploadPanel } from "./UploadPanel";
 // ─── Primary nav (always visible at top) ─────────────────────────────────────
 const PRIMARY_ITEMS = [
   { to: "/gsd", icon: MapPin, label: "GSD Projects" },
+  { to: "/llm-provider", icon: Cpu, label: "LLM Provider", end: false },
   { to: "/umami", icon: BarChart2, label: "Web Analytics", end: false },
   { to: "/feed", icon: Rss, label: "Feed" },
   { to: "/services", icon: Server, label: "Services" },
