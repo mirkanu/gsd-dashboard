@@ -160,6 +160,7 @@ None.
 | 260530-c4s | Rebuild client dist, fix WR-01, Playwright UAT on /config | 2026-05-30 | 6f6bbd1 | [260530-c4s-rebuild-client-dist-fix-wr-01-run-playwr](./quick/260530-c4s-rebuild-client-dist-fix-wr-01-run-playwr/) |
 | 260616-did | Fix hardcoded scroll sequence position in GSD.tsx | 2026-06-16 | 4d8bc72 | [260616-did-fix-hardcoded-scroll-sequence-position-i](./quick/260616-did-fix-hardcoded-scroll-sequence-position-i/) |
 | 260617-dmd | Modify Dashboard UploadPanel to display 100MB limit, add FTP alternative for large files | 2026-06-17 | d00d4fa | [260617-dmd-modify-the-dashboard-uploadpanel-to-1-di](./quick/260617-dmd-modify-the-dashboard-uploadpanel-to-1-di/) |
+| 260624-o7v | Add LLM Provider Selector page to dashboard. Use radio card pattern from sketch 001 | 2026-06-24 | da88d9a | [260624-o7v-add-llm-provider-selector-page-to-dashbo](./quick/260624-o7v-add-llm-provider-selector-page-to-dashbo/) |
 | Phase 43 P01 | 25min | 2 tasks | 2 files |
 | Phase 43 P02 | 15min | 2 tasks | 4 files |
 | Phase 43 P03 | ~13min | 3 tasks | 7 files |

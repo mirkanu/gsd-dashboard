@@ -156,6 +156,118 @@ router.post("/reset-pricing", (_req, res) => {
 });
 
 /**
+ * GET /api/settings/llm-provider
+ *
+ * Get current LLM provider from Claude settings.json
+ *
+ * Response shape:
+ *   {
+ *     "provider": "claude" | "zai" | "ollama",
+ *     "config": { "base_url": string, "auth_token": string }
+ *   }
+ */
+router.get("/llm-provider", (_req, res) => {
+  try {
+    if (!fs.existsSync(CLAUDE_SETTINGS_PATH)) {
+      return res.json({ provider: "claude", config: null });
+    }
+    const raw = fs.readFileSync(CLAUDE_SETTINGS_PATH, "utf8");
+    const settings = JSON.parse(raw);
+    const baseUrl = settings.env?.ANTHROPIC_BASE_URL;
+    const authToken = settings.env?.ANTHROPIC_AUTH_TOKEN;
+
+    let provider = "claude";
+    if (baseUrl && authToken) {
+      if (baseUrl.includes("z.ai")) {
+        provider = "zai";
+      } else if (baseUrl.includes("100.99.199.83") || authToken === "ollama") {
+        provider = "ollama";
+      }
+    }
+
+    res.json({
+      provider,
+      config: { base_url: baseUrl, auth_token: authToken },
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: { code: "READ_SETTINGS_FAILED", message: err.message },
+    });
+  }
+});
+
+/**
+ * PUT /api/settings/llm-provider
+ *
+ * Update LLM provider in Claude settings.json
+ * Request body: { "provider": "claude" | "zai" | "ollama" }
+ *
+ * Returns: { "ok": true, "previous": string, "current": string }
+ */
+router.put("/llm-provider", (req, res) => {
+  try {
+    const { provider } = req.body;
+    if (!["claude", "zai", "ollama"].includes(provider)) {
+      return res.status(400).json({
+        error: { code: "INVALID_PROVIDER", message: "Invalid provider" },
+      });
+    }
+
+    let settings = {};
+    if (fs.existsSync(CLAUDE_SETTINGS_PATH)) {
+      const raw = fs.readFileSync(CLAUDE_SETTINGS_PATH, "utf8");
+      settings = JSON.parse(raw);
+    }
+
+    const prevProvider = settings.env?.ANTHROPIC_BASE_URL
+      ? settings.env.ANTHROPIC_BASE_URL.includes("z.ai")
+        ? "zai"
+        : settings.env.ANTHROPIC_BASE_URL.includes("100.99.199.83") ||
+          settings.env.ANTHROPIC_AUTH_TOKEN === "ollama"
+        ? "ollama"
+        : "claude"
+      : "claude";
+
+    const providerConfigs = {
+      claude: { base_url: null, auth_token: null },
+      zai: {
+        base_url: "https://api.z.ai/api/anthropic",
+        auth_token: "91390354889a4c329e7e1df5855c12cb.HHBacM9NnnDt9TiB",
+      },
+      ollama: {
+        base_url: "http://100.99.199.83:11434",
+        auth_token: "ollama",
+      },
+    };
+
+    const config = providerConfigs[provider];
+    if (!settings.env) settings.env = {};
+    if (config.base_url) {
+      settings.env.ANTHROPIC_BASE_URL = config.base_url;
+    } else {
+      delete settings.env.ANTHROPIC_BASE_URL;
+    }
+    if (config.auth_token) {
+      settings.env.ANTHROPIC_AUTH_TOKEN = config.auth_token;
+    } else {
+      delete settings.env.ANTHROPIC_AUTH_TOKEN;
+    }
+
+    fs.writeFileSync(CLAUDE_SETTINGS_PATH, JSON.stringify(settings, null, 2));
+
+    res.json({
+      ok: true,
+      previous: prevProvider,
+      current: provider,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: { code: "WRITE_SETTINGS_FAILED", message: err.message },
+    });
+  }
+});
+
+/**
  * GET /api/settings/export
  *
  * Export all user data as a single JSON document for portability
