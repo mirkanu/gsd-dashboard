@@ -148,6 +148,15 @@ export const api = {
         purged_events: number;
         purged_agents: number;
       }>("/settings/cleanup", { method: "POST", body: JSON.stringify(params) }),
+    getLLMProvider: () =>
+      request<{ provider: string; config: { base_url: string | null; auth_token: string | null } }>(
+        "/settings/llm-provider"
+      ),
+    setLLMProvider: (provider: string) =>
+      request<{ ok: true; previous: string; current: string }>("/settings/llm-provider", {
+        method: "PUT",
+        body: JSON.stringify({ provider }),
+      }),
   },
 
   gsd: {

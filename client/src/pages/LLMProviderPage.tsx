@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Cpu } from "lucide-react";
+import { Cpu, Loader2 } from "lucide-react";
+import { api } from "../lib/api";
 
 const PROVIDERS = [
   { id: "claude", name: "Claude (anthropic.com)" },
@@ -9,26 +10,49 @@ const PROVIDERS = [
 
 export function LLMProviderPage() {
   const [selectedProvider, setSelectedProvider] = useState<string>("claude");
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load from localStorage on mount
+  // Load current provider from API on mount
   useEffect(() => {
-    const saved = localStorage.getItem("llm_provider");
-    if (saved && PROVIDERS.find((p) => p.id === saved)) {
-      setSelectedProvider(saved);
-    }
-    setIsLoaded(true);
+    let cancelled = false;
+    setIsLoading(true);
+    setError(null);
+
+    api.settings
+      .getLLMProvider()
+      .then((data) => {
+        if (!cancelled && data.provider) {
+          setSelectedProvider(data.provider);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load provider:", err);
+        if (!cancelled) setError("Failed to load current provider");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Save to localStorage on change
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem("llm_provider", selectedProvider);
-    }
-  }, [selectedProvider, isLoaded]);
+  const handleProviderChange = async (providerId: string) => {
+    setIsSaving(true);
+    setError(null);
 
-  const handleProviderChange = (providerId: string) => {
-    setSelectedProvider(providerId);
+    try {
+      await api.settings.setLLMProvider(providerId);
+      setSelectedProvider(providerId);
+    } catch (err) {
+      console.error("Failed to update provider:", err);
+      setError("Failed to update provider");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -52,47 +76,58 @@ export function LLMProviderPage() {
           Provider
         </label>
 
-        <div className="space-y-2">
-          {PROVIDERS.map((provider) => (
-            <label
-              key={provider.id}
-              className={`flex items-center gap-3 p-3 bg-surface-1 border rounded-md cursor-pointer transition-all ${
-                selectedProvider === provider.id
-                  ? "border-accent bg-accent/20"
-                  : "border-border hover:border-accent/50"
-              }`}
-            >
-              <input
-                type="radio"
-                name="provider"
-                value={provider.id}
-                checked={selectedProvider === provider.id}
-                onChange={() => handleProviderChange(provider.id)}
-                className="sr-only"
-              />
-              <div
-                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+        {isLoading ? (
+          <div className="flex items-center gap-2 text-sm text-gray-500 py-8">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Loading current provider...</span>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {PROVIDERS.map((provider) => (
+              <label
+                key={provider.id}
+                className={`flex items-center gap-3 p-3 bg-surface-1 border rounded-md cursor-pointer transition-all ${
                   selectedProvider === provider.id
-                    ? "border-accent bg-accent"
-                    : "border-border"
-                }`}
+                    ? "border-accent bg-accent/20"
+                    : "border-border hover:border-accent/50"
+                } ${isSaving ? "opacity-50 pointer-events-none" : ""}`}
               >
-                {selectedProvider === provider.id && (
-                  <div className="w-2 h-2 rounded-full bg-white" />
+                <input
+                  type="radio"
+                  name="provider"
+                  value={provider.id}
+                  checked={selectedProvider === provider.id}
+                  onChange={() => handleProviderChange(provider.id)}
+                  className="sr-only"
+                  disabled={isSaving}
+                />
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    selectedProvider === provider.id
+                      ? "border-accent bg-accent"
+                      : "border-border"
+                  }`}
+                >
+                  {selectedProvider === provider.id && (
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                  )}
+                </div>
+                <span
+                  className={`text-sm ${
+                    selectedProvider === provider.id
+                      ? "text-white"
+                      : "text-gray-300"
+                  }`}
+                >
+                  {provider.name}
+                </span>
+                {isSaving && selectedProvider === provider.id && (
+                  <Loader2 className="w-3 h-3 animate-spin text-accent ml-auto" />
                 )}
-              </div>
-              <span
-                className={`text-sm ${
-                  selectedProvider === provider.id
-                    ? "text-white"
-                    : "text-gray-300"
-                }`}
-              >
-                {provider.name}
-              </span>
-            </label>
-          ))}
-        </div>
+              </label>
+            ))}
+          </div>
+        )}
 
         {/* Status Indicator */}
         <div className="mt-4 p-3 bg-surface-1 border border-border rounded-md flex items-center gap-2 text-sm">
