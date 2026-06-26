@@ -42,6 +42,7 @@ function injectStackSection(claudeMdPath, projectName) {
     `| BetterStack | monitor: \`gsd-${projectName}\` | Uptime monitoring |`,
     `| Cloudflare R2 | bucket: \`${bucketRef}\` | Storage |`,
     `| Sentry | \`${sentryKey}\` | Error tracking (sentry.io) |`,
+    `| Telegram | \`POST http://localhost:4820/api/services/telegram/send-file\` | File push to owner's Telegram |`,
     '',
     `*Last updated: ${now} — updated automatically on each stage transition.*`,
     STACK_CLOSE,
