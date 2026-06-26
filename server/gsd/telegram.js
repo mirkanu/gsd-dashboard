@@ -303,12 +303,24 @@ function formatForTelegram(paneText) {
 async function sendFileDocument(filePath, caption) {
   if (!ENABLED) return;
   try {
-    const fs = require('fs');
-    const formData = new FormData();
-    formData.append('chat_id', CHAT_ID);
-    formData.append('document', fs.createReadStream(filePath));
-    if (caption) formData.append('caption', caption.slice(0, 1024));
-    const res = await fetch(`${API_BASE}/sendDocument`, { method: 'POST', body: formData });
+    const fileBuf = fs.readFileSync(filePath);
+    const basename = path.basename(filePath);
+    const boundary = '----GSD' + Math.random().toString(36).slice(2);
+
+    const parts = [
+      `--${boundary}\r\nContent-Disposition: form-data; name="chat_id"\r\n\r\n${CHAT_ID}\r\n`,
+      `--${boundary}\r\nContent-Disposition: form-data; name="document"; filename="${basename}"\r\nContent-Type: application/octet-stream\r\n\r\n`,
+    ];
+    const header = Buffer.from(parts.join(''));
+    const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
+    const body = Buffer.concat([header, fileBuf, footer]);
+
+    const headers = {
+      'Content-Type': `multipart/form-data; boundary=${boundary}`,
+      'Content-Length': body.length,
+    };
+
+    const res = await fetch(`${API_BASE}/sendDocument`, { method: 'POST', body, headers });
     const data = await res.json();
     if (!data.ok) console.error('[telegram] sendDocument failed:', data.description);
     else console.log(`[telegram] File sent: ${filePath}`);

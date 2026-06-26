@@ -20,9 +20,9 @@ router.post('/send-file', async (req, res) => {
     return res.status(400).json({ error: 'filePath is required' });
   }
 
-  // Resolve and prevent path traversal — only allow files under /home/services/
+  // Resolve and prevent path traversal — allow files under /home/services/ and /data/home/
   const resolved = path.resolve(filePath);
-  if (!resolved.startsWith('/home/services/')) {
+  if (!resolved.startsWith('/home/services/') && !resolved.startsWith('/data/home/')) {
     return res.status(403).json({ error: 'path traversal blocked' });
   }
 
