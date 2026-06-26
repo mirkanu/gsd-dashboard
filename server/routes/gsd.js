@@ -619,16 +619,16 @@ router.patch('/projects/:name/stage', async (req, res) => {
         }
       }
 
-      // Write ## Stack (auto-managed) section to project's CLAUDE.md
-      if (project.path) {
-        try {
-          injectStackSection(path.join(project.path, 'CLAUDE.md'), project.name);
-        } catch (err) {
-          // Non-blocking: CLAUDE.md injection failure does not abort the stage transition
-          console.warn('[provisioning] CLAUDE.md Stack injection failed (non-blocking):', err.message);
-        }
-      }
+    }
 
+    // Write ## Stack (auto-managed) section to project's CLAUDE.md
+    if (project.path) {
+      try {
+        injectStackSection(path.join(project.path, 'CLAUDE.md'), project.name);
+      } catch (err) {
+        // Non-blocking: CLAUDE.md injection failure does not abort the stage transition
+        console.warn('[provisioning] CLAUDE.md Stack injection failed (non-blocking):', err.message);
+      }
     }
 
     // Retired: stop tmux session and archive GitHub repo
