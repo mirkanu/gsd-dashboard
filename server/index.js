@@ -62,6 +62,8 @@ const projectsRouter = require("./routes/projects");
 const dockerOpsRouter = require("./routes/docker-ops");
 const systemRouter = require("./routes/system");
 const uploadRouter = require("./routes/upload");
+const { createBridgeHandler } = require("./lib/ollama-bridge");
+const { createOpenRouterBridgeHandler } = require("./lib/openrouter-bridge");
 const { execSync } = require("child_process");
 
 // Compute once at startup — date of last git commit formatted as "07May2026"
@@ -141,7 +143,18 @@ function createApp() {
   app.use("/api/system", systemRouter);
   app.use("/api/feed", feedRouter);
   app.use("/api/upload", uploadRouter);
+  const telegramRouter = require('./routes/telegram');
+  app.use('/api/telegram', telegramRouter);
   app.use("/mcp", mcpRemote);
+
+  // Ollama bridge: translates Anthropic /v1/messages to Ollama's OpenAI-compatible format
+  // Claude Code sends large payloads with tool schemas — needs higher body limit
+  const ollamaHost = process.env.OLLAMA_HOST || "http://100.99.199.83:11434";
+  app.post("/ollama-bridge/v1/messages", express.json({ limit: "10mb" }), createBridgeHandler(ollamaHost));
+
+  // OpenRouter bridge: transparent Anthropic-format proxy that rewrites the model field
+  // so Claude Code can use OpenRouter free models (owl-alpha, nemotron, etc.)
+  app.post("/openrouter-bridge/v1/messages", express.json({ limit: "10mb" }), createOpenRouterBridgeHandler());
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString(), buildDate: BUILD_DATE });
