@@ -144,7 +144,7 @@ function createApp() {
   app.use("/api/feed", feedRouter);
   app.use("/api/upload", uploadRouter);
   const telegramRouter = require('./routes/telegram');
-  app.use('/api/telegram', telegramRouter);
+  app.use('/api/services/telegram', telegramRouter);
   app.use("/mcp", mcpRemote);
 
   // Ollama bridge: translates Anthropic /v1/messages to Ollama's OpenAI-compatible format
