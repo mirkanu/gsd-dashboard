@@ -295,4 +295,26 @@ function formatForTelegram(paneText) {
   return result;
 }
 
-module.exports = { sendNotification, parseOptions, shouldNotify, startReplyPoller, stopReplyPoller, formatForTelegram, ENABLED };
+/**
+ * Send a local file as a Telegram document.
+ * @param {string} filePath - Absolute path to the file on disk
+ * @param {string} [caption] - Optional caption (truncated to 1024 chars per Telegram limit)
+ */
+async function sendFileDocument(filePath, caption) {
+  if (!ENABLED) return;
+  try {
+    const fs = require('fs');
+    const formData = new FormData();
+    formData.append('chat_id', CHAT_ID);
+    formData.append('document', fs.createReadStream(filePath));
+    if (caption) formData.append('caption', caption.slice(0, 1024));
+    const res = await fetch(`${API_BASE}/sendDocument`, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!data.ok) console.error('[telegram] sendDocument failed:', data.description);
+    else console.log(`[telegram] File sent: ${filePath}`);
+  } catch (err) {
+    console.error('[telegram] sendDocument error:', err.message);
+  }
+}
+
+module.exports = { sendNotification, sendFileDocument, parseOptions, shouldNotify, startReplyPoller, stopReplyPoller, formatForTelegram, ENABLED };
