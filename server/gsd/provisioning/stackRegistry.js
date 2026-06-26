@@ -118,6 +118,15 @@ const SERVICES = [
     provisionerModule: null,
     gateTriggeredAt: null,
   },
+  {
+    name: 'telegram',
+    category: 'functional',
+    globalKeys: ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'],
+    perProjectKeys: [],
+    customDomain: null,
+    provisionerModule: null,
+    gateTriggeredAt: null,
+  },
 ];
 
 module.exports = { SERVICES };

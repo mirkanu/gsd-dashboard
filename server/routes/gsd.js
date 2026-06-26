@@ -628,6 +628,16 @@ router.patch('/projects/:name/stage', async (req, res) => {
           console.warn('[provisioning] CLAUDE.md Stack injection failed (non-blocking):', err.message);
         }
       }
+
+      // Write ## Shared VPS Services section to project's CLAUDE.md
+      if (project.path) {
+        try {
+          const { injectSharedServicesSection } = require('../gsd/provisioning/claudeMdInjector');
+          injectSharedServicesSection(path.join(project.path, 'CLAUDE.md'));
+        } catch (err) {
+          console.warn('[provisioning] CLAUDE.md Shared Services injection failed (non-blocking):', err.message);
+        }
+      }
     }
 
     // Retired: stop tmux session and archive GitHub repo
