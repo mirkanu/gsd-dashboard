@@ -127,6 +127,15 @@ const SERVICES = [
     provisionerModule: null,
     gateTriggeredAt: null,
   },
+  {
+    name: 'open-webui',
+    category: 'functional',
+    globalKeys: [],
+    perProjectKeys: [],
+    customDomain: '{PROJECT}.gsdlabs.dev',
+    provisionerModule: null,
+    gateTriggeredAt: null,
+  },
 ];
 
 module.exports = { SERVICES };
