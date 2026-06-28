@@ -66,7 +66,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 77. project-state.md Foundation | 0/3 | Planned (v5.2) | - |
 | 78. CLAUDE.md Architecture Refactor | 0/2 | Planned (v5.2) | - |
 | 79. Dashboard project-state Editor | 0/3 | Planned (v5.2) | - |
-| 80. Claude-Mem Cross-Project Memory | 2/3 | In Progress|  |
+| 80. Claude-Mem Cross-Project Memory | 3/3 | Complete   | 2026-06-28 |
 | 80. Claude-Mem Cross-Project Memory | 0/3 | Planned (v5.2) | - |
 
 ---
@@ -599,7 +599,7 @@ Plans:
 - MCP tools (`search`, `timeline`, `get_observations`) available in every session for on-demand recall
 - Resource budget: ~200-300 MB RAM permanent, ~120 MB/month disk growth — measure actual after install
 **Depends on:** Phase 78 (LEARNINGS.md pattern — claude-mem is the programmatic complement)
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -607,7 +607,7 @@ Plans:
 **Wave 2** *(blocked on 80-01)*
 - [x] 80-02-PLAN.md — Configure all active projects to use shared store via SessionStart hook; verify cross-project recall works
 **Wave 3** *(blocked on 80-02)*
-- [ ] 80-03-PLAN.md — UAT: solve a problem in one project, verify it surfaces in another; document resource footprint
+- [x] 80-03-PLAN.md — UAT: solve a problem in one project, verify it surfaces in another; document resource footprint
 
 ---
 
