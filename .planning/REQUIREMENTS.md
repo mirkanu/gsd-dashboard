@@ -144,11 +144,20 @@ Prior milestone requirements (v3.x and v4.x) are archived under `.planning/miles
 
 ---
 
+## MEM — Claude-Mem Cross-Project Memory
+
+| ID | Requirement | Phase |
+|----|-------------|-------|
+| MEM-01 | claude-mem worker runs as a VPS-level PM2 service with a shared SQLite + Chroma store, not per-project | 80 |
+| MEM-02 | All active Claude Code sessions are configured to use the shared store via SessionStart hook | 80 |
+| MEM-03 | Cross-project recall verified: a solution from one project surfaces semantically in another without manual CLAUDE.md updates | 80 |
+| MEM-04 | Resource footprint documented: RAM, CPU, and disk growth measured and within VPS budget | 80 |
+
 ## Coverage
 
-- **v5.0 requirements:** 64 total across 10 categories
-- **Phases:** 50.5 + 51 + 53 + 54 + 55 + 56 + 56B + 58 + 54B + 59 + 60 = 11 phases
-- **Mapped:** 64/64
+- **v5.0 requirements:** 68 total across 11 categories
+- **Phases:** 50.5 + 51 + 53 + 54 + 55 + 56 + 56B + 58 + 54B + 59 + 60 + 80 = 12 phases
+- **Mapped:** 68/68
 - **Unmapped:** 0
 
 ## Deferred to v5.1+

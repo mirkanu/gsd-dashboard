@@ -9,7 +9,7 @@
 - ✅ **v5.0 Hetzner Migration** — Phases 62, 67–72 (shipped 2026-05-08) · [archive](milestones/v5.0-ROADMAP.md)
 - ✅ **v4.3 Optimisation & Cost Intelligence** — Phases 43–49 (shipped 2026-04-18)
 - 🚧 **v5.1 Non-Programmer Mode** — Phases 50.5, 51, 53, 52, 54, 56–60 (in progress)
-- 📋 **v5.2 Session Context Architecture** — Phases 77–79 (planned)
+- 📋 **v5.2 Session Context Architecture** — Phases 77–79, 80 (planned)
   *(Phase 54 scope reduced: guided onboarding replaced by Global Env Editor — simpler, covers real workflow)*
   *(Phase 55 dropped: MCP tool routing is premature — global .env already handles credential distribution)*
 
@@ -66,6 +66,8 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 77. project-state.md Foundation | 0/3 | Planned (v5.2) | - |
 | 78. CLAUDE.md Architecture Refactor | 0/2 | Planned (v5.2) | - |
 | 79. Dashboard project-state Editor | 0/3 | Planned (v5.2) | - |
+| 80. Claude-Mem Cross-Project Memory | 0/3 | Planned (v5.2) | - |
+| 80. Claude-Mem Cross-Project Memory | 0/3 | Planned (v5.2) | - |
 
 ---
 
@@ -104,6 +106,7 @@ Phase 54B depends on 58 (stage-aware defaults) alongside the already-shipped Pha
 | 54B | NTF-01, NTF-02, NTF-03, NTF-04, NTF-05 |
 | 59 | TSK-01, TSK-02, TSK-03, TSK-04, TSK-05, TSK-06, TSK-07, TSK-08, TSK-09 |
 | 60 | ENV-01, ENV-02, ENV-03, ENV-04, ENV-05 |
+| 80 | MEM-01, MEM-02, MEM-03, MEM-04 |
 
 ---
 
@@ -537,9 +540,9 @@ Plans:
 
 **Problem:** Each Claude Code session starts with incomplete context about the project it's operating in. The global CLAUDE.md is past the ~150-line practical attention limit. Session decisions aren't persisted across sessions. Learnings from one project don't reach others. Phase 58 built stage storage in SQLite and Dashboard UI, but the stage is never injected into Claude's session context — so Claude can't act on it.
 
-**Solution:** A per-project `project-state.md` file Claude reads at session start, a modularised CLAUDE.md architecture that stays within attention limits, and a global learnings file that propagates rules to all sessions automatically. The Dashboard becomes the editor for this context, not just a display layer.
+**Solution:** A per-project `project-state.md` file Claude reads at session start, a modularised CLAUDE.md architecture that stays within attention limits, a global learnings file that propagates rules to all sessions automatically, and a shared claude-mem vector store that gives every session programmatic recall of past solutions across all projects. The Dashboard becomes the editor for this context, not just a display layer.
 
-**Milestone success test:** A fresh Claude Code session on any project correctly knows its stage, never asks the user to do programmer things, and any global learning added in one session (e.g. "never put keys in ecosystem.config.js") automatically surfaces in all other projects' context — without the user touching anything.
+**Milestone success test:** A fresh Claude Code session on any project correctly knows its stage, never asks the user to do programmer things, any global learning added in one session automatically surfaces in all other projects' context, and past solutions from any project are semantically recalled in new sessions without the user touching anything.
 
 ---
 
@@ -583,6 +586,28 @@ Plans:
 **Wave 2** *(blocked on 79-01)*
 - [ ] 79-02-PLAN.md — Frontend: ProjectStatePanel.tsx (mode flags, stack chips, decisions log); wire into project page
 - [ ] 79-03-PLAN.md — Playwright UAT: verify state changes propagate to file; verify Dashboard reflects file changes made externally (e.g. by Claude)
+
+---
+
+### Phase 80: Claude-Mem Cross-Project Memory
+
+**Goal:** Install [claude-mem](https://github.com/thedotmack/claude-mem) as a VPS-level shared service with a single SQLite + Chroma vector store at `~/services`. All Claude Code sessions across all projects feed into and recall from this shared DB, so solutions, patterns, and mistakes from one project automatically surface in others — solving the "reinventing the wheel across projects" problem without requiring manual CLAUDE.md updates.
+**Key behaviours:**
+- Single claude-mem worker instance (Bun) + chroma-mcp process running at VPS level, managed by PM2
+- Shared SQLite + Chroma store at `~/services/.claude-mem/` (not per-project)
+- All Claude Code sessions on the VPS automatically read/write via SessionStart hook
+- MCP tools (`search`, `timeline`, `get_observations`) available in every session for on-demand recall
+- Resource budget: ~200-300 MB RAM permanent, ~120 MB/month disk growth — measure actual after install
+**Depends on:** Phase 78 (LEARNINGS.md pattern — claude-mem is the programmatic complement)
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+- [ ] 80-01-PLAN.md — Install claude-mem at VPS level, configure shared storage path, PM2 service, measure actual RAM/disk usage
+**Wave 2** *(blocked on 80-01)*
+- [ ] 80-02-PLAN.md — Configure all active projects to use shared store via SessionStart hook; verify cross-project recall works
+**Wave 3** *(blocked on 80-02)*
+- [ ] 80-03-PLAN.md — UAT: solve a problem in one project, verify it surfaces in another; document resource footprint
 
 ---
 
