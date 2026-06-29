@@ -66,7 +66,7 @@ The tmux terminal stays as a first-class surface. The Dashboard wraps projects, 
 | 77. project-state.md Foundation | 0/3 | Planned (v5.2) | - |
 | 78. CLAUDE.md Architecture Refactor | 0/2 | Planned (v5.2) | - |
 | 79. Dashboard project-state Editor | 0/3 | Planned (v5.2) | - |
-| 80. Claude-Mem Cross-Project Memory | 3/3 | Complete   | 2026-06-28 |
+| 80. Claude-Mem Cross-Project Memory | 3/3 | Complete    | 2026-06-29 |
 | 80. Claude-Mem Cross-Project Memory | 0/3 | Planned (v5.2) | - |
 
 ---
