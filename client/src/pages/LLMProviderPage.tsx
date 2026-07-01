@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 const PROVIDERS = [
   { id: "claude", name: "Claude (anthropic.com)", hint: "Full power: multi-file refactors, debugging, GSD phases, agentic sessions" },
   { id: "openrouter", name: "OpenRouter (openrouter.ai)", hint: "Free models via OpenRouter — requires OPENROUTER_API_KEY in .env.production" },
+  { id: "minimax", name: "MiniMax (api.minimax.chat)", hint: "Chinese LLM provider — requires MINIMAX_API_KEY in .env.production" },
   { id: "zai", name: "z.AI (api.z.ai)", hint: "Claude via z.AI proxy" },
   { id: "ollama", name: "Local Ollama — qwen2.5-coder:14b", hint: "Light tasks: single-file edits, simple additions, config changes" },
 ];

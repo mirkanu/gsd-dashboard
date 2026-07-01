@@ -64,6 +64,7 @@ const systemRouter = require("./routes/system");
 const uploadRouter = require("./routes/upload");
 const { createBridgeHandler } = require("./lib/ollama-bridge");
 const { createOpenRouterBridgeHandler } = require("./lib/openrouter-bridge");
+const { createMiniMaxBridgeHandler } = require("./lib/minimax-bridge");
 const { execSync } = require("child_process");
 
 // Compute once at startup — date of last git commit formatted as "07May2026"
@@ -155,6 +156,9 @@ function createApp() {
   // OpenRouter bridge: transparent Anthropic-format proxy that rewrites the model field
   // so Claude Code can use OpenRouter free models (owl-alpha, nemotron, etc.)
   app.post("/openrouter-bridge/v1/messages", express.json({ limit: "10mb" }), createOpenRouterBridgeHandler());
+
+  // MiniMax bridge: transparent Anthropic-format proxy for MiniMax API
+  app.post("/minimax-bridge/v1/messages", express.json({ limit: "10mb" }), createMiniMaxBridgeHandler());
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString(), buildDate: BUILD_DATE });

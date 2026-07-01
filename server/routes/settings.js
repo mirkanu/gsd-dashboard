@@ -178,17 +178,23 @@ router.get("/llm-provider", (_req, res) => {
 
     let provider = "claude";
     if (baseUrl && authToken) {
-      if (baseUrl.includes("z.ai")) {
+      if (baseUrl.includes("openrouter-bridge") || baseUrl.includes("openrouter.ai")) {
+        provider = "openrouter";
+      } else if (baseUrl.includes("z.ai")) {
         provider = "zai";
-      } else if (baseUrl.includes("100.99.199.83") || authToken === "ollama") {
+      } else if (baseUrl.includes("ollama-bridge") || baseUrl.includes("100.99.199.83") || authToken === "ollama") {
         provider = "ollama";
       }
     }
 
-    res.json({
+    const response = {
       provider,
       config: { base_url: baseUrl, auth_token: authToken },
-    });
+    };
+    if (provider === "openrouter") {
+      response.model = settings._openrouterModel || "openrouter/owl-alpha";
+    }
+    res.json(response);
   } catch (err) {
     res.status(500).json({
       error: { code: "READ_SETTINGS_FAILED", message: err.message },
@@ -206,10 +212,22 @@ router.get("/llm-provider", (_req, res) => {
  */
 router.put("/llm-provider", (req, res) => {
   try {
-    const { provider } = req.body;
-    if (!["claude", "zai", "ollama"].includes(provider)) {
+    const { provider, model: requestedModel } = req.body;
+    if (!["claude", "zai", "ollama", "openrouter", "minimax"].includes(provider)) {
       return res.status(400).json({
         error: { code: "INVALID_PROVIDER", message: "Invalid provider" },
+      });
+    }
+
+    if (provider === "openrouter" && !process.env.OPENROUTER_API_KEY) {
+      return res.status(400).json({
+        error: { code: "MISSING_API_KEY", message: "OPENROUTER_API_KEY is not set in .env.production" },
+      });
+    }
+
+    if (provider === "minimax" && !process.env.MINIMAX_API_KEY) {
+      return res.status(400).json({
+        error: { code: "MISSING_API_KEY", message: "MINIMAX_API_KEY is not set in .env.production" },
       });
     }
 
@@ -219,29 +237,70 @@ router.put("/llm-provider", (req, res) => {
       settings = JSON.parse(raw);
     }
 
-    const prevProvider = settings.env?.ANTHROPIC_BASE_URL
-      ? settings.env.ANTHROPIC_BASE_URL.includes("z.ai")
+    const prevUrl = settings.env?.ANTHROPIC_BASE_URL || "";
+    const prevProvider = prevUrl
+      ? prevUrl.includes("openrouter-bridge") || prevUrl.includes("openrouter.ai")
+        ? "openrouter"
+        : prevUrl.includes("minimax-bridge") || prevUrl.includes("minimax.chat")
+        ? "minimax"
+        : prevUrl.includes("z.ai")
         ? "zai"
-        : settings.env.ANTHROPIC_BASE_URL.includes("100.99.199.83") ||
-          settings.env.ANTHROPIC_AUTH_TOKEN === "ollama"
+        : prevUrl.includes("ollama-bridge") ||
+          prevUrl.includes("100.99.199.83") ||
+          settings.env?.ANTHROPIC_AUTH_TOKEN === "ollama"
         ? "ollama"
         : "claude"
       : "claude";
 
+    const openrouterModel = provider === "openrouter"
+      ? (requestedModel || "openrouter/owl-alpha")
+      : null;
+
     const providerConfigs = {
-      claude: { base_url: null, auth_token: null },
+      claude: { base_url: null, auth_token: null, model: null },
+      openrouter: {
+        base_url: "http://localhost:4820/openrouter-bridge",
+        auth_token: "openrouter",
+        model: null,
+      },
+      minimax: {
+        base_url: "http://localhost:4820/minimax-bridge",
+        auth_token: "minimax",
+        model: null,
+      },
       zai: {
         base_url: "https://api.z.ai/api/anthropic",
         auth_token: "91390354889a4c329e7e1df5855c12cb.HHBacM9NnnDt9TiB",
+        model: null,
       },
       ollama: {
-        base_url: "http://100.99.199.83:11434",
+        base_url: "http://localhost:4820/ollama-bridge",
         auth_token: "ollama",
+        model: "qwen2.5-coder:14b",
       },
     };
 
     const config = providerConfigs[provider];
     if (!settings.env) settings.env = {};
+
+    // Save/restore model when switching to/from Ollama
+    if (config.model) {
+      if (settings.model && settings.model !== config.model) {
+        settings._savedModel = settings.model;
+      }
+      settings.model = config.model;
+    } else if (settings._savedModel) {
+      settings.model = settings._savedModel;
+      delete settings._savedModel;
+    }
+
+    // Store/clear the selected OpenRouter model (read by the openrouter-bridge at request time)
+    if (openrouterModel) {
+      settings._openrouterModel = openrouterModel;
+    } else {
+      delete settings._openrouterModel;
+    }
+
     if (config.base_url) {
       settings.env.ANTHROPIC_BASE_URL = config.base_url;
     } else {
@@ -264,6 +323,199 @@ router.put("/llm-provider", (req, res) => {
     res.status(500).json({
       error: { code: "WRITE_SETTINGS_FAILED", message: err.message },
     });
+  }
+});
+
+/**
+ * POST /api/settings/llm-provider/test
+ *
+ * Test connectivity to a provider before switching.
+ * Request body: { "provider": "claude" | "zai" | "ollama" }
+ * Returns: { "ok": true, "latency_ms": number, "model": string }
+ *       or { "ok": false, "error": string }
+ */
+router.post("/llm-provider/test", async (req, res) => {
+  const { provider } = req.body;
+  if (!["claude", "zai", "ollama", "openrouter", "minimax"].includes(provider)) {
+    return res.status(400).json({ ok: false, error: "Invalid provider" });
+  }
+
+  if (provider === "claude") {
+    return res.json({ ok: true, latency_ms: 0, model: "claude-sonnet-4-6", detail: "Default Anthropic API" });
+  }
+
+  if (provider === "zai") {
+    return res.json({ ok: true, latency_ms: 0, model: "claude-sonnet-4-6", detail: "z.AI proxy" });
+  }
+
+  if (provider === "openrouter") {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      return res.json({ ok: false, error: "OPENROUTER_API_KEY is not set in .env.production — add it and restart the dashboard" });
+    }
+    const https = require("https");
+    const testModel = req.body.model || "openrouter/owl-alpha";
+    const start = Date.now();
+    try {
+      const testResp = await new Promise((resolve, reject) => {
+        const payload = JSON.stringify({
+          model: testModel,
+          max_tokens: 10,
+          messages: [{ role: "user", content: "hi" }],
+        });
+        const r = https.request("https://openrouter.ai/api/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+          },
+          timeout: 15000,
+        }, (resp) => {
+          let data = "";
+          resp.on("data", (c) => { data += c; });
+          resp.on("end", () => {
+            try { resolve({ status: resp.statusCode, body: JSON.parse(data) }); }
+            catch { reject(new Error("Invalid response from OpenRouter")); }
+          });
+        });
+        r.on("error", (e) => reject(new Error(`OpenRouter not reachable: ${e.message}`)));
+        r.on("timeout", () => { r.destroy(); reject(new Error("OpenRouter timed out")); });
+        r.write(payload);
+        r.end();
+      });
+
+      const latency = Date.now() - start;
+      if (testResp.status === 401) {
+        return res.json({ ok: false, error: "API key rejected — check OPENROUTER_API_KEY" });
+      }
+      if (testResp.status !== 200) {
+        return res.json({ ok: false, error: `OpenRouter returned HTTP ${testResp.status}: ${testResp.body?.error?.message || "unknown error"}` });
+      }
+      const hasContent = testResp.body.content?.some(c => c.text);
+      if (!hasContent) {
+        return res.json({ ok: false, error: "OpenRouter returned empty response" });
+      }
+      return res.json({ ok: true, latency_ms: latency, model: testResp.body.model || "anthropic/claude-haiku-4-5", detail: `Responded in ${(latency / 1000).toFixed(1)}s` });
+    } catch (err) {
+      return res.json({ ok: false, error: err.message });
+    }
+  }
+
+  // MiniMax: test connectivity with a simple completion
+  if (provider === "minimax") {
+    const apiKey = process.env.MINIMAX_API_KEY;
+    if (!apiKey) {
+      return res.json({ ok: false, error: "MINIMAX_API_KEY is not set in .env.production — add it and restart the dashboard" });
+    }
+    const https = require("https");
+    const start = Date.now();
+    try {
+      const testResp = await new Promise((resolve, reject) => {
+        const payload = JSON.stringify({
+          model: "abab6.5s-chat",
+          messages: [{ role: "user", content: "hi" }],
+          max_tokens: 10,
+        });
+        const r = https.request("https://api.minimax.chat/v1/text/chatcompletion_v2", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`,
+          },
+          timeout: 15000,
+        }, (resp) => {
+          let data = "";
+          resp.on("data", (c) => { data += c; });
+          resp.on("end", () => {
+            try { resolve({ status: resp.statusCode, body: JSON.parse(data) }); }
+            catch { reject(new Error("Invalid response from MiniMax")); }
+          });
+        });
+        r.on("error", (e) => reject(new Error(`MiniMax not reachable: ${e.message}`)));
+        r.on("timeout", () => { r.destroy(); reject(new Error("MiniMax timed out")); });
+        r.write(payload);
+        r.end();
+      });
+
+      const latency = Date.now() - start;
+      if (testResp.status === 401) {
+        return res.json({ ok: false, error: "API key rejected — check MINIMAX_API_KEY" });
+      }
+      if (testResp.status !== 200) {
+        return res.json({ ok: false, error: `MiniMax returned HTTP ${testResp.status}: ${testResp.body?.error?.message || "unknown error"}` });
+      }
+      const hasContent = testResp.body.choices && testResp.body.choices.length > 0;
+      if (!hasContent) {
+        return res.json({ ok: false, error: "MiniMax returned empty response" });
+      }
+      return res.json({ ok: true, latency_ms: latency, model: "abab6.5s-chat", detail: `Responded in ${(latency / 1000).toFixed(1)}s` });
+    } catch (err) {
+      return res.json({ ok: false, error: err.message });
+    }
+  }
+
+  // Ollama: check reachability, list models, test a simple completion
+  const ollamaHost = "http://100.99.199.83:11434";
+  const http = require("http");
+
+  try {
+    // Step 1: Check if Ollama is reachable and list models
+    const tagsResp = await new Promise((resolve, reject) => {
+      const r = http.get(`${ollamaHost}/api/tags`, { timeout: 5000 }, (resp) => {
+        let data = "";
+        resp.on("data", (c) => { data += c; });
+        resp.on("end", () => {
+          try { resolve(JSON.parse(data)); }
+          catch { reject(new Error("Invalid response from Ollama")); }
+        });
+      });
+      r.on("error", () => reject(new Error("Ollama server not reachable")));
+      r.on("timeout", () => { r.destroy(); reject(new Error("Ollama server not reachable (timeout)")); });
+    });
+
+    const models = (tagsResp.models || []).map(m => m.name);
+    if (models.length === 0) {
+      return res.json({ ok: false, error: "Ollama is running but no models are installed. Run: ollama pull qwen2.5-coder:14b" });
+    }
+
+    // Step 2: Test a quick completion via native Anthropic endpoint
+    const testModel = models[0];
+    const start = Date.now();
+    const testResp = await new Promise((resolve, reject) => {
+      const payload = JSON.stringify({
+        model: testModel,
+        max_tokens: 10,
+        messages: [{ role: "user", content: "hi" }],
+      });
+      const r = http.request(`${ollamaHost}/v1/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": "ollama", "anthropic-version": "2023-06-01" },
+        timeout: 120000,
+      }, (resp) => {
+        let data = "";
+        resp.on("data", (c) => { data += c; });
+        resp.on("end", () => {
+          try { resolve(JSON.parse(data)); }
+          catch { reject(new Error("Invalid completion response")); }
+        });
+      });
+      r.on("error", (e) => reject(new Error(`Completion failed: ${e.message}`)));
+      r.on("timeout", () => { r.destroy(); reject(new Error("Model response timed out (may need to load into memory first)")); });
+      r.write(payload);
+      r.end();
+    });
+
+    const latency = Date.now() - start;
+    const hasContent = testResp.content?.some(c => c.text || c.thinking);
+
+    if (hasContent) {
+      return res.json({ ok: true, latency_ms: latency, model: testModel, models, detail: `Responded in ${(latency / 1000).toFixed(1)}s` });
+    } else {
+      return res.json({ ok: false, error: `Model ${testModel} returned empty response`, models });
+    }
+  } catch (err) {
+    return res.json({ ok: false, error: err.message });
   }
 });
 
