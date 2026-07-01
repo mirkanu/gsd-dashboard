@@ -30,7 +30,7 @@ type TestState = {
 
 export function LLMProviderPage() {
   const [selectedProvider, setSelectedProvider] = useState<string>("claude");
-  const [openrouterModel, setOpenrouterModel] = useState<string>(DEFAULT_OPENROUTER_MODEL);
+  const [openrouterModel, setOpenrouterModel] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,9 +46,7 @@ export function LLMProviderPage() {
       .then((data) => {
         if (!cancelled && data.provider) {
           setSelectedProvider(data.provider);
-          if (data.provider === "openrouter" && (data as any).model) {
-            setOpenrouterModel((data as any).model);
-          }
+          // Don't auto-load the OpenRouter model - let user choose explicitly
         }
       })
       .catch((err) => {
@@ -67,7 +65,13 @@ export function LLMProviderPage() {
   const handleProviderChange = async (providerId: string, modelOverride?: string) => {
     if (providerId === selectedProvider && !modelOverride) return;
 
-    const model = providerId === "openrouter" ? (modelOverride ?? openrouterModel) : undefined;
+    // For OpenRouter, require explicit model selection
+    if (providerId === "openrouter" && !modelOverride && !openrouterModel) {
+      setSelectedProvider(providerId);
+      return; // Let user select a model first
+    }
+
+    const model = providerId === "openrouter" ? (modelOverride ?? openrouterModel!) : undefined;
 
     // For non-default providers, test connectivity first
     if (providerId !== "claude") {
@@ -196,6 +200,12 @@ export function LLMProviderPage() {
         {/* OpenRouter model selector */}
         {selectedProvider === "openrouter" && !isLoading && (
           <div className="mt-3 space-y-1">
+            {!openrouterModel && (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-md flex items-center gap-2 text-sm text-amber-400 mb-3">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <span>Please select a model to use OpenRouter</span>
+              </div>
+            )}
             <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
               Model
             </label>
@@ -281,9 +291,13 @@ export function LLMProviderPage() {
         </div>
 
         {/* Restart notice */}
-        {selectedProvider !== "claude" && (
+        {selectedProvider !== "claude" ? (
           <p className="text-xs text-gray-500 mt-2">
             New CLI sessions will use this provider. Running sessions need /exit + restart to pick up the change.
+          </p>
+        ) : (
+          <p className="text-xs text-gray-500 mt-2">
+            Anthropic API key changes require restarting each Claude CLI session to take effect.
           </p>
         )}
       </div>
