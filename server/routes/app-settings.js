@@ -17,7 +17,7 @@ const { getSecret, setSecret, listSecretKeys } = require('../crypto');
 const { db } = require('../db');
 
 // Keys whose plaintext value MAY be read over the wire. Secrets never appear here.
-const PUBLIC_SETTINGS = ['idle_timeout_minutes', 'railway_ram_rate_monthly'];
+const PUBLIC_SETTINGS = ['idle_timeout_minutes', 'railway_ram_rate_monthly', 'openrouter_models'];
 
 const deleteSecretStmt = db.prepare('DELETE FROM app_settings WHERE key = ?');
 const hasKeyStmt = db.prepare('SELECT updated_at FROM app_settings WHERE key = ?');

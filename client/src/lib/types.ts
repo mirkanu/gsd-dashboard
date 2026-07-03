@@ -1,3 +1,12 @@
+// ─── LLM Provider Types ─────────────────────────────────────────────────────
+
+export interface OpenRouterModel {
+  id: string;
+  name: string;
+  hint: string;
+  unknownProvenance?: boolean;
+}
+
 // ─── Phase 45: Services Cost Tracking Types ──────────────────────────────────
 
 export type CostSource = 'manual' | 'email' | 'recurring' | 'unparsed' | 'api';

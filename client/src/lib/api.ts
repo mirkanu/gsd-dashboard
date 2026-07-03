@@ -15,6 +15,7 @@ import type {
   MappingRule,
   ModelPricing,
   OomStatus,
+  OpenRouterModel,
   ProjectSettings,
   ProjectStage,
   RunCronResult,
@@ -152,10 +153,15 @@ export const api = {
       request<{ provider: string; config: { base_url: string | null; auth_token: string | null } }>(
         "/settings/llm-provider"
       ),
-    setLLMProvider: (provider: string) =>
+    setLLMProvider: (provider: string, model?: string) =>
       request<{ ok: true; previous: string; current: string }>("/settings/llm-provider", {
         method: "PUT",
-        body: JSON.stringify({ provider }),
+        body: JSON.stringify({ provider, model }),
+      }),
+    testLLMProvider: (provider: string, model?: string) =>
+      request<{ ok: boolean; latency_ms?: number; model?: string; models?: string[]; detail?: string; error?: string }>("/settings/llm-provider/test", {
+        method: "POST",
+        body: JSON.stringify({ provider, model }),
       }),
   },
 
@@ -377,6 +383,16 @@ export const api = {
       request<{ ok: true }>(`/app-settings/${encodeURIComponent(key)}`, {
         method: "DELETE",
       }),
+    getOpenRouterModels: async () => {
+      try {
+        const data = await api.appSettings.getValue("openrouter_models");
+        return JSON.parse(data.value) as OpenRouterModel[];
+      } catch {
+        return null; // Not set yet
+      }
+    },
+    setOpenRouterModels: (models: OpenRouterModel[]) =>
+      api.appSettings.set("openrouter_models", JSON.stringify(models)),
   },
 
   system: {
