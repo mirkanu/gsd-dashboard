@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const { db, stmts, DB_PATH } = require("../db");
-const { getConnectionCount } = require("../websocket");
+const { getConnectionCount, broadcast } = require("../websocket");
 
 const router = Router();
 
@@ -314,6 +314,13 @@ router.put("/llm-provider", (req, res) => {
 
     fs.writeFileSync(CLAUDE_SETTINGS_PATH, JSON.stringify(settings, null, 2));
 
+    // Broadcast provider change so running CLI sessions can detect it
+    broadcast("llm_provider_changed", {
+      provider,
+      previous: prevProvider,
+      requiresRestart: provider === "claude", // Anthropic requires CLI restart to clear env vars
+    });
+
     res.json({
       ok: true,
       previous: prevProvider,
@@ -413,11 +420,11 @@ router.post("/llm-provider/test", async (req, res) => {
     try {
       const testResp = await new Promise((resolve, reject) => {
         const payload = JSON.stringify({
-          model: "abab6.5s-chat",
+          model: "MiniMax-M3",
           messages: [{ role: "user", content: "hi" }],
-          max_tokens: 10,
+          max_completion_tokens: 10,
         });
-        const r = https.request("https://api.minimax.chat/v1/text/chatcompletion_v2", {
+        const r = https.request("https://api.minimax.io/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -443,11 +450,14 @@ router.post("/llm-provider/test", async (req, res) => {
         return res.json({ ok: false, error: "API key rejected — check MINIMAX_API_KEY" });
       }
       if (testResp.status !== 200) {
-        return res.json({ ok: false, error: `MiniMax returned HTTP ${testResp.status}: ${testResp.body?.error?.message || "unknown error"}` });
+        return res.json({ ok: false, error: `MiniMax returned HTTP ${testResp.status}: ${JSON.stringify(testResp.body)}` });
       }
-      const hasContent = testResp.body.choices && testResp.body.choices.length > 0;
+
+      // MiniMax returns: { choices: [{ message: { role, content } }] }
+      const hasContent = testResp.body?.choices?.[0]?.message?.content;
       if (!hasContent) {
-        return res.json({ ok: false, error: "MiniMax returned empty response" });
+        console.error("[minimax-test] Unexpected response format:", JSON.stringify(testResp.body, null, 2));
+        return res.json({ ok: false, error: `MiniMax returned unexpected format: ${JSON.stringify(testResp.body).slice(0, 200)}` });
       }
       return res.json({ ok: true, latency_ms: latency, model: "abab6.5s-chat", detail: `Responded in ${(latency / 1000).toFixed(1)}s` });
     } catch (err) {

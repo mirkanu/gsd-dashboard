@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
-const MINIMAX_API_URL = "https://api.minimax.chat/v1/text/chatcompletion_v2";
+const MINIMAX_API_URL = "https://api.minimax.io/v1/chat/completions";
 const CLAUDE_SETTINGS_PATH = path.join(os.homedir(), ".claude", "settings.json");
 
 function getTargetModel() {
