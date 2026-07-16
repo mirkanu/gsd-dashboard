@@ -109,6 +109,23 @@ function _testDetectWithChangeHeuristic(prev, currentOutput, nowMs) {
 }
 
 /**
+ * Classify a failed tmux invocation as either a confirmed absence (tmux
+ * itself reported "can't find session") or an ambiguous failure (timeout,
+ * spawn error, etc. — we don't actually know the session's state).
+ * Conflating these two used to cause sessions to be misreported as 'paused'
+ * whenever the host was under load and `tmux` took >2s to respond.
+ * @param {Error & {killed?: boolean, signal?: string|null, stderr?: Buffer|string}} err
+ * @returns {'confirmed-absent'|'ambiguous'}
+ */
+function _classifyTmuxError(err) {
+  if (!err) return 'ambiguous';
+  if (err.killed || err.signal) return 'ambiguous'; // timed out
+  const stderr = err.stderr ? err.stderr.toString() : '';
+  if (/can't find session/i.test(stderr)) return 'confirmed-absent';
+  return 'ambiguous';
+}
+
+/**
  * Check whether a named tmux session exists and is running.
  * Returns false for falsy input or any error (tmux not found, session absent, etc.).
  * Never throws.
@@ -150,6 +167,64 @@ function capturePaneText(sessionName) {
     return execFileSync('tmux', ['capture-pane', '-p', '-J', '-t', sessionName], { encoding: 'utf8', timeout: 2000 });
   } catch {
     return null;
+  }
+}
+
+/**
+ * Session-active check that distinguishes a confirmed-absent session from an
+ * ambiguous failure (timeout under host load, etc). Used only by
+ * detectSessionState/detectSessionStateAsync so display state doesn't flip
+ * to 'paused' just because `tmux` was momentarily slow to respond.
+ * @param {string|null|undefined} sessionName
+ * @returns {{ active: boolean, ambiguous: boolean }}
+ */
+function _checkSessionActive(sessionName) {
+  if (!sessionName) return { active: false, ambiguous: false };
+  try {
+    execFileSync('tmux', ['has-session', '-t', sessionName], { timeout: 2000 });
+    return { active: true, ambiguous: false };
+  } catch (err) {
+    const ambiguous = _classifyTmuxError(err) === 'ambiguous';
+    return { active: false, ambiguous };
+  }
+}
+
+/** Async variant of {@link _checkSessionActive}. */
+async function _checkSessionActiveAsync(sessionName) {
+  if (!sessionName) return { active: false, ambiguous: false };
+  try {
+    await execFileAsync('tmux', ['has-session', '-t', sessionName], { timeout: 2000 });
+    return { active: true, ambiguous: false };
+  } catch (err) {
+    const ambiguous = _classifyTmuxError(err) === 'ambiguous';
+    return { active: false, ambiguous };
+  }
+}
+
+/**
+ * Pane-capture variant that distinguishes a confirmed-absent session from an
+ * ambiguous failure. See {@link _checkSessionActive}.
+ * @param {string} sessionName
+ * @returns {{ output: string|null, ambiguous: boolean }}
+ */
+function _capturePaneTextOrClassify(sessionName) {
+  try {
+    const output = execFileSync('tmux', ['capture-pane', '-p', '-J', '-t', sessionName], { encoding: 'utf8', timeout: 2000 });
+    return { output, ambiguous: false };
+  } catch (err) {
+    const ambiguous = _classifyTmuxError(err) === 'ambiguous';
+    return { output: null, ambiguous };
+  }
+}
+
+/** Async variant of {@link _capturePaneTextOrClassify}. */
+async function _capturePaneTextOrClassifyAsync(sessionName) {
+  try {
+    const { stdout } = await execFileAsync('tmux', ['capture-pane', '-p', '-J', '-t', sessionName], { encoding: 'utf8', timeout: 2000 });
+    return { output: stdout, ambiguous: false };
+  } catch (err) {
+    const ambiguous = _classifyTmuxError(err) === 'ambiguous';
+    return { output: null, ambiguous };
   }
 }
 
@@ -244,10 +319,12 @@ function detectRateLimit(sessionNames) {
  */
 function detectSessionState(sessionName) {
   if (!sessionName) return 'archived';
-  if (!isTmuxSessionActive(sessionName)) return 'paused';
+  const activeCheck = _checkSessionActive(sessionName);
+  if (!activeCheck.active) return activeCheck.ambiguous ? 'waiting' : 'paused';
 
-  const output = capturePaneText(sessionName);
-  if (output === null) return 'paused';
+  const captured = _capturePaneTextOrClassify(sessionName);
+  if (captured.output === null) return captured.ambiguous ? 'waiting' : 'paused';
+  const output = captured.output;
 
   // Claude Code activity indicators — only present while Claude is actively processing.
   // timerPatterns covers all known Claude Code output variants showing active work.
@@ -477,10 +554,12 @@ async function capturePaneTextAsync(sessionName) {
  */
 async function detectSessionStateAsync(sessionName) {
   if (!sessionName) return 'archived';
-  if (!(await isTmuxSessionActiveAsync(sessionName))) return 'paused';
+  const activeCheck = await _checkSessionActiveAsync(sessionName);
+  if (!activeCheck.active) return activeCheck.ambiguous ? 'waiting' : 'paused';
 
-  const output = await capturePaneTextAsync(sessionName);
-  if (output === null) return 'paused';
+  const captured = await _capturePaneTextOrClassifyAsync(sessionName);
+  if (captured.output === null) return captured.ambiguous ? 'waiting' : 'paused';
+  const output = captured.output;
 
   // Check the last 15 lines only (active Claude Code UI region, not scrollback).
   const recentLines = output.split('\n').slice(-15).join('\n');
