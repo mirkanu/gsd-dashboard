@@ -189,12 +189,18 @@ router.get("/projects", async (_req, res) => {
 
     const data = await Promise.all(projects.map(async ({ name, root, tmux_session, archived, display_name, stagingEnabled, stagingPort, stagingUrl, stagingStatus }) => {
       const row = sessionQuery.get(root);
+      const snap = stateSnapshot[name];
       let sessionState = archived
         ? 'archived'
         : await detectSessionStateAsync(tmux_session ?? null);
-      // Promote waiting → paused if last activity was >48h ago
-      if (sessionState === 'waiting' && row?.updated_at) {
-        const idleMs = now - new Date(row.updated_at).getTime();
+      // Promote waiting → paused if the live pane has actually been waiting
+      // >48h. Uses the in-memory stateBroadcaster snapshot (stateEnteredAt),
+      // not the `sessions` DB table's updated_at — hook-based session
+      // ingestion can go stale or dead independent of real tmux activity,
+      // which previously caused any transient 'waiting' reading to be
+      // instantly (and permanently) promoted to 'paused'.
+      if (sessionState === 'waiting' && snap?.rawPaneState === 'waiting' && snap.stateEnteredAt) {
+        const idleMs = now - new Date(snap.stateEnteredAt).getTime();
         if (idleMs > IDLE_PAUSED_MS) sessionState = 'paused';
       }
       // Detect state transitions and route through NotificationCentre
@@ -224,7 +230,6 @@ router.get("/projects", async (_req, res) => {
 
       // Resolve stateEnteredAt — prefer broadcaster snapshot when its sessionState
       // matches what we just detected (carries canonical transition timestamp).
-      const snap = stateSnapshot[name];
       const stateEnteredAt =
         snap && snap.sessionState === sessionState
           ? snap.stateEnteredAt
