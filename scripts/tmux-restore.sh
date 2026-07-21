@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 # tmux-restore.sh — restores tmux sessions from ~/.tmux-sessions on login
+# Usage: tmux-restore.sh [--with-claude]
+#   --with-claude   after creating a session, relaunch `claude --dangerously-skip-permissions`
+#                   in window 0 (used by the watchdog for crash recovery). Without this flag,
+#                   sessions are restored as bare shells (original login-restore behavior).
 set -euo pipefail
+
+WITH_CLAUDE=0
+for arg in "$@"; do
+  case "$arg" in
+    --with-claude) WITH_CLAUDE=1 ;;
+  esac
+done
 
 SAVE_DIR="$HOME/.tmux-sessions"
 
@@ -26,6 +37,11 @@ while IFS= read -r session; do
   fi
   tmux new-session -d -s "$session" -c "$start_dir"
   echo "tmux-restore: created session '$session' in $start_dir"
+  if [[ "$WITH_CLAUDE" -eq 1 ]]; then
+    sleep 1
+    tmux send-keys -t "${session}:0" 'claude --dangerously-skip-permissions' Enter
+    echo "tmux-restore: relaunched claude --dangerously-skip-permissions in '${session}:0'"
+  fi
   ((restored++)) || true
 done < "$SAVE_DIR/sessions.list"
 
