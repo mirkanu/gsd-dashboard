@@ -39,8 +39,8 @@ while IFS= read -r session; do
   echo "tmux-restore: created session '$session' in $start_dir"
   if [[ "$WITH_CLAUDE" -eq 1 ]]; then
     sleep 1
-    tmux send-keys -t "${session}:0" 'claude --dangerously-skip-permissions' Enter
-    echo "tmux-restore: relaunched claude --dangerously-skip-permissions in '${session}:0'"
+    tmux send-keys -t "${session}:0" 'claude --continue --dangerously-skip-permissions' Enter
+    echo "tmux-restore: relaunched claude --continue --dangerously-skip-permissions in '${session}:0'"
   fi
   ((restored++)) || true
 done < "$SAVE_DIR/sessions.list"
