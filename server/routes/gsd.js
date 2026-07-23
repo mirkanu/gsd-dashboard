@@ -21,6 +21,21 @@ const stagingProvisioner = require('../gsd/stagingProvisioner');
 
 const router = express.Router();
 
+// Removes a session from the tmux-watchdog snapshot so a deliberate dashboard
+// kill isn't mistaken for a crash and auto-relaunched within the next poll (~90s).
+function forgetWatchdogSession(sessionName) {
+  const saveDir = path.join(os.homedir(), '.tmux-sessions');
+  const listPath = path.join(saveDir, 'sessions.list');
+  try {
+    if (!fs.existsSync(listPath)) return;
+    const remaining = fs.readFileSync(listPath, 'utf8')
+      .split('\n')
+      .filter(line => line.trim() && line.trim() !== sessionName);
+    fs.writeFileSync(listPath, remaining.length ? remaining.join('\n') + '\n' : '');
+    fs.rmSync(path.join(saveDir, `${sessionName}.windows`), { force: true });
+  } catch { /* watchdog snapshot is best-effort — never block the kill on this */ }
+}
+
 const previousStates = new Map(); // project name → previous sessionState
 
 let projectsCache = null;
@@ -520,6 +535,7 @@ router.post('/projects/:name/kill-session', async (req, res) => {
     if (isTmuxSessionActive(tmux_session)) {
       execFileSync('tmux', ['kill-session', '-t', tmux_session], { stdio: 'ignore', timeout: 5000 });
     }
+    forgetWatchdogSession(tmux_session);
     return res.json({ ok: true, killed: true });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to kill session', detail: err.message });
@@ -774,6 +790,7 @@ router.post('/projects/:name/archive', async (req, res) => {
       try {
         execFileSync('tmux', ['kill-session', '-t', tmux_session], { stdio: 'ignore', timeout: 5000 });
       } catch { /* session already dead */ }
+      forgetWatchdogSession(tmux_session);
     }
 
     project.archived = true;
@@ -864,6 +881,7 @@ router.delete('/projects/:name', async (req, res) => {
       try {
         execFileSync('tmux', ['kill-session', '-t', project.tmux_session], { stdio: 'ignore', timeout: 5000 });
       } catch { /* already stopped */ }
+      forgetWatchdogSession(project.tmux_session);
     }
 
     // Delete GitHub repo
