@@ -413,12 +413,16 @@ if (require.main === module) {
   }
 
   // Auto-install Claude Code hooks on every startup so users don't have to
-  try {
-    const { installHooks } = require("../scripts/install-hooks");
-    installHooks(true);
-    console.log("Claude Code hooks auto-configured.");
-  } catch {
-    // Non-fatal — user can run npm run install-hooks manually
+  // SKIP on Zo (GSD_ZO_MODE=1) — Zo owns hook wiring and the in-process installer
+  // is a no-op there. See scripts/install-hooks.js for the rationale.
+  if (process.env.GSD_ZO_MODE !== "1") {
+    try {
+      const { installHooks } = require("../scripts/install-hooks");
+      installHooks(true);
+      console.log("Claude Code hooks auto-configured.");
+    } catch {
+      // Non-fatal — user can run npm run install-hooks manually
+    }
   }
 
   // Periodic maintenance sweep (every 2 min):
