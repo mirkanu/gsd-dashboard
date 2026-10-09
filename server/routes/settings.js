@@ -111,13 +111,17 @@ router.post("/reimport", async (_req, res) => {
   }
 });
 
-// POST /api/settings/reinstall-hooks — reinstall Claude Code hooks
+// POST /api/settings/reinstall-hooks — no-op on Zo
+//
+// On Zo (GSD_ZO_MODE=1) the dashboard never writes to the host's
+// `~/.claude/settings.json`. Hooks are installed host-side via the
+// `node scripts/install-host-hooks.js` one-shot (see issue #2, step Z1).
+// This endpoint returns the current host hook status so the UI can still
+// render the hook health card.
 router.post("/reinstall-hooks", (_req, res) => {
   try {
-    const { installHooks } = require("../../scripts/install-hooks");
-    const success = installHooks(true);
     const hookStatus = getHookStatus();
-    res.json({ ok: success, hooks: hookStatus });
+    res.json({ ok: true, hooks: hookStatus, zo_mode: true });
   } catch (err) {
     res.status(500).json({
       error: { code: "HOOK_INSTALL_FAILED", message: err.message },

@@ -41,7 +41,11 @@ router.post('/login', (req, res) => {
 
   res.cookie('gsd_token', token, {
     httpOnly: true,
-    sameSite: 'strict',
+    // Behind the Zo reverse proxy the browser still sees HTTPS, so Secure cookies are fine.
+    // SameSite=Lax is required so the cookie persists when the user opens the dashboard
+    // directly (e.g. from a Telegram link) — Strict would block top-level navigations.
+    secure: process.env.GSD_ZO_MODE === '1' || process.env.NODE_ENV === 'production',
+    sameSite: process.env.GSD_ZO_MODE === '1' ? 'lax' : 'strict',
     maxAge: THIRTY_DAYS_MS,
     path: '/',
   });
