@@ -58,6 +58,41 @@ const { createAgentProxy } = require("./routes/proxy");
 const mcpRemote = require("./routes/mcp-remote");
 const { startReplyPoller, stopReplyPoller, ENABLED: telegramEnabled } = require("./gsd/telegram");
 const { authRouter, isValidToken } = require("./routes/auth");
+
+// ----- Zo mode bootstrap -----
+// When GSD_ZO_MODE=1 the server runs as a private Zo Site. The host provides a
+// reverse proxy (zite-{port}-*.zo.computer) that authenticates the owner, so we
+// drop proxy mode, force local data, and require tmux+node-pty (the dashboard's
+// terminal feature cannot work without them).
+const ZO_MODE = process.env.GSD_ZO_MODE === "1";
+if (ZO_MODE) {
+  if (process.env.GSD_DATA_URL) {
+    console.error("[zo-mode] GSD_DATA_URL must be unset; proxy mode is not supported in Zo mode.");
+    process.exit(1);
+  }
+  if (!process.env.DASHBOARD_PASS) {
+    console.error("[zo-mode] DASHBOARD_PASS must be set; refusing to start with a blank password.");
+    process.exit(1);
+  }
+  try {
+    require("node-pty");
+  } catch (err) {
+    console.error("[zo-mode] node-pty is required for the terminal feature; install failed earlier?", err.message);
+    process.exit(1);
+  }
+  try {
+    require("child_process").execFileSync("tmux", ["-V"], { stdio: "ignore" });
+  } catch (err) {
+    console.error("[zo-mode] tmux binary is required; apt-get install tmux before starting.");
+    process.exit(1);
+  }
+  // Zo's reverse proxy terminates TLS; trust the X-Forwarded-* headers so the
+  // cookie can be marked Secure and the user can hit the dashboard directly.
+  // The actual `app.set('trust proxy', 1)` happens further down after `app` is
+  // created — see the ZO_MODE setTrustProxy block.
+  process.env.NODE_ENV = process.env.NODE_ENV || "production";
+  console.log("[zo-mode] gsd-dashboard starting in Zo mode (private site, local data, tmux+node-pty required).");
+}
 const projectsRouter = require("./routes/projects");
 const dockerOpsRouter = require("./routes/docker-ops");
 const systemRouter = require("./routes/system");
@@ -112,6 +147,36 @@ function cookieAuth(req, res, next) {
 function createApp() {
   const app = express();
   const gsdDataUrl = (process.env.GSD_DATA_URL || "").replace(/\/$/, "");
+
+  // Zo mode: lock down for the private Zo site at gsd-dashboard-mirkanu.zo.computer.
+  // - Fails fast if tmux or node-pty are missing (this host owns the terminal layer).
+  // - Requires DASHBOARD_PASS; no passwordless fallback.
+  // - Disallows GSD_DATA_URL — the Zo host is the source of truth, not a proxy.
+  // - Trusts the Zo reverse proxy so cookies stay Secure over HTTP internally.
+  if (process.env.GSD_ZO_MODE === "1") {
+    if (process.env.GSD_DATA_URL) {
+      console.error("[zo] GSD_ZO_MODE=1 but GSD_DATA_URL is set; refusing to start (Zo host must be local).");
+      process.exit(1);
+    }
+    if (!process.env.DASHBOARD_PASS) {
+      console.error("[zo] GSD_ZO_MODE=1 requires DASHBOARD_PASS to be set.");
+      process.exit(1);
+    }
+    if (!process.env.AUTH_REQUIRED) process.env.AUTH_REQUIRED = "1";
+    try {
+      require.resolve("node-pty");
+    } catch {
+      console.error("[zo] GSD_ZO_MODE=1 requires the optional `node-pty` dependency (terminal bridge).");
+      process.exit(1);
+    }
+    try {
+      require("child_process").execFileSync("tmux", ["-V"], { stdio: "ignore" });
+    } catch {
+      console.error("[zo] GSD_ZO_MODE=1 requires `tmux` on PATH (apt-get install tmux).");
+      process.exit(1);
+    }
+    app.set("trust proxy", 1);
+  }
 
   app.use(cookieAuth);
   app.use(cors());
@@ -201,7 +266,20 @@ function startServer(app, port) {
   const isProduction = process.env.NODE_ENV === "production";
   if (isProduction) {
     const clientDist = path.join(__dirname, "..", "client", "dist");
-    const uploadsDir = path.join(__dirname, "..", "uploads");
+    // Zo-mode allows the data dir to live outside the repo clone
+    // (e.g. /home/workspace/.gsd-dashboard). Falls back to repo root.
+    const dataRoot = process.env.GSD_DATA_DIR
+      ? path.resolve(process.env.GSD_DATA_DIR)
+      : path.join(__dirname, "..");
+    const uploadsDir = path.join(dataRoot, "uploads");
+    // gsd-projects.json lives next to the data dir in Zo-mode so the
+    // dashboard can be re-deployed/re-cloned without losing project bindings.
+    if (process.env.GSD_ZO_MODE === "1" && process.env.GSD_DATA_DIR) {
+      process.env.GSD_PROJECTS_PATH = path.join(
+        path.resolve(process.env.GSD_DATA_DIR),
+        "gsd-projects.json"
+      );
+    }
     app.use("/uploads", express.static(uploadsDir));
     app.use(express.static(clientDist));
     app.get("*", (_req, res) => {
@@ -335,12 +413,16 @@ if (require.main === module) {
   }
 
   // Auto-install Claude Code hooks on every startup so users don't have to
-  try {
-    const { installHooks } = require("../scripts/install-hooks");
-    installHooks(true);
-    console.log("Claude Code hooks auto-configured.");
-  } catch {
-    // Non-fatal — user can run npm run install-hooks manually
+  // SKIP on Zo (GSD_ZO_MODE=1) — Zo owns hook wiring and the in-process installer
+  // is a no-op there. See scripts/install-hooks.js for the rationale.
+  if (process.env.GSD_ZO_MODE !== "1") {
+    try {
+      const { installHooks } = require("../scripts/install-hooks");
+      installHooks(true);
+      console.log("Claude Code hooks auto-configured.");
+    } catch {
+      // Non-fatal — user can run npm run install-hooks manually
+    }
   }
 
   // Periodic maintenance sweep (every 2 min):
