@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * /api/env — read and atomically write /home/services/.env.production
+ * /api/env — read and atomically write the env file (see server/lib/zo-paths.js).
  *
  * SECURITY: ENV_FILE_PATH is a hardcoded constant. No user-supplied path is
  * ever accepted. This prevents path traversal entirely.
@@ -18,7 +18,8 @@ const os = require('os');
 const router = express.Router();
 
 // SECURITY: hardcoded — never derived from request input
-const ENV_FILE_PATH = '/home/services/.env.production';
+const paths = require('../lib/zo-paths');
+const ENV_FILE_PATH = paths.envFile;
 
 /**
  * Parse env file content into structured rows.
