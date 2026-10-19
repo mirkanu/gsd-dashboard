@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { eventBus } from "../lib/eventBus";
+import { useTerminalTouchScroll } from "../hooks/useTerminalTouchScroll";
 import { useParams } from "react-router-dom";
 import {
   RefreshCw,
@@ -318,6 +319,29 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
   const selectModeRef = useRef(false); // ref for use inside event handlers (avoids stale closure)
   const specialKeyPressRef = useRef(false); // true while a SpecialKeyBar button is being tapped
   const [pasteLabel, setPasteLabel] = useState<'Paste' | 'Pasted!'>('Paste');
+  // Discoverability for swipe-to-scroll on mobile: show a fading hint that
+  // the user can dismiss with the "Got it" button OR by swiping once.
+  const [swipeHintVisible, setSwipeHintVisible] = useState(false);
+  const dismissSwipeHint = useCallback(() => setSwipeHintVisible(false), []);
+
+  // Swipe-to-scroll on mobile. The hook listens for touch gestures on the
+  // .xterm-screen element and forwards SGR mouse-scroll sequences to tmux.
+  // (xterm.js's own touch handling is suppressed — see the hook's docstring.)
+  useTerminalTouchScroll({
+    containerRef,
+    terminalRef: termRef,
+    wsRef,
+    selectModeRef,
+    onFirstScroll: dismissSwipeHint,
+  });
+
+  // Show the hint briefly on open (mobile only). Dismisses after 6s or on first scroll.
+  useEffect(() => {
+    if (!isMobile) return;
+    setSwipeHintVisible(true);
+    const t = window.setTimeout(dismissSwipeHint, 6000);
+    return () => window.clearTimeout(t);
+  }, [isMobile, dismissSwipeHint]);
 
   const handlePaste = async () => {
     try {
@@ -507,53 +531,10 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
         return false;
       });
 
-      // Touch scroll: attach on .xterm-screen (where xterm.js binds its own touch
-      // handler) with capture phase so we fire FIRST. preventDefault +
-      // stopImmediatePropagation prevents xterm.js from converting to arrow keys.
-      const screen = container.querySelector('.xterm-screen') || container;
-      let touchStartY = 0;
-      let touchStartX = 0;
-      let scrollIntent = false;
-      const handleTouchStart = (e: TouchEvent) => {
-        touchStartY = e.touches[0].clientY;
-        touchStartX = e.touches[0].clientX;
-        scrollIntent = false;
-      };
-      const SCROLL_DAMPING = 6; // pixels of drag per tmux scroll line (higher = slower/more deliberate)
-      const handleTouchMove = (e: TouchEvent) => {
-        if (selectModeRef.current) return; // let xterm.js handle in select mode
-        const dy = touchStartY - e.touches[0].clientY;
-        const dx = touchStartX - e.touches[0].clientX;
-        if (!scrollIntent) {
-          if (Math.abs(dy) < 5) return;
-          scrollIntent = Math.abs(dy) >= Math.abs(dx);
-        }
-        if (!scrollIntent) return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        touchStartY = e.touches[0].clientY;
-        const fontSize = (terminal.options.fontSize as number) ?? 10;
-        const lines = Math.max(1, Math.abs(Math.round(dy / (fontSize * SCROLL_DAMPING))));
-        const row = Math.floor(terminal.rows / 2);
-        const col = Math.floor(terminal.cols / 2);
-        const seq = dy > 0 ? `\x1b[<64;${col};${row}M` : `\x1b[<65;${col};${row}M`;
-        const activeWs = wsRef.current;
-        for (let i = 0; i < lines; i++) {
-          if (activeWs?.readyState === WebSocket.OPEN) activeWs.send(seq);
-        }
-      };
-      // Tap to focus: call terminal.focus() on touchend when no scroll intent
-      const handleTouchEnd = () => {
-        if (selectModeRef.current) return; // don't steal focus/clear selection
-        if (!scrollIntent) terminal.focus();
-      };
-      screen.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
-      screen.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
-      screen.addEventListener('touchend', handleTouchEnd, { capture: true });
-
       // Track xterm textarea focus so mobile can hide SendBox when typing directly.
       // Debounce blur so that quick blur→focus cycles (caused by SpecialKeyBar taps)
       // never flip terminalFocused and flash the SendBox.
+      // Touch scroll is handled by useTerminalTouchScroll (declared above).
       const xtermTextarea = container.querySelector('.xterm-helper-textarea') as HTMLTextAreaElement | null;
       let blurTimer = 0;
       const handleXtermFocus = () => {
@@ -576,9 +557,6 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
       cleanupFn = () => {
         window.removeEventListener('resize', handleResize);
         window.removeEventListener('keydown', handleKeyDown);
-        screen.removeEventListener('touchstart', handleTouchStart, { capture: true } as EventListenerOptions);
-        screen.removeEventListener('touchmove', handleTouchMove, { capture: true } as EventListenerOptions);
-        screen.removeEventListener('touchend', handleTouchEnd, { capture: true } as EventListenerOptions);
         xtermTextarea?.removeEventListener('focus', handleXtermFocus);
         xtermTextarea?.removeEventListener('blur', handleXtermBlur);
         clearTimeout(blurTimer);
@@ -702,6 +680,24 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
       {/* Terminal container — fills remaining height */}
       <div className="flex-1 overflow-hidden relative" onWheel={(e) => e.stopPropagation()}>
         <div ref={containerRef} className="absolute inset-0 p-2" />
+        {/* Swipe-to-scroll hint — shown briefly on mobile, dismisses on first scroll or timeout */}
+        {isMobile && swipeHintVisible && !connected && (
+          <div
+            className="absolute inset-x-0 top-2 mx-auto z-20 px-3 py-2 rounded-lg text-xs font-mono flex items-center gap-2 max-w-fit pointer-events-auto"
+            style={{ background: getTermTheme().overlayText, color: getTermTheme().foreground, border: '1px solid var(--border)' }}
+            role="status"
+            aria-live="polite"
+          >
+            <span>Swipe ↑↓ to scroll</span>
+            <button
+              onClick={dismissSwipeHint}
+              className="text-[10px] px-2 py-0.5 rounded border border-border bg-surface-2 hover:bg-surface-3"
+              aria-label="Dismiss swipe hint"
+            >
+              Got it
+            </button>
+          </div>
+        )}
         {/* Connecting placeholder — visible until xterm canvas initializes */}
         {!connected && (
           <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: getTermTheme().background, pointerEvents: termFailed ? 'auto' : 'none' }}>
