@@ -679,7 +679,10 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
       </div>
       {/* Terminal container — fills remaining height */}
       <div className="flex-1 overflow-hidden relative" onWheel={(e) => e.stopPropagation()}>
-        <div ref={containerRef} className="absolute inset-0 p-2" />
+        {/* touch-action: none stops the browser from initiating viewport scroll
+            before our capture-phase touch handler can call preventDefault().
+            Without this, iOS Safari pans the page even with overscrollBehavior:none. */}
+        <div ref={containerRef} className="absolute inset-0 p-2" style={{ touchAction: 'none' }} />
         {/* Swipe-to-scroll hint — shown briefly on mobile, dismisses on first scroll or timeout */}
         {isMobile && swipeHintVisible && !connected && (
           <div

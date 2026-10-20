@@ -344,4 +344,21 @@ describe('useTerminalTouchScroll', () => {
     fireEnd(t);
     expect(onFirstScroll).not.toHaveBeenCalled();
   });
+
+  it('T20: sets touch-action: none on .xterm-screen while mounted — iOS Safari needs this', () => {
+    // Pre-set a CSS value to verify it is preserved on unmount.
+    screen.style.touchAction = 'pan-y';
+    const { unmount } = mountHook();
+    expect(screen.style.touchAction).toBe('none');
+    unmount();
+    expect(screen.style.touchAction).toBe('pan-y');
+  });
+
+  it('T21: empty original touch-action leaves it as "none" after unmount (clean restore)', () => {
+    screen.style.touchAction = '';
+    const { unmount } = mountHook();
+    expect(screen.style.touchAction).toBe('none');
+    unmount();
+    expect(screen.style.touchAction).toBe('');
+  });
 });

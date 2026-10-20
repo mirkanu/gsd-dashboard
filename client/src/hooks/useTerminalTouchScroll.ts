@@ -74,6 +74,14 @@ export function useTerminalTouchScroll({
     // because capture on container fires before bubble on .xterm-screen.
     const screen = (container.querySelector('.xterm-screen') as HTMLElement | null) ?? container;
 
+    // touch-action: none disables the browser's own touch interpretation on
+    // this element (viewport pan, pinch-zoom, double-tap-zoom). Without this,
+    // iOS Safari starts scrolling the page in the same frame as touchmove
+    // before our capture-phase handler can call preventDefault().
+    // We save and restore the original so we don't fight an outer style.
+    const originalTouchAction = screen.style.touchAction;
+    screen.style.touchAction = 'none';
+
     let touchStartY = 0;
     let touchStartX = 0;
     let scrollIntent = false;
@@ -162,6 +170,7 @@ export function useTerminalTouchScroll({
     screen.addEventListener('touchcancel', handleTouchCancel, opts);
 
     return () => {
+      screen.style.touchAction = originalTouchAction;
       screen.removeEventListener('touchstart', handleTouchStart, { capture: true } as EventListenerOptions);
       screen.removeEventListener('touchmove', handleTouchMove, { capture: true } as EventListenerOptions);
       screen.removeEventListener('touchend', handleTouchEnd, { capture: true } as EventListenerOptions);
