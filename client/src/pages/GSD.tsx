@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { eventBus } from "../lib/eventBus";
 import { useTerminalTouchScroll } from "../hooks/useTerminalTouchScroll";
+import { useBodyScrollLock } from "../hooks/useBodyScrollLock";
 import { useParams } from "react-router-dom";
 import {
   RefreshCw,
@@ -629,8 +630,13 @@ function TerminalOverlay({ projectName, wsBase, onClose, initialSendValue, inlin
 
   return (
     <div
+      // touch-action: none on the OUTERMOST overlay root — the inner
+      // .xterm-screen / containerRef also sets it (defense in depth), but
+      // iOS Safari in particular needs the root to refuse native pan
+      // gestures, otherwise the body rubber-bands regardless of what the
+      // inner elements claim. overscrollBehavior: none is belt-and-suspenders.
       className={`${inline ? 'relative' : 'fixed inset-0'} flex flex-col`}
-      style={{ zIndex: inline ? undefined : 70, bottom: !inline && bottomOffset > 0 ? bottomOffset : undefined, overscrollBehavior: 'none', background: getTermTheme().overlay, ...(inline ? { height: '100%' } : {}) }}
+      style={{ zIndex: inline ? undefined : 70, bottom: !inline && bottomOffset > 0 ? bottomOffset : undefined, overscrollBehavior: 'none', touchAction: 'none', background: getTermTheme().overlay, ...(inline ? { height: '100%' } : {}) }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header bar */}
@@ -1117,23 +1123,12 @@ export function GSD() {
   // Ref to track selected project name in the load() callback (which has [] deps)
   const selectedProjRef = useRef<string | null>(null);
 
-  // Lock body scroll when terminal overlay is open (prevents background scroll on mobile)
-  // On desktop, terminal is inline in the grid so no body lock needed.
-  useEffect(() => {
-    if (selectedProject && !isDesktop) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.top = `-${window.scrollY}px`;
-    } else if (!selectedProject) {
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-      window.scrollTo(0, parseInt(scrollY || '0') * -1);
-    }
-  }, [selectedProject, isDesktop]);
+  // Lock body scroll when terminal overlay is open (prevents background scroll on mobile).
+  // On desktop, the terminal is inline in the grid so no body lock is needed.
+  // The hook handles iOS Safari specifically: it locks BOTH html and body,
+  // parks the scroll offset, and sets touch-action: none — without all three
+  // iOS Safari still rubber-bands the viewport when swiping inside the overlay.
+  useBodyScrollLock(selectedProject !== null && !isDesktop);
   const TAB_TITLES: Record<string, string> = {
     state: "State",
     roadmap: "Roadmap",
@@ -1648,6 +1643,13 @@ export function TerminalPage() {
   useEffect(() => {
     api.gsd.wsBase().then(({ wsBase }) => setWsBase(wsBase ?? null)).catch(() => setWsBase(null));
   }, []);
+
+  // Lock body + html scroll while the standalone terminal page is mounted.
+  // The wrapper GSD.tsx component locks when the terminal is opened as an
+  // overlay, but /terminal/:name is reached directly without GSD.tsx, so the
+  // lock needs to live here too — otherwise iOS Safari rubber-bands whenever
+  // you swipe inside the terminal.
+  useBodyScrollLock(name !== undefined);
 
   if (!name) return null;
 
